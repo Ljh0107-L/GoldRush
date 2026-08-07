@@ -1,6 +1,6 @@
-"""test_so.py — 用 ctypes 加载 src/player.so, 验证 C++ 版输出合法性并测延迟。
+"""test_so.py — 用 ctypes 加载 src/v1/player.so, 验证 C++ 版输出合法性并测延迟。
 
-先编译: cd src && make local   (本机)  或  make  (开发机)
+先编译: cd src/v1 && make local   (本机)  或  make  (开发机)
 再运行: python3 tests/test_so.py
 
 结构体布局须与 src/game_api.h 逐字段一致, 改头文件时同步改这里。
@@ -12,7 +12,7 @@ import time
 
 GRID_SIZE, MAX_NPCS, S, REGION_COUNT = 17, 7, 6, 5
 
-SO_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src", "player.so")
+SO_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src", "v1", "player.so")
 
 
 class Position(ctypes.Structure):
@@ -88,7 +88,7 @@ def check_output(o):
 
 def main():
     if not os.path.exists(SO_PATH):
-        sys.exit("未找到 %s — 先在 src/ 下 make local(本机) 或 make(开发机)" % SO_PATH)
+        sys.exit("未找到 %s — 先在 src/v1/ 下 make local(本机) 或 make(开发机)" % SO_PATH)
     lib = ctypes.CDLL(SO_PATH)
     lib.moveDecision.argtypes = [ctypes.POINTER(GameInput)]
     lib.moveDecision.restype = GameOutput

@@ -4,6 +4,17 @@
 > 对局实验的观测与结论记在 [AGENT.md](AGENT.md) §10 实验日志，两边不要重复。
 > 每个工作阶段结束追加一节，最新在上。
 
+## 2026-08-07 (k) 仓库结构重组
+
+- `src/` 按产品线拆分: `src/v1/`(冻结防守版 cpp27b) + `src/v2/`(开发主线, 原 `src/ns300/`),
+  `game_api.h` 留在 `src/` 共用; 两个 Makefile 均已适配 `-I..` 并修好 check 目标
+- 死原型入 `archive/`: `ns_prototype.cpp`(原 src/ns.cpp), `p0_player.py`(原 src/player.py,
+  连同其测试 test_p0_player.py); 陪练 `baseline_random.py` 移入 `tests/`
+- docs 文件名规范化: `FAQ.md` / `赛制介绍.md`(去掉原名里的怪空格)
+- 新增根 `README.md` 仓库地图; AGENT.md §1 结构图/各处路径引用同步更新
+- logs 本地整理: 最新 30 局平铺, 其余移入 `logs/archive/`(均 gitignored)
+- 注意: 老 tag(v1-cpp2…cpp27b)内路径仍是重组前的 `src/player.cpp`
+
 ## 2026-08-08 (j) 版本管理重构 + ns300 v2 主线开工(300ns 契约)
 
 - **版本管理**: 历史里程碑全部打 git tag(v1-cpp2 … v1-cpp27b), 任意版本可

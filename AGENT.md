@@ -7,31 +7,37 @@
 
 ## 1. 任务目标
 
-在九坤 GoldRush 2.0 编程掘金争夺赛中，把 [src/player.cpp](src/player.cpp)（**C++ 是主战语言**，见 §6.1）优化成有竞争力的策略，冲击初赛前 16 名（晋级决赛）。
+在九坤 GoldRush 2.0 编程掘金争夺赛中，用 C++（**主战语言**，见 §6.1）打进初赛前 16 名（晋级决赛）。两条产品线：[src/v1/player.cpp](src/v1/player.cpp)（冻结防守版 cpp27b，已发布天梯）与 [src/v2/player.cpp](src/v2/player.cpp)（开发主线，300ns 预算契约）。
 
 **优化目标函数**：`最终得分 = 毛金币 − 视野花费`，500 轮结束时高者胜；相等时 P90 延迟低者胜。
 
-### 仓库结构
+### 仓库结构（2026-08-07 重组后）
 
 ```
 AGENT.md          ← 本手册（活文档：§7 状态、§10 实验日志随迭代更新）
-CHANGELOG.md      ← 仓库/工具链变更记录（实验结论记 §10，两边不重复）
-src/              ← 策略代码
-  player.cpp        主战（提交 .so，开发机编译）；边界层/策略层分离，新想法只动 decide()
-  player.py         Python 版（原型验证用，p0greedy）
+CHANGELOG.md      ← 版本演进史（实验结论记 §10，两边不重复）
+README.md         ← 仓库地图（新人/新会话入口）
+src/
+  game_api.h        官方接口头（v1/v2 共用编译依赖）
+  v1/               冻结防守版 cpp27b（P50~3.7μs · 收入~2712）：只修不改
+  v2/               开发主线（原 ns300；ns322 P50~1.07μs · 收入~1800）：所有新工作在这里
+    Makefile        make=开发机出.so | make check=本机语法查 | make local=本机测试用.so
+tests/            ← 本地测试台（不模拟游戏逻辑，只验合法性/等价性/延迟）
+  replay.py         日志回放（真实输入驱动 .so）
+  pair_diff.py      双 .so 逐位对账（重构等价性验证）
+  bench.cpp         多 .so 交错延迟基准（-cold/-cold2 冷缓存模式）
+  dump_inputs.py / profile_replay.py / test_so.py
   baseline_random.py 固定陪练 rand0
-  game_api.h        官方接口头（编译依赖）
-  Makefile          make=开发机出.so | make check=本机语法查 | make local=本机测试用.so
-tests/            ← 本地测试台（不模拟游戏逻辑，只验合法性/鲁棒性/延迟）
-  test_player.py    测 src/player.py
-  test_so.py        ctypes 测 src/player.so（500 轮压测 + 延迟基准）
   game_api.py       本地 mock（评测环境没有，提交代码禁止 import）
 tools/            ← 平台自动化
   gr.py             提交/对战/榜单/取日志（§12）
   grlog.py          日志分析：净分/耗时分位/先手率/金币曲线（§13）
-docs/             ← 赛事文档（只读）
-logs/             ← 对局日志（gitignored，1.5MB/局）
+docs/             ← 赛事文档（只读）：赛制介绍.md / FAQ.md / 官方示例代码说明.md
+archive/          ← 死原型：ns_prototype.cpp（nsv2 骨架）、p0_player.py（Python 基线）
+logs/             ← 对局日志（gitignored，1.5MB/局）：最新 30 局平铺，其余 logs/archive/
 ```
+
+老 git tag（v1-cpp2…v1-cpp27b）里的路径是重组前的 `src/player.cpp`：`git show v1-cpp23d:src/player.cpp`。
 
 **关键日期**（今天以系统时间为准）：
 - 报名截止 8.14 23:59 · 模拟赛 8.15–8.16 · **初赛 8.17–8.21** · 决赛 9.6（支持远程）
@@ -76,8 +82,8 @@ ssh Ubiquant220@8.153.76.120
 > 执行远程编译。标准流程（远端目录 `~/goldrush/`，已建好）：
 > ```bash
 > rsync -a src/ Ubiquant220@8.153.76.120:~/goldrush/src/
-> ssh Ubiquant220@8.153.76.120 'cd ~/goldrush/src && make && python3 ../tests/test_so.py'
-> scp Ubiquant220@8.153.76.120:~/goldrush/src/player.so src/player.so
+> ssh Ubiquant220@8.153.76.120 'cd ~/goldrush/src/v2 && make'   # 防守版则 src/v1
+> scp Ubiquant220@8.153.76.120:~/goldrush/src/v1/player.so src/v1/player.so
 > ```
 > 开发机 GCC 14.3 / x86_64。若安全规则不允许 Agent 输密码而免密又失效了，让所有者重跑一次 `ssh-copy-id`。
 
@@ -230,7 +236,7 @@ NPC **不在 grid 上标记**，走 `visible_npcs`；己方位置看 `my_units`�
 慢的一方 **96% 的回合在后手**。`end.dispatch_order[0]` 直接给出每回合谁先手，这条因果链可以实证，不用猜。
 
 实践含义：
-- **C++ 是入场券，不是优化项——已转正为主战语言**（2026-08-06 决定）。纯 Python 一次函数调用就 ~50-100ns，跑个 BFS 就是几百微秒，结构性出局。榜上第 3 名 14.65μs 大概是 Python 的天花板。实测同一套贪心 BFS：Python 332μs vs C++ ≤1.5μs（本机、含 ctypes 开销）。Python 版只用于快速原型验证想法，验证过的逻辑落到 [src/player.cpp](src/player.cpp)。
+- **C++ 是入场券，不是优化项——已转正为主战语言**（2026-08-06 决定）。纯 Python 一次函数调用就 ~50-100ns，跑个 BFS 就是几百微秒，结构性出局。榜上第 3 名 14.65μs 大概是 Python 的天花板。实测同一套贪心 BFS：Python 332μs vs C++ ≤1.5μs（本机、含 ctypes 开销）。Python 版只用于快速原型验证想法，验证过的逻辑落到 [src/v2/player.cpp](src/v2/player.cpp)。
 - 目标量级是**亚微秒**；重计算全部前移到 `__init__`（10s 预算）
 - 用 anytime 算法：设软时限，到点返回当前最优解
 - 平局也是 P90 低者胜——延迟是双重收益
@@ -326,7 +332,7 @@ FAQ 明确：`grid` 只含**本轮决策时最终位置**的视野，不提供�
 **两条出路（下阶段主题, 二选一或并行）**：
 1. **真 ns 级重写**：nsv1/2 证明纯反射会塌方（900分），#1 的 190ns 里装着顶级策略。
    需要从头设计"增量维护的策略结构"（收入连续性/轮巡组织）而不是砍功能。
-   已有素材：探针数据(update 250ns/build+DFS 1.65μs)、nsv2 骨架(src/ns.cpp)。
+   已有素材：探针数据(update 250ns/build+DFS 1.65μs)、nsv2 骨架(archive/ns_prototype.cpp)。
 2. **策略再+800 分**：无视速度，把基线从 2800 推到 3600（P^GPT 路线），
    靠路线组织(密度驻留/轮巡节奏)。参考 §6.2c Tiuntled 收入画像。
 
@@ -389,7 +395,7 @@ FAQ 明确：`grid` 只含**本轮决策时最终位置**的视野，不提供�
 
 ```bash
 # 新版本 vs 固定基线，跑一局
-./tools/gr.py submit --map 1 src/player.so:v2 src/baseline_random.py:rand0
+./tools/gr.py submit --map 1 src/v1/player.so:v2 tests/baseline_random.py:rand0
 ./tools/gr.py games                     # 取 game_id
 ./tools/gr.py watch <game_id>           # 等完成并自动存日志
 ```
@@ -419,19 +425,19 @@ FAQ 明确：`grid` 只含**本轮决策时最终位置**的视野，不提供�
 
 ```bash
 # 本地自检（只验证输出合法性/鲁棒性/延迟，不模拟游戏逻辑）
-python3 tests/test_player.py            # Python 版
+# Python 版已入档 archive/（p0_player.py）
 cd src && make local && cd ..           # 本机架构 .so（仅供本地测试）
 python3 tests/test_so.py                # C++ 版：合法性 + 500 轮压测 + 延迟基准
 
 # 提交用 .so：必须在开发机上编（本机 arm64 产物评测机不认）
-ssh Ubiquant220@8.153.76.120 'cd ~/goldrush/src && make'     # 见 §2 免密待办
+ssh Ubiquant220@8.153.76.120 'cd ~/goldrush/src/v2 && make'     # 见 §2 免密待办
 ```
 
 **迭代闭环（全命令行，见 §12/§13）**：
 
 ```bash
 python3 tests/test_so.py                                     # 1. 本地自检
-./tools/gr.py submit --map 1 src/player.so:v2 src/baseline_random.py:rand0
+./tools/gr.py submit --map 1 src/v1/player.so:v2 tests/baseline_random.py:rand0
 ./tools/gr.py games                                          # 2. 取 game_id
 ./tools/gr.py watch <game_id> -o logs/game_<id>.log          # 3. 等完成并存日志
 ./tools/grlog.py logs/game_<id>.log --rounds                 # 4. 量化分析
@@ -545,9 +551,9 @@ python3 tests/test_so.py                                     # 1. 本地自检
 ./tools/gr.py watch <game_id>                       # 轮询至完成并自动存日志
 
 # 自博弈（不计入公开外战胜率，用于版本对比）
-./tools/gr.py submit --map 1 src/player.so:v2 src/baseline_random.py:rand0
+./tools/gr.py submit --map 1 src/v1/player.so:v2 tests/baseline_random.py:rand0
 # 挑战他人（计入 24h 外战胜率，弱版本别打）
-./tools/gr.py submit --map 1 --vs <model_id> src/player.so:v2
+./tools/gr.py submit --map 1 --vs <model_id> src/v1/player.so:v2
 # 只组装不发送
 ./tools/gr.py submit --dry-run ...
 
@@ -555,7 +561,7 @@ python3 tests/test_so.py                                     # 1. 本地自检
 ./tools/grlog.py logs/game_<id>.log --rounds
 
 # 发布公开代码(供他人挑战, 被动对局计入外战胜率)
-./tools/gr.py publish src/player.so:cpp4
+./tools/gr.py publish src/v1/player.so:cpp4
 ```
 
 注意：`add_model_4`(publish) 用**单数**字段名 `model_file/model_lang/model_name`，

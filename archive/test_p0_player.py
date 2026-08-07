@@ -3,8 +3,8 @@ import os
 
 from game_api import GameInput, Snapshot, RegionStat, NpcInfo, GRID_SIZE, REGION_COUNT
 
-# 显式按路径加载 src/player.py —— src/ 里若存在 player.so, 普通 import 会误抓它
-_PY = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src", "player.py")
+# 显式按路径加载 archive/p0_player.py —— src/ 里若存在 player.so, 普通 import 会误抓它
+_PY = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "archive", "p0_player.py")
 _spec = importlib.util.spec_from_file_location("player_py", _PY)
 _mod = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_mod)
