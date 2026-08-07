@@ -499,6 +499,13 @@ GameOutput decide(const GameInput* in) {
     out.k = 3;
     out.order = in->my_units_gold[0] >= in->my_units_gold[1] ? 0 : 1;
     out.vp = 0;
+#if defined(NSPROBE) && NSPROBE == 11
+    // 判决: 决策全算, 行为规律化(匀速走位) —— 分离"混沌访问模式"的冷成本
+    for (int u2 = 0; u2 < 2; ++u2) {
+        int a = (in->round / 4 + u2 * 2) & 3;
+        out.actions[u2 * 3] = out.actions[u2 * 3 + 1] = out.actions[u2 * 3 + 2] = a;
+    }
+#endif
 #if defined(NSPROBE) && NSPROBE == 9
     if (in->round < 250) ++g_tn;
     // vp 信道发射: round 250 起, 4 个 16 位均值(周期), MSB 在前
