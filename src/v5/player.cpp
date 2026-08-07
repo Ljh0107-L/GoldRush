@@ -120,7 +120,9 @@ GameOutput decide(const GameInput* in) {
     int rb_oks[2] = {0, 0}, rb_cbs[2] = {0, 0};
     for (int lu = 0; lu < 2; ++lu) {
         int sr0 = in->my_units[lu].row, sc0 = in->my_units[lu].col;
-        if (sr0 >= 0 && sr0 < N && sc0 >= 0 && sc0 < N) {
+        sr0 = sr0 < 0 ? 0 : (sr0 > 16 ? 16 : sr0);
+        sc0 = sc0 < 0 ? 0 : (sc0 > 16 ? 16 : sc0);
+        {
             int cb = sc0 - 2 < 0 ? 0 : (sc0 - 2 > N - 5 ? N - 5 : sc0 - 2);
             rb_oks[lu] = 1; rb_cbs[lu] = cb;
 #pragma GCC unroll 5
@@ -146,16 +148,17 @@ GameOutput decide(const GameInput* in) {
 
     for (int u = 0; u < 2; ++u) {
         int sr = in->my_units[u].row, sc = in->my_units[u].col;
+        sr = sr < 0 ? 0 : (sr > 16 ? 16 : sr);        // 单位恒在板上; cmov 双钳防御
+        sc = sc < 0 ? 0 : (sc > 16 ? 16 : sc);
         int* acts = out.actions + u * 3;
         acts[0] = acts[1] = acts[2] = STAY;
-        if (sr < 0 || sr >= N || sc < 0 || sc >= N) continue;
         int tr = in->my_units[1 - u].row, tc = in->my_units[1 - u].col;
         unsigned rich = 0u - (unsigned)(in->my_units_gold[u] >= 100);
 
         // ---- 掩码扫描 ----
         uint32_t goldm = 0;
 #if defined(__AVX2__)
-        if (rb_oks[u]) {
+        {
             const __m256i vz = _mm256_setzero_si256();
             const __m256i vm1 = _mm256_set1_epi32(-1);
             const __m256i vm3 = _mm256_set1_epi32(-3);
@@ -181,21 +184,19 @@ GameOutput decide(const GameInput* in) {
                 wallm |= ((((w8 << 2) >> lsh) & 31u) & rv) << (i * 5);
                 bombm |= ((((b8 << 2) >> lsh) & 31u) & rv) << (i * 5);
             }
-            if (wallm) {                         // 墙入 bpw(行片并入)
-                int r0 = sr - 2 < 0 ? 0 : sr - 2;
-                int r1 = sr + 2 >= N ? N - 1 : sr + 2;
-                int c0 = sc - 2 < 0 ? 0 : sc - 2;
-                for (int r = r0; r <= r1; ++r) {
-                    int b5 = (r - sr + 2) * 5 + 2 - sc;
-                    g_s.bpw[r + 1] |= (((wallm >> (b5 + c0)) & 31u) << c0) << 1;
-                }
-            }
-            if (bombm) {                         // 弹入 bombbit(稀疏)
-                uint32_t bm = bombm;
-                while (bm) {
-                    int i = __builtin_ctz(bm); bm &= bm - 1;
-                    g_s.bombbit[sr - 2 + i / 5 + 1] |= 1u << (sc - 2 + i % 5 + 1);
-                }
+            // 墙/弹入位图: 无条件 5 行行片写(零分支; 空片写=无操作)
+            // 行片: 窗口行 i 的 5 位 << (sc-2+1); 行索引钳位由 rowok 已保证片为 0
+#pragma GCC unroll 5
+            for (int i = 0; i < 5; ++i) {
+                int rr = sr - 2 + i;
+                int ri = ((unsigned)rr < (unsigned)N ? rr : 0) + 1;
+                int shl = sc - 1;                // (sc-2)+1, 可为负
+                uint32_t wsl = (wallm >> (i * 5)) & 31u;
+                uint32_t bsl = (bombm >> (i * 5)) & 31u;
+                uint32_t wv = shl >= 0 ? (wsl << shl) : (wsl >> -shl);
+                uint32_t bv = shl >= 0 ? (bsl << shl) : (bsl >> -shl);
+                g_s.bpw[ri] |= wv;
+                g_s.bombbit[ri] |= bv;
             }
         }
 #else
@@ -224,7 +225,12 @@ GameOutput decide(const GameInput* in) {
             constexpr uint32_t RM4 = (1u<<0)|(1u<<4)|(1u<<20)|(1u<<24);
             uint32_t g1 = goldm & RM1, g2 = goldm & RM2, g3 = goldm & RM3;
             uint32_t g4 = goldm & RM4, g0 = goldm & RM0;
-            uint32_t sel = g1 ? g1 : (g2 ? g2 : (g3 ? g3 : (g4 ? g4 : g0)));
+            uint32_t m1 = (uint32_t)0 - (g1 != 0);
+            uint32_t m2 = ((uint32_t)0 - (g2 != 0)) & ~m1;
+            uint32_t m3 = ((uint32_t)0 - (g3 != 0)) & ~m1 & ~m2;
+            uint32_t m4 = ((uint32_t)0 - (g4 != 0)) & ~m1 & ~m2 & ~m3;
+            uint32_t m0 = ~m1 & ~m2 & ~m3 & ~m4;
+            uint32_t sel = (g1 & m1) | (g2 & m2) | (g3 & m3) | (g4 & m4) | (g0 & m0);
             int i = __builtin_ctz(sel | (uint32_t)(sel == 0));   // 仅空时补位(| 1u 恒补是v4d/v5崩盘元凶)
             int has = -(int)(goldm != 0);
             tgr = ((sr - 2 + i / 5) & has) | (ANCH_R[u] & ~has);
@@ -233,6 +239,8 @@ GameOutput decide(const GameInput* in) {
 
         // ---- 导向 ----
         int dr0 = tgr - sr, dc0 = tgc - sc;
+        dr0 = dr0 < -3 ? -3 : (dr0 > 3 ? 3 : dr0);   // 钳进 LUT 域:
+        dc0 = dc0 < -3 ? -3 : (dc0 > 3 ? 3 : dc0);   // 远目标前3步与串行链同构
         int d = (dr0 < 0 ? -dr0 : dr0) + (dc0 < 0 ? -dc0 : dc0);
         if (d == 0) {                            // 站金: 折返双吃
             unsigned pm = pass01(sr - 1, sc, tr, tc, rich) |
@@ -243,7 +251,7 @@ GameOutput decide(const GameInput* in) {
                 int a = __builtin_ctz(pm);
                 acts[0] = a; acts[1] = a ^ 1;
             }
-        } else if ((unsigned)(dr0 + 3) <= 6u && (unsigned)(dc0 + 3) <= 6u) {
+        } else {
             int ir = dr0 + 3, ic = dc0 + 3;
             const uint8_t* pa = SL.act[ir][ic];
             const int8_t* xr = SL.pdr[ir][ic];
@@ -253,18 +261,17 @@ GameOutput decide(const GameInput* in) {
                           pass01(sr + xr[2], sc + xc[2], tr, tc, rich);
             if (ok) {
                 acts[0] = pa[0]; acts[1] = pa[1]; acts[2] = pa[2];
-                // 早到金格(d<3): 折返双吃
-                if (d < 3) {
-                    acts[d] = acts[d - 1] ^ 1;
-                    if (d + 1 < 3) acts[d + 1] = acts[d] ^ 1;
-                }
+                // 早到金格(d<3): 折返双吃(掩码写, 零位点)
+                int em = -(int)(d < 3);
+                int i1 = (d & em) | (2 & ~em);        // em=0 时写 acts[2] 自身值
+                int v1 = (acts[i1 - (1 & em)] ^ (1 & em));
+                acts[i1] = (v1 & em) | (acts[i1] & ~em);
+                int e2 = em & -(int)(d + 1 < 3);      // 仅 d==1
+                acts[2] = ((acts[1] ^ 1) & e2) | (acts[2] & ~e2);
             } else {
                 steer3(acts, sr, sc, tgr, tgc, tr, tc,
                        g_s.last_r[u], g_s.last_c[u], rich);
             }
-        } else {
-            steer3(acts, sr, sc, tgr, tgc, tr, tc,
-                   g_s.last_r[u], g_s.last_c[u], rich);
         }
 
 #ifdef NS5DBG
