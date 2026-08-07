@@ -39,6 +39,7 @@ struct alignas(64) State {
     int8_t pr_[16], pc_[16];
     uint8_t pv_[16], ps_[16];
     uint16_t plive;          // 活堆位掩码(稀疏门控: 无堆零成本)
+    uint8_t banybomb;        // 已知炸弹存在标志(护栏全局门控)
     int8_t plan[2][3];       // v37: 主动轮预算的"下轮 3 步"(被动轮直接回放)
     uint8_t plan_ok[2];
     int16_t last_round;
@@ -140,6 +141,7 @@ GameOutput decide(const GameInput* in) {
     if (in->round % 20 == 0) {                   // 炸弹波: 位图记忆即弃
         for (int r = 0; r < N; ++r) g_s.bp[r + 1] &= ~(g_s.bombbit[r] << 1);
         memset(g_s.bombbit, 0, sizeof(g_s.bombbit));
+        g_s.banybomb = 0;
     }
 
     GameOutput out = SAFE_OUT;
@@ -205,6 +207,7 @@ GameOutput decide(const GameInput* in) {
                         int br = sr - 2 + i / 5, bc = sc - 2 + i % 5;
                         g_s.bombbit[br] |= 1u << bc;
                         g_s.bp[br + 1] |= 1u << (bc + 1);
+                        g_s.banybomb = 1;
                     }
                 }
 #ifndef NS3MIN
@@ -249,6 +252,7 @@ GameOutput decide(const GameInput* in) {
     }
 
     // ===== 双单位决策(共用代码; 被动 goldm 视为 0) =====
+#pragma GCC unroll 2
     for (int u = 0; u < 2; ++u) {
         int sr = in->my_units[u].row, sc = in->my_units[u].col;
         int* acts = out.actions + u * 3;
@@ -447,9 +451,9 @@ GameOutput decide(const GameInput* in) {
 
         // 防漂移护栏: 近弹预筛(行位图 7 行并查, 无列表)
 #ifdef NS3GUARD1
-        if (act_ && in->my_units_gold[u] >= 300) {
+        if (act_ && g_s.banybomb && in->my_units_gold[u] >= 300) {
 #else
-        if (in->my_units_gold[u] >= 300) {
+        if (g_s.banybomb && in->my_units_gold[u] >= 300) {
 #endif
             uint32_t near_ = 0;
 #pragma GCC unroll 7
