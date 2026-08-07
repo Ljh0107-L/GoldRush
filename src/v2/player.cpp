@@ -286,9 +286,16 @@ GameOutput decide(const GameInput* in) {
                 int rr = sr - 2 + i;
                 int cr = rr < 0 ? 0 : (rr > N - 1 ? N - 1 : rr);
                 uint32_t rowok = (uint32_t)0 - ((unsigned)rr < (unsigned)N);
+#ifdef NS_ALT
+                // 轮换下扫描单位==装载单位(公式同源), 无条件用寄存器行:
+                // 消掉展开环里的 5 个比较分支位点(ns329 首测 +50ns 的疑犯)
+                __m256i vrow = rowbuf[i];
+                (void)cr;
+#else
                 __m256i vrow = (sr == rb_sr && cb == rb_cb)
                     ? rowbuf[i]
                     : _mm256_loadu_si256((const __m256i*)&in->grid[cr][cb]);
+#endif
                 uint32_t g8 = (uint32_t)_mm256_movemask_ps(_mm256_castsi256_ps(
                     _mm256_cmpgt_epi32(vrow, vz)));
                 uint32_t w8 = (uint32_t)_mm256_movemask_ps(_mm256_castsi256_ps(
