@@ -410,22 +410,10 @@ GameOutput decide(const GameInput* in) {
             continue;
         }
 #endif
-        // ---- 统一决策核: 目标格 = 窗口最优金格 或 持久目标; 导向共用 ----
-#if defined(NSPROBE) && NSPROBE == 6
-        bestr = -1;                          // 探针6: 采集支砍除
-#endif
+        // ---- 全算全选决策核: 目标层无条件跑(访问模式均匀化, 攻混沌溢价),
+        //      最终目标按掩码选择。副产品 = 粘性目标(采集期间目标存续) ----
         int tgr, tgc, mode;                  // mode: 0=采集 1=矿堆 2=巡逻
-        if (bestr >= 0) {
-            tgr = bestr; tgc = bestc; mode = 0;
-            g_s.goal_kind[u] = 0;            // 就地有活干, 目标层休眠
-        } else {
-#if defined(NSPROBE) && NSPROBE == 5
-            {   // 探针5: 目标支砍除, 轮转走位
-                int a = (in->round / 4 + u * 2) & 3;
-                acts[0] = acts[1] = acts[2] = a;
-                goto probe5_done;
-            }
-#endif
+        {
             bool valid = false;
             if (g_s.goal_kind[u] == 1) {           // 哈希 O(1) 校验
                 int pi_ = pileSlot(g_s.goal_r[u], g_s.goal_c[u]);
@@ -464,7 +452,11 @@ GameOutput decide(const GameInput* in) {
                     g_s.goal_kind[u] = 2;
                 }
             }
-            tgr = g_s.goal_r[u]; tgc = g_s.goal_c[u]; mode = g_s.goal_kind[u];
+            // 全选: 窗口有金 -> 采集; 否则用目标层结果
+            int harvest = (int)(bestr >= 0);
+            tgr = harvest ? bestr : g_s.goal_r[u];
+            tgc = harvest ? bestc : g_s.goal_c[u];
+            mode = harvest ? 0 : g_s.goal_kind[u];
         }
         {
             int d = (tgr > sr ? tgr - sr : sr - tgr) +
@@ -505,9 +497,6 @@ GameOutput decide(const GameInput* in) {
             }
         }
 
-#if defined(NSPROBE) && NSPROBE == 5
-        probe5_done:;
-#endif
 #if defined(NSPROBE) && NSPROBE == 9
         if (in->round < 250) g_t[3] += tsc() - tc9;
         (void)td9_last;
