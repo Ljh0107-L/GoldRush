@@ -50,8 +50,9 @@ struct State {
     // -> passable 纯两次位测试, 零边界分支
     uint32_t bp[N + 2];
     // 矿堆缓存 SoA(每字段 16B = 1 条 XMM): SIMD 对账/打分
-    int8_t  pr_[16], pc_[16];
-    uint8_t pv_[16], ps_[16];
+    // 32 槽 x 4 字段 = 每字段 32B = 1 条 YMM(对账 AVX2 一次比完)
+    int8_t  pr_[32], pc_[32];
+    uint8_t pv_[32], ps_[32];
     BombM bombs[8];
     int8_t goal_r[2], goal_c[2];
     uint8_t goal_kind[2];    // 0=无 1=矿堆 2=巡逻
@@ -99,9 +100,9 @@ inline void bombNote(int r, int c) {
     }
 }
 
-// 矿堆缓存: 直接映射哈希(槽=(r*31+c)&15), 记/摘 O(1) 零扫描。
+// 矿堆缓存: 直接映射哈希(槽=(r*31+c)&31), 记/摘 O(1) 零扫描。
 // 冲突=覆盖(启发式缓存, 丢一条可接受; v>=5 门槛已滤噪)
-inline int pileSlot(int r, int c) { return (r * 31 + c) & 15; }
+inline int pileSlot(int r, int c) { return (r * 31 + c) & 31; }
 
 inline void pileNote(int r, int c, int v) {
     int i = pileSlot(r, c);
@@ -331,33 +332,38 @@ GameOutput decide(const GameInput* in) {
         // 对账(零读格): 本单位窗口内的堆用 wv7 校正
 #if defined(__AVX2__)
         {   // SIMD: 一次比较得到"窗口内且有货"的堆位图, 逐位校正(稀疏)
-            __m128i vr_ = _mm_loadu_si128((const __m128i*)g_s.pr_);
-            __m128i vc_ = _mm_loadu_si128((const __m128i*)g_s.pc_);
-            __m128i vv_ = _mm_loadu_si128((const __m128i*)g_s.pv_);
-            __m128i wr_ = _mm_sub_epi8(vr_, _mm_set1_epi8((char)(sr - 2)));
-            __m128i wc_ = _mm_sub_epi8(vc_, _mm_set1_epi8((char)(sc - 2)));
-            __m128i in5r = _mm_cmpgt_epi8(_mm_set1_epi8(5), _mm_max_epu8(wr_, _mm_setzero_si128()));
-            in5r = _mm_and_si128(in5r, _mm_cmpgt_epi8(wr_, _mm_set1_epi8(-1)));
-            __m128i in5c = _mm_cmpgt_epi8(_mm_set1_epi8(5), _mm_max_epu8(wc_, _mm_setzero_si128()));
-            in5c = _mm_and_si128(in5c, _mm_cmpgt_epi8(wc_, _mm_set1_epi8(-1)));
-            __m128i has = _mm_cmpgt_epi8(vv_, _mm_setzero_si128());
-            uint32_t hits = (uint32_t)_mm_movemask_epi8(
-                _mm_and_si128(_mm_and_si128(in5r, in5c), has));
+            __m256i vr_ = _mm256_loadu_si256((const __m256i*)g_s.pr_);
+            __m256i vc_ = _mm256_loadu_si256((const __m256i*)g_s.pc_);
+            __m256i vv_ = _mm256_loadu_si256((const __m256i*)g_s.pv_);
+            __m256i wr_ = _mm256_sub_epi8(vr_, _mm256_set1_epi8((char)(sr - 2)));
+            __m256i wc_ = _mm256_sub_epi8(vc_, _mm256_set1_epi8((char)(sc - 2)));
+            __m256i z8 = _mm256_setzero_si256();
+            __m256i in5r = _mm256_cmpgt_epi8(_mm256_set1_epi8(5),
+                                             _mm256_max_epu8(wr_, z8));
+            in5r = _mm256_and_si256(in5r,
+                                    _mm256_cmpgt_epi8(wr_, _mm256_set1_epi8(-1)));
+            __m256i in5c = _mm256_cmpgt_epi8(_mm256_set1_epi8(5),
+                                             _mm256_max_epu8(wc_, z8));
+            in5c = _mm256_and_si256(in5c,
+                                    _mm256_cmpgt_epi8(wc_, _mm256_set1_epi8(-1)));
+            __m256i has = _mm256_cmpgt_epi8(vv_, z8);
+            uint32_t hits = (uint32_t)_mm256_movemask_epi8(
+                _mm256_and_si256(_mm256_and_si256(in5r, in5c), has));
             while (hits) {
                 int i = __builtin_ctz(hits); hits &= hits - 1;
                 int wr = g_s.pr_[i] - sr + 2, wc = g_s.pc_[i] - sc + 2;
                 int v = wv7[(wr + 1) * 7 + (wc + 1)];
-                if (v >= 5) { g_s.pv_[i] = (uint8_t)v; g_s.ps_[i] = now2(); }
+                if (v >= 3) { g_s.pv_[i] = (uint8_t)v; g_s.ps_[i] = now2(); }
                 else g_s.pv_[i] = 0;
             }
         }
 #else
-        for (int i = 0; i < 16; ++i) {
+        for (int i = 0; i < 32; ++i) {
             if (!g_s.pv_[i]) continue;
             int wr = g_s.pr_[i] - sr + 2, wc = g_s.pc_[i] - sc + 2;
             if ((unsigned)wr > 4u || (unsigned)wc > 4u) continue;
             int v = wv7[(wr + 1) * 7 + (wc + 1)];
-            if (v >= 5) { g_s.pv_[i] = (uint8_t)v; g_s.ps_[i] = now2(); }
+            if (v >= 3) { g_s.pv_[i] = (uint8_t)v; g_s.ps_[i] = now2(); }
             else g_s.pv_[i] = 0;                   // 吃小/吃空/变弹: 摘除
         }
 #endif
@@ -392,7 +398,7 @@ GameOutput decide(const GameInput* in) {
                 if (sc_ > bests) {
                     bests = sc_; bestr = sr - 2 + i / 5; bestc = sc - 2 + i % 5;
                 }
-                if (v >= 5) pileNote(sr - 2 + i / 5, sc - 2 + i % 5, v);
+                if (v >= 3) pileNote(sr - 2 + i / 5, sc - 2 + i % 5, v);
             }
         }
 
@@ -440,7 +446,7 @@ GameOutput decide(const GameInput* in) {
                 // 去重目标(对方单位的矿堆目标)编码成位置码, 无效时取 -1
                 int dedup = (u == 1 && g_s.goal_kind[0] == 1)
                                 ? (g_s.goal_r[0] * 32 + g_s.goal_c[0]) : -1;
-                for (int i = 0; i < 16; ++i) {         // 固定 16 次, 体内无分支
+                for (int i = 0; i < 32; ++i) {         // 固定 32 次, 体内无分支
                     int age2 = (int)t2 - g_s.ps_[i];
                     int dr_ = g_s.pr_[i] - sr, dc_ = g_s.pc_[i] - sc;
                     int d = (dr_ < 0 ? -dr_ : dr_) + (dc_ < 0 ? -dc_ : dc_);
