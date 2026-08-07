@@ -27,6 +27,9 @@
 //  - 目标层每轮重建是 v1 的 2.2μs 大头 → 这里以持久目标+矿堆缓存替代
 #include <cstdint>
 #include <cstring>
+#if defined(__AVX2__)
+#include <immintrin.h>
+#endif
 #include "game_api.h"
 
 namespace {
@@ -235,6 +238,46 @@ GameOutput decide(const GameInput* in) {
         int cb = sc - 2 < 0 ? 0 : (sc - 2 > N - 5 ? N - 5 : sc - 2);
         int cshift = sc - 2 - cb + 3;          // blk 中心偏移
         uint32_t goldm = 0, wallm = 0, bombm = 0, validm = 0;
+#if defined(__AVX2__)
+        {   // SIMD 行扫描: 每行 1 次载入 + 3 次比较 + movemask(热功 ~-200 周期)
+            const __m256i vz = _mm256_setzero_si256();
+            const __m256i vm1 = _mm256_set1_epi32(-1);
+            const __m256i vm3 = _mm256_set1_epi32(-3);
+            int lsh = 2 + (sc - 2 - cb);           // 列对齐移位 ∈[0,4]
+            int lo = sc - 2 < 0 ? -(sc - 2) : 0;
+            int hix = sc + 2 > N - 1 ? sc + 2 - (N - 1) : 0;
+            uint32_t colv = ((31u >> hix) & (31u << lo)) & 31u;
+#pragma GCC unroll 5
+            for (int i = 0; i < 5; ++i) {
+                int rr = sr - 2 + i;
+                int cr = rr < 0 ? 0 : (rr > N - 1 ? N - 1 : rr);
+                uint32_t rowok = (uint32_t)0 - ((unsigned)rr < (unsigned)N);
+                __m256i vrow = _mm256_loadu_si256(
+                    (const __m256i*)&in->grid[cr][cb]);
+                uint32_t g8 = (uint32_t)_mm256_movemask_ps(_mm256_castsi256_ps(
+                    _mm256_cmpgt_epi32(vrow, vz)));
+                uint32_t w8 = (uint32_t)_mm256_movemask_ps(_mm256_castsi256_ps(
+                    _mm256_cmpeq_epi32(vrow, vm1)));
+                uint32_t b8 = (uint32_t)_mm256_movemask_ps(_mm256_castsi256_ps(
+                    _mm256_cmpeq_epi32(vrow, vm3)));
+                uint32_t rv = colv & rowok;
+                goldm  |= ((((g8 << 2) >> lsh) & 31u) & rv) << (i * 5);
+                wallm  |= ((((w8 << 2) >> lsh) & 31u) & rv) << (i * 5);
+                bombm  |= ((((b8 << 2) >> lsh) & 31u) & rv) << (i * 5);
+                validm |= rv << (i * 5);
+                int32_t tmp[8];
+                _mm256_storeu_si256((__m256i*)tmp, vrow);
+#pragma GCC unroll 5
+                for (int j = 0; j < 5; ++j) {
+                    int li = j + lsh - 2;
+                    li &= ~(li >> 31);             // max(0, li)
+                    int v = tmp[li];
+                    int m = -(int)((rv >> j) & 1u);
+                    wv7[(i + 1) * 7 + (j + 1)] = (int8_t)((v & m) | ~m);
+                }
+            }
+        }
+#else
         {
             int32_t blk[12];
             blk[0] = blk[1] = blk[2] = -1;
@@ -260,6 +303,7 @@ GameOutput decide(const GameInput* in) {
                 }
             }
         }
+#endif
         wallm &= validm;                       // 出界哨兵不是真墙
         if (wallm) {                           // 墙位图: 行片一次并入
             int r0 = sr - 2 < 0 ? 0 : sr - 2, r1 = sr + 2 >= N ? N - 1 : sr + 2;
