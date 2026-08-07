@@ -43,7 +43,7 @@ constexpr GameOutput SAFE_OUT = {{STAY, STAY, STAY, STAY, STAY, STAY}, 3, 0, 0};
 
 struct BombM { int8_t r, c; uint8_t seen; };
 
-struct State {
+struct alignas(64) State {   // 热字段排前 2 条缓存线
     uint32_t wall[N];        // 障碍位图(观测到即永久)
     uint32_t bombbit[N];     // 炸弹位图(与 bombs 列表同步)
     // 哨兵阻挡位图: 行 0/18 全阻, 位(c+1)=列 c, 位0 与位18+ 恒1(出界)
@@ -449,12 +449,42 @@ GameOutput decide(const GameInput* in) {
                 // 去重目标(对方单位的矿堆目标)编码成位置码, 无效时取 -1
                 int dedup = (u == 1 && g_s.goal_kind[0] == 1)
                                 ? (g_s.goal_r[0] * 32 + g_s.goal_c[0]) : -1;
+#if defined(__AVX2__)
+                {   // SIMD 预计算 live/d/age, 只对活槽做标量打分(通常 <=8 个)
+                    __m256i pr8 = _mm256_loadu_si256((const __m256i*)g_s.pr_);
+                    __m256i pc8 = _mm256_loadu_si256((const __m256i*)g_s.pc_);
+                    __m256i pv8 = _mm256_loadu_si256((const __m256i*)g_s.pv_);
+                    __m256i ps8 = _mm256_loadu_si256((const __m256i*)g_s.ps_);
+                    __m256i z = _mm256_setzero_si256();
+                    __m256i age8 = _mm256_sub_epi8(_mm256_set1_epi8((char)t2), ps8);
+                    __m256i dr8 = _mm256_abs_epi8(
+                        _mm256_sub_epi8(pr8, _mm256_set1_epi8((char)sr)));
+                    __m256i dc8 = _mm256_abs_epi8(
+                        _mm256_sub_epi8(pc8, _mm256_set1_epi8((char)sc)));
+                    __m256i d8v = _mm256_add_epi8(dr8, dc8);
+                    __m256i live8 = _mm256_and_si256(
+                        _mm256_cmpgt_epi8(pv8, z),
+                        _mm256_cmpgt_epi8(_mm256_set1_epi8(31), age8));
+                    int8_t d8a[32], age8a[32];
+                    _mm256_storeu_si256((__m256i*)d8a, d8v);
+                    _mm256_storeu_si256((__m256i*)age8a, age8);
+                    uint32_t lm = (uint32_t)_mm256_movemask_epi8(live8);
+                    while (lm) {
+                        int i = __builtin_ctz(lm); lm &= lm - 1;
+                        int pos = g_s.pr_[i] * 32 + g_s.pc_[i];
+                        int s = (pos != dedup)
+                                    ? g_s.pv_[i] * (30 - age8a[i]) * REC[d8a[i]] : 0;
+                        int gt = -(int)(s > best);
+                        best = (s & gt) | (best & ~gt);
+                        bi = (i & gt) | (bi & ~gt);
+                    }
+                }
+#else
                 for (int i = 0; i < 32; ++i) {         // 固定 32 次, 体内无分支
                     int age2 = (int)t2 - g_s.ps_[i];
                     int dr_ = g_s.pr_[i] - sr, dc_ = g_s.pc_[i] - sc;
                     int d = (dr_ < 0 ? -dr_ : dr_) + (dc_ < 0 ? -dc_ : dc_);
                     int pos = g_s.pr_[i] * 32 + g_s.pc_[i];
-                    // live: 有货 且 年龄<=30 且 非去重目标 (位与代替短路)
                     int live = -(int)((unsigned)(g_s.pv_[i] != 0) &
                                       (unsigned)(age2 <= 30) &
                                       (unsigned)(pos != dedup));
@@ -463,6 +493,7 @@ GameOutput decide(const GameInput* in) {
                     best = (s & gt) | (best & ~gt);
                     bi = (i & gt) | (bi & ~gt);
                 }
+#endif
                 if (bi >= 0) {
                     g_s.goal_r[u] = g_s.pr_[bi]; g_s.goal_c[u] = g_s.pc_[bi];
                     g_s.goal_kind[u] = 1;
