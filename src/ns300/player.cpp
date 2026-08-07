@@ -163,13 +163,15 @@ GameOutput decide(const GameInput* in) {
         memset(g_s.bombbit, 0, sizeof(g_s.bombbit));
         memcpy(g_s.blocked, g_s.wall, sizeof(g_s.blocked));
     }
-    // 窗口行预取: 把 ~10 条冷线的 miss 并行化(它们是本轮的必读集)
+    // 窗口行预取(与扫描行程一致: 3 行常扫+隔轮扩展)
     for (int u2 = 0; u2 < 2; ++u2) {
         int ur = in->my_units[u2].row, uc = in->my_units[u2].col;
         if (ur < 0) continue;
+        int e2 = (in->round ^ u2) & 1;
         int pc0 = uc - 2 < 0 ? 0 : uc - 2;
-        for (int r2 = ur - 2 < 0 ? 0 : ur - 2;
-             r2 <= (ur + 2 >= N ? N - 1 : ur + 2); ++r2)
+        int pr0 = ur - 1 - e2 < 0 ? 0 : ur - 1 - e2;
+        int pr1 = ur + 1 + e2 >= N ? N - 1 : ur + 1 + e2;
+        for (int r2 = pr0; r2 <= pr1; ++r2)
             __builtin_prefetch(&in->grid[r2][pc0]);
     }
 
@@ -182,10 +184,13 @@ GameOutput decide(const GameInput* in) {
     {
         int u0r = in->my_units[0].row, u0c = in->my_units[0].col;
         int u1r = in->my_units[1].row, u1c = in->my_units[1].col;
+        int e0 = in->round & 1, e1 = (in->round ^ 1) & 1;
         auto inwin = [&](int r, int c) {
             int d0r = r - u0r, d0c = c - u0c, d1r = r - u1r, d1c = c - u1c;
-            return ((unsigned)(d0r + 2) <= 4u && (unsigned)(d0c + 2) <= 4u) ||
-                   ((unsigned)(d1r + 2) <= 4u && (unsigned)(d1c + 2) <= 4u);
+            return ((unsigned)(d0r + 1 + e0) <= (unsigned)(2 + 2 * e0) &&
+                    (unsigned)(d0c + 2) <= 4u) ||
+                   ((unsigned)(d1r + 1 + e1) <= (unsigned)(2 + 2 * e1) &&
+                    (unsigned)(d1c + 2) <= 4u);
         };
         for (int i = 0; i < 16; ++i) {
             Pile& p = g_s.piles[i];
@@ -232,7 +237,12 @@ GameOutput decide(const GameInput* in) {
         int8_t wv7[49];
         memset(wv7, -1, 49);
         uint32_t goldm = 0, wallm = 0, bombm = 0;
-        int r0 = sr - 2 < 0 ? 0 : sr - 2, r1 = sr + 2 >= N ? N - 1 : sr + 2;
+        // 行数即延迟(遥测: B=930 周期, 全是冷线): 3 行常扫 + 外侧行隔轮扩展。
+        // 行距 2 的金币最多晚 1 轮发现(矿堆缓存有记忆), 换 ~40% 触线削减。
+        int ext = (in->round ^ u) & 1;
+        int r0 = sr - 1 - ext, r1 = sr + 1 + ext;
+        if (r0 < 0) r0 = 0;
+        if (r1 >= N) r1 = N - 1;
         int c0 = sc - 2 < 0 ? 0 : sc - 2, c1 = sc + 2 >= N ? N - 1 : sc + 2;
         for (int r = r0; r <= r1; ++r) {
             const int* row = in->grid[r];
@@ -247,6 +257,10 @@ GameOutput decide(const GameInput* in) {
                 bombm |= v == BOMB ? bit : 0u;
             }
         }
+#if defined(NSPROBE) && NSPROBE == 9
+        if (in->round < 250) g_t[1] += tsc() - tb9;
+        unsigned long long tb2 = tsc();
+#endif
         if (wallm)                             // 墙位图: 行片一次并入
             for (int r = r0; r <= r1; ++r) {
                 int b5 = (r - sr + 2) * 5 + 2 - sc;
@@ -282,7 +296,7 @@ GameOutput decide(const GameInput* in) {
         }
 
 #if defined(NSPROBE) && NSPROBE == 9
-        if (in->round < 250) g_t[1] += tsc() - tb9;
+        if (in->round < 250) g_t[2] += tsc() - tb2;
         unsigned long long tc9 = tsc();
 #endif
 #if defined(NSPROBE) && NSPROBE == 1
@@ -389,8 +403,8 @@ GameOutput decide(const GameInput* in) {
         probe5_done:;
 #endif
 #if defined(NSPROBE) && NSPROBE == 9
-        if (in->round < 250) g_t[2] += tsc() - tc9;
-        td9_last = tsc();
+        if (in->round < 250) g_t[3] += tsc() - tc9;
+        (void)td9_last;
 #endif
         // ---- 尾步填充(v1 实证: 16% 的步在罚站; 复用 wv, 零额外读格) ----
         if (gn_ > 0) {
@@ -443,9 +457,6 @@ GameOutput decide(const GameInput* in) {
                 }
             }
         }
-#if defined(NSPROBE) && NSPROBE == 9
-        if (in->round < 250) g_t[3] += tsc() - td9_last;
-#endif
     }
 
     out.k = 3;
