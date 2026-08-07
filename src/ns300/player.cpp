@@ -411,8 +411,9 @@ GameOutput decide(const GameInput* in) {
         }
 #endif
         // ---- 全算全选决策核: 目标层无条件跑(访问模式均匀化, 攻混沌溢价),
-        //      最终目标按掩码选择。副产品 = 粘性目标(采集期间目标存续) ----
+        //      最终目标按掩码选择。状态语义与条件版一致(粘性目标 A/B 为负, 已回退) ----
         int tgr, tgc, mode;                  // mode: 0=采集 1=矿堆 2=巡逻
+        int harvest = (int)(bestr >= 0);
         {
             bool valid = false;
             if (g_s.goal_kind[u] == 1) {           // 哈希 O(1) 校验
@@ -447,16 +448,18 @@ GameOutput decide(const GameInput* in) {
                     g_s.goal_kind[u] = 1;
                 } else {                            // 无堆可去: 巡逻
                     uint8_t& pi = g_s.patrol[u];
-                    if (sr == PATROL_R[pi] && sc == PATROL_C[pi]) pi = (uint8_t)((pi + 1) & 7);
+                    if (!harvest && sr == PATROL_R[pi] && sc == PATROL_C[pi])
+                        pi = (uint8_t)((pi + 1) & 7);
                     g_s.goal_r[u] = PATROL_R[pi]; g_s.goal_c[u] = PATROL_C[pi];
                     g_s.goal_kind[u] = 2;
                 }
             }
             // 全选: 窗口有金 -> 采集; 否则用目标层结果
-            int harvest = (int)(bestr >= 0);
             tgr = harvest ? bestr : g_s.goal_r[u];
             tgc = harvest ? bestc : g_s.goal_c[u];
             mode = harvest ? 0 : g_s.goal_kind[u];
+            // 采集轮清目标(与 ns312 语义一致; 无分支选择)
+            g_s.goal_kind[u] = (uint8_t)(harvest ? 0 : g_s.goal_kind[u]);
         }
         {
             int d = (tgr > sr ? tgr - sr : sr - tgr) +
