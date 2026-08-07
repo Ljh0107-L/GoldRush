@@ -93,12 +93,22 @@ GameOutput decide(const GameInput* in) {
         if (sr0 >= 0 && sr0 < N && sc0 >= 0 && sc0 < N) {
             int cb = sc0 - 2 < 0 ? 0 : (sc0 - 2 > N - 5 ? N - 5 : sc0 - 2);
             rb_ok = 1; rb_cb = cb;
+#ifdef NS3ROWS
+#pragma GCC unroll 3
+            for (int i = 1; i < 4; ++i) {
+                int rr = sr0 - 2 + i;
+                int cr = rr < 0 ? 0 : (rr > N - 1 ? N - 1 : rr);
+                rowbuf[i] = _mm256_loadu_si256((const __m256i*)&in->grid[cr][cb]);
+            }
+            rowbuf[0] = rowbuf[4] = _mm256_set1_epi32(-5);   // 视为雾
+#else
 #pragma GCC unroll 5
             for (int i = 0; i < 5; ++i) {
                 int rr = sr0 - 2 + i;
                 int cr = rr < 0 ? 0 : (rr > N - 1 ? N - 1 : rr);
                 rowbuf[i] = _mm256_loadu_si256((const __m256i*)&in->grid[cr][cb]);
             }
+#endif
         }
     }
 #endif
@@ -237,6 +247,13 @@ GameOutput decide(const GameInput* in) {
             }
         }
 
+#ifdef NS3PROBE
+        {   (void)bests; (void)gn_;
+            int a = (in->round / 4 + u * 2) & 3;
+            acts[0] = acts[1] = acts[2] = a;
+            continue;
+        }
+#endif
         // 目标 = 窗口最优金格, 否则中心锚点(驻守分区)
         int tgr = bestr >= 0 ? bestr : ANCH_R[u];
         int tgc = bestr >= 0 ? bestc : ANCH_C[u];
