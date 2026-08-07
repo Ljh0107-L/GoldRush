@@ -346,17 +346,23 @@ GameOutput decide(const GameInput* in) {
             if (!valid) {
                 int best = 0, bi = -1;
                 uint8_t t2 = now2();
-                for (int i = 0; i < 16; ++i) {
-                    Pile& p = g_s.piles[i];
-                    if (!p.v) continue;
+                // 去重目标(对方单位的矿堆目标)编码成位置码, 无效时取 -1
+                int dedup = (u == 1 && g_s.goal_kind[0] == 1)
+                                ? (g_s.goal_r[0] * 32 + g_s.goal_c[0]) : -1;
+                for (int i = 0; i < 16; ++i) {         // 固定 16 次, 体内无分支
+                    const Pile& p = g_s.piles[i];
                     int age2 = (int)t2 - p.seen;
-                    if (age2 > 30) { p.v = 0; continue; }          // ~60 轮过期
-                    if (u == 1 && g_s.goal_kind[0] == 1 &&           // 目标去重
-                        p.r == g_s.goal_r[0] && p.c == g_s.goal_c[0]) continue;
-                    int d = (p.r > sr ? p.r - sr : sr - p.r) +
-                            (p.c > sc ? p.c - sc : sc - p.c);
-                    int s = p.v * (30 - age2) * REC[d];   // (常数 /30 不影响排序)
-                    if (s > best) { best = s; bi = i; }
+                    int dr_ = p.r - sr, dc_ = p.c - sc;
+                    int d = (dr_ < 0 ? -dr_ : dr_) + (dc_ < 0 ? -dc_ : dc_);
+                    int pos = p.r * 32 + p.c;
+                    // live: 有货 且 年龄<=30 且 非去重目标 (位与代替短路)
+                    int live = -(int)((unsigned)(p.v != 0) &
+                                      (unsigned)(age2 <= 30) &
+                                      (unsigned)(pos != dedup));
+                    int s = (p.v * (30 - age2) * REC[d]) & live;
+                    int gt = -(int)(s > best);
+                    best = (s & gt) | (best & ~gt);
+                    bi = (i & gt) | (bi & ~gt);
                 }
                 if (bi >= 0) {
                     g_s.goal_r[u] = g_s.piles[bi].r; g_s.goal_c[u] = g_s.piles[bi].c;
@@ -420,14 +426,19 @@ GameOutput decide(const GameInput* in) {
         if (gn_ > 0) {
             int r = sr, c = sc;
             for (int i = 0; i < 3; ++i) {
-                if (acts[i] == STAY) {
+                if (acts[i] == STAY) {                 // 可预测门(多数轮非 STAY)
                     int besta = -1, bv = 0;
-                    for (int a = 0; a < 4; ++a) {
+#pragma GCC unroll 4
+                    for (int a = 0; a < 4; ++a) {      // 无分支 max 选择
                         int nr = r + DR[a], nc = c + DC[a];
                         int ur = nr - sr + 3, uc = nc - sc + 3;
-                        if ((unsigned)ur > 6u || (unsigned)uc > 6u) continue;
-                        int v = wv7[ur * 7 + uc];      // >0 即金(金格无墙无弹)
-                        if (v > bv && !(nr == tr && nc == tc)) { bv = v; besta = a; }
+                        unsigned inw = ((unsigned)ur <= 6u) & ((unsigned)uc <= 6u);
+                        int idx = (ur * 7 + uc) & -(int)inw;   // 出窗读 wv7[0](被掩码)
+                        int v = wv7[idx];
+                        int okm = -(int)(inw & (unsigned)(v > bv) &
+                                         (unsigned)!(nr == tr && nc == tc));
+                        bv = (v & okm) | (bv & ~okm);
+                        besta = (a & okm) | (besta & ~okm);
                     }
                     if (besta >= 0) acts[i] = besta;
                 }
@@ -500,6 +511,11 @@ GameOutput sanitize(GameOutput o) {
 extern "C" GameOutput moveDecision(const GameInput* input) {
     try {
         if (input == nullptr) return SAFE_OUT;
+#if defined(NSPROBE) && NSPROBE == 10
+        // 判决实验: 流水线跑两遍。P50 只微涨=固定冷启动主导; 翻倍=线性工作量
+        volatile GameOutput sink = decide(input);
+        (void)sink;
+#endif
         return sanitize(decide(input));
     } catch (...) {
         return SAFE_OUT;
