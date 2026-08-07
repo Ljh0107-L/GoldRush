@@ -33,16 +33,12 @@ struct alignas(64) State {
     uint32_t bpw[N + 2];     // 墙|边界(哨兵位图; 弹不入内)
     uint32_t bombbit[N + 2]; // 炸弹位图(+1 偏移对齐 bpw; 波清)
     int8_t last_r[2], last_c[2];
-    int8_t can0[2], can1[2], can2[2];   // v5s: 罐头 3 步(主动轮存, 被动轮回放)
-    int8_t pr_[8], pc_[8];              // v5u: 8 槽矿堆缓存(永不断粮管线)
-    uint8_t pv_[8], ps_[8], plive;
     int16_t last_round;
 };
 State g_s;
 
 constexpr int8_t ANCH_R[2] = {6, 10};
 constexpr int8_t ANCH_C[2] = {6, 10};
-inline uint8_t nowq() { return (uint8_t)(((uint16_t)g_s.last_round >> 2) | 1); }
 
 // 通行 = 非墙 且 (穷 或 非弹) 且 非队友
 inline unsigned pass01(int r, int c, int tr, int tc, unsigned rich) {
@@ -76,13 +72,11 @@ int steerStep(int r, int c, int gr, int gc, int tr, int tc,
     return (adr | adc) ? escapeStep(r, c, tr, tc, pr, pc, rich) : -1;
 }
 
-// LUT 导向: (dr,dc)∈[-3,3]² 行优先无阻挡模拟 —— v5o 打包: 每格一个 u32
-// [acts 3x3b @0..8 | (pdr+3) 3x3b @9..17 | (pdc+3) 3x3b @18..26]
+// LUT 导向: (dr,dc)∈[-3,3]² 行优先无阻挡模拟(动作+逐步累计位移)
 struct SLut {
     uint8_t act[7][7][3];
     int8_t  pdr[7][7][3], pdc[7][7][3];
-    uint32_t pk[7][7];
-    constexpr SLut() : act(), pdr(), pdc(), pk() {
+    constexpr SLut() : act(), pdr(), pdc() {
         for (int dr = -3; dr <= 3; ++dr)
             for (int dc = -3; dc <= 3; ++dc) {
                 int r = 0, c = 0;
@@ -97,9 +91,6 @@ struct SLut {
                     act[dr + 3][dc + 3][i] = a;
                     pdr[dr + 3][dc + 3][i] = (int8_t)r;
                     pdc[dr + 3][dc + 3][i] = (int8_t)c;
-                    pk[dr + 3][dc + 3] |= ((uint32_t)a << (i * 3)) |
-                        ((uint32_t)(r + 3) << (9 + i * 3)) |
-                        ((uint32_t)(c + 3) << (18 + i * 3));
                 }
             }
     }
@@ -107,32 +98,17 @@ struct SLut {
 constexpr SLut SL;
 
 GameOutput decide(const GameInput* in) {
-#ifdef NS5ALT
-    const int act5 = in->round & 1;
-#endif
 #if defined(__AVX2__)
     // 输入行前置装载: 10 条行 miss 最早并行发射
     __m256i rowbufs[2][5];
     int rb_oks[2] = {0, 0}, rb_cbs[2] = {0, 0};
     for (int lu = 0; lu < 2; ++lu) {
-#ifdef NS5ALT
-        if (lu != act5) continue;              // 轮换: 被动单位零行装载
-#endif
         int sr0 = in->my_units[lu].row, sc0 = in->my_units[lu].col;
         sr0 = sr0 < 0 ? 0 : (sr0 > 16 ? 16 : sr0);
         sc0 = sc0 < 0 ? 0 : (sc0 > 16 ? 16 : sc0);
         {
             int cb = sc0 - 2 < 0 ? 0 : (sc0 - 2 > N - 5 ? N - 5 : sc0 - 2);
             rb_oks[lu] = 1; rb_cbs[lu] = cb;
-#ifdef NS5ROWS3
-#pragma GCC unroll 3
-            for (int i = 1; i < 4; ++i) {
-                int rr = sr0 - 2 + i;
-                int cr = rr < 0 ? 0 : (rr > N - 1 ? N - 1 : rr);
-                rowbufs[lu][i] =
-                    _mm256_loadu_si256((const __m256i*)&in->grid[cr][cb]);
-            }
-#else
 #pragma GCC unroll 5
             for (int i = 0; i < 5; ++i) {
                 int rr = sr0 - 2 + i;
@@ -140,7 +116,6 @@ GameOutput decide(const GameInput* in) {
                 rowbufs[lu][i] =
                     _mm256_loadu_si256((const __m256i*)&in->grid[cr][cb]);
             }
-#endif
         }
     }
 #endif
@@ -161,12 +136,6 @@ GameOutput decide(const GameInput* in) {
         sc = sc < 0 ? 0 : (sc > 16 ? 16 : sc);
         int* acts = out.actions + u * 3;
         acts[0] = acts[1] = acts[2] = STAY;
-#ifdef NS5ALT
-        if (u != act5) {                       // 被动轮: 罐头回放(~12 指令)
-            acts[0] = g_s.can0[u]; acts[1] = g_s.can1[u]; acts[2] = g_s.can2[u];
-            continue;
-        }
-#endif
         int tr = in->my_units[1 - u].row, tc = in->my_units[1 - u].col;
         unsigned rich = 0u - (unsigned)(in->my_units_gold[u] >= 100);
 
@@ -183,13 +152,8 @@ GameOutput decide(const GameInput* in) {
             int hix = sc + 2 > N - 1 ? sc + 2 - (N - 1) : 0;
             uint32_t colv = ((31u >> hix) & (31u << lo)) & 31u;
             uint32_t wallm = 0, bombm = 0;
-#ifdef NS5ROWS3
-#pragma GCC unroll 3
-            for (int i = 1; i < 4; ++i) {
-#else
 #pragma GCC unroll 5
             for (int i = 0; i < 5; ++i) {
-#endif
                 int rr = sr - 2 + i;
                 uint32_t rowok = (uint32_t)0 - ((unsigned)rr < (unsigned)N);
                 __m256i vrow = rowbufs[u][i];
@@ -206,13 +170,8 @@ GameOutput decide(const GameInput* in) {
             }
             // 墙/弹入位图: 无条件 5 行行片写(零分支; 空片写=无操作)
             // 行片: 窗口行 i 的 5 位 << (sc-2+1); 行索引钳位由 rowok 已保证片为 0
-#ifdef NS5ROWS3
-#pragma GCC unroll 3
-            for (int i = 1; i < 4; ++i) {
-#else
 #pragma GCC unroll 5
             for (int i = 0; i < 5; ++i) {
-#endif
                 int rr = sr - 2 + i;
                 int ri = ((unsigned)rr < (unsigned)N ? rr : 0) + 1;
                 int shl = sc - 1;                // (sc-2)+1, 可为负
@@ -240,22 +199,7 @@ GameOutput decide(const GameInput* in) {
 #endif
         // (金格与弹格规则上不共存 —— 目标无需剔弹, 途中避弹由 pass01 管)
 
-        // v5u: 矿堆登记(窗口 v>=5, 稀疏直读 L1 已热行)
-        {
-            uint32_t gm = goldm;
-            while (gm) {
-                int i = __builtin_ctz(gm); gm &= gm - 1;
-                int gr_ = sr - 2 + i / 5, gc_ = sc - 2 + i % 5;
-                int v = in->grid[gr_][gc_];
-                if (v >= 5) {
-                    int k = (gr_ * 31 + gc_) & 7;
-                    g_s.pr_[k] = (int8_t)gr_; g_s.pc_[k] = (int8_t)gc_;
-                    g_s.pv_[k] = (uint8_t)v;  g_s.ps_[k] = nowq();
-                    g_s.plive |= (uint8_t)(1u << k);
-                }
-            }
-        }
-        // ---- 目标: 最近金(环掩码) > 活堆 > 锚点 ----
+        // ---- 目标: 最近金(环掩码) 否则锚点 ----
         int tgr, tgc;
         {
             constexpr uint32_t RM0 = 1u << 12;
@@ -273,103 +217,56 @@ GameOutput decide(const GameInput* in) {
             uint32_t sel = (g1 & m1) | (g2 & m2) | (g3 & m3) | (g4 & m4) | (g0 & m0);
             int i = __builtin_ctz(sel | (uint32_t)(sel == 0));   // 仅空时补位(| 1u 恒补是v4d/v5崩盘元凶)
             int has = -(int)(goldm != 0);
-            // 活堆候选(无窗金时, 门控省功): 最近新鲜堆
-            int bi = -1;
-            if (!has && g_s.plive) {
-                int bsc = 0; uint8_t tq = nowq();
-                uint32_t lm = g_s.plive;
-                while (lm) {
-                    int k = __builtin_ctz(lm); lm &= lm - 1;
-                    int fr = -(int)((uint8_t)(tq - g_s.ps_[k]) <= 10);
-                    g_s.plive &= (uint8_t)~(((~fr) & 1) << k);
-                    int dr_ = g_s.pr_[k] - sr, dc_ = g_s.pc_[k] - sc;
-                    dr_ = dr_ < 0 ? -dr_ : dr_; dc_ = dc_ < 0 ? -dc_ : dc_;
-                    int dd = dr_ + dc_; dd = dd > 31 ? 31 : dd;
-                    int s2 = (g_s.pv_[k] * (64 - dd * 2)) & fr;
-                    int gt = -(int)(s2 > bsc);
-                    bsc = (s2 & gt) | (bsc & ~gt);
-                    bi = (k & gt) | (bi & ~gt);
-                }
-            }
-            int mp = -(int)(bi >= 0) & ~has;
-            tgr = ((sr - 2 + i / 5) & has) | (g_s.pr_[bi & 7] & mp) |
-                  (ANCH_R[u] & ~has & ~mp);
-            tgc = ((sc - 2 + i % 5) & has) | (g_s.pc_[bi & 7] & mp) |
-                  (ANCH_C[u] & ~has & ~mp);
-            // 到达活堆即摘(防幽灵振荡)
-            unsigned atp = (unsigned)((sr == tgr) & (sc == tgc)) & (unsigned)(mp & 1);
-            g_s.pv_[bi & 7] &= (uint8_t)(atp - 1u);
-            g_s.plive &= (uint8_t)~((atp & 1u) << (bi & 7));
+            tgr = ((sr - 2 + i / 5) & has) | (ANCH_R[u] & ~has);
+            tgc = ((sc - 2 + i % 5) & has) | (ANCH_C[u] & ~has);
         }
 
-        // ---- 导向(v5n 全无分支): LUT 恒查 + cmov 回落 + 折返掩码合流 ----
+        // ---- 导向 ----
         int dr0 = tgr - sr, dc0 = tgc - sc;
-        dr0 = dr0 < -3 ? -3 : (dr0 > 3 ? 3 : dr0);
-        dc0 = dc0 < -3 ? -3 : (dc0 > 3 ? 3 : dc0);
+        dr0 = dr0 < -3 ? -3 : (dr0 > 3 ? 3 : dr0);   // 钳进 LUT 域:
+        dc0 = dc0 < -3 ? -3 : (dc0 > 3 ? 3 : dc0);   // 远目标前3步与串行链同构
         int d = (dr0 < 0 ? -dr0 : dr0) + (dc0 < 0 ? -dc0 : dc0);
-        {
-            int ir = dr0 + 3, ic = dc0 + 3;
-            uint32_t K = SL.pk[ir][ic];
-            // 位图行提升: sr-1..sr+1 与目标途经行(<=sr±3) —— 覆盖全部 pass01
-            // 途经/邻格行范围 sr-3..sr+3; 提升 7 行成本高, 折中: 用行索引直读
-            // (v5o: pass01 宏内联为位测试, 行地址由编译器 CSE; 关键是消字节载)
-            int x0r = sr + (int)((K >> 9) & 7) - 3, x0c = sc + (int)((K >> 18) & 7) - 3;
-            int x1r = sr + (int)((K >> 12) & 7) - 3, x1c = sc + (int)((K >> 21) & 7) - 3;
-            int x2r = sr + (int)((K >> 15) & 7) - 3, x2c = sc + (int)((K >> 24) & 7) - 3;
-            unsigned okl = pass01(x0r, x0c, tr, tc, rich) &
-                           pass01(x1r, x1c, tr, tc, rich) &
-                           pass01(x2r, x2c, tr, tc, rich);
-            int ar_ = dr0 > 0, ac_ = 2 + (dc0 > 0);
-            int adr_ = dr0 < 0 ? -dr0 : dr0, adc_ = dc0 < 0 ? -dc0 : dc0;
-            int rowf_ = adr_ >= adc_;
-            int p0_ = rowf_ ? ar_ : ac_, p1_ = rowf_ ? ac_ : ar_;
-            unsigned o0 = pass01(sr + DR[p0_], sc + DC[p0_], tr, tc, rich);
-            unsigned o1 = pass01(sr + DR[p1_], sc + DC[p1_], tr, tc, rich) &
-                          (unsigned)((adr_ != 0) & (adc_ != 0));
-            int fb = o0 ? p0_ : (o1 ? p1_ : STAY);
-            int ml = -(int)(okl != 0);
-            int a0 = ((int)(K & 7) & ml) | (fb & ~ml);
-            int a1 = ((int)((K >> 3) & 7) & ml) | (STAY & ~ml);
-            int a2 = ((int)((K >> 6) & 7) & ml) | (STAY & ~ml);
-            int e1 = -(int)(d == 1) & ml;
-            int e2 = -(int)(d == 2) & ml;
-            a1 = ((a0 ^ 1) & e1) | (a1 & ~e1);
-            a2 = (((a1 ^ 1)) & (e1 | e2)) | (a2 & ~(e1 | e2));
+        if (d == 0) {                            // 站金: 折返双吃
             unsigned pm = pass01(sr - 1, sc, tr, tc, rich) |
                           (pass01(sr + 1, sc, tr, tc, rich) << 1) |
                           (pass01(sr, sc - 1, tr, tc, rich) << 2) |
                           (pass01(sr, sc + 1, tr, tc, rich) << 3);
-            int sa = __builtin_ctz(pm | (uint32_t)(pm == 0));
-            int hv = -(int)(pm != 0);
-            int z = -(int)(d == 0);
-            acts[0] = ((((sa & hv) | (STAY & ~hv))) & z) | (a0 & ~z);
-            acts[1] = (((((sa ^ 1) & hv) | (STAY & ~hv))) & z) | (a1 & ~z);
-            acts[2] = (STAY & z) | (a2 & ~z);
-#ifdef NS5ALT
-            {   // v5s 肥罐头: 从本轮终点(r3,c3)向原目标续算下轮 3 步
-                int mvz = ~z;                    // z=站金轮: 终点=原地
-                int r3 = sr + ((dr0 & ml & mvz)) + ((DR[a0 & 7] & ~ml & mvz));
-                int c3 = sc + ((dc0 & ml & mvz)) + ((DC[a0 & 7] & ~ml & mvz));
-                int nr_ = tgr - r3, nc_ = tgc - c3;
-                nr_ = nr_ < -3 ? -3 : (nr_ > 3 ? 3 : nr_);
-                nc_ = nc_ < -3 ? -3 : (nc_ > 3 ? 3 : nc_);
-                uint32_t K2 = SL.pk[nr_ + 3][nc_ + 3];
-                // 终点站金(nr_==nc_==0): 用自家位图做折返对
-                unsigned pm3 = pass01(r3 - 1, c3, tr, tc, rich) |
-                               (pass01(r3 + 1, c3, tr, tc, rich) << 1) |
-                               (pass01(r3, c3 - 1, tr, tc, rich) << 2) |
-                               (pass01(r3, c3 + 1, tr, tc, rich) << 3);
-                int sa3 = __builtin_ctz(pm3 | (uint32_t)(pm3 == 0));
-                int hv3 = -(int)(pm3 != 0);
-                int z3 = -(int)((nr_ | nc_) == 0);
-                g_s.can0[u] = (int8_t)(((((sa3 & hv3) | (STAY & ~hv3))) & z3) |
-                                       ((int)(K2 & 7) & ~z3));
-                g_s.can1[u] = (int8_t)((((((sa3 ^ 1) & hv3) | (STAY & ~hv3))) & z3) |
-                                       ((int)((K2 >> 3) & 7) & ~z3));
-                g_s.can2[u] = (int8_t)((STAY & z3) | ((int)((K2 >> 6) & 7) & ~z3));
+            if (pm) {
+                int a = __builtin_ctz(pm);
+                acts[0] = a; acts[1] = a ^ 1;
             }
-#endif
+        } else {
+            int ir = dr0 + 3, ic = dc0 + 3;
+            const uint8_t* pa = SL.act[ir][ic];
+            const int8_t* xr = SL.pdr[ir][ic];
+            const int8_t* xc = SL.pdc[ir][ic];
+            unsigned ok = pass01(sr + xr[0], sc + xc[0], tr, tc, rich) &
+                          pass01(sr + xr[1], sc + xc[1], tr, tc, rich) &
+                          pass01(sr + xr[2], sc + xc[2], tr, tc, rich);
+            if (ok) {
+                acts[0] = pa[0]; acts[1] = pa[1]; acts[2] = pa[2];
+                // 早到金格(d<3): 折返双吃(掩码写, 零位点)
+                int em = -(int)(d < 3);
+                int i1 = (d & em) | (2 & ~em);        // em=0 时写 acts[2] 自身值
+                int v1 = (acts[i1 - (1 & em)] ^ (1 & em));
+                acts[i1] = (v1 & em) | (acts[i1] & ~em);
+                int e2 = em & -(int)(d + 1 < 3);      // 仅 d==1
+                acts[2] = ((acts[1] ^ 1) & e2) | (acts[2] & ~e2);
+            } else {
+                // 受阻(罕见): 单步谨慎, 其余 STAY(下轮恢复) —— steer3 全链蒸发
+                int a = steerStep(sr, sc, tgr, tgc, tr, tc,
+                                  g_s.last_r[u], g_s.last_c[u], rich);
+                if (a >= 0) acts[0] = a;
+            }
         }
+
+#ifdef NS5DBG
+        if (in->round >= 39 && in->round <= 43) {
+            fprintf(stderr, "r%d u%d pos(%d,%d) gold%d rich%u goldm=%08x tg(%d,%d) acts[%d,%d,%d]\n",
+                in->round, u, sr, sc, in->my_units_gold[u], rich & 1u,
+                goldm, tgr, tgc, acts[0], acts[1], acts[2]);
+        }
+#endif
         g_s.last_r[u] = (int8_t)sr; g_s.last_c[u] = (int8_t)sc;
     }
 
