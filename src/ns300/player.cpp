@@ -111,28 +111,46 @@ inline void pileDrop(int r, int c) {
 inline bool passable(int r, int c, int tr, int tc) {   // tr/tc = 队友占位
     return !((g_s.bp[r + 1] >> (c + 1)) & 1u) && !(r == tr && c == tc);
 }
+// 0/1 版(无短路分支)
+inline unsigned pass01(int r, int c, int tr, int tc) {
+    return (~(g_s.bp[r + 1] >> (c + 1)) & 1u) &
+           (unsigned)((r != tr) | (c != tc));
+}
 
-// 曼哈顿导向一步(主方向优先, 被挡换副方向; 全堵时任意可走方向但不回头)
-// pr/pc = 上一格(跨轮传入上轮位置), 防 A<->B 振荡; 凹口袋靠这条逃逸出去,
-// 代替 v1 的 BFS(预算不允许)。深口袋可能多绕几轮——P50 换 P99, 符合契约。
-int steerStep(int r, int c, int gr, int gc, int tr, int tc, int pr, int pc) {
-    int drr = gr - r, dcc = gc - c;
-    int ar = drr < 0 ? 0 : 1, ac = dcc < 0 ? 2 : 3;
-    int adr = drr < 0 ? -drr : drr, adc = dcc < 0 ? -dcc : dcc;
-    int p0 = adr >= adc ? ar : ac, p1 = adr >= adc ? ac : ar;
-    if (adr && adc) {
-        if (passable(r + DR[p0], c + DC[p0], tr, tc)) return p0;
-        if (passable(r + DR[p1], c + DC[p1], tr, tc)) return p1;
-    } else {
-        int a = adr ? ar : ac;
-        if (passable(r + DR[a], c + DC[a], tr, tc)) return a;
-    }
-    for (int a = 0; a < 4; ++a) {                  // 逃逸: 可走且不回头
+// 逃逸(罕见): 冷函数, 不占热路径分支位点
+__attribute__((noinline, cold))
+int escapeStep(int r, int c, int tr, int tc, int pr, int pc) {
+    for (int a = 0; a < 4; ++a) {                  // 可走且不回头
         int nr = r + DR[a], nc = c + DC[a];
         if (nr == pr && nc == pc) continue;
         if (passable(nr, nc, tr, tc)) return a;
     }
     return -1;
+}
+
+__attribute__((noinline, cold))
+void stuckEscape(int u, int sr, int sc, int tr, int tc, int* acts) {
+    g_s.goal_kind[u] = 0;
+    g_s.patrol[u] = (uint8_t)((g_s.patrol[u] + 1) & 7);
+    for (int a = 0; a < 4; ++a)
+        if (passable(sr + DR[a], sc + DC[a], tr, tc)) { acts[0] = a; break; }
+    g_s.stuck[u] = 0;
+}
+
+// 曼哈顿导向一步: 主/副方向算术选择, 仅剩 1 个罕见分支(逃逸门)
+int steerStep(int r, int c, int gr, int gc, int tr, int tc, int pr, int pc) {
+    int drr = gr - r, dcc = gc - c;
+    int ar = drr > 0;                              // 下=1 上=0
+    int ac = 2 + (dcc > 0);                        // 右=3 左=2
+    int adr = drr < 0 ? -drr : drr, adc = dcc < 0 ? -dcc : dcc;
+    int rowf = adr >= adc;
+    int p0 = rowf ? ar : ac, p1 = rowf ? ac : ar;
+    unsigned ok0 = pass01(r + DR[p0], c + DC[p0], tr, tc);
+    unsigned ok1 = pass01(r + DR[p1], c + DC[p1], tr, tc) &
+                   (unsigned)((adr != 0) & (adc != 0));
+    if (ok0 | ok1)                                 // 常真(可预测)
+        return ok0 ? p0 : p1;                      // cmov 化
+    return escapeStep(r, c, tr, tc, pr, pc);
 }
 
 #if defined(NSPROBE) && NSPROBE == 9
@@ -168,6 +186,9 @@ GameOutput decide(const GameInput* in) {
 #if defined(NSPROBE) && NSPROBE == 9
     unsigned long long t9 = tsc();
 #endif
+    __builtin_prefetch(&g_s.bp[4]);            // 自身状态热线并行预热
+    __builtin_prefetch(&g_s.piles[0]);
+    __builtin_prefetch(&g_s.piles[8]);
     // 窗口行预取(与扫描行程一致: 3 行常扫+隔轮扩展)
     for (int u2 = 0; u2 < 2; ++u2) {
         int ur = in->my_units[u2].row, uc = in->my_units[u2].col;
@@ -448,16 +469,11 @@ GameOutput decide(const GameInput* in) {
             }
         }
 
-        // ---- 卡死解困(挡两轮 = 换个活法) ----
-        if (sr == g_s.last_r[u] && sc == g_s.last_c[u] && acts[0] == STAY) {
-            if (++g_s.stuck[u] >= 2) {
-                g_s.goal_kind[u] = 0;
-                g_s.patrol[u] = (uint8_t)((g_s.patrol[u] + 1) & 7);
-                for (int a = 0; a < 4; ++a)
-                    if (passable(sr + DR[a], sc + DC[a], tr, tc)) { acts[0] = a; break; }
-                g_s.stuck[u] = 0;
-            }
-        } else g_s.stuck[u] = 0;
+        // ---- 卡死解困(挡两轮 = 换个活法; 主体冷函数) ----
+        unsigned same = (unsigned)((sr == g_s.last_r[u]) &
+                                   (sc == g_s.last_c[u]) & (acts[0] == STAY));
+        g_s.stuck[u] = (uint8_t)((g_s.stuck[u] + same) & (0u - same));
+        if (g_s.stuck[u] >= 2) stuckEscape(u, sr, sc, tr, tc, acts);   // 罕见
         g_s.last_r[u] = (int8_t)sr; g_s.last_c[u] = (int8_t)sc;
 
         // ---- 防漂移护栏(v1 实证 +80~110/局, 几乎免费) ----
