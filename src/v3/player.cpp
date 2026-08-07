@@ -35,17 +35,26 @@ struct alignas(64) State {
     int8_t last_r[2], last_c[2];
     uint8_t stuck[2];
     uint8_t patrol[2];       // 巡游路点下标
+    // 迷你矿堆缓存(16 槽直映射哈希): 外圈堆积存量的记忆(v36)
+    int8_t pr_[16], pc_[16];
+    uint8_t pv_[16], ps_[16];
+    uint16_t plive;          // 活堆位掩码(稀疏门控: 无堆零成本)
     int16_t last_round;
 };
+
+inline int pileSlot(int r, int c);
 State g_s;
+
+inline int pileSlot(int r, int c) { return (r * 31 + c) & 15; }
+inline uint8_t nowq() { return (uint8_t)(((uint16_t)g_s.last_round >> 2) | 1); }
 
 // 打分距离倒数表(排序语义, 免除法)
 constexpr uint16_t REC[8] = {4096, 2048, 1365, 1024, 819, 683, 585, 512};
 
-// 中心双环巡游(v35: 罚站 62% 确诊蹲点病 —— 移动x窗宽=覆盖率):
-// u0 上环 / u1 下环, 3 行窗恰好铺满 9x9 主产区, 到点即转向
-constexpr int8_t PRW[2][4] = {{5, 5, 7, 7}, {11, 11, 9, 9}};
-constexpr int8_t PCW[2][4] = {{6, 10, 10, 6}, {10, 6, 6, 10}};
+// v36 角色分工(收入节奏解剖: 赢家暴击轮贡献 64-72%, 全是矿堆农):
+// u0 中心环抢新刷(先手红利); u1 外环收堆积存量(矿堆无争议, 后手也稳赚)
+constexpr int8_t PRW[2][4] = {{5, 5, 10, 10}, {3, 3, 13, 13}};
+constexpr int8_t PCW[2][4] = {{6, 10, 10, 6}, {3, 13, 13, 3}};
 
 inline unsigned pass01(int r, int c, int tr, int tc) {
     return (~(g_s.bp[r + 1] >> (c + 1)) & 1u) &
@@ -203,6 +212,21 @@ GameOutput decide(const GameInput* in) {
                         g_s.bp[br + 1] |= 1u << (bc + 1);
                     }
                 }
+                {   // 矿堆登记/对账(v36): 窗口内 v>=5 记, 已记但本轮见小/空则摘
+                    uint32_t gm = goldm;
+                    while (gm) {
+                        int i = __builtin_ctz(gm); gm &= gm - 1;
+                        int w = (i / 5 + 1) * 7 + i % 5 + 1;
+                        int v = wv7[w];
+                        if (v >= 5) {
+                            int gr_ = sr - 2 + i / 5, gc_ = sc - 2 + i % 5;
+                            int k = pileSlot(gr_, gc_);
+                            g_s.pr_[k] = (int8_t)gr_; g_s.pc_[k] = (int8_t)gc_;
+                            g_s.pv_[k] = (uint8_t)v;  g_s.ps_[k] = nowq();
+                            g_s.plive |= (uint16_t)(1u << k);
+                        }
+                    }
+                }
             }
 #else
             {   // 标量参考路径(本机测试用)
@@ -269,14 +293,43 @@ GameOutput decide(const GameInput* in) {
             continue;
         }
 #endif
-        // 目标 = 窗口最优金格, 否则巡游路点(到点即转向, 消灭蹲点罚站)
+        // 目标 = 窗口最优金格 > 活矿堆(u1 矿堆农) > 巡游路点
         int tgr, tgc;
         if (bestr >= 0) { tgr = bestr; tgc = bestc; }
         else {
-            uint8_t& pi = g_s.patrol[u];
-            unsigned here = (unsigned)((sr == PRW[u][pi]) & (sc == PCW[u][pi]));
-            pi = (uint8_t)((pi + here) & 3);
-            tgr = PRW[u][pi]; tgc = PCW[u][pi];
+            int bi = -1;
+            if (g_s.plive) {                       // 稀疏: 无堆零成本
+                int bsc = 0;
+                uint8_t tq = nowq();
+                uint32_t lm = g_s.plive;
+                while (lm) {
+                    int k = __builtin_ctz(lm); lm &= lm - 1;
+                    int fresh = -(int)((uint8_t)(tq - g_s.ps_[k]) <= 10);  // ~40轮
+                    g_s.plive &= (uint16_t)~(((~fresh) & 1) << k);         // 过期顺手清
+                    int dr_ = g_s.pr_[k] - sr, dc_ = g_s.pc_[k] - sc;
+                    dr_ = dr_ < 0 ? -dr_ : dr_; dc_ = dc_ < 0 ? -dc_ : dc_;
+                    int d_ = dr_ + dc_; d_ = d_ > 31 ? 31 : d_;
+                    int sc2 = (g_s.pv_[k] * (64 - d_ * 2)) & fresh;
+                    // u0 只追中心堆(专注新刷), u1 全图矿堆农
+                    unsigned cen = ((unsigned)(g_s.pr_[k] - 4) <= 8u) &
+                                   ((unsigned)(g_s.pc_[k] - 4) <= 8u);
+                    sc2 &= -(int)((u == 1) | cen);
+                    int gt = -(int)(sc2 > bsc);
+                    bsc = (sc2 & gt) | (bsc & ~gt);
+                    bi = (k & gt) | (bi & ~gt);
+                }
+            }
+            if (bi >= 0) { tgr = g_s.pr_[bi]; tgc = g_s.pc_[bi]; }
+            else {
+                uint8_t& pi = g_s.patrol[u];
+                unsigned here = (unsigned)((sr == PRW[u][pi]) & (sc == PCW[u][pi]));
+                pi = (uint8_t)((pi + here) & 3);
+                tgr = PRW[u][pi]; tgc = PCW[u][pi];
+            }
+            // 到达矿堆目标 -> 摘除(下轮扫描若仍>=5 会重新登记; 防幽灵振荡)
+            if (bi >= 0 && sr == tgr && sc == tgc) {
+                g_s.pv_[bi] = 0; g_s.plive &= (uint16_t)~(1u << bi);
+            }
         }
         {
             int d = (tgr > sr ? tgr - sr : sr - tgr) +
