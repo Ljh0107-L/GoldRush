@@ -54,6 +54,7 @@ struct State {
     int8_t  pr_[32], pc_[32];
     uint8_t pv_[32], ps_[32];
     BombM bombs[8];
+    uint8_t nbombs;          // 已知炸弹数(护栏门控: 无弹免模拟)
     int8_t goal_r[2], goal_c[2];
     uint8_t goal_kind[2];    // 0=无 1=矿堆 2=巡逻
     uint8_t patrol[2];       // 巡逻路点下标
@@ -97,6 +98,7 @@ inline void bombNote(int r, int c) {
         g_s.bombs[free_] = {(int8_t)r, (int8_t)c, now2() ? now2() : (uint8_t)1};
         g_s.bombbit[r] |= 1u << c;
         g_s.bp[r + 1] |= 1u << (c + 1);
+        ++g_s.nbombs;
     }
 }
 
@@ -189,6 +191,7 @@ GameOutput decide(const GameInput* in) {
         for (int i = 0; i < 8; ++i) g_s.bombs[i].seen = 0;
         memset(g_s.bombbit, 0, sizeof(g_s.bombbit));
         for (int r = 0; r < N; ++r) bpRebuildRow(r);
+        g_s.nbombs = 0;
     }
 #if defined(NSPROBE) && NSPROBE == 9
     unsigned long long t9 = tsc();
@@ -199,14 +202,12 @@ GameOutput decide(const GameInput* in) {
     for (int u2 = 0; u2 < 2; ++u2) {
         int ur = in->my_units[u2].row, uc = in->my_units[u2].col;
         if (ur < 0) continue;
-        int e2 = (in->round ^ u2) & 1;
         int pc0 = uc - 2 < 0 ? 0 : uc - 2;
-        int pr0 = ur - 1 - e2 < 0 ? 0 : ur - 1 - e2;
-        int pr1 = ur + 1 + e2 >= N ? N - 1 : ur + 1 + e2;
+        int pr0 = ur - 2 < 0 ? 0 : ur - 2;
+        int pr1 = ur + 2 >= N ? N - 1 : ur + 2;
         for (int r2 = pr0; r2 <= pr1; ++r2)
             __builtin_prefetch(&in->grid[r2][pc0]);
     }
-    __builtin_prefetch(&in->visible_enemies[0]);
 
     GameOutput out = SAFE_OUT;
 
@@ -251,10 +252,8 @@ GameOutput decide(const GameInput* in) {
             int lo = sc - 2 < 0 ? -(sc - 2) : 0;
             int hix = sc + 2 > N - 1 ? sc + 2 - (N - 1) : 0;
             uint32_t colv = ((31u >> hix) & (31u << lo)) & 31u;
-            int ext = (in->round ^ u) & 1;     // 外侧行隔轮读(行数即传输成本)
 #pragma GCC unroll 5
             for (int i = 0; i < 5; ++i) {
-                if ((i == 0 || i == 4) && !ext) continue;   // 展开后=2个交替分支
                 int rr = sr - 2 + i;
                 int cr = rr < 0 ? 0 : (rr > N - 1 ? N - 1 : rr);
                 uint32_t rowok = (uint32_t)0 - ((unsigned)rr < (unsigned)N);
@@ -338,14 +337,13 @@ GameOutput decide(const GameInput* in) {
             __m256i vr_ = _mm256_loadu_si256((const __m256i*)g_s.pr_);
             __m256i vc_ = _mm256_loadu_si256((const __m256i*)g_s.pc_);
             __m256i vv_ = _mm256_loadu_si256((const __m256i*)g_s.pv_);
-            int ext_ = (in->round ^ u) & 1;
             __m256i wr_ = _mm256_sub_epi8(vr_, _mm256_set1_epi8((char)(sr - 2)));
             __m256i wc_ = _mm256_sub_epi8(vc_, _mm256_set1_epi8((char)(sc - 2)));
             __m256i z8 = _mm256_setzero_si256();
-            __m256i in5r = _mm256_cmpgt_epi8(_mm256_set1_epi8((char)(4 + ext_)),
+            __m256i in5r = _mm256_cmpgt_epi8(_mm256_set1_epi8(5),
                                              _mm256_max_epu8(wr_, z8));
             in5r = _mm256_and_si256(in5r,
-                _mm256_cmpgt_epi8(wr_, _mm256_set1_epi8((char)(0 - ext_))));
+                                    _mm256_cmpgt_epi8(wr_, _mm256_set1_epi8(-1)));
             __m256i in5c = _mm256_cmpgt_epi8(_mm256_set1_epi8(5),
                                              _mm256_max_epu8(wc_, z8));
             in5c = _mm256_and_si256(in5c,
@@ -380,6 +378,7 @@ GameOutput decide(const GameInput* in) {
                 b.seen = 0;
                 g_s.bombbit[b.r] &= ~(1u << b.c);
                 bpRebuildRow(b.r);
+                --g_s.nbombs;
             }
         }
 
@@ -556,7 +555,7 @@ GameOutput decide(const GameInput* in) {
         g_s.last_r[u] = (int8_t)sr; g_s.last_c[u] = (int8_t)sc;
 
         // ---- 防漂移护栏(v1 实证 +80~110/局, 几乎免费) ----
-        if (in->my_units_gold[u] >= 300) {
+        if (in->my_units_gold[u] >= 300 && g_s.nbombs) {   // 无已知弹免模拟
             for (int blk = 0; blk < 3; ++blk) {
                 if (acts[blk] == STAY) continue;
                 int r = sr, c = sc;
