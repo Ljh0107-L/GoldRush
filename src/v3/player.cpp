@@ -42,6 +42,7 @@ struct alignas(64) State {
     uint8_t banybomb;        // 已知炸弹存在标志(护栏全局门控)
     int8_t plan[2][3];       // v37: 主动轮预算的"下轮 3 步"(被动轮直接回放)
     uint8_t plan_ok[2];
+    uint8_t vbought;         // v49: 上轮买过视野 -> 本轮读外环找矿堆
     int16_t last_round;
 };
 
@@ -251,7 +252,33 @@ GameOutput decide(const GameInput* in) {
         goldms[su] = goldm;
     }
 
+#ifdef NS3VP
+    if (g_s.vbought) {                 // 7x7 外环探针: 只为找堆(pileNote), 不动主机器
+        g_s.vbought = 0;
+        for (int su = 0; su < 2; ++su) {
+            int sr = in->my_units[su].row, sc = in->my_units[su].col;
+            if ((unsigned)sr >= (unsigned)N) continue;
+            for (int k = -3; k <= 3; ++k) {       // 上下两行 + 左右两列
+                int v1_ = gv(sr - 3, sc + k), v2_ = gv(sr + 3, sc + k);
+                if (v1_ >= 5) { int gr_ = sr - 3, gc_ = sc + k; int q = pileSlot(gr_, gc_);
+                    g_s.pr_[q]=(int8_t)gr_; g_s.pc_[q]=(int8_t)gc_; g_s.pv_[q]=(uint8_t)v1_; g_s.ps_[q]=nowq(); g_s.plive|=(uint16_t)(1u<<q); }
+                if (v2_ >= 5) { int gr_ = sr + 3, gc_ = sc + k; int q = pileSlot(gr_, gc_);
+                    g_s.pr_[q]=(int8_t)gr_; g_s.pc_[q]=(int8_t)gc_; g_s.pv_[q]=(uint8_t)v2_; g_s.ps_[q]=nowq(); g_s.plive|=(uint16_t)(1u<<q); }
+                if (k >= -2 && k <= 2) {
+                    int v3_ = gv(sr + k, sc - 3), v4_ = gv(sr + k, sc + 3);
+                    if (v3_ >= 5) { int gr_ = sr + k, gc_ = sc - 3; int q = pileSlot(gr_, gc_);
+                        g_s.pr_[q]=(int8_t)gr_; g_s.pc_[q]=(int8_t)gc_; g_s.pv_[q]=(uint8_t)v3_; g_s.ps_[q]=nowq(); g_s.plive|=(uint16_t)(1u<<q); }
+                    if (v4_ >= 5) { int gr_ = sr + k, gc_ = sc + 3; int q = pileSlot(gr_, gc_);
+                        g_s.pr_[q]=(int8_t)gr_; g_s.pc_[q]=(int8_t)gc_; g_s.pv_[q]=(uint8_t)v4_; g_s.ps_[q]=nowq(); g_s.plive|=(uint16_t)(1u<<q); }
+                }
+            }
+        }
+    }
+#endif
     // ===== 双单位决策(共用代码; 被动 goldm 视为 0) =====
+#ifdef NS3VP
+    unsigned g_blind = 1;   // 双单位均纯巡游 = 盲轮
+#endif
     for (int u = 0; u < 2; ++u) {
         int sr = in->my_units[u].row, sc = in->my_units[u].col;
         int* acts = out.actions + u * 3;
@@ -339,6 +366,9 @@ GameOutput decide(const GameInput* in) {
             // 掩码级联: 窗口金 > 矿堆 > 路点
             int mw = -(int)(bestr >= 0);
             int mp = -(int)(bi >= 0) & ~mw;
+#ifdef NS3VP
+            g_blind &= (unsigned)(~(mw | mp)) & 1u;   // 该单位有金/堆则非盲
+#endif
             int pilr = g_s.pr_[bi & 15], pilc = g_s.pc_[bi & 15];
             tgr = (bestr & mw) | (pilr & mp) | (PRW[u][pi] & ~mw & ~mp);
             tgc = (bestc & mw) | (pilc & mp) | (PCW[u][pi] & ~mw & ~mp);
@@ -534,7 +564,14 @@ GameOutput decide(const GameInput* in) {
 
     out.k = 3;
     out.order = in->my_units_gold[0] >= in->my_units_gold[1] ? 0 : 1;
+#ifdef NS3VP
+    // 盲轮买视野: 两单位都无金无堆(纯巡游)时 vp=1 (2金/轮, 下轮 7x7 找矿堆)
+    // (Convergens 198/啊对对对 119/若叶 72 的视野投资全是正 ROI 的旁证)
+    out.vp = (int)g_blind;
+    g_s.vbought = (uint8_t)g_blind;
+#else
     out.vp = 0;
+#endif
     return out;
 }
 
