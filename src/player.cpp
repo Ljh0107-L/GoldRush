@@ -1,6 +1,7 @@
 // player.cpp — GoldRush 2.0 主战策略
 //
-// cpp18 开关: SPAWNMAP=金币刷新热度图导向探索; OPENING=开局冲刺中心外环。
+// cpp18 = cpp15 + 刷新热度图(默认开, A/B 基线 2734 vs 2597 且方差骤降)。
+// 开关: OPENING=开局冲刺(A/B 均值持平方差巨大, 默认关); ROTATION/TERRITORY(已否决)。
 // cpp17 = cpp15 + 轮作制(已被 A/B 否决, 默认关): 外圈(NPC罕至)金币记忆衰减 30->60 轮, 存量堆保持可作目标
 //         + 双角色软分区(按出生对角线各守半场, 越界目标估值 x0.8) 减少重复覆盖。
 //         依据: #1/#4 后期收入反增(存量轮巡收割), NPC 常驻中心不吃外圈(§6.2b)。
@@ -68,6 +69,17 @@ struct World {
     uint8_t yield_[N][N];       // 观测到的金币刷新热度(SPAWNMAP)
 
     inline bool isContested(int r, int c) const { return (uint16_t)round < contested[r][c]; }
+#ifdef OPPTRACK
+    void opp_evidence(const GameInput* in, int r, int c) {
+        for (int j = 0; j < in->num_visible_npcs && j < MAX_NPCS; ++j) {
+            int nr = in->visible_npcs[j].pos.row, nc = in->visible_npcs[j].pos.col;
+            if (nr < 0) continue;
+            int d = (nr > r ? nr - r : r - nr) + (nc > c ? nc - c : c - nc);
+            if (d <= 3) return;               // 可能是 NPC 吃的, 不算证据
+        }
+        stampContested(r, c);
+    }
+#endif
     void stampContested(int cr0, int cc0) {
         for (int r = cr0 - 3 <= 0 ? 0 : cr0 - 3; r <= (cr0 + 3 >= N ? N - 1 : cr0 + 3); ++r)
             for (int c = cc0 - 3 <= 0 ? 0 : cc0 - 3; c <= (cc0 + 3 >= N ? N - 1 : cc0 + 3); ++c)
@@ -112,10 +124,12 @@ struct World {
                     int v = in->grid[r][c];
                     if (v == FOG) continue;
                     if (cell[r][c].known == OBSTACLE) continue;   // 障碍永久
-#ifdef SPAWNMAP
-                    // 可见格金币比记忆多 = 刷新事件(拾取只会变少)
+                    // 可见格金币比记忆多 = 刷新事件(拾取只会变少); A/B: 2734 vs 2597
                     if (v >= 1 && cell[r][c].known >= 0 && v > cell[r][c].known &&
                         yield_[r][c] < 250) yield_[r][c] += 2;
+#ifdef OPPTRACK
+                    // 记忆≥3金突然清零且附近无可见NPC = 对手来过, 实时盖争抢章
+                    if (v == 0 && cell[r][c].known >= 3) opp_evidence(in, r, c);
 #endif
                     cell[r][c].known = (int8_t)(v > 127 ? 127 : v);
                     cell[r][c].seen = (uint16_t)(in->round + 1);
@@ -535,9 +549,7 @@ void explore(int sr, int sc, int* out, int* otr, int* otc) {
             int a = g_w.age(g_w.cell[r][c]);
             if (a > 60) a = a > 900 ? 100 : 60;
             long s = (long)a * 100;
-#ifdef SPAWNMAP
             s += (long)g_w.yield_[r][c] * 40;    // 历史高产区优先巡回
-#endif
             if (g_w.isContested(r, c)) s /= 2;
             s /= g_bfs.dist[idx] + 1;
             if (s > best) { best = s; bi = idx; }
