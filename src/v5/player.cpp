@@ -72,11 +72,13 @@ int steerStep(int r, int c, int gr, int gc, int tr, int tc,
     return (adr | adc) ? escapeStep(r, c, tr, tc, pr, pc, rich) : -1;
 }
 
-// LUT 导向: (dr,dc)∈[-3,3]² 行优先无阻挡模拟(动作+逐步累计位移)
+// LUT 导向: (dr,dc)∈[-3,3]² 行优先无阻挡模拟 —— v5o 打包: 每格一个 u32
+// [acts 3x3b @0..8 | (pdr+3) 3x3b @9..17 | (pdc+3) 3x3b @18..26]
 struct SLut {
     uint8_t act[7][7][3];
     int8_t  pdr[7][7][3], pdc[7][7][3];
-    constexpr SLut() : act(), pdr(), pdc() {
+    uint32_t pk[7][7];
+    constexpr SLut() : act(), pdr(), pdc(), pk() {
         for (int dr = -3; dr <= 3; ++dr)
             for (int dc = -3; dc <= 3; ++dc) {
                 int r = 0, c = 0;
@@ -91,6 +93,9 @@ struct SLut {
                     act[dr + 3][dc + 3][i] = a;
                     pdr[dr + 3][dc + 3][i] = (int8_t)r;
                     pdc[dr + 3][dc + 3][i] = (int8_t)c;
+                    pk[dr + 3][dc + 3] |= ((uint32_t)a << (i * 3)) |
+                        ((uint32_t)(r + 3) << (9 + i * 3)) |
+                        ((uint32_t)(c + 3) << (18 + i * 3));
                 }
             }
     }
@@ -241,52 +246,50 @@ GameOutput decide(const GameInput* in) {
             tgc = ((sc - 2 + i % 5) & has) | (ANCH_C[u] & ~has);
         }
 
-        // ---- 导向 ----
+        // ---- 导向(v5n 全无分支): LUT 恒查 + cmov 回落 + 折返掩码合流 ----
         int dr0 = tgr - sr, dc0 = tgc - sc;
-        dr0 = dr0 < -3 ? -3 : (dr0 > 3 ? 3 : dr0);   // 钳进 LUT 域:
-        dc0 = dc0 < -3 ? -3 : (dc0 > 3 ? 3 : dc0);   // 远目标前3步与串行链同构
+        dr0 = dr0 < -3 ? -3 : (dr0 > 3 ? 3 : dr0);
+        dc0 = dc0 < -3 ? -3 : (dc0 > 3 ? 3 : dc0);
         int d = (dr0 < 0 ? -dr0 : dr0) + (dc0 < 0 ? -dc0 : dc0);
-        if (d == 0) {                            // 站金: 折返双吃
+        {
+            int ir = dr0 + 3, ic = dc0 + 3;
+            uint32_t K = SL.pk[ir][ic];
+            // 位图行提升: sr-1..sr+1 与目标途经行(<=sr±3) —— 覆盖全部 pass01
+            // 途经/邻格行范围 sr-3..sr+3; 提升 7 行成本高, 折中: 用行索引直读
+            // (v5o: pass01 宏内联为位测试, 行地址由编译器 CSE; 关键是消字节载)
+            int x0r = sr + (int)((K >> 9) & 7) - 3, x0c = sc + (int)((K >> 18) & 7) - 3;
+            int x1r = sr + (int)((K >> 12) & 7) - 3, x1c = sc + (int)((K >> 21) & 7) - 3;
+            int x2r = sr + (int)((K >> 15) & 7) - 3, x2c = sc + (int)((K >> 24) & 7) - 3;
+            unsigned okl = pass01(x0r, x0c, tr, tc, rich) &
+                           pass01(x1r, x1c, tr, tc, rich) &
+                           pass01(x2r, x2c, tr, tc, rich);
+            int ar_ = dr0 > 0, ac_ = 2 + (dc0 > 0);
+            int adr_ = dr0 < 0 ? -dr0 : dr0, adc_ = dc0 < 0 ? -dc0 : dc0;
+            int rowf_ = adr_ >= adc_;
+            int p0_ = rowf_ ? ar_ : ac_, p1_ = rowf_ ? ac_ : ar_;
+            unsigned o0 = pass01(sr + DR[p0_], sc + DC[p0_], tr, tc, rich);
+            unsigned o1 = pass01(sr + DR[p1_], sc + DC[p1_], tr, tc, rich) &
+                          (unsigned)((adr_ != 0) & (adc_ != 0));
+            int fb = o0 ? p0_ : (o1 ? p1_ : STAY);
+            int ml = -(int)(okl != 0);
+            int a0 = ((int)(K & 7) & ml) | (fb & ~ml);
+            int a1 = ((int)((K >> 3) & 7) & ml) | (STAY & ~ml);
+            int a2 = ((int)((K >> 6) & 7) & ml) | (STAY & ~ml);
+            int e1 = -(int)(d == 1) & ml;
+            int e2 = -(int)(d == 2) & ml;
+            a1 = ((a0 ^ 1) & e1) | (a1 & ~e1);
+            a2 = (((a1 ^ 1)) & (e1 | e2)) | (a2 & ~(e1 | e2));
             unsigned pm = pass01(sr - 1, sc, tr, tc, rich) |
                           (pass01(sr + 1, sc, tr, tc, rich) << 1) |
                           (pass01(sr, sc - 1, tr, tc, rich) << 2) |
                           (pass01(sr, sc + 1, tr, tc, rich) << 3);
-            if (pm) {
-                int a = __builtin_ctz(pm);
-                acts[0] = a; acts[1] = a ^ 1;
-            }
-        } else {
-            int ir = dr0 + 3, ic = dc0 + 3;
-            const uint8_t* pa = SL.act[ir][ic];
-            const int8_t* xr = SL.pdr[ir][ic];
-            const int8_t* xc = SL.pdc[ir][ic];
-            unsigned ok = pass01(sr + xr[0], sc + xc[0], tr, tc, rich) &
-                          pass01(sr + xr[1], sc + xc[1], tr, tc, rich) &
-                          pass01(sr + xr[2], sc + xc[2], tr, tc, rich);
-            if (ok) {
-                acts[0] = pa[0]; acts[1] = pa[1]; acts[2] = pa[2];
-                // 早到金格(d<3): 折返双吃(掩码写, 零位点)
-                int em = -(int)(d < 3);
-                int i1 = (d & em) | (2 & ~em);        // em=0 时写 acts[2] 自身值
-                int v1 = (acts[i1 - (1 & em)] ^ (1 & em));
-                acts[i1] = (v1 & em) | (acts[i1] & ~em);
-                int e2 = em & -(int)(d + 1 < 3);      // 仅 d==1
-                acts[2] = ((acts[1] ^ 1) & e2) | (acts[2] & ~e2);
-            } else {
-                // 受阻(罕见): 单步谨慎, 其余 STAY(下轮恢复) —— steer3 全链蒸发
-                int a = steerStep(sr, sc, tgr, tgc, tr, tc,
-                                  g_s.last_r[u], g_s.last_c[u], rich);
-                if (a >= 0) acts[0] = a;
-            }
+            int sa = __builtin_ctz(pm | (uint32_t)(pm == 0));
+            int hv = -(int)(pm != 0);
+            int z = -(int)(d == 0);
+            acts[0] = ((((sa & hv) | (STAY & ~hv))) & z) | (a0 & ~z);
+            acts[1] = (((((sa ^ 1) & hv) | (STAY & ~hv))) & z) | (a1 & ~z);
+            acts[2] = (STAY & z) | (a2 & ~z);
         }
-
-#ifdef NS5DBG
-        if (in->round >= 39 && in->round <= 43) {
-            fprintf(stderr, "r%d u%d pos(%d,%d) gold%d rich%u goldm=%08x tg(%d,%d) acts[%d,%d,%d]\n",
-                in->round, u, sr, sc, in->my_units_gold[u], rich & 1u,
-                goldm, tgr, tgc, acts[0], acts[1], acts[2]);
-        }
-#endif
         g_s.last_r[u] = (int8_t)sr; g_s.last_c[u] = (int8_t)sc;
     }
 
