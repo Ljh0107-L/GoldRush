@@ -1,5 +1,7 @@
 // player.cpp — GoldRush 2.0 主战策略
 //
+// cpp21 = cpp20 策略全保留 + 局部穷举改"直读输入"(免补丁构建, 省~1μs) + 砍视野购买。
+//         目标: P50 3.7 -> ~1.5μs, 策略无损(3步全枚举语义等价)。
 // cpp20 = cpp18 + 争抢章 60->30 轮(A/B 2814>2734); EXPRESS 触发率过低已弃用。
 // cpp19 = cpp18 + EXPRESS 快车道: 有有效计划且输入窗口无金时, 跳过补丁+DFS(省1.4μs)
 //         直接走缓存计划 -> 赶路回合 ~0.6μs, P50 目标 <2.6μs(凑企鹅线) 且策略无损。
@@ -251,104 +253,75 @@ struct Bfs {
 };
 Bfs g_bfs;
 
-// ---------- 局部 3 步穷举(7x7 补丁) + 视野环陈旧度顺路统计 ----------
-struct LocalSearch {
-    static constexpr int P = 7, R = 3;
-    int8_t pgold[P][P];
-    int8_t pflag[P][P];               // bit0=block bit1=bomb bit2=npc>=3
-    int best_score, best_acts[3];
-    int unit_gold;
-    int ring_stale, ring_cells;       // 补丁边界(cheb=3) = 买视野新增的环
-    bool has_gold;                    // 补丁内有金才值得跑 DFS
+// (LocalSearch 补丁版已由 MiniLocal 直读版取代, 旧实现见 git 历史)
 
-    void build(int sr, int sc) {
-        ring_stale = ring_cells = 0;
-        has_gold = false;
-        // 1) 地形层: 只读世界模型
-        for (int i = 0; i < P; ++i)
-            for (int j = 0; j < P; ++j) {
-                int r = sr - R + i, c = sc - R + j;
-                if (r < 0 || r >= N || c < 0 || c >= N) {
-                    pflag[i][j] = 1; pgold[i][j] = 0;
-                    continue;
-                }
-                const Cell& x = g_w.cell[r][c];
-                if (x.known == OBSTACLE) { pflag[i][j] = 1; pgold[i][j] = 0; continue; }
-                int a = g_w.age(x);
-                pflag[i][j] = (x.known == BOMB && a <= 20) ? 2 : 0;
-                int8_t g = (int8_t)(x.known >= 1 ? g_w.gold(r, c) : 0);
-                pgold[i][j] = g;
-                if (g > 0) has_gold = true;
-            }
-        // 2) 盖章层: 各列表只扫一遍
-        int8_t cnt[P][P] = {};
-        for (int t = 0; t < g_m.nn; ++t) {
-            int i = g_m.nr[t] - sr + R, j = g_m.nc[t] - sc + R;
-            if (i >= 0 && i < P && j >= 0 && j < P && ++cnt[i][j] >= 3) pflag[i][j] |= 4;
-        }
-        for (int t = 0; t < g_m.bn; ++t) {
-            int i = g_m.br[t] - sr + R, j = g_m.bc[t] - sc + R;
-            if (i >= 0 && i < P && j >= 0 && j < P) pflag[i][j] |= 1;
-        }
-        // 3) 环统计(边界24格): 买视野判据
-        for (int t = 0; t < 24; ++t) {
-            static constexpr int8_t RI[24] = {0,0,0,0,0,0,0, 6,6,6,6,6,6,6, 1,2,3,4,5, 1,2,3,4,5};
-            static constexpr int8_t RJ[24] = {0,1,2,3,4,5,6, 0,1,2,3,4,5,6, 0,0,0,0,0, 6,6,6,6,6};
-            int r = sr - R + RI[t], c = sc - R + RJ[t];
-            if (r < 0 || r >= N || c < 0 || c >= N) continue;
-            const Cell& x = g_w.cell[r][c];
-            if (x.known == OBSTACLE) continue;
-            ++ring_cells;
-            if (g_w.age(x) > 8) ++ring_stale;
-        }
+// ---------- cpp21: 直读输入的 3 步穷举(免补丁构建) ----------
+struct MiniLocal {
+    const GameInput* in;
+    int unit_gold;
+    int ov_idx[8], ov_left[8], ovn;    // 本路径消耗覆盖(undo)
+    int best; int bacts[3];
+
+    inline int cellGold(int r, int c) const {
+        for (int t = 0; t < ovn; ++t)
+            if (ov_idx[t] == r * N + c) return ov_left[t];
+        int iv = in->grid[r][c];
+        if (iv >= 1) return iv;                    // 视野内: 精确值
+        if (iv == FOG) return g_w.gold(r, c);      // 视野外: 记忆估值
+        return 0;
+    }
+    inline bool cellBomb(int r, int c) const {
+        int iv = in->grid[r][c];
+        return iv == BOMB || (iv == FOG && g_w.bomb(r, c));
+    }
+    inline bool cellBlocked(int r, int c) const {
+        return in->grid[r][c] == OBSTACLE || g_w.wall(r, c) || g_m.blocked(r, c);
     }
 
-    void dfs(int i, int j, int depth, int acts[3], int gained, int score) {
-        if (score > best_score) {
-            best_score = score;
-            for (int t = 0; t < 3; ++t) best_acts[t] = t < depth ? acts[t] : STAY;
+    void dfs(int r, int c, int depth, int acts[3], int sc) {
+        if (sc > best) {
+            best = sc;
+            for (int t = 0; t < 3; ++t) bacts[t] = t < depth ? acts[t] : STAY;
         }
         if (depth == 3) return;
         for (int a = 0; a < 4; ++a) {
-            int ni = i + DR[a], nj = j + DC[a];
-            if (ni < 0 || ni >= P || nj < 0 || nj >= P || (pflag[ni][nj] & 1)) continue;
+            int nr = r + DR[a], nc = c + DC[a];
+            if (nr < 0 || nr >= N || nc < 0 || nc >= N) continue;
+            if (cellBlocked(nr, nc)) continue;
+            if (g_m.npcs(nr, nc) >= 3) continue;   // 踩踏格禁走(罕见)
             acts[depth] = a;
-            int undo_gold = 0, sc = score, gn = gained;
-            bool undo_bomb = false;
-            if (pgold[ni][nj] > 0) {
-                int add = ceilPct(pgold[ni][nj], 65);
-                pgold[ni][nj] -= (int8_t)add;
-                undo_gold = add;
-                gn += add; sc += add * 10;
+            int add = 0, undo = -1, undov = 0;
+            int v = cellGold(nr, nc);
+            if (v > 0) {
+                int take = ceilPct(v, 65);
+                add += take * 10;
+                bool found = false;
+                for (int t = 0; t < ovn; ++t)
+                    if (ov_idx[t] == nr * N + nc) { undo = t; undov = ov_left[t]; ov_left[t] = v - take; found = true; break; }
+                if (!found && ovn < 8) { ov_idx[ovn] = nr * N + nc; ov_left[ovn] = v - take; undo = ovn; undov = -12345; ++ovn; }
             }
-            // 惩罚 x2: 3 步视界看不到"绕一轮再拿"的替代方案, 补偿短视
-            if (pflag[ni][nj] & 2) {
-                sc -= ceilPct(unit_gold + gn, 10) * 20;
-                pflag[ni][nj] &= (int8_t)~2;
-                undo_bomb = true;
+            // 惩罚 x2: 3 步视界看不到"绕一轮再拿", 补偿短视
+            if (cellBomb(nr, nc)) add -= ceilPct(unit_gold, 10) * 20;
+            dfs(nr, nc, depth + 1, acts, sc + add);
+            if (undo >= 0) {
+                if (undov == -12345) --ovn;
+                else ov_left[undo] = undov;
             }
-            if (pflag[ni][nj] & 4)
-                sc -= ceilPct(unit_gold + gn, 5) * 20;
-            dfs(ni, nj, depth + 1, acts, gn, sc);
-            if (undo_gold) pgold[ni][nj] += (int8_t)undo_gold;
-            if (undo_bomb) pflag[ni][nj] |= 2;
         }
     }
-
-    int run(int sr, int sc, int gold_now, int* acts_out) {
-        build(sr, sc);
-        best_score = 0;
-        best_acts[0] = best_acts[1] = best_acts[2] = STAY;
-        acts_out[0] = acts_out[1] = acts_out[2] = STAY;
-        if (!has_gold) return 0;              // 赶路回合快速通道
+    int run(const GameInput* in_, int sr, int sc, int gold_now, int* acts_out) {
+        in = in_;
         unit_gold = gold_now;
-        int acts[3];
-        dfs(R, R, 0, acts, 0, 0);
-        for (int t = 0; t < 3; ++t) acts_out[t] = best_acts[t];
-        return best_score;
+        ovn = 0;
+        best = 0;
+        bacts[0] = bacts[1] = bacts[2] = STAY;
+        int tmp[3];
+        dfs(sr, sc, 0, tmp, 0);
+        for (int t = 0; t < 3; ++t) acts_out[t] = bacts[t];
+        return best;
     }
 };
-LocalSearch g_local;
+MiniLocal g_mini;
 
 // ---------- 多轮计划缓存(砍掉赶路回合的 BFS) ----------
 struct Plan {
@@ -655,9 +628,8 @@ GameOutput decide(const GameInput* in) {
             }
         }
 #endif
-        int gain = g_local.run(sr, sc, in->my_units_gold[u], acts);
-        stale += g_local.ring_stale;
-        cells += g_local.ring_cells;
+        int gain = g_mini.run(in, sr, sc, in->my_units_gold[u], acts);
+        (void)stale; (void)cells;
         if (gain > 0) {
             g_plan[u].len = 0;                    // 就地开采, 旧行程作废
             g_plan[u].is_gold = 0;
@@ -747,17 +719,9 @@ GameOutput decide(const GameInput* in) {
 
     out.k = 3;
     out.order = in->my_units_gold[0] >= in->my_units_gold[1] ? 0 : 1;
-    // P4 视野购买: 环情报过半陈旧时买 7x7; 硬预算 250 金。
-    // 注: #1/#4 实测全程不买视野(139296-97), NO_VISION 编译开关做 A/B
-#ifdef NO_VISION
+    // cpp21: 视野购买砍掉(A/B 中性 + 顶级选手全不买 + 省 ring 统计的常数)
     out.vp = 0;
-    (void)stale; (void)cells;
-#else
-    out.vp = (cells > 0 && stale * 2 >= cells && in->round < 490
-              && g_w.vp_spent < 250) ? 1 : 0;
-#endif
-    g_w.vp_spent += out.vp * 2;
-    g_w.last_vp = out.vp;
+    g_w.last_vp = 0;
     return out;
 }
 
