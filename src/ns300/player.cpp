@@ -43,7 +43,8 @@ struct BombM { int8_t r, c; uint8_t seen; };
 
 struct State {
     uint32_t wall[N];        // 障碍位图(观测到即永久)
-    uint32_t bombbit[N];     // 炸弹位图(与 bombs 列表同步; passable 纯位测试)
+    uint32_t bombbit[N];     // 炸弹位图(与 bombs 列表同步)
+    uint32_t blocked[N];     // = wall | bombbit (passable 单次加载; 省一条冷线)
     Pile  piles[16];         // v==0 表示空槽
     BombM bombs[8];
     int8_t goal_r[2], goal_c[2];
@@ -72,6 +73,7 @@ inline uint8_t now2() { return (uint8_t)(g_s.last_round >> 1); }
 inline bool wallAt(int r, int c) { return (g_s.wall[r] >> c) & 1u; }
 
 inline bool bombAt(int r, int c) { return (g_s.bombbit[r] >> c) & 1u; }
+inline bool blockedAt(int r, int c) { return (g_s.blocked[r] >> c) & 1u; }
 
 inline void bombNote(int r, int c) {
     int free_ = -1;
@@ -85,6 +87,7 @@ inline void bombNote(int r, int c) {
     if (free_ >= 0) {
         g_s.bombs[free_] = {(int8_t)r, (int8_t)c, now2() ? now2() : (uint8_t)1};
         g_s.bombbit[r] |= 1u << c;
+        g_s.blocked[r] |= 1u << c;
     }
 }
 
@@ -108,9 +111,8 @@ inline void pileDrop(int r, int c) {
 
 inline bool passable(int r, int c, int tr, int tc) {   // tr/tc = 队友占位
     if (r < 0 || r >= N || c < 0 || c >= N) return false;
-    if (wallAt(r, c)) return false;
-    if (r == tr && c == tc) return false;
-    return !bombAt(r, c);
+    if (blockedAt(r, c)) return false;
+    return !(r == tr && c == tc);
 }
 
 // 曼哈顿导向一步(主方向优先, 被挡换副方向; 全堵时任意可走方向但不回头)
@@ -136,17 +138,47 @@ int steerStep(int r, int c, int gr, int gc, int tr, int tc, int pr, int pc) {
     return -1;
 }
 
+#if defined(NSPROBE) && NSPROBE == 9
+unsigned long long g_t[4]; long g_tn;
+unsigned long long td9_last;
+inline unsigned long long tsc() {
+#if defined(__x86_64__)
+    unsigned lo, hi;
+    __asm__ __volatile__("rdtsc" : "=a"(lo), "=d"(hi));
+    return ((unsigned long long)hi << 32) | lo;
+#else
+    return 0;
+#endif
+}
+#define TM(k, expr) do { unsigned long long t_ = tsc(); expr; g_t[k] += tsc() - t_; } while (0)
+#else
+#define TM(k, expr) expr
+#endif
+
 GameOutput decide(const GameInput* in) {
     if (in->round <= g_s.last_round) { memset(&g_s, 0, sizeof(g_s)); g_s.patrol[1] = 3; }
     g_s.last_round = (int16_t)in->round;
     if (in->round % 20 == 0) {                    // 炸弹波: 旧记忆全部过期
         for (int i = 0; i < 8; ++i) g_s.bombs[i].seen = 0;
         memset(g_s.bombbit, 0, sizeof(g_s.bombbit));
+        memcpy(g_s.blocked, g_s.wall, sizeof(g_s.blocked));
+    }
+    // 窗口行预取: 把 ~10 条冷线的 miss 并行化(它们是本轮的必读集)
+    for (int u2 = 0; u2 < 2; ++u2) {
+        int ur = in->my_units[u2].row, uc = in->my_units[u2].col;
+        if (ur < 0) continue;
+        int pc0 = uc - 2 < 0 ? 0 : uc - 2;
+        for (int r2 = ur - 2 < 0 ? 0 : ur - 2;
+             r2 <= (ur + 2 >= N ? N - 1 : ur + 2); ++r2)
+            __builtin_prefetch(&in->grid[r2][pc0]);
     }
 
     GameOutput out = SAFE_OUT;
 
     // 缓存对账: 24 条记录 x 1 次窗口判定+读格(代替逐格反查)
+#if defined(NSPROBE) && NSPROBE == 9
+    unsigned long long t9 = tsc();
+#endif
     {
         int u0r = in->my_units[0].row, u0c = in->my_units[0].col;
         int u1r = in->my_units[1].row, u1c = in->my_units[1].col;
@@ -168,6 +200,7 @@ GameOutput decide(const GameInput* in) {
             if (b.seen && inwin(b.r, b.c) && in->grid[b.r][b.c] != BOMB) {
                 b.seen = 0;
                 g_s.bombbit[b.r] &= ~(1u << b.c);
+                g_s.blocked[b.r] = g_s.wall[b.r] | g_s.bombbit[b.r];
             }
         }
     }
@@ -180,6 +213,9 @@ GameOutput decide(const GameInput* in) {
             g_s.esight_seen = now2() ? now2() : 1;
         }
     }
+#if defined(NSPROBE) && NSPROBE == 9
+    if (in->round < 250) g_t[0] += tsc() - t9;
+#endif
 
     for (int u = 0; u < 2; ++u) {
         int sr = in->my_units[u].row, sc = in->my_units[u].col;
@@ -188,6 +224,9 @@ GameOutput decide(const GameInput* in) {
         if (sr < 0 || sr >= N || sc < 0 || sc >= N) continue;
         int tr = in->my_units[1 - u].row, tc = in->my_units[1 - u].col;
 
+#if defined(NSPROBE) && NSPROBE == 9
+        unsigned long long tb9 = tsc();
+#endif
         // ---- 掩码化窗口扫描(无分支主体; 冷 BTB 实证: 分支数即延迟) ----
         // wv7 = 7x7 带哨兵边框的窗口值(邻居访问永远合法); 三张 25 位掩码
         int8_t wv7[49];
@@ -211,7 +250,9 @@ GameOutput decide(const GameInput* in) {
         if (wallm)                             // 墙位图: 行片一次并入
             for (int r = r0; r <= r1; ++r) {
                 int b5 = (r - sr + 2) * 5 + 2 - sc;
-                g_s.wall[r] |= ((wallm >> (b5 + c0)) & 31u) << c0;
+                uint32_t slice = ((wallm >> (b5 + c0)) & 31u) << c0;
+                g_s.wall[r] |= slice;
+                g_s.blocked[r] |= slice;
             }
         while (bombm) {                        // 炸弹: 稀疏, 逐位处理
             int i = __builtin_ctz(bombm); bombm &= bombm - 1;
@@ -240,6 +281,10 @@ GameOutput decide(const GameInput* in) {
             }
         }
 
+#if defined(NSPROBE) && NSPROBE == 9
+        if (in->round < 250) g_t[1] += tsc() - tb9;
+        unsigned long long tc9 = tsc();
+#endif
 #if defined(NSPROBE) && NSPROBE == 1
         (void)bests; continue;               // 探针1: 只测 扫描+对账(站桩)
 #endif
@@ -343,6 +388,10 @@ GameOutput decide(const GameInput* in) {
 #if defined(NSPROBE) && NSPROBE == 5
         probe5_done:;
 #endif
+#if defined(NSPROBE) && NSPROBE == 9
+        if (in->round < 250) g_t[2] += tsc() - tc9;
+        td9_last = tsc();
+#endif
         // ---- 尾步填充(v1 实证: 16% 的步在罚站; 复用 wv, 零额外读格) ----
         if (gn_ > 0) {
             int r = sr, c = sc;
@@ -394,11 +443,25 @@ GameOutput decide(const GameInput* in) {
                 }
             }
         }
+#if defined(NSPROBE) && NSPROBE == 9
+        if (in->round < 250) g_t[3] += tsc() - td9_last;
+#endif
     }
 
     out.k = 3;
     out.order = in->my_units_gold[0] >= in->my_units_gold[1] ? 0 : 1;
     out.vp = 0;
+#if defined(NSPROBE) && NSPROBE == 9
+    if (in->round < 250) ++g_tn;
+    // vp 信道发射: round 250 起, 4 个 16 位均值(周期), MSB 在前
+    if (in->round >= 250 && in->round < 250 + 64 && g_tn > 0) {
+        int bi = in->round - 250;
+        unsigned long long avg = g_t[bi / 16] / (unsigned long long)g_tn;
+        if (bi / 16 == 1 || bi / 16 == 2 || bi / 16 == 3) avg /= 2;  // B/C/D 双单位求均
+        if (avg > 65535) avg = 65535;
+        out.vp = (int)((avg >> (15 - bi % 16)) & 1);
+    }
+#endif
     return out;
 }
 
