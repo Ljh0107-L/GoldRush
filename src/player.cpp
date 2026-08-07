@@ -64,6 +64,7 @@ struct Cell {
 struct World {
     Cell  cell[N][N];
     int   round;
+    int   wave;                // 最近一次炸弹刷新波的回合(round - round%20)
     int   last_round;
     int   last_vp;
     int   vp_spent;
@@ -127,6 +128,7 @@ struct World {
             if (half_sign[0] == half_sign[1]) half_sign[1] = (int8_t)-half_sign[0];
         }
         last_round = round = in->round;
+        wave = round - round % 20;
         int rad = 2 + last_vp;
         for (int u = 0; u < 2; ++u) {
             wgold_n[u] = 0;
@@ -177,6 +179,11 @@ struct World {
     inline bool bomb(int r, int c) const {
         const Cell& x = cell[r][c];
         return x.known == BOMB && age(x) <= 20;
+    }
+    // 陈旧格: 上一波炸弹刷新(mod20==0)之后没再看过 -> 可能藏新炸弹(~6.5%)
+    inline bool stale(int r, int c) const {
+        const Cell& x = cell[r][c];
+        return x.seen == 0 || (int)(x.seen - 1) < wave;
     }
     inline bool wall(int r, int c) const { return cell[r][c].known == OBSTACLE; }
 };
@@ -308,8 +315,13 @@ struct MiniLocal {
                     if (ov_idx[t] == nr * N + nc) { undo = t; undov = ov_left[t]; ov_left[t] = v - take; found = true; break; }
                 if (!found && ovn < 8) { ov_idx[ovn] = nr * N + nc; ov_left[ovn] = v - take; undo = ovn; undov = -12345; ++ovn; }
             }
-            // 惩罚 x2: 3 步视界看不到"绕一轮再拿", 补偿短视
-            if (cellBomb(nr, nc)) add -= ceilPct(unit_gold, 10) * 20;
+            // 惩罚 x2: 3 步视界看不到"绕一轮再拿", 补偿短视; 下限防零持币白穿
+            if (cellBomb(nr, nc)) {
+                int bp = ceilPct(unit_gold, 10) * 20;
+                add -= bp < 60 ? 60 : bp;
+            }
+            // (cpp23 曾对陈旧雾格加期望炸弹损失 risk_stale —— 富时冻结窗口扩张,
+            //  基线 -300, 已撤; 防炸主力是防漂移截断 + 下限)
             dfs(nr, nc, depth + 1, acts, sc + add);
             if (undo >= 0) {
                 if (undov == -12345) --ovn;
@@ -511,6 +523,7 @@ int pickGoldTarget(const GameInput* in, int sr, int sc) {
 }
 
 // 曼哈顿导向一步: 只朝缩短距离的方向走; 全被挡返回 -1(交给 BFS)
+// (cpp23 曾在此加"富时绕陈旧格"——探索方向必然全陈旧, 行军蛇形, 基线-600, 已撤)
 int steerStep(int r, int c, int tr, int tc) {
     int drr = tr - r, dcc = tc - c;
     int ar = drr < 0 ? 0 : 1, ac = dcc < 0 ? 2 : 3;
@@ -773,6 +786,53 @@ GameOutput decide(const GameInput* in) {
                     !g_w.wall(nrr, ncc) && !g_m.blocked(nrr, ncc)) {
                     r = nrr; c = ncc;
                     if (g_w.gold(r, c) > 0) g_m.claim(r, c);
+                }
+            }
+        }
+        // 防漂移(实测 6 局被炸 25 次的主因): 引擎对被挡的步只跳过、后续步照走,
+        // 落点会整体偏移一格。可信的阻挡场景下, 后续落点若是已知炸弹就从该步截断。
+        // 可信 = 被挡步目标是雾, 或 3 格内有可见 NPC/单位(动态实体一轮能走 3 步)。
+        // 无门控版触发 93 次/局(实际事件 ~4 次), 基线 -300; 门控是必需的。
+        // 持币 300+: 单次被炸 ≥30 金 >> 截断浪费的 1-2 步(~3-6 金), 期望明确为正;
+        // 低持币时期望反而为负, 不做。
+        if (in->my_units_gold[u] >= 300) {
+            for (int blk = 0; blk < 3; ++blk) {
+                if (acts[blk] == STAY) continue;
+                int br2 = sr, bc2 = sc;                    // 被挡步的出发点
+                {
+                    int r = sr, c = sc;
+                    for (int i = 0; i < blk; ++i) {
+                        int nrr = r + DR[acts[i]], ncc = c + DC[acts[i]];
+                        if (acts[i] != STAY && nrr >= 0 && nrr < N && ncc >= 0 &&
+                            ncc < N && !g_w.wall(nrr, ncc)) { r = nrr; c = ncc; }
+                    }
+                    br2 = r + DR[acts[blk]]; bc2 = c + DC[acts[blk]];
+                }
+                if (br2 < 0 || br2 >= N || bc2 < 0 || bc2 >= N) continue;
+                bool plausible = g_w.cell[br2][bc2].known == FOG;
+                for (int i2 = 0; i2 < g_m.nn && !plausible; ++i2) {
+                    int dr2 = g_m.nr[i2] - br2, dc2 = g_m.nc[i2] - bc2;
+                    if ((dr2 < 0 ? -dr2 : dr2) <= 3 && (dc2 < 0 ? -dc2 : dc2) <= 3)
+                        plausible = true;
+                }
+                for (int i2 = 0; i2 < g_m.bn && !plausible; ++i2) {
+                    int dr2 = g_m.br[i2] - br2, dc2 = g_m.bc[i2] - bc2;
+                    if ((dr2 < 0 ? -dr2 : dr2) <= 3 && (dc2 < 0 ? -dc2 : dc2) <= 3)
+                        plausible = true;
+                }
+                if (!plausible) continue;
+                int r = sr, c = sc;
+                for (int i = 0; i < 3; ++i) {
+                    if (acts[i] == STAY) continue;
+                    int nrr = r + DR[acts[i]], ncc = c + DC[acts[i]];
+                    if (i == blk || nrr < 0 || nrr >= N || ncc < 0 || ncc >= N ||
+                        g_w.wall(nrr, ncc)) continue;      // 该步被挡/无效: 原地
+                    if (g_w.bomb(nrr, ncc)) {
+                        for (int j = i; j < 3; ++j) acts[j] = STAY;
+                        g_plan[u].len = 0;                 // 截断后计划错位, 作废
+                        break;
+                    }
+                    r = nrr; c = ncc;
                 }
             }
         }
