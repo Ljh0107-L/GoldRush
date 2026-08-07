@@ -328,7 +328,7 @@ GameOutput decide(const GameInput* in) {
         goldms[u] = goldm; bombms[u] = bombm;
     }
 #if defined(NSPROBE) && NSPROBE == 9
-    if (in->round < 250) g_t[1] += tsc() - tb9;
+    (void)tb9;                                   // B1 已测(421), 槽位让给拆分
 #endif
 
     // ===== 阶段2: 决策 =====
@@ -419,7 +419,7 @@ GameOutput decide(const GameInput* in) {
         }
 
 #if defined(NSPROBE) && NSPROBE == 9
-        if (in->round < 250) g_t[2] += tsc() - tb2;
+        if (in->round < 250) g_t[0 + u] += tsc() - tb2;   // B2 按单位拆分
         unsigned long long tc9 = tsc();
 #endif
 #if defined(NSPROBE) && NSPROBE == 1
@@ -569,7 +569,7 @@ GameOutput decide(const GameInput* in) {
         probe5_done:;
 #endif
 #if defined(NSPROBE) && NSPROBE == 9
-        if (in->round < 250) g_t[3] += tsc() - tc9;
+        if (in->round < 250) g_t[2 + u] += tsc() - tc9;   // C 按单位拆分
         (void)td9_last;
 #endif
         // ---- 尾步填充(v1 实证: 16% 的步在罚站; 复用 wv, 零额外读格) ----
@@ -641,7 +641,6 @@ GameOutput decide(const GameInput* in) {
     if (in->round >= 250 && in->round < 250 + 64 && g_tn > 0) {
         int bi = in->round - 250;
         unsigned long long avg = g_t[bi / 16] / (unsigned long long)g_tn;
-        if (bi / 16 == 1 || bi / 16 == 2 || bi / 16 == 3) avg /= 2;  // B/C/D 双单位求均
         if (avg > 65535) avg = 65535;
         out.vp = (int)((avg >> (15 - bi % 16)) & 1);
     }
