@@ -184,28 +184,43 @@ GameOutput decide(const GameInput* in) {
         if (sr < 0 || sr >= N || sc < 0 || sc >= N) continue;
         int tr = in->my_units[1 - u].row, tc = in->my_units[1 - u].col;
 
-        // ---- 窗口扫描(预算大头): 找最优金格 + 增量更新持久结构 ----
-        int bestr = -1, bestc = -1;
-        int bests = 0;
+        // ---- 窗口扫描(预算大头): 窗口值缓存 + 金格收集 + 增量更新持久结构 ----
+        // 逐格只做增量记录; 缓存失效统一对账(教训: 逐格反查=半个预算)
+        int8_t wv[25];                     // 窗口局部值(簇加成/尾步填充复用)
+        int8_t gr_[8], gc_[8]; int gn_ = 0;
         int r0 = sr - 2 < 0 ? 0 : sr - 2, r1 = sr + 2 >= N ? N - 1 : sr + 2;
         int c0 = sc - 2 < 0 ? 0 : sc - 2, c1 = sc + 2 >= N ? N - 1 : sc + 2;
+        memset(wv, -1, 25);                // 出界视作不可走
         for (int r = r0; r <= r1; ++r) {
             const int* row = in->grid[r];
+            int base = (r - sr + 2) * 5 - sc + 2;
             for (int c = c0; c <= c1; ++c) {
                 int v = row[c];
-                // 逐格只做增量记录; 缓存的失效统一在 refreshCaches 里做
-                // (教训: 逐格查 16 堆+8 弹 = ~1000 次多余比较/轮, 占掉半个预算)
+                wv[base + c] = (int8_t)(v > 127 ? 127 : v);
                 if (v > 0) {
-                    int d = (r > sr ? r - sr : sr - r) + (c > sc ? c - sc : sc - c);
-                    int s = v * REC[d];
-                    if (s > bests) { bests = s; bestr = r; bestc = c; }
-                    if (v >= 6) pileNote(r, c, v);
+                    if (gn_ < 8) { gr_[gn_] = (int8_t)r; gc_[gn_] = (int8_t)c; ++gn_; }
+                    if (v >= 5) pileNote(r, c, v);
                 } else if (v == OBSTACLE) {
                     g_s.wall[r] |= 1u << c;
                 } else if (v == BOMB) {
                     bombNote(r, c);
                 }
             }
+        }
+        // 采集打分(带簇加成: 邻格金折半计入, v1 实证有效)
+        int bestr = -1, bestc = -1, bests = 0;
+        for (int i = 0; i < gn_; ++i) {
+            int r = gr_[i], c = gc_[i];
+            int wi = (r - sr + 2) * 5 + (c - sc + 2);
+            int v = wv[wi];
+            int nb = 0;
+            if (wi >= 5 && wv[wi - 5] > 0) nb += wv[wi - 5];
+            if (wi < 20 && wv[wi + 5] > 0) nb += wv[wi + 5];
+            if (wi % 5 && wv[wi - 1] > 0) nb += wv[wi - 1];
+            if (wi % 5 != 4 && wv[wi + 1] > 0) nb += wv[wi + 1];
+            int d = (r > sr ? r - sr : sr - r) + (c > sc ? c - sc : sc - c);
+            int sc_ = (v * 2 + nb) * REC[d];
+            if (sc_ > bests) { bests = sc_; bestr = r; bestc = c; }
         }
 
 #if defined(NSPROBE) && NSPROBE == 1
@@ -296,6 +311,27 @@ GameOutput decide(const GameInput* in) {
             if (r == gr && c == gc) {
                 if (g_s.goal_kind[u] == 1) pileDrop(gr, gc);   // 到了发现没金(窗口无金分支) = 幽灵堆
                 g_s.goal_kind[u] = 0;
+            }
+        }
+
+        // ---- 尾步填充(v1 实证: 16% 的步在罚站; 复用 wv, 零额外读格) ----
+        {
+            int r = sr, c = sc;
+            for (int i = 0; i < 3; ++i) {
+                if (acts[i] == STAY) {
+                    int besta = -1, bv = 0;
+                    for (int a = 0; a < 4; ++a) {
+                        int nr = r + DR[a], nc = c + DC[a];
+                        int ur = nr - sr + 2, uc = nc - sc + 2;
+                        if ((unsigned)ur > 4u || (unsigned)uc > 4u) continue;
+                        int v = wv[ur * 5 + uc];       // >0 即金(金格无墙无弹)
+                        if (v > bv && !(nr == tr && nc == tc)) { bv = v; besta = a; }
+                    }
+                    if (besta >= 0) acts[i] = besta;
+                }
+                int nr = r + DR[acts[i]], nc = c + DC[acts[i]];
+                if (acts[i] != STAY && nr >= 0 && nr < N && nc >= 0 && nc < N &&
+                    !wallAt(nr, nc)) { r = nr; c = nc; }
             }
         }
 
