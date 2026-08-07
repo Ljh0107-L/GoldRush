@@ -41,7 +41,6 @@ constexpr int DC[5] = {0, 0, -1, 1, 0};
 constexpr int BOMB = -3, OBSTACLE = -1;   // (FOG=-5 窗外, v2 不读)
 constexpr GameOutput SAFE_OUT = {{STAY, STAY, STAY, STAY, STAY, STAY}, 3, 0, 0};
 
-struct Pile { int8_t r, c; uint8_t v; uint8_t seen; };   // seen = round>>1
 struct BombM { int8_t r, c; uint8_t seen; };
 
 struct State {
@@ -50,7 +49,9 @@ struct State {
     // 哨兵阻挡位图: 行 0/18 全阻, 位(c+1)=列 c, 位0 与位18+ 恒1(出界)
     // -> passable 纯两次位测试, 零边界分支
     uint32_t bp[N + 2];
-    Pile  piles[16];         // v==0 表示空槽
+    // 矿堆缓存 SoA(每字段 16B = 1 条 XMM): SIMD 对账/打分
+    int8_t  pr_[16], pc_[16];
+    uint8_t pv_[16], ps_[16];
     BombM bombs[8];
     int8_t goal_r[2], goal_c[2];
     uint8_t goal_kind[2];    // 0=无 1=矿堆 2=巡逻
@@ -103,12 +104,14 @@ inline void bombNote(int r, int c) {
 inline int pileSlot(int r, int c) { return (r * 31 + c) & 15; }
 
 inline void pileNote(int r, int c, int v) {
-    g_s.piles[pileSlot(r, c)] = {(int8_t)r, (int8_t)c, (uint8_t)v, now2()};
+    int i = pileSlot(r, c);
+    g_s.pr_[i] = (int8_t)r; g_s.pc_[i] = (int8_t)c;
+    g_s.pv_[i] = (uint8_t)v; g_s.ps_[i] = now2();
 }
 
 inline void pileDrop(int r, int c) {
-    Pile& p = g_s.piles[pileSlot(r, c)];
-    if (p.r == r && p.c == c) p.v = 0;
+    int i = pileSlot(r, c);
+    if (g_s.pr_[i] == r && g_s.pc_[i] == c) g_s.pv_[i] = 0;
 }
 
 inline bool passable(int r, int c, int tr, int tc) {   // tr/tc = 队友占位
@@ -190,8 +193,7 @@ GameOutput decide(const GameInput* in) {
     unsigned long long t9 = tsc();
 #endif
     __builtin_prefetch(&g_s.bp[4]);            // 自身状态热线并行预热
-    __builtin_prefetch(&g_s.piles[0]);
-    __builtin_prefetch(&g_s.piles[8]);
+    __builtin_prefetch(g_s.pr_);
     // 窗口行预取(与扫描行程一致: 3 行常扫+隔轮扩展)
     for (int u2 = 0; u2 < 2; ++u2) {
         int ur = in->my_units[u2].row, uc = in->my_units[u2].col;
@@ -326,16 +328,39 @@ GameOutput decide(const GameInput* in) {
         if (in->round < 250) g_t[1] += tsc() - tb9;
         unsigned long long tb2 = tsc();
 #endif
-        // 对账(零读格): 本单位窗口内的堆/弹用 wv7/bombm 校正
+        // 对账(零读格): 本单位窗口内的堆用 wv7 校正
+#if defined(__AVX2__)
+        {   // SIMD: 一次比较得到"窗口内且有货"的堆位图, 逐位校正(稀疏)
+            __m128i vr_ = _mm_loadu_si128((const __m128i*)g_s.pr_);
+            __m128i vc_ = _mm_loadu_si128((const __m128i*)g_s.pc_);
+            __m128i vv_ = _mm_loadu_si128((const __m128i*)g_s.pv_);
+            __m128i wr_ = _mm_sub_epi8(vr_, _mm_set1_epi8((char)(sr - 2)));
+            __m128i wc_ = _mm_sub_epi8(vc_, _mm_set1_epi8((char)(sc - 2)));
+            __m128i in5r = _mm_cmpgt_epi8(_mm_set1_epi8(5), _mm_max_epu8(wr_, _mm_setzero_si128()));
+            in5r = _mm_and_si128(in5r, _mm_cmpgt_epi8(wr_, _mm_set1_epi8(-1)));
+            __m128i in5c = _mm_cmpgt_epi8(_mm_set1_epi8(5), _mm_max_epu8(wc_, _mm_setzero_si128()));
+            in5c = _mm_and_si128(in5c, _mm_cmpgt_epi8(wc_, _mm_set1_epi8(-1)));
+            __m128i has = _mm_cmpgt_epi8(vv_, _mm_setzero_si128());
+            uint32_t hits = (uint32_t)_mm_movemask_epi8(
+                _mm_and_si128(_mm_and_si128(in5r, in5c), has));
+            while (hits) {
+                int i = __builtin_ctz(hits); hits &= hits - 1;
+                int wr = g_s.pr_[i] - sr + 2, wc = g_s.pc_[i] - sc + 2;
+                int v = wv7[(wr + 1) * 7 + (wc + 1)];
+                if (v >= 5) { g_s.pv_[i] = (uint8_t)v; g_s.ps_[i] = now2(); }
+                else g_s.pv_[i] = 0;
+            }
+        }
+#else
         for (int i = 0; i < 16; ++i) {
-            Pile& p = g_s.piles[i];
-            if (!p.v) continue;
-            int wr = p.r - sr + 2, wc = p.c - sc + 2;
+            if (!g_s.pv_[i]) continue;
+            int wr = g_s.pr_[i] - sr + 2, wc = g_s.pc_[i] - sc + 2;
             if ((unsigned)wr > 4u || (unsigned)wc > 4u) continue;
             int v = wv7[(wr + 1) * 7 + (wc + 1)];
-            if (v >= 5) { p.v = (uint8_t)v; p.seen = now2(); }
-            else p.v = 0;                          // 吃小/吃空/变弹: 摘除
+            if (v >= 5) { g_s.pv_[i] = (uint8_t)v; g_s.ps_[i] = now2(); }
+            else g_s.pv_[i] = 0;                   // 吃小/吃空/变弹: 摘除
         }
+#endif
         for (int i = 0; i < 8; ++i) {
             BombM& b = g_s.bombs[i];
             if (!b.seen) continue;
@@ -403,8 +428,9 @@ GameOutput decide(const GameInput* in) {
 #endif
             bool valid = false;
             if (g_s.goal_kind[u] == 1) {           // 哈希 O(1) 校验
-                Pile& p = g_s.piles[pileSlot(g_s.goal_r[u], g_s.goal_c[u])];
-                valid = p.v && p.r == g_s.goal_r[u] && p.c == g_s.goal_c[u];
+                int pi_ = pileSlot(g_s.goal_r[u], g_s.goal_c[u]);
+                valid = g_s.pv_[pi_] && g_s.pr_[pi_] == g_s.goal_r[u] &&
+                        g_s.pc_[pi_] == g_s.goal_c[u];
             } else if (g_s.goal_kind[u] == 2) {
                 valid = !(sr == g_s.goal_r[u] && sc == g_s.goal_c[u]);
             }
@@ -415,22 +441,21 @@ GameOutput decide(const GameInput* in) {
                 int dedup = (u == 1 && g_s.goal_kind[0] == 1)
                                 ? (g_s.goal_r[0] * 32 + g_s.goal_c[0]) : -1;
                 for (int i = 0; i < 16; ++i) {         // 固定 16 次, 体内无分支
-                    const Pile& p = g_s.piles[i];
-                    int age2 = (int)t2 - p.seen;
-                    int dr_ = p.r - sr, dc_ = p.c - sc;
+                    int age2 = (int)t2 - g_s.ps_[i];
+                    int dr_ = g_s.pr_[i] - sr, dc_ = g_s.pc_[i] - sc;
                     int d = (dr_ < 0 ? -dr_ : dr_) + (dc_ < 0 ? -dc_ : dc_);
-                    int pos = p.r * 32 + p.c;
+                    int pos = g_s.pr_[i] * 32 + g_s.pc_[i];
                     // live: 有货 且 年龄<=30 且 非去重目标 (位与代替短路)
-                    int live = -(int)((unsigned)(p.v != 0) &
+                    int live = -(int)((unsigned)(g_s.pv_[i] != 0) &
                                       (unsigned)(age2 <= 30) &
                                       (unsigned)(pos != dedup));
-                    int s = (p.v * (30 - age2) * REC[d]) & live;
+                    int s = (g_s.pv_[i] * (30 - age2) * REC[d]) & live;
                     int gt = -(int)(s > best);
                     best = (s & gt) | (best & ~gt);
                     bi = (i & gt) | (bi & ~gt);
                 }
                 if (bi >= 0) {
-                    g_s.goal_r[u] = g_s.piles[bi].r; g_s.goal_c[u] = g_s.piles[bi].c;
+                    g_s.goal_r[u] = g_s.pr_[bi]; g_s.goal_c[u] = g_s.pc_[bi];
                     g_s.goal_kind[u] = 1;
                 } else {                            // 无堆可去: 巡逻
                     uint8_t& pi = g_s.patrol[u];
