@@ -72,22 +72,6 @@ int steerStep(int r, int c, int gr, int gc, int tr, int tc,
     return (adr | adc) ? escapeStep(r, c, tr, tc, pr, pc, rich) : -1;
 }
 
-// 串行导向链(LUT 回落; 冷段)
-__attribute__((noinline, cold))
-void steer3(int* acts, int sr, int sc, int tgr, int tgc,
-            int tr, int tc, int pr0, int pc0, unsigned rich) {
-    int r = sr, c = sc, pr = pr0, pc = pc0;
-    for (int i = 0; i < 3; ++i) {
-        int notdone = (int)((r != tgr) | (c != tgc));
-        int a = steerStep(r, c, tgr, tgc, tr, tc, pr, pc, rich);
-        int m = -(notdone & (int)(a >= 0));
-        acts[i] = (a & m) | (STAY & ~m);
-        int nr = r + DR[acts[i]], nc = c + DC[acts[i]];
-        pr = (r & m) | (pr & ~m); pc = (c & m) | (pc & ~m);
-        r = (nr & m) | (r & ~m); c = (nc & m) | (c & ~m);
-    }
-}
-
 // LUT 导向: (dr,dc)∈[-3,3]² 行优先无阻挡模拟(动作+逐步累计位移)
 struct SLut {
     uint8_t act[7][7][3];
@@ -269,8 +253,10 @@ GameOutput decide(const GameInput* in) {
                 int e2 = em & -(int)(d + 1 < 3);      // 仅 d==1
                 acts[2] = ((acts[1] ^ 1) & e2) | (acts[2] & ~e2);
             } else {
-                steer3(acts, sr, sc, tgr, tgc, tr, tc,
-                       g_s.last_r[u], g_s.last_c[u], rich);
+                // 受阻(罕见): 单步谨慎, 其余 STAY(下轮恢复) —— steer3 全链蒸发
+                int a = steerStep(sr, sc, tgr, tgc, tr, tc,
+                                  g_s.last_r[u], g_s.last_c[u], rich);
+                if (a >= 0) acts[0] = a;
             }
         }
 
