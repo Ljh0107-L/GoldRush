@@ -43,6 +43,7 @@ struct BombM { int8_t r, c; uint8_t seen; };
 
 struct State {
     uint32_t wall[N];        // 障碍位图(观测到即永久)
+    uint32_t bombbit[N];     // 炸弹位图(与 bombs 列表同步; passable 纯位测试)
     Pile  piles[16];         // v==0 表示空槽
     BombM bombs[8];
     int8_t goal_r[2], goal_c[2];
@@ -70,11 +71,7 @@ inline uint8_t now2() { return (uint8_t)(g_s.last_round >> 1); }
 
 inline bool wallAt(int r, int c) { return (g_s.wall[r] >> c) & 1u; }
 
-inline bool bombAt(int r, int c) {
-    for (int i = 0; i < 8; ++i)
-        if (g_s.bombs[i].r == r && g_s.bombs[i].c == c && g_s.bombs[i].seen) return true;
-    return false;
-}
+inline bool bombAt(int r, int c) { return (g_s.bombbit[r] >> c) & 1u; }
 
 inline void bombNote(int r, int c) {
     int free_ = -1;
@@ -85,7 +82,10 @@ inline void bombNote(int r, int c) {
         }
         if (!g_s.bombs[i].seen) free_ = i;
     }
-    if (free_ >= 0) g_s.bombs[free_] = {(int8_t)r, (int8_t)c, now2() ? now2() : (uint8_t)1};
+    if (free_ >= 0) {
+        g_s.bombs[free_] = {(int8_t)r, (int8_t)c, now2() ? now2() : (uint8_t)1};
+        g_s.bombbit[r] |= 1u << c;
+    }
 }
 
 // 矿堆缓存: 只记 v>=6 的堆(小堆不值得专程回访)
@@ -141,6 +141,7 @@ GameOutput decide(const GameInput* in) {
     g_s.last_round = (int16_t)in->round;
     if (in->round % 20 == 0) {                    // 炸弹波: 旧记忆全部过期
         for (int i = 0; i < 8; ++i) g_s.bombs[i].seen = 0;
+        memset(g_s.bombbit, 0, sizeof(g_s.bombbit));
     }
 
     GameOutput out = SAFE_OUT;
@@ -164,7 +165,10 @@ GameOutput decide(const GameInput* in) {
         }
         for (int i = 0; i < 8; ++i) {
             BombM& b = g_s.bombs[i];
-            if (b.seen && inwin(b.r, b.c) && in->grid[b.r][b.c] != BOMB) b.seen = 0;
+            if (b.seen && inwin(b.r, b.c) && in->grid[b.r][b.c] != BOMB) {
+                b.seen = 0;
+                g_s.bombbit[b.r] &= ~(1u << b.c);
+            }
         }
     }
 
@@ -184,89 +188,86 @@ GameOutput decide(const GameInput* in) {
         if (sr < 0 || sr >= N || sc < 0 || sc >= N) continue;
         int tr = in->my_units[1 - u].row, tc = in->my_units[1 - u].col;
 
-        // ---- 窗口扫描(预算大头): 窗口值缓存 + 金格收集 + 增量更新持久结构 ----
-        // 逐格只做增量记录; 缓存失效统一对账(教训: 逐格反查=半个预算)
-        int8_t wv[25];                     // 窗口局部值(簇加成/尾步填充复用)
-        int8_t gr_[8], gc_[8]; int gn_ = 0;
+        // ---- 掩码化窗口扫描(无分支主体; 冷 BTB 实证: 分支数即延迟) ----
+        // wv7 = 7x7 带哨兵边框的窗口值(邻居访问永远合法); 三张 25 位掩码
+        int8_t wv7[49];
+        memset(wv7, -1, 49);
+        uint32_t goldm = 0, wallm = 0, bombm = 0;
         int r0 = sr - 2 < 0 ? 0 : sr - 2, r1 = sr + 2 >= N ? N - 1 : sr + 2;
         int c0 = sc - 2 < 0 ? 0 : sc - 2, c1 = sc + 2 >= N ? N - 1 : sc + 2;
-        memset(wv, -1, 25);                // 出界视作不可走
         for (int r = r0; r <= r1; ++r) {
             const int* row = in->grid[r];
-            int base = (r - sr + 2) * 5 - sc + 2;
+            int b7 = (r - sr + 3) * 7 + 3 - sc;
+            int b5 = (r - sr + 2) * 5 + 2 - sc;
             for (int c = c0; c <= c1; ++c) {
                 int v = row[c];
-                wv[base + c] = (int8_t)(v > 127 ? 127 : v);
-                if (v > 0) {
-                    if (gn_ < 8) { gr_[gn_] = (int8_t)r; gc_[gn_] = (int8_t)c; ++gn_; }
-                    if (v >= 5) pileNote(r, c, v);
-                } else if (v == OBSTACLE) {
-                    g_s.wall[r] |= 1u << c;
-                } else if (v == BOMB) {
-                    bombNote(r, c);
-                }
+                wv7[b7 + c] = (int8_t)(v > 127 ? 127 : v);
+                uint32_t bit = 1u << (b5 + c);
+                goldm |= v > 0 ? bit : 0u;
+                wallm |= v == OBSTACLE ? bit : 0u;
+                bombm |= v == BOMB ? bit : 0u;
             }
         }
-        // 采集打分(带簇加成: 邻格金折半计入, v1 实证有效)
+        if (wallm)                             // 墙位图: 行片一次并入
+            for (int r = r0; r <= r1; ++r) {
+                int b5 = (r - sr + 2) * 5 + 2 - sc;
+                g_s.wall[r] |= ((wallm >> (b5 + c0)) & 31u) << c0;
+            }
+        while (bombm) {                        // 炸弹: 稀疏, 逐位处理
+            int i = __builtin_ctz(bombm); bombm &= bombm - 1;
+            bombNote(sr - 2 + i / 5, sc - 2 + i % 5);
+        }
+        // 采集打分(簇加成): 只走置位金格
+        constexpr int8_t MD[25] = {4,3,2,3,4, 3,2,1,2,3, 2,1,0,1,2,
+                                   3,2,1,2,3, 4,3,2,3,4};
         int bestr = -1, bestc = -1, bests = 0;
-        for (int i = 0; i < gn_; ++i) {
-            int r = gr_[i], c = gc_[i];
-            int wi = (r - sr + 2) * 5 + (c - sc + 2);
-            int v = wv[wi];
-            int nb = 0;
-            if (wi >= 5 && wv[wi - 5] > 0) nb += wv[wi - 5];
-            if (wi < 20 && wv[wi + 5] > 0) nb += wv[wi + 5];
-            if (wi % 5 && wv[wi - 1] > 0) nb += wv[wi - 1];
-            if (wi % 5 != 4 && wv[wi + 1] > 0) nb += wv[wi + 1];
-            int d = (r > sr ? r - sr : sr - r) + (c > sc ? c - sc : sc - c);
-            int sc_ = (v * 2 + nb) * REC[d];
-            if (sc_ > bests) { bests = sc_; bestr = r; bestc = c; }
+        int gn_ = 0;
+        {
+            uint32_t gm = goldm;
+            while (gm) {
+                int i = __builtin_ctz(gm); gm &= gm - 1;
+                ++gn_;
+                int w = (i / 5 + 1) * 7 + i % 5 + 1;
+                int v = wv7[w];
+                int nu = wv7[w - 7], nd2 = wv7[w + 7], nl = wv7[w - 1], nr2 = wv7[w + 1];
+                int nb = (nu > 0 ? nu : 0) + (nd2 > 0 ? nd2 : 0) +
+                         (nl > 0 ? nl : 0) + (nr2 > 0 ? nr2 : 0);
+                int sc_ = (v * 2 + nb) * REC[MD[i]];
+                if (sc_ > bests) {
+                    bests = sc_; bestr = sr - 2 + i / 5; bestc = sc - 2 + i % 5;
+                }
+                if (v >= 5) pileNote(sr - 2 + i / 5, sc - 2 + i % 5, v);
+            }
         }
 
 #if defined(NSPROBE) && NSPROBE == 1
         (void)bests; continue;               // 探针1: 只测 扫描+对账(站桩)
 #endif
 #if defined(NSPROBE) && NSPROBE == 3
-        {   // 探针3: 扫描+对账+轮转走位(窗口移动) —— 分离"输入新鲜区冷读"成本
-            (void)bests;
+        {   // 探针3: +轮转走位(窗口移动)
             int a = (in->round / 4 + u * 2) & 3;
             acts[0] = acts[1] = acts[2] = a;
             continue;
         }
 #endif
-        // ---- 决策核 ----
+        // ---- 统一决策核: 目标格 = 窗口最优金格 或 持久目标; 导向共用 ----
+#if defined(NSPROBE) && NSPROBE == 6
+        bestr = -1;                          // 探针6: 采集支砍除
+#endif
+        int tgr, tgc, mode;                  // mode: 0=采集 1=矿堆 2=巡逻
         if (bestr >= 0) {
-            // 闭式采集(v1 singleGold 语义): 直取 + 早到振荡
-            int d = (bestr > sr ? bestr - sr : sr - bestr) +
-                    (bestc > sc ? bestc - sc : sc - bestc);
-            g_s.goal_kind[u] = 0;                    // 就地有活干, 目标层休眠
-            if (d == 0) {                          // 站在金上: 出去再回来吃
-                for (int a = 0; a < 4; ++a) {
-                    if (passable(sr + DR[a], sc + DC[a], tr, tc)) {
-                        acts[0] = a; acts[1] = a ^ 1;
-                        break;
-                    }
-                }
-            } else {
-                int r = sr, c = sc, n = 0;
-                int pr = g_s.last_r[u], pc = g_s.last_c[u];
-                while (n < 3 && !(r == bestr && c == bestc)) {
-                    int a = steerStep(r, c, bestr, bestc, tr, tc, pr, pc);
-                    if (a < 0) break;
-                    acts[n++] = a;
-                    pr = r; pc = c;
-                    r += DR[a]; c += DC[a];
-                }
-                if (r == bestr && c == bestc && n < 3) {
-                    acts[n] = acts[n - 1] ^ 1;     // 早到: 退一步
-                    if (n + 1 < 3) acts[n + 1] = acts[n] ^ 1;   // d1 双吃回进
-                }
-            }
+            tgr = bestr; tgc = bestc; mode = 0;
+            g_s.goal_kind[u] = 0;            // 就地有活干, 目标层休眠
         } else {
-            // 无金: 持久目标(矿堆缓存优先, 否则巡逻) —— v1 的 2.2μs 目标层在此
-            // 收缩成 16 条缓存记录的一次线性打分
+#if defined(NSPROBE) && NSPROBE == 5
+            {   // 探针5: 目标支砍除, 轮转走位
+                int a = (in->round / 4 + u * 2) & 3;
+                acts[0] = acts[1] = acts[2] = a;
+                goto probe5_done;
+            }
+#endif
             bool valid = false;
-            if (g_s.goal_kind[u] == 1) {             // 现有矿堆目标仍然成立?
+            if (g_s.goal_kind[u] == 1) {
                 for (int i = 0; i < 16; ++i)
                     if (g_s.piles[i].v && g_s.piles[i].r == g_s.goal_r[u] &&
                         g_s.piles[i].c == g_s.goal_c[u]) { valid = true; break; }
@@ -298,33 +299,61 @@ GameOutput decide(const GameInput* in) {
                     g_s.goal_kind[u] = 2;
                 }
             }
-            int gr = g_s.goal_r[u], gc = g_s.goal_c[u];
-            int r = sr, c = sc, n = 0;
-            int pr = g_s.last_r[u], pc = g_s.last_c[u];
-            while (n < 3 && !(r == gr && c == gc)) {
-                int a = steerStep(r, c, gr, gc, tr, tc, pr, pc);
-                if (a < 0) break;
-                acts[n++] = a;
-                pr = r; pc = c;
-                r += DR[a]; c += DC[a];
-            }
-            if (r == gr && c == gc) {
-                if (g_s.goal_kind[u] == 1) pileDrop(gr, gc);   // 到了发现没金(窗口无金分支) = 幽灵堆
-                g_s.goal_kind[u] = 0;
+            tgr = g_s.goal_r[u]; tgc = g_s.goal_c[u]; mode = g_s.goal_kind[u];
+        }
+        {
+            int d = (tgr > sr ? tgr - sr : sr - tgr) +
+                    (tgc > sc ? tgc - sc : sc - tgc);
+            if (d == 0) {
+                if (mode == 0) {               // 站在金上: 出去再回来吃
+                    for (int a = 0; a < 4; ++a) {
+                        if (passable(sr + DR[a], sc + DC[a], tr, tc)) {
+                            acts[0] = a; acts[1] = a ^ 1;
+                            break;
+                        }
+                    }
+                } else {                        // 站在目标上(幽灵堆): 摘除
+                    if (mode == 1) pileDrop(tgr, tgc);
+                    g_s.goal_kind[u] = 0;
+                }
+            } else {
+                int r = sr, c = sc, n = 0;
+                int pr = g_s.last_r[u], pc = g_s.last_c[u];
+                while (n < 3 && !(r == tgr && c == tgc)) {
+                    int a = steerStep(r, c, tgr, tgc, tr, tc, pr, pc);
+                    if (a < 0) break;
+                    acts[n++] = a;
+                    pr = r; pc = c;
+                    r += DR[a]; c += DC[a];
+                }
+                if (r == tgr && c == tgc) {
+                    if (mode == 0) {
+                        if (n < 3) {
+                            acts[n] = acts[n - 1] ^ 1;     // 早到: 退一步
+                            if (n + 1 < 3) acts[n + 1] = acts[n] ^ 1;   // d1 双吃回进
+                        }
+                    } else {
+                        if (mode == 1) pileDrop(tgr, tgc);
+                        g_s.goal_kind[u] = 0;              // 到达: 下轮窗口扫描接管
+                    }
+                }
             }
         }
 
+#if defined(NSPROBE) && NSPROBE == 5
+        probe5_done:;
+#endif
         // ---- 尾步填充(v1 实证: 16% 的步在罚站; 复用 wv, 零额外读格) ----
-        {
+        if (gn_ > 0) {
             int r = sr, c = sc;
             for (int i = 0; i < 3; ++i) {
                 if (acts[i] == STAY) {
                     int besta = -1, bv = 0;
                     for (int a = 0; a < 4; ++a) {
                         int nr = r + DR[a], nc = c + DC[a];
-                        int ur = nr - sr + 2, uc = nc - sc + 2;
-                        if ((unsigned)ur > 4u || (unsigned)uc > 4u) continue;
-                        int v = wv[ur * 5 + uc];       // >0 即金(金格无墙无弹)
+                        int ur = nr - sr + 3, uc = nc - sc + 3;
+                        if ((unsigned)ur > 6u || (unsigned)uc > 6u) continue;
+                        int v = wv7[ur * 7 + uc];      // >0 即金(金格无墙无弹)
                         if (v > bv && !(nr == tr && nc == tc)) { bv = v; besta = a; }
                     }
                     if (besta >= 0) acts[i] = besta;
