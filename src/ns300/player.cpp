@@ -224,24 +224,22 @@ GameOutput decide(const GameInput* in) {
     if (in->round < 250) g_t[0] += tsc() - t9;
 #endif
 
+    // ===== 阶段1: 双单位背靠背扫描 =====
+    // 两组 ~10 条输入线的 miss 在无分支代码下由 OoO 并行发射(MLP),
+    // 总等待 ~= 最大值而非串行和(此前 u0扫->u0决->u1扫 把 miss 串行化了)
+    int8_t wv7s[2][49];
+    uint32_t goldms[2] = {0, 0}, bombms[2] = {0, 0};
+#if defined(NSPROBE) && NSPROBE == 9
+    unsigned long long tb9 = tsc();
+#endif
     for (int u = 0; u < 2; ++u) {
         int sr = in->my_units[u].row, sc = in->my_units[u].col;
-        int* acts = out.actions + u * 3;
-        acts[0] = acts[1] = acts[2] = STAY;
-        if (sr < 0 || sr >= N || sc < 0 || sc >= N) continue;
-        int tr = in->my_units[1 - u].row, tc = in->my_units[1 - u].col;
-
-#if defined(NSPROBE) && NSPROBE == 9
-        unsigned long long tb9 = tsc();
-#endif
-        // ---- wv7 = 7x7 带哨兵边框的窗口值(邻居访问永远合法) ----
-        int8_t wv7[49];
+        int8_t* wv7 = wv7s[u];
         memset(wv7, -1, 49);
-        // 定形无分支扫描(遥测定案: 冷BTB与miss乘性耦合, 分支即延迟):
-        // 固定 5x5 形状全展开, 边界=钳位读+算术有效掩码, 全程无条件分支 →
-        // OoO 自由推测, 加载并行化。恢复全窗口(3行实验的行数论已被证伪)。
+        if (sr < 0 || sr >= N || sc < 0 || sc >= N) continue;
         int cb = sc - 2 < 0 ? 0 : (sc - 2 > N - 5 ? N - 5 : sc - 2);
-        int cshift = sc - 2 - cb + 3;          // blk 中心偏移
+        int cshift = sc - 2 - cb + 3;          // blk 中心偏移(标量路径用)
+        (void)cshift;
         uint32_t goldm = 0, wallm = 0, bombm = 0, validm = 0;
 #if defined(__AVX2__)
         {   // SIMD 行扫描: 每行 1 次载入 + 3 次比较 + movemask(热功 ~-200 周期)
@@ -327,8 +325,23 @@ GameOutput decide(const GameInput* in) {
                 bombNote(sr - 2 + i / 5, sc - 2 + i % 5);
             }
         }
+        goldms[u] = goldm; bombms[u] = bombm;
+    }
 #if defined(NSPROBE) && NSPROBE == 9
-        if (in->round < 250) g_t[1] += tsc() - tb9;
+    if (in->round < 250) g_t[1] += tsc() - tb9;
+#endif
+
+    // ===== 阶段2: 决策 =====
+    for (int u = 0; u < 2; ++u) {
+        int sr = in->my_units[u].row, sc = in->my_units[u].col;
+        int* acts = out.actions + u * 3;
+        acts[0] = acts[1] = acts[2] = STAY;
+        if (sr < 0 || sr >= N || sc < 0 || sc >= N) continue;
+        int tr = in->my_units[1 - u].row, tc = in->my_units[1 - u].col;
+        const int8_t* wv7 = wv7s[u];
+        uint32_t goldm = goldms[u], bombm = bombms[u];
+        (void)bombm;
+#if defined(NSPROBE) && NSPROBE == 9
         unsigned long long tb2 = tsc();
 #endif
         // 对账(零读格): 本单位窗口内的堆用 wv7 校正
