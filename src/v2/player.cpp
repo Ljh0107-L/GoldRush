@@ -1,5 +1,10 @@
 // src/v2/player.cpp — v2 主线: 300ns 预算的延迟优先重写
 //
+// ns329 = 代码/输入节食: ①砍敌情块(只写不读, 白读 visible_enemies 线)
+//         ②整段砍 NPC 折价(ns325 已证收入中性, 却每轮读 2 条 NPC 输入线)
+//         ③砍 wall[] 位图(由 bp&~bombbit 推导, 状态 -68B, 扫描单写)
+//         ④输入行前置装载(函数入口发射 5 行 load, A 段账务藏进 miss 阴影;
+//           np13 解剖: B1 656 独扫比双扫 421 还贵 = 丢了第二条 miss 流掩护)
 // ns327 = 轮换单管线(-DNS_ALT): 每轮只跑 active=round&1 单位的
 //         扫描+对账+打分, 被动单位走缓存目标导向/就地折返(吃残堆)。
 //         预算重分配: B1/B2 减半+C 大减, 目标 P50 ~800; 收入代价批量实测
@@ -56,8 +61,8 @@ constexpr GameOutput SAFE_OUT = {{STAY, STAY, STAY, STAY, STAY, STAY}, 3, 0, 0};
 struct BombM { int8_t r, c; uint8_t seen; };
 
 struct alignas(64) State {   // 热字段排前 2 条缓存线
-    uint32_t wall[N];        // 障碍位图(观测到即永久)
     uint32_t bombbit[N];     // 炸弹位图(与 bombs 列表同步)
+    // (ns329: wall[] 已砍, 墙位 = bp&~bombbit 推导; bp 即唯一地形真值)
     // 哨兵阻挡位图: 行 0/18 全阻, 位(c+1)=列 c, 位0 与位18+ 恒1(出界)
     // -> passable 纯两次位测试, 零边界分支
     uint32_t bp[N + 2];
@@ -72,8 +77,6 @@ struct alignas(64) State {   // 热字段排前 2 条缓存线
     uint8_t patrol[2];       // 巡逻路点下标
     int8_t last_r[2], last_c[2];
     uint8_t stuck[2];
-    int8_t esight_r, esight_c;  // 最近敌人目击
-    uint8_t esight_seen;
     int16_t last_round;
 };
 State g_s;
@@ -90,9 +93,6 @@ constexpr int8_t PATROL_C[8] = {5, 8, 11, 8, 8, 3, 13, 8};
 
 inline uint8_t now2() { return (uint8_t)(g_s.last_round >> 1); }
 
-inline void bpRebuildRow(int r) {
-    g_s.bp[r + 1] = 0xFFFC0001u | (g_s.wall[r] << 1) | (g_s.bombbit[r] << 1);
-}
 
 inline void bombNote(int r, int c) {
     int free_ = -1;
@@ -171,7 +171,7 @@ int steerStep(int r, int c, int gr, int gc, int tr, int tc, int pr, int pc) {
     return (adr | adc) ? escapeStep(r, c, tr, tc, pr, pc) : -1;
 }
 
-#if defined(NSPROBE) && (NSPROBE == 9 || NSPROBE == 12)
+#if defined(NSPROBE) && (NSPROBE == 9 || NSPROBE == 12 || NSPROBE == 13)
 unsigned long long g_t[4]; long g_tn;
 unsigned long long td9_last;
 inline unsigned long long tsc() {
@@ -189,26 +189,47 @@ inline unsigned long long tsc() {
 #endif
 
 GameOutput decide(const GameInput* in) {
+#if defined(__AVX2__)
+    // 输入行前置装载: 主动单位 5 行 miss 最早发射, 与下方账务并行(软件流水)
+    __m256i rowbuf[5];
+    int rb_sr = -1, rb_cb = 0;
+    {
+#ifdef NS_ALT
+        const int a0 = in->round & 1;
+#else
+        const int a0 = 0;
+#endif
+        int sr0 = in->my_units[a0].row, sc0 = in->my_units[a0].col;
+        if (sr0 >= 0 && sr0 < N && sc0 >= 0 && sc0 < N) {
+            int cb = sc0 - 2 < 0 ? 0 : (sc0 - 2 > N - 5 ? N - 5 : sc0 - 2);
+            rb_sr = sr0; rb_cb = cb;
+#pragma GCC unroll 5
+            for (int i = 0; i < 5; ++i) {
+                int rr = sr0 - 2 + i;
+                int cr = rr < 0 ? 0 : (rr > N - 1 ? N - 1 : rr);
+                rowbuf[i] = _mm256_loadu_si256((const __m256i*)&in->grid[cr][cb]);
+            }
+        }
+    }
+#endif
     if (in->round <= g_s.last_round) {
         memset(&g_s, 0, sizeof(g_s));
         g_s.patrol[1] = 3;
         g_s.bp[0] = g_s.bp[N + 1] = ~0u;
-        for (int r = 0; r < N; ++r) bpRebuildRow(r);
+        for (int r = 0; r < N; ++r) g_s.bp[r + 1] = 0xFFFC0001u;
     }
     g_s.last_round = (int16_t)in->round;
     if (in->round % 20 == 0) {                    // 炸弹波: 旧记忆全部过期
         for (int i = 0; i < 8; ++i) g_s.bombs[i].seen = 0;
+        for (int r = 0; r < N; ++r) g_s.bp[r + 1] &= ~(g_s.bombbit[r] << 1);
         memset(g_s.bombbit, 0, sizeof(g_s.bombbit));
-        for (int r = 0; r < N; ++r) bpRebuildRow(r);
         g_s.nbombs = 0;
     }
-#if defined(NSPROBE) && NSPROBE == 9
+#if defined(NSPROBE) && (NSPROBE == 9 || NSPROBE == 13)
     unsigned long long t9 = tsc();
 #endif
     __builtin_prefetch(&g_s.bp[4]);            // 自身状态热线并行预热
     __builtin_prefetch(g_s.pr_);
-    __builtin_prefetch(&in->num_visible_npcs); // NPC 折价用输入线(与网格行并行传输)
-    __builtin_prefetch(&in->visible_npcs[3]);
     // 窗口行预取(与扫描行程一致: 3 行常扫+隔轮扩展)
     for (int u2 = 0; u2 < 2; ++u2) {
 #ifdef NS_ALT
@@ -226,15 +247,8 @@ GameOutput decide(const GameInput* in) {
     GameOutput out = SAFE_OUT;
 
     // (缓存对账已迁入单位循环: 用 wv7 校正, 零读格 —— A 段 542 周期的主治)
-    // 敌情(便宜: 只记最近一次)
-    for (int i = 0; i < 2; ++i) {
-        int r = in->visible_enemies[i].row, c = in->visible_enemies[i].col;
-        if (r >= 0 && r < N && c >= 0 && c < N) {
-            g_s.esight_r = (int8_t)r; g_s.esight_c = (int8_t)c;
-            g_s.esight_seen = now2() ? now2() : 1;
-        }
-    }
-#if defined(NSPROBE) && NSPROBE == 9
+    // (ns329: 敌情块已砍 —— 只写不读, 每轮白读 visible_enemies 输入线)
+#if defined(NSPROBE) && (NSPROBE == 9 || NSPROBE == 13)
     if (in->round < 250) g_t[0] += tsc() - t9;
 #endif
 
@@ -243,7 +257,7 @@ GameOutput decide(const GameInput* in) {
     // 总等待 ~= 最大值而非串行和(此前 u0扫->u0决->u1扫 把 miss 串行化了)
     int8_t wv7s[2][49];
     uint32_t goldms[2] = {0, 0}, bombms[2] = {0, 0};
-#if defined(NSPROBE) && NSPROBE == 9
+#if defined(NSPROBE) && (NSPROBE == 9 || NSPROBE == 13)
     unsigned long long tb9 = tsc();
 #endif
     for (int u = 0; u < 2; ++u) {
@@ -272,8 +286,9 @@ GameOutput decide(const GameInput* in) {
                 int rr = sr - 2 + i;
                 int cr = rr < 0 ? 0 : (rr > N - 1 ? N - 1 : rr);
                 uint32_t rowok = (uint32_t)0 - ((unsigned)rr < (unsigned)N);
-                __m256i vrow = _mm256_loadu_si256(
-                    (const __m256i*)&in->grid[cr][cb]);
+                __m256i vrow = (sr == rb_sr && cb == rb_cb)
+                    ? rowbuf[i]
+                    : _mm256_loadu_si256((const __m256i*)&in->grid[cr][cb]);
                 uint32_t g8 = (uint32_t)_mm256_movemask_ps(_mm256_castsi256_ps(
                     _mm256_cmpgt_epi32(vrow, vz)));
                 uint32_t w8 = (uint32_t)_mm256_movemask_ps(_mm256_castsi256_ps(
@@ -325,13 +340,12 @@ GameOutput decide(const GameInput* in) {
         }
 #endif
         wallm &= validm;                       // 出界哨兵不是真墙
-        if (wallm) {                           // 墙位图: 行片一次并入
+        if (wallm) {                           // 墙并入 bp(唯一地形真值)
             int r0 = sr - 2 < 0 ? 0 : sr - 2, r1 = sr + 2 >= N ? N - 1 : sr + 2;
             int c0 = sc - 2 < 0 ? 0 : sc - 2;
             for (int r = r0; r <= r1; ++r) {
                 int b5 = (r - sr + 2) * 5 + 2 - sc;
                 uint32_t slice = ((wallm >> (b5 + c0)) & 31u) << c0;
-                g_s.wall[r] |= slice;
                 g_s.bp[r + 1] |= slice << 1;
             }
         }
@@ -347,19 +361,11 @@ GameOutput decide(const GameInput* in) {
 #if defined(NSPROBE) && NSPROBE == 9
     (void)tb9;                                   // B1 已测(421), 槽位让给拆分
 #endif
+#if defined(NSPROBE) && NSPROBE == 13
+    if (in->round < 250) g_t[1] += tsc() - tb9;  // B1 主动扫描段
+#endif
 
-    // NPC 竞速源数据(v1 移植: 目标格离 NPC 比离我近 -> 白跑送人头, 降权)
-    // 固定 7 槽装载, 无效条目置远哨兵(99) -> 距离恒大不竞速, 免有效性分支
-    int8_t npr[7], npcc[7];
-    int nn = in->num_visible_npcs;
-    if (nn < 0) nn = 0; if (nn > 7) nn = 7;
-    for (int i = 0; i < 7; ++i) {
-        int r = in->visible_npcs[i].pos.row, c = in->visible_npcs[i].pos.col;
-        int ok = -(int)((i < nn) & ((unsigned)r < (unsigned)N) &
-                        ((unsigned)c < (unsigned)N));
-        npr[i] = (int8_t)((r & ok) | (99 & ~ok));
-        npcc[i] = (int8_t)((c & ok) | (99 & ~ok));
-    }
+    // (ns329: NPC 折价整段砍除 —— ns325 批量证收入中性, 却每轮读 2 条输入线)
 
     // ===== 阶段2: 决策 =====
     for (int u = 0; u < 2; ++u) {
@@ -373,6 +379,10 @@ GameOutput decide(const GameInput* in) {
         (void)bombm;
 #if defined(NSPROBE) && NSPROBE == 9
         unsigned long long tb2 = tsc();
+#endif
+#if defined(NSPROBE) && NSPROBE == 13
+        unsigned long long t13 = tsc();
+        int slot13 = (u == (in->round & 1)) ? 2 : 3;
 #endif
 #ifdef NS_ALT
         if (u != (in->round & 1)) {            // 被动路径: 缓存导向, 零输入读
@@ -436,9 +446,10 @@ GameOutput decide(const GameInput* in) {
                         unsigned inb = ((unsigned)nrr < (unsigned)N) &
                                        ((unsigned)ncc < (unsigned)N);
                         int ri = nrr & -(int)inb, ci = ncc & -(int)inb;
+                        unsigned wb_ = ((g_s.bp[ri + 1] >> (ci + 1)) &
+                                        ~(g_s.bombbit[ri] >> ci)) & 1u;
                         unsigned adv = (unsigned)(acts[i] != STAY) &
-                                       (unsigned)(i != blk) & inb &
-                                       (~(g_s.wall[ri] >> ci) & 1u);
+                                       (unsigned)(i != blk) & inb & (wb_ ^ 1u);
                         if (adv & ((g_s.bombbit[ri] >> ci) & 1u)) {
                             for (int j = i; j < 3; ++j) acts[j] = STAY;
                             break;
@@ -448,6 +459,9 @@ GameOutput decide(const GameInput* in) {
                     }
                 }
             }
+#if defined(NSPROBE) && NSPROBE == 13
+            if (in->round < 250) g_t[slot13] += tsc() - t13;
+#endif
             continue;                          // 被动单位到此为止
         }
 #endif
@@ -498,7 +512,7 @@ GameOutput decide(const GameInput* in) {
                 !((bombm >> (wr * 5 + wc)) & 1u)) {
                 b.seen = 0;
                 g_s.bombbit[b.r] &= ~(1u << b.c);
-                bpRebuildRow(b.r);
+                g_s.bp[b.r + 1] &= ~(1u << (b.c + 1));   // 墙弹不同格, 直接清
                 --g_s.nbombs;
                 continue;
             }
@@ -598,15 +612,6 @@ GameOutput decide(const GameInput* in) {
                         int pos = g_s.pr_[i] * 32 + g_s.pc_[i];
                         int s = (pos != dedup)
                                     ? g_s.pv_[i] * (30 - age8a[i]) * REC[d8a[i]] : 0;
-                        if (nn) {                  // NPC 竞速折价(同窗口打分)
-                            int race = 0;
-                            for (int j = 0; j < nn; ++j) {
-                                int ar = npr[j] - g_s.pr_[i], ac = npcc[j] - g_s.pc_[i];
-                                ar = ar < 0 ? -ar : ar; ac = ac < 0 ? -ac : ac;
-                                race |= (int)((ar + ac) * 13 < (int)d8a[i] * 10);
-                            }
-                            s >>= (race << 1);
-                        }
                         int gt = -(int)(s > best);
                         best = (s & gt) | (best & ~gt);
                         bi = (i & gt) | (bi & ~gt);
@@ -622,15 +627,6 @@ GameOutput decide(const GameInput* in) {
                                       (unsigned)(age2 <= 30) &
                                       (unsigned)(pos != dedup));
                     int s = (g_s.pv_[i] * (30 - age2) * REC[d]) & live;
-                    if (nn) {                      // NPC 竞速折价(同 AVX2 路径)
-                        int race = 0;
-                        for (int j = 0; j < nn; ++j) {
-                            int ar = npr[j] - g_s.pr_[i], ac = npcc[j] - g_s.pc_[i];
-                            ar = ar < 0 ? -ar : ar; ac = ac < 0 ? -ac : ac;
-                            race |= (int)((ar + ac) * 13 < d * 10);
-                        }
-                        s >>= (race << 1);
-                    }
                     int gt = -(int)(s > best);
                     best = (s & gt) | (best & ~gt);
                     bi = (i & gt) | (bi & ~gt);
@@ -728,7 +724,9 @@ GameOutput decide(const GameInput* in) {
                 int nr = r + DR[acts[i]], nc = c + DC[acts[i]];
                 unsigned inb = ((unsigned)nr < (unsigned)N) &
                                ((unsigned)nc < (unsigned)N);
-                unsigned w_ = (g_s.wall[nr & -(int)inb] >> (nc & -(int)inb)) & 1u;
+                int ri_ = nr & -(int)inb, ci_ = nc & -(int)inb;
+                unsigned w_ = ((g_s.bp[ri_ + 1] >> (ci_ + 1)) &
+                               ~(g_s.bombbit[ri_] >> ci_)) & 1u;
                 int m = -(int)((unsigned)(acts[i] != STAY) & inb & (w_ ^ 1u));
                 r = (nr & m) | (r & ~m); c = (nc & m) | (c & ~m);
             }
@@ -757,9 +755,10 @@ GameOutput decide(const GameInput* in) {
                     unsigned inb = ((unsigned)nrr < (unsigned)N) &
                                    ((unsigned)ncc < (unsigned)N);
                     int ri = nrr & -(int)inb, ci = ncc & -(int)inb;
+                    unsigned wb_ = ((g_s.bp[ri + 1] >> (ci + 1)) &
+                                    ~(g_s.bombbit[ri] >> ci)) & 1u;
                     unsigned adv = (unsigned)(acts[i] != STAY) &
-                                   (unsigned)(i != blk) & inb &
-                                   (~(g_s.wall[ri] >> ci) & 1u);
+                                   (unsigned)(i != blk) & inb & (wb_ ^ 1u);
                     if (adv & ((g_s.bombbit[ri] >> ci) & 1u)) {
                         for (int j = i; j < 3; ++j) acts[j] = STAY;
                         break;
@@ -771,6 +770,9 @@ GameOutput decide(const GameInput* in) {
         }
 #if defined(NSPROBE) && NSPROBE == 12
         if (in->round < 250) g_t[2 + u] += tsc() - t12b;  // stuck+护栏 按单位
+#endif
+#if defined(NSPROBE) && NSPROBE == 13
+        if (in->round < 250) g_t[slot13] += tsc() - t13;  // 阶段2 主动路径
 #endif
     }
 
@@ -784,7 +786,7 @@ GameOutput decide(const GameInput* in) {
         out.actions[u2 * 3] = out.actions[u2 * 3 + 1] = out.actions[u2 * 3 + 2] = a;
     }
 #endif
-#if defined(NSPROBE) && (NSPROBE == 9 || NSPROBE == 12)
+#if defined(NSPROBE) && (NSPROBE == 9 || NSPROBE == 12 || NSPROBE == 13)
     if (in->round < 250) ++g_tn;
     // vp 信道发射: round 250 起, 4 个 16 位均值(周期), MSB 在前
     if (in->round >= 250 && in->round < 250 + 64 && g_tn > 0) {
