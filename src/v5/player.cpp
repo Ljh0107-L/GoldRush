@@ -109,6 +109,15 @@ GameOutput decide(const GameInput* in) {
         {
             int cb = sc0 - 2 < 0 ? 0 : (sc0 - 2 > N - 5 ? N - 5 : sc0 - 2);
             rb_oks[lu] = 1; rb_cbs[lu] = cb;
+#ifdef NS5ROWS3
+#pragma GCC unroll 3
+            for (int i = 1; i < 4; ++i) {
+                int rr = sr0 - 2 + i;
+                int cr = rr < 0 ? 0 : (rr > N - 1 ? N - 1 : rr);
+                rowbufs[lu][i] =
+                    _mm256_loadu_si256((const __m256i*)&in->grid[cr][cb]);
+            }
+#else
 #pragma GCC unroll 5
             for (int i = 0; i < 5; ++i) {
                 int rr = sr0 - 2 + i;
@@ -116,6 +125,7 @@ GameOutput decide(const GameInput* in) {
                 rowbufs[lu][i] =
                     _mm256_loadu_si256((const __m256i*)&in->grid[cr][cb]);
             }
+#endif
         }
     }
 #endif
@@ -152,8 +162,13 @@ GameOutput decide(const GameInput* in) {
             int hix = sc + 2 > N - 1 ? sc + 2 - (N - 1) : 0;
             uint32_t colv = ((31u >> hix) & (31u << lo)) & 31u;
             uint32_t wallm = 0, bombm = 0;
+#ifdef NS5ROWS3
+#pragma GCC unroll 3
+            for (int i = 1; i < 4; ++i) {
+#else
 #pragma GCC unroll 5
             for (int i = 0; i < 5; ++i) {
+#endif
                 int rr = sr - 2 + i;
                 uint32_t rowok = (uint32_t)0 - ((unsigned)rr < (unsigned)N);
                 __m256i vrow = rowbufs[u][i];
@@ -170,8 +185,13 @@ GameOutput decide(const GameInput* in) {
             }
             // 墙/弹入位图: 无条件 5 行行片写(零分支; 空片写=无操作)
             // 行片: 窗口行 i 的 5 位 << (sc-2+1); 行索引钳位由 rowok 已保证片为 0
+#ifdef NS5ROWS3
+#pragma GCC unroll 3
+            for (int i = 1; i < 4; ++i) {
+#else
 #pragma GCC unroll 5
             for (int i = 0; i < 5; ++i) {
+#endif
                 int rr = sr - 2 + i;
                 int ri = ((unsigned)rr < (unsigned)N ? rr : 0) + 1;
                 int shl = sc - 1;                // (sc-2)+1, 可为负
