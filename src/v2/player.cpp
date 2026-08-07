@@ -1,5 +1,8 @@
 // src/v2/player.cpp — v2 主线: 300ns 预算的延迟优先重写
 //
+// ns327 = 轮换单管线(-DNS_ALT): 每轮只跑 active=round&1 单位的
+//         扫描+对账+打分, 被动单位走缓存目标导向/就地折返(吃残堆)。
+//         预算重分配: B1/B2 减半+C 大减, 目标 P50 ~800; 收入代价批量实测
 // ns326 = D 段瘦身(np12 遥测: fill 211 + stuck/护栏 158 = 369 周期首次入账):
 //         fill/护栏位置推进无分支化(墙表掩码索引) + 护栏近弹预筛(搭炸弹
 //         对账环便车, 曼哈顿<=3 无弹整段跳过)。语义逐位等价(pair_diff 验)
@@ -208,6 +211,9 @@ GameOutput decide(const GameInput* in) {
     __builtin_prefetch(&in->visible_npcs[3]);
     // 窗口行预取(与扫描行程一致: 3 行常扫+隔轮扩展)
     for (int u2 = 0; u2 < 2; ++u2) {
+#ifdef NS_ALT
+        if (u2 != (in->round & 1)) continue;   // 轮换: 被动单位输入行不碰
+#endif
         int ur = in->my_units[u2].row, uc = in->my_units[u2].col;
         if (ur < 0) continue;
         int pc0 = uc - 2 < 0 ? 0 : uc - 2;
@@ -245,6 +251,9 @@ GameOutput decide(const GameInput* in) {
         int8_t* wv7 = wv7s[u];
         memset(wv7, -1, 49);
         if (sr < 0 || sr >= N || sc < 0 || sc >= N) continue;
+#ifdef NS_ALT
+        if (u != (in->round & 1)) continue;    // 轮换: 被动单位本轮不扫描
+#endif
         int cb = sc - 2 < 0 ? 0 : (sc - 2 > N - 5 ? N - 5 : sc - 2);
         int cshift = sc - 2 - cb + 3;          // blk 中心偏移(标量路径用)
         (void)cshift;
@@ -364,6 +373,83 @@ GameOutput decide(const GameInput* in) {
         (void)bombm;
 #if defined(NSPROBE) && NSPROBE == 9
         unsigned long long tb2 = tsc();
+#endif
+#ifdef NS_ALT
+        if (u != (in->round & 1)) {            // 被动路径: 缓存导向, 零输入读
+            unsigned nearbomb = 0;
+            for (int i = 0; i < 8; ++i) {
+                const BombM& b = g_s.bombs[i];
+                int adr_ = b.r - sr, adc_ = b.c - sc;
+                adr_ = adr_ < 0 ? -adr_ : adr_; adc_ = adc_ < 0 ? -adc_ : adc_;
+                nearbomb |= (unsigned)(b.seen && adr_ + adc_ <= 3);
+            }
+            if (g_s.goal_kind[u] == 0) {       // 无目标: 就地折返吃残堆/新刷
+                for (int a = 0; a < 4; ++a) {
+                    if (passable(sr + DR[a], sc + DC[a], tr, tc)) {
+                        acts[0] = a; acts[1] = a ^ 1;
+                        break;
+                    }
+                }
+            } else {
+                int tgr = g_s.goal_r[u], tgc = g_s.goal_c[u];
+                int d = (tgr > sr ? tgr - sr : sr - tgr) +
+                        (tgc > sc ? tgc - sc : sc - tgc);
+                if (d == 0) {                  // 站上目标: 摘除, 交回主动轮
+                    if (g_s.goal_kind[u] == 1) pileDrop(tgr, tgc);
+                    g_s.goal_kind[u] = 0;
+                } else {
+                    int r = sr, c = sc, n = 0;
+                    int pr = g_s.last_r[u], pc = g_s.last_c[u];
+#pragma GCC unroll 3
+                    for (int i = 0; i < 3; ++i) {
+                        int notdone = (int)((r != tgr) | (c != tgc));
+                        int a = steerStep(r, c, tgr, tgc, tr, tc, pr, pc);
+                        int m = -(notdone & (int)(a >= 0));
+                        acts[i] = (a & m) | (STAY & ~m);
+                        int nr = r + DR[acts[i]], nc = c + DC[acts[i]];
+                        pr = (r & m) | (pr & ~m);
+                        pc = (c & m) | (pc & ~m);
+                        r = (nr & m) | (r & ~m);
+                        c = (nc & m) | (c & ~m);
+                        n -= m;
+                    }
+                    (void)n;
+                    if ((r == tgr) & (c == tgc)) {
+                        if (g_s.goal_kind[u] == 1) pileDrop(tgr, tgc);
+                        g_s.goal_kind[u] = 0;
+                    }
+                }
+            }
+            // 卡死计数与主动轮共用
+            unsigned same = (unsigned)((sr == g_s.last_r[u]) &
+                                       (sc == g_s.last_c[u]) & (acts[0] == STAY));
+            g_s.stuck[u] = (uint8_t)((g_s.stuck[u] + same) & (0u - same));
+            if (g_s.stuck[u] >= 2) stuckEscape(u, sr, sc, tr, tc, acts);
+            g_s.last_r[u] = (int8_t)sr; g_s.last_c[u] = (int8_t)sc;
+            // 防漂移护栏(近弹才模拟)
+            if (in->my_units_gold[u] >= 300 && nearbomb) {
+                for (int blk = 0; blk < 3; ++blk) {
+                    if (acts[blk] == STAY) continue;
+                    int r = sr, c = sc;
+                    for (int i = 0; i < 3; ++i) {
+                        int nrr = r + DR[acts[i]], ncc = c + DC[acts[i]];
+                        unsigned inb = ((unsigned)nrr < (unsigned)N) &
+                                       ((unsigned)ncc < (unsigned)N);
+                        int ri = nrr & -(int)inb, ci = ncc & -(int)inb;
+                        unsigned adv = (unsigned)(acts[i] != STAY) &
+                                       (unsigned)(i != blk) & inb &
+                                       (~(g_s.wall[ri] >> ci) & 1u);
+                        if (adv & ((g_s.bombbit[ri] >> ci) & 1u)) {
+                            for (int j = i; j < 3; ++j) acts[j] = STAY;
+                            break;
+                        }
+                        int m = -(int)adv;
+                        r = (nrr & m) | (r & ~m); c = (ncc & m) | (c & ~m);
+                    }
+                }
+            }
+            continue;                          // 被动单位到此为止
+        }
 #endif
         // 对账(零读格): 本单位窗口内的堆用 wv7 校正
 #if defined(__AVX2__)
