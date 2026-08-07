@@ -33,6 +33,7 @@ struct alignas(64) State {
     uint32_t bpw[N + 2];     // 墙|边界(哨兵位图; 弹不入内)
     uint32_t bombbit[N + 2]; // 炸弹位图(+1 偏移对齐 bpw; 波清)
     int8_t last_r[2], last_c[2];
+    int8_t can0[2], can1[2];   // v5r: 罐头折返对(主动轮存, 被动轮回放)
     int16_t last_round;
 };
 State g_s;
@@ -103,11 +104,17 @@ struct SLut {
 constexpr SLut SL;
 
 GameOutput decide(const GameInput* in) {
+#ifdef NS5ALT
+    const int act5 = in->round & 1;
+#endif
 #if defined(__AVX2__)
     // 输入行前置装载: 10 条行 miss 最早并行发射
     __m256i rowbufs[2][5];
     int rb_oks[2] = {0, 0}, rb_cbs[2] = {0, 0};
     for (int lu = 0; lu < 2; ++lu) {
+#ifdef NS5ALT
+        if (lu != act5) continue;              // 轮换: 被动单位零行装载
+#endif
         int sr0 = in->my_units[lu].row, sc0 = in->my_units[lu].col;
         sr0 = sr0 < 0 ? 0 : (sr0 > 16 ? 16 : sr0);
         sc0 = sc0 < 0 ? 0 : (sc0 > 16 ? 16 : sc0);
@@ -151,6 +158,12 @@ GameOutput decide(const GameInput* in) {
         sc = sc < 0 ? 0 : (sc > 16 ? 16 : sc);
         int* acts = out.actions + u * 3;
         acts[0] = acts[1] = acts[2] = STAY;
+#ifdef NS5ALT
+        if (u != act5) {                       // 被动轮: 罐头折返(~10 指令)
+            acts[0] = g_s.can0[u]; acts[1] = g_s.can1[u];
+            continue;
+        }
+#endif
         int tr = in->my_units[1 - u].row, tc = in->my_units[1 - u].col;
         unsigned rich = 0u - (unsigned)(in->my_units_gold[u] >= 100);
 
@@ -289,6 +302,11 @@ GameOutput decide(const GameInput* in) {
             acts[0] = ((((sa & hv) | (STAY & ~hv))) & z) | (a0 & ~z);
             acts[1] = (((((sa ^ 1) & hv) | (STAY & ~hv))) & z) | (a1 & ~z);
             acts[2] = (STAY & z) | (a2 & ~z);
+#ifdef NS5ALT
+            // 罐头: 本轮终点若在金上(z) -> 下轮继续折返对; 否则 STAY
+            g_s.can0[u] = (int8_t)(((sa & hv) | (STAY & ~hv)) & z) | (int8_t)(STAY & ~z);
+            g_s.can1[u] = (int8_t)((((sa ^ 1) & hv) | (STAY & ~hv)) & z) | (int8_t)(STAY & ~z);
+#endif
         }
         g_s.last_r[u] = (int8_t)sr; g_s.last_c[u] = (int8_t)sc;
     }
