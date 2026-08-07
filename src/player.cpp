@@ -1,5 +1,8 @@
 // player.cpp — GoldRush 2.0 主战策略
 //
+// cpp20 = cpp18 + 争抢章 60->30 轮(A/B 2814>2734); EXPRESS 触发率过低已弃用。
+// cpp19 = cpp18 + EXPRESS 快车道: 有有效计划且输入窗口无金时, 跳过补丁+DFS(省1.4μs)
+//         直接走缓存计划 -> 赶路回合 ~0.6μs, P50 目标 <2.6μs(凑企鹅线) 且策略无损。
 // cpp18 = cpp15 + 刷新热度图(默认开, A/B 基线 2734 vs 2597 且方差骤降)。
 // 开关: OPENING=开局冲刺(A/B 均值持平方差巨大, 默认关); ROTATION/TERRITORY(已否决)。
 // cpp17 = cpp15 + 轮作制(已被 A/B 否决, 默认关): 外圈(NPC罕至)金币记忆衰减 30->60 轮, 存量堆保持可作目标
@@ -81,9 +84,14 @@ struct World {
     }
 #endif
     void stampContested(int cr0, int cc0) {
+#ifdef CONTEST60
+        constexpr int DUR = 60;
+#else
+        constexpr int DUR = 30;   // A/B: 30 均 2814 > 60 均 2734
+#endif
         for (int r = cr0 - 3 <= 0 ? 0 : cr0 - 3; r <= (cr0 + 3 >= N ? N - 1 : cr0 + 3); ++r)
             for (int c = cc0 - 3 <= 0 ? 0 : cc0 - 3; c <= (cc0 + 3 >= N ? N - 1 : cc0 + 3); ++c)
-                contested[r][c] = (uint16_t)(round + 60);
+                contested[r][c] = (uint16_t)(round + DUR);
     }
 
     void compactList() {
@@ -149,6 +157,8 @@ struct World {
         // 外圈 NPC 罕至, 存量堆衰减慢一倍(轮作收割的基础)
         int cr = r > 8 ? r - 8 : 8 - r, cc = c > 8 ? c - 8 : 8 - c;
         int T = (cr >= 6 || cc >= 6) ? 60 : 30;
+#elif defined(T45)
+        int T = 45;
 #else
         int T = 30;
 #endif
@@ -465,7 +475,11 @@ int pickGoldTarget(const GameInput* in, int sr, int sc) {
             int nrr = in->visible_npcs[j].pos.row, ncc = in->visible_npcs[j].pos.col;
             if (nrr < 0) continue;
             int nd = (nrr > r ? nrr - r : r - nrr) + (ncc > c ? ncc - c : c - ncc);
+#ifdef NPCD2
+            if (nd * 13 < d * 10) { val /= 2; break; }
+#else
             if (nd * 13 < d * 10) { val /= 3; break; }
+#endif
         }
         long score = val / (d + 1);
         if (score > best) { best = score; bi = idx; }
@@ -549,7 +563,11 @@ void explore(int sr, int sc, int* out, int* otr, int* otc) {
             int a = g_w.age(g_w.cell[r][c]);
             if (a > 60) a = a > 900 ? 100 : 60;
             long s = (long)a * 100;
+#ifdef YIELD80
+            s += (long)g_w.yield_[r][c] * 80;    // 历史高产区优先巡回(权重加倍实验)
+#else
             s += (long)g_w.yield_[r][c] * 40;    // 历史高产区优先巡回
+#endif
             if (g_w.isContested(r, c)) s /= 2;
             s /= g_bfs.dist[idx] + 1;
             if (s > best) { best = s; bi = idx; }
@@ -622,6 +640,21 @@ GameOutput decide(const GameInput* in) {
             g_m.br[g_m.bn] = (int8_t)tr; g_m.bc[g_m.bn] = (int8_t)tc; ++g_m.bn;
         }
 
+#ifdef EXPRESS
+        // 快车道: 有有效行程 且 视野窗口(输入直读)无金 -> 跳过补丁+DFS
+        if (g_plan[u].is_gold == 2 || (g_plan[u].len > 0 && g_plan[u].pos < g_plan[u].len)) {
+            bool any_gold = false;
+            int wr0 = sr - 2 < 0 ? 0 : sr - 2, wr1 = sr + 2 >= N ? N - 1 : sr + 2;
+            int wc0 = sc - 2 < 0 ? 0 : sc - 2, wc1 = sc + 2 >= N ? N - 1 : sc + 2;
+            for (int r2 = wr0; r2 <= wr1 && !any_gold; ++r2)
+                for (int c2 = wc0; c2 <= wc1; ++c2)
+                    if (in->grid[r2][c2] >= 1) { any_gold = true; break; }
+            if (!any_gold) {
+                if (steerCached(u, sr, sc, acts)) { g_m.bn = saved_bn; continue; }
+                if (followPlan(u, sr, sc, acts)) { g_m.bn = saved_bn; continue; }
+            }
+        }
+#endif
         int gain = g_local.run(sr, sc, in->my_units_gold[u], acts);
         stale += g_local.ring_stale;
         cells += g_local.ring_cells;
