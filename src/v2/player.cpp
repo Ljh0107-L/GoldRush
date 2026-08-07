@@ -1,5 +1,8 @@
 // src/v2/player.cpp — v2 主线: 300ns 预算的延迟优先重写
 //
+// ns326 = D 段瘦身(np12 遥测: fill 211 + stuck/护栏 158 = 369 周期首次入账):
+//         fill/护栏位置推进无分支化(墙表掩码索引) + 护栏近弹预筛(搭炸弹
+//         对账环便车, 曼哈顿<=3 无弹整段跳过)。语义逐位等价(pair_diff 验)
 // ns325 = 窗口折价删除(负结果入册: v2 1μs 行动先于 NPC, 窗口竞速必赢,
 //         折价=弃金, ns323 批量 1525 vs ns322 1695 且两局崩盘);
 //         仅保留矿堆目标折价(远目标多回合行程, NPC 先吃仍成立)
@@ -84,9 +87,6 @@ constexpr int8_t PATROL_C[8] = {5, 8, 11, 8, 8, 3, 13, 8};
 
 inline uint8_t now2() { return (uint8_t)(g_s.last_round >> 1); }
 
-inline bool wallAt(int r, int c) { return (g_s.wall[r] >> c) & 1u; }
-
-inline bool bombAt(int r, int c) { return (g_s.bombbit[r] >> c) & 1u; }
 inline void bpRebuildRow(int r) {
     g_s.bp[r + 1] = 0xFFFC0001u | (g_s.wall[r] << 1) | (g_s.bombbit[r] << 1);
 }
@@ -403,17 +403,21 @@ GameOutput decide(const GameInput* in) {
             else g_s.pv_[i] = 0;                   // 吃小/吃空/变弹: 摘除
         }
 #endif
+        unsigned nearbomb = 0;                     // 幸存弹中曼哈顿<=3 者(护栏预筛)
         for (int i = 0; i < 8; ++i) {
             BombM& b = g_s.bombs[i];
             if (!b.seen) continue;
             int wr = b.r - sr + 2, wc = b.c - sc + 2;
-            if ((unsigned)wr > 4u || (unsigned)wc > 4u) continue;
-            if (!((bombm >> (wr * 5 + wc)) & 1u)) {
+            if ((unsigned)wr <= 4u && (unsigned)wc <= 4u &&
+                !((bombm >> (wr * 5 + wc)) & 1u)) {
                 b.seen = 0;
                 g_s.bombbit[b.r] &= ~(1u << b.c);
                 bpRebuildRow(b.r);
                 --g_s.nbombs;
+                continue;
             }
+            int adr_ = wr < 2 ? 2 - wr : wr - 2, adc_ = wc < 2 ? 2 - wc : wc - 2;
+            nearbomb |= (unsigned)(adr_ + adc_ <= 3);
         }
 
         // 采集打分(簇加成): 只走置位金格
@@ -634,9 +638,13 @@ GameOutput decide(const GameInput* in) {
                     }
                     if (besta >= 0) acts[i] = besta;
                 }
+                // 位置推进无分支化(墙表掩码索引; 出界读 wall[0] 被 inb 掩掉)
                 int nr = r + DR[acts[i]], nc = c + DC[acts[i]];
-                if (acts[i] != STAY && nr >= 0 && nr < N && nc >= 0 && nc < N &&
-                    !wallAt(nr, nc)) { r = nr; c = nc; }
+                unsigned inb = ((unsigned)nr < (unsigned)N) &
+                               ((unsigned)nc < (unsigned)N);
+                unsigned w_ = (g_s.wall[nr & -(int)inb] >> (nc & -(int)inb)) & 1u;
+                int m = -(int)((unsigned)(acts[i] != STAY) & inb & (w_ ^ 1u));
+                r = (nr & m) | (r & ~m); c = (nc & m) | (c & ~m);
             }
         }
 #if defined(NSPROBE) && NSPROBE == 12
@@ -652,20 +660,26 @@ GameOutput decide(const GameInput* in) {
         g_s.last_r[u] = (int8_t)sr; g_s.last_c[u] = (int8_t)sc;
 
         // ---- 防漂移护栏(v1 实证 +80~110/局, 几乎免费) ----
-        if (in->my_units_gold[u] >= 300 && g_s.nbombs) {   // 无已知弹免模拟
+        // 近弹预筛: 3 步路径只可达曼哈顿<=3, 近域无弹 -> 整段免模拟(语义等价)
+        if (in->my_units_gold[u] >= 300 && nearbomb) {
             for (int blk = 0; blk < 3; ++blk) {
                 if (acts[blk] == STAY) continue;
                 int r = sr, c = sc;
                 for (int i = 0; i < 3; ++i) {
-                    if (acts[i] == STAY) continue;
+                    // 步推进无分支化: 唯一保留分支 = 撞弹截断(罕见)
                     int nrr = r + DR[acts[i]], ncc = c + DC[acts[i]];
-                    if (i == blk || nrr < 0 || nrr >= N || ncc < 0 || ncc >= N ||
-                        wallAt(nrr, ncc)) continue;
-                    if (bombAt(nrr, ncc)) {
+                    unsigned inb = ((unsigned)nrr < (unsigned)N) &
+                                   ((unsigned)ncc < (unsigned)N);
+                    int ri = nrr & -(int)inb, ci = ncc & -(int)inb;
+                    unsigned adv = (unsigned)(acts[i] != STAY) &
+                                   (unsigned)(i != blk) & inb &
+                                   (~(g_s.wall[ri] >> ci) & 1u);
+                    if (adv & ((g_s.bombbit[ri] >> ci) & 1u)) {
                         for (int j = i; j < 3; ++j) acts[j] = STAY;
                         break;
                     }
-                    r = nrr; c = ncc;
+                    int m = -(int)adv;
+                    r = (nrr & m) | (r & ~m); c = (ncc & m) | (c & ~m);
                 }
             }
         }
