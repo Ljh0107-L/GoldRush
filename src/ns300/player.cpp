@@ -410,11 +410,22 @@ GameOutput decide(const GameInput* in) {
             continue;
         }
 #endif
-        // ---- 全算全选决策核: 目标层无条件跑(访问模式均匀化, 攻混沌溢价),
-        //      最终目标按掩码选择。状态语义与条件版一致(粘性目标 A/B 为负, 已回退) ----
+        // ---- 统一决策核: 目标格 = 窗口最优金格 或 持久目标; 导向共用 ----
+#if defined(NSPROBE) && NSPROBE == 6
+        bestr = -1;                          // 探针6: 采集支砍除
+#endif
         int tgr, tgc, mode;                  // mode: 0=采集 1=矿堆 2=巡逻
-        int harvest = (int)(bestr >= 0);
-        {
+        if (bestr >= 0) {
+            tgr = bestr; tgc = bestc; mode = 0;
+            g_s.goal_kind[u] = 0;            // 就地有活干, 目标层休眠
+        } else {
+#if defined(NSPROBE) && NSPROBE == 5
+            {   // 探针5: 目标支砍除, 轮转走位
+                int a = (in->round / 4 + u * 2) & 3;
+                acts[0] = acts[1] = acts[2] = a;
+                goto probe5_done;
+            }
+#endif
             bool valid = false;
             if (g_s.goal_kind[u] == 1) {           // 哈希 O(1) 校验
                 int pi_ = pileSlot(g_s.goal_r[u], g_s.goal_c[u]);
@@ -448,18 +459,12 @@ GameOutput decide(const GameInput* in) {
                     g_s.goal_kind[u] = 1;
                 } else {                            // 无堆可去: 巡逻
                     uint8_t& pi = g_s.patrol[u];
-                    if (!harvest && sr == PATROL_R[pi] && sc == PATROL_C[pi])
-                        pi = (uint8_t)((pi + 1) & 7);
+                    if (sr == PATROL_R[pi] && sc == PATROL_C[pi]) pi = (uint8_t)((pi + 1) & 7);
                     g_s.goal_r[u] = PATROL_R[pi]; g_s.goal_c[u] = PATROL_C[pi];
                     g_s.goal_kind[u] = 2;
                 }
             }
-            // 全选: 窗口有金 -> 采集; 否则用目标层结果
-            tgr = harvest ? bestr : g_s.goal_r[u];
-            tgc = harvest ? bestc : g_s.goal_c[u];
-            mode = harvest ? 0 : g_s.goal_kind[u];
-            // 采集轮清目标(与 ns312 语义一致; 无分支选择)
-            g_s.goal_kind[u] = (uint8_t)(harvest ? 0 : g_s.goal_kind[u]);
+            tgr = g_s.goal_r[u]; tgc = g_s.goal_c[u]; mode = g_s.goal_kind[u];
         }
         {
             int d = (tgr > sr ? tgr - sr : sr - tgr) +
@@ -500,6 +505,9 @@ GameOutput decide(const GameInput* in) {
             }
         }
 
+#if defined(NSPROBE) && NSPROBE == 5
+        probe5_done:;
+#endif
 #if defined(NSPROBE) && NSPROBE == 9
         if (in->round < 250) g_t[3] += tsc() - tc9;
         (void)td9_last;
