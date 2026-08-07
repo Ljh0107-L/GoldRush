@@ -353,7 +353,7 @@ GameOutput decide(const GameInput* in) {
                 int i = __builtin_ctz(hits); hits &= hits - 1;
                 int wr = g_s.pr_[i] - sr + 2, wc = g_s.pc_[i] - sc + 2;
                 int v = wv7[(wr + 1) * 7 + (wc + 1)];
-                if (v >= 3) { g_s.pv_[i] = (uint8_t)v; g_s.ps_[i] = now2(); }
+                if (v >= 5) { g_s.pv_[i] = (uint8_t)v; g_s.ps_[i] = now2(); }
                 else g_s.pv_[i] = 0;
             }
         }
@@ -363,7 +363,7 @@ GameOutput decide(const GameInput* in) {
             int wr = g_s.pr_[i] - sr + 2, wc = g_s.pc_[i] - sc + 2;
             if ((unsigned)wr > 4u || (unsigned)wc > 4u) continue;
             int v = wv7[(wr + 1) * 7 + (wc + 1)];
-            if (v >= 3) { g_s.pv_[i] = (uint8_t)v; g_s.ps_[i] = now2(); }
+            if (v >= 5) { g_s.pv_[i] = (uint8_t)v; g_s.ps_[i] = now2(); }
             else g_s.pv_[i] = 0;                   // 吃小/吃空/变弹: 摘除
         }
 #endif
@@ -398,7 +398,7 @@ GameOutput decide(const GameInput* in) {
                 if (sc_ > bests) {
                     bests = sc_; bestr = sr - 2 + i / 5; bestc = sc - 2 + i % 5;
                 }
-                if (v >= 3) pileNote(sr - 2 + i / 5, sc - 2 + i % 5, v);
+                if (v >= 5) pileNote(sr - 2 + i / 5, sc - 2 + i % 5, v);
             }
         }
 
