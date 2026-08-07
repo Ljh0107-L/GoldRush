@@ -83,16 +83,22 @@ int steerStep(int r, int c, int gr, int gc, int tr, int tc, int pr, int pc) {
 }
 
 GameOutput decide(const GameInput* in) {
+#ifdef NS3DUAL
+    const int active = -1;                       // 双扫: 无被动单位
+#else
     const int active = in->round & 1;
+#endif
 #if defined(__AVX2__)
     // 输入行前置装载: miss 最早发射, 账务藏进阴影
-    __m256i rowbuf[5];
-    int rb_ok = 0, rb_cb = 0;
-    {
-        int sr0 = in->my_units[active].row, sc0 = in->my_units[active].col;
+    __m256i rowbufs[2][5];
+    int rb_oks[2] = {0, 0}, rb_cbs[2] = {0, 0};
+    for (int lu = 0; lu < 2; ++lu) {
+        if (active >= 0 && lu != active) continue;
+        __m256i* rowbuf = rowbufs[lu];
+        int sr0 = in->my_units[lu].row, sc0 = in->my_units[lu].col;
         if (sr0 >= 0 && sr0 < N && sc0 >= 0 && sc0 < N) {
             int cb = sc0 - 2 < 0 ? 0 : (sc0 - 2 > N - 5 ? N - 5 : sc0 - 2);
-            rb_ok = 1; rb_cb = cb;
+            rb_oks[lu] = 1; rb_cbs[lu] = cb;
 #ifdef NS3ROWS
 #pragma GCC unroll 3
             for (int i = 1; i < 4; ++i) {
@@ -125,15 +131,20 @@ GameOutput decide(const GameInput* in) {
 
     GameOutput out = SAFE_OUT;
 
-    // ===== 主动单位扫描: wv7(7x7 缓冲) + goldm =====
-    int8_t wv7[49];
-    uint32_t goldm = 0;
-    {
+    // ===== 扫描: wv7(7x7 缓冲) + goldm (轮换=仅主动; 双扫=背靠背 MLP) =====
+    int8_t wv7s[2][49];
+    uint32_t goldms[2] = {0, 0};
+    for (int su = 0; su < 2; ++su) {
+        int8_t* wv7 = wv7s[su];
+        uint32_t goldm = 0;
         memset(wv7, -1, 49);
-        int sr = in->my_units[active].row, sc = in->my_units[active].col;
+        if (active >= 0 && su != active) continue;
+        int sr = in->my_units[su].row, sc = in->my_units[su].col;
         if (sr >= 0 && sr < N && sc >= 0 && sc < N) {
 #if defined(__AVX2__)
-            if (rb_ok) {
+            const __m256i* rowbuf = rowbufs[su];
+            int rb_cb = rb_cbs[su];
+            if (rb_oks[su]) {
                 const __m256i vz = _mm256_setzero_si256();
                 const __m256i vm1 = _mm256_set1_epi32(-1);
                 const __m256i vm3 = _mm256_set1_epi32(-3);
@@ -213,6 +224,7 @@ GameOutput decide(const GameInput* in) {
             }
 #endif
         }
+        goldms[su] = goldm;
     }
 
     // ===== 双单位决策(共用代码; 被动 goldm 视为 0) =====
@@ -222,8 +234,9 @@ GameOutput decide(const GameInput* in) {
         acts[0] = acts[1] = acts[2] = STAY;
         if (sr < 0 || sr >= N || sc < 0 || sc >= N) continue;
         int tr = in->my_units[1 - u].row, tc = in->my_units[1 - u].col;
-        const int act_ = (u == active);
-        uint32_t gm0 = goldm & (uint32_t)(0 - act_);
+        const int8_t* wv7 = wv7s[u];
+        const int act_ = (active < 0) | (u == active);
+        uint32_t gm0 = goldms[u] & (uint32_t)(0 - act_);
 
         // 采集打分(簇加成): 只走置位金格
         constexpr int8_t MD[25] = {4,3,2,3,4, 3,2,1,2,3, 2,1,0,1,2,
@@ -334,7 +347,11 @@ GameOutput decide(const GameInput* in) {
         g_s.last_r[u] = (int8_t)sr; g_s.last_c[u] = (int8_t)sc;
 
         // 防漂移护栏: 近弹预筛(行位图 7 行并查, 无列表)
+#ifdef NS3GUARD1
+        if (act_ && in->my_units_gold[u] >= 300) {
+#else
         if (in->my_units_gold[u] >= 300) {
+#endif
             uint32_t near_ = 0;
 #pragma GCC unroll 7
             for (int dr2 = -3; dr2 <= 3; ++dr2) {
