@@ -44,7 +44,9 @@ struct BombM { int8_t r, c; uint8_t seen; };
 struct State {
     uint32_t wall[N];        // 障碍位图(观测到即永久)
     uint32_t bombbit[N];     // 炸弹位图(与 bombs 列表同步)
-    uint32_t blocked[N];     // = wall | bombbit (passable 单次加载; 省一条冷线)
+    // 哨兵阻挡位图: 行 0/18 全阻, 位(c+1)=列 c, 位0 与位18+ 恒1(出界)
+    // -> passable 纯两次位测试, 零边界分支
+    uint32_t bp[N + 2];
     Pile  piles[16];         // v==0 表示空槽
     BombM bombs[8];
     int8_t goal_r[2], goal_c[2];
@@ -73,7 +75,9 @@ inline uint8_t now2() { return (uint8_t)(g_s.last_round >> 1); }
 inline bool wallAt(int r, int c) { return (g_s.wall[r] >> c) & 1u; }
 
 inline bool bombAt(int r, int c) { return (g_s.bombbit[r] >> c) & 1u; }
-inline bool blockedAt(int r, int c) { return (g_s.blocked[r] >> c) & 1u; }
+inline void bpRebuildRow(int r) {
+    g_s.bp[r + 1] = 0xFFFC0001u | (g_s.wall[r] << 1) | (g_s.bombbit[r] << 1);
+}
 
 inline void bombNote(int r, int c) {
     int free_ = -1;
@@ -87,32 +91,25 @@ inline void bombNote(int r, int c) {
     if (free_ >= 0) {
         g_s.bombs[free_] = {(int8_t)r, (int8_t)c, now2() ? now2() : (uint8_t)1};
         g_s.bombbit[r] |= 1u << c;
-        g_s.blocked[r] |= 1u << c;
+        g_s.bp[r + 1] |= 1u << (c + 1);
     }
 }
 
-// 矿堆缓存: 只记 v>=6 的堆(小堆不值得专程回访)
-void pileNote(int r, int c, int v) {
-    int free_ = -1, oldest = -1, oldest_seen = 255;
-    for (int i = 0; i < 16; ++i) {
-        Pile& p = g_s.piles[i];
-        if (p.v && p.r == r && p.c == c) { p.v = (uint8_t)v; p.seen = now2(); return; }
-        if (!p.v) { if (free_ < 0) free_ = i; }
-        else if (p.seen < oldest_seen) { oldest_seen = p.seen; oldest = i; }
-    }
-    int slot = free_ >= 0 ? free_ : oldest;
-    g_s.piles[slot] = {(int8_t)r, (int8_t)c, (uint8_t)v, now2()};
+// 矿堆缓存: 直接映射哈希(槽=(r*31+c)&15), 记/摘 O(1) 零扫描。
+// 冲突=覆盖(启发式缓存, 丢一条可接受; v>=5 门槛已滤噪)
+inline int pileSlot(int r, int c) { return (r * 31 + c) & 15; }
+
+inline void pileNote(int r, int c, int v) {
+    g_s.piles[pileSlot(r, c)] = {(int8_t)r, (int8_t)c, (uint8_t)v, now2()};
 }
 
 inline void pileDrop(int r, int c) {
-    for (int i = 0; i < 16; ++i)
-        if (g_s.piles[i].v && g_s.piles[i].r == r && g_s.piles[i].c == c) g_s.piles[i].v = 0;
+    Pile& p = g_s.piles[pileSlot(r, c)];
+    if (p.r == r && p.c == c) p.v = 0;
 }
 
 inline bool passable(int r, int c, int tr, int tc) {   // tr/tc = 队友占位
-    if (r < 0 || r >= N || c < 0 || c >= N) return false;
-    if (blockedAt(r, c)) return false;
-    return !(r == tr && c == tc);
+    return !((g_s.bp[r + 1] >> (c + 1)) & 1u) && !(r == tr && c == tc);
 }
 
 // 曼哈顿导向一步(主方向优先, 被挡换副方向; 全堵时任意可走方向但不回头)
@@ -156,12 +153,17 @@ inline unsigned long long tsc() {
 #endif
 
 GameOutput decide(const GameInput* in) {
-    if (in->round <= g_s.last_round) { memset(&g_s, 0, sizeof(g_s)); g_s.patrol[1] = 3; }
+    if (in->round <= g_s.last_round) {
+        memset(&g_s, 0, sizeof(g_s));
+        g_s.patrol[1] = 3;
+        g_s.bp[0] = g_s.bp[N + 1] = ~0u;
+        for (int r = 0; r < N; ++r) bpRebuildRow(r);
+    }
     g_s.last_round = (int16_t)in->round;
     if (in->round % 20 == 0) {                    // 炸弹波: 旧记忆全部过期
         for (int i = 0; i < 8; ++i) g_s.bombs[i].seen = 0;
         memset(g_s.bombbit, 0, sizeof(g_s.bombbit));
-        memcpy(g_s.blocked, g_s.wall, sizeof(g_s.blocked));
+        for (int r = 0; r < N; ++r) bpRebuildRow(r);
     }
 #if defined(NSPROBE) && NSPROBE == 9
     unsigned long long t9 = tsc();
@@ -245,7 +247,7 @@ GameOutput decide(const GameInput* in) {
                 int b5 = (r - sr + 2) * 5 + 2 - sc;
                 uint32_t slice = ((wallm >> (b5 + c0)) & 31u) << c0;
                 g_s.wall[r] |= slice;
-                g_s.blocked[r] |= slice;
+                g_s.bp[r + 1] |= slice << 1;
             }
         }
         {                                      // 炸弹: 稀疏, 逐位登记
@@ -277,7 +279,7 @@ GameOutput decide(const GameInput* in) {
             if (!((bombm >> (wr * 5 + wc)) & 1u)) {
                 b.seen = 0;
                 g_s.bombbit[b.r] &= ~(1u << b.c);
-                g_s.blocked[b.r] = g_s.wall[b.r] | g_s.bombbit[b.r];
+                bpRebuildRow(b.r);
             }
         }
 
@@ -335,10 +337,9 @@ GameOutput decide(const GameInput* in) {
             }
 #endif
             bool valid = false;
-            if (g_s.goal_kind[u] == 1) {
-                for (int i = 0; i < 16; ++i)
-                    if (g_s.piles[i].v && g_s.piles[i].r == g_s.goal_r[u] &&
-                        g_s.piles[i].c == g_s.goal_c[u]) { valid = true; break; }
+            if (g_s.goal_kind[u] == 1) {           // 哈希 O(1) 校验
+                Pile& p = g_s.piles[pileSlot(g_s.goal_r[u], g_s.goal_c[u])];
+                valid = p.v && p.r == g_s.goal_r[u] && p.c == g_s.goal_c[u];
             } else if (g_s.goal_kind[u] == 2) {
                 valid = !(sr == g_s.goal_r[u] && sc == g_s.goal_c[u]);
             }
