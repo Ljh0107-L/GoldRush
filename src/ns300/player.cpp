@@ -206,6 +206,7 @@ GameOutput decide(const GameInput* in) {
         for (int r2 = pr0; r2 <= pr1; ++r2)
             __builtin_prefetch(&in->grid[r2][pc0]);
     }
+    __builtin_prefetch(&in->visible_enemies[0]);
 
     GameOutput out = SAFE_OUT;
 
@@ -250,8 +251,10 @@ GameOutput decide(const GameInput* in) {
             int lo = sc - 2 < 0 ? -(sc - 2) : 0;
             int hix = sc + 2 > N - 1 ? sc + 2 - (N - 1) : 0;
             uint32_t colv = ((31u >> hix) & (31u << lo)) & 31u;
+            int ext = (in->round ^ u) & 1;     // 外侧行隔轮读(行数即传输成本)
 #pragma GCC unroll 5
             for (int i = 0; i < 5; ++i) {
+                if ((i == 0 || i == 4) && !ext) continue;   // 展开后=2个交替分支
                 int rr = sr - 2 + i;
                 int cr = rr < 0 ? 0 : (rr > N - 1 ? N - 1 : rr);
                 uint32_t rowok = (uint32_t)0 - ((unsigned)rr < (unsigned)N);
@@ -335,13 +338,14 @@ GameOutput decide(const GameInput* in) {
             __m256i vr_ = _mm256_loadu_si256((const __m256i*)g_s.pr_);
             __m256i vc_ = _mm256_loadu_si256((const __m256i*)g_s.pc_);
             __m256i vv_ = _mm256_loadu_si256((const __m256i*)g_s.pv_);
+            int ext_ = (in->round ^ u) & 1;
             __m256i wr_ = _mm256_sub_epi8(vr_, _mm256_set1_epi8((char)(sr - 2)));
             __m256i wc_ = _mm256_sub_epi8(vc_, _mm256_set1_epi8((char)(sc - 2)));
             __m256i z8 = _mm256_setzero_si256();
-            __m256i in5r = _mm256_cmpgt_epi8(_mm256_set1_epi8(5),
+            __m256i in5r = _mm256_cmpgt_epi8(_mm256_set1_epi8((char)(4 + ext_)),
                                              _mm256_max_epu8(wr_, z8));
             in5r = _mm256_and_si256(in5r,
-                                    _mm256_cmpgt_epi8(wr_, _mm256_set1_epi8(-1)));
+                _mm256_cmpgt_epi8(wr_, _mm256_set1_epi8((char)(0 - ext_))));
             __m256i in5c = _mm256_cmpgt_epi8(_mm256_set1_epi8(5),
                                              _mm256_max_epu8(wc_, z8));
             in5c = _mm256_and_si256(in5c,
