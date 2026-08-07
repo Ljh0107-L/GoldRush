@@ -34,6 +34,7 @@ struct alignas(64) State {
     uint32_t bp[N + 2];      // 哨兵阻挡位图: 墙|弹|边界(导向用唯一地形真值)
     int8_t last_r[2], last_c[2];
     uint8_t stuck[2];
+    uint8_t patrol[2];       // 巡游路点下标
     int16_t last_round;
 };
 State g_s;
@@ -41,9 +42,10 @@ State g_s;
 // 打分距离倒数表(排序语义, 免除法)
 constexpr uint16_t REC[8] = {4096, 2048, 1365, 1024, 819, 683, 585, 512};
 
-// 中心锚点: 9x9 主产区四分点, 双单位分区驻守(先手时代中心=印钞机)
-constexpr int8_t ANCH_R[2] = {6, 10};
-constexpr int8_t ANCH_C[2] = {6, 10};
+// 中心双环巡游(v35: 罚站 62% 确诊蹲点病 —— 移动x窗宽=覆盖率):
+// u0 上环 / u1 下环, 3 行窗恰好铺满 9x9 主产区, 到点即转向
+constexpr int8_t PRW[2][4] = {{5, 5, 7, 7}, {11, 11, 9, 9}};
+constexpr int8_t PCW[2][4] = {{6, 10, 10, 6}, {10, 6, 6, 10}};
 
 inline unsigned pass01(int r, int c, int tr, int tc) {
     return (~(g_s.bp[r + 1] >> (c + 1)) & 1u) &
@@ -267,9 +269,15 @@ GameOutput decide(const GameInput* in) {
             continue;
         }
 #endif
-        // 目标 = 窗口最优金格, 否则中心锚点(驻守分区)
-        int tgr = bestr >= 0 ? bestr : ANCH_R[u];
-        int tgc = bestr >= 0 ? bestc : ANCH_C[u];
+        // 目标 = 窗口最优金格, 否则巡游路点(到点即转向, 消灭蹲点罚站)
+        int tgr, tgc;
+        if (bestr >= 0) { tgr = bestr; tgc = bestc; }
+        else {
+            uint8_t& pi = g_s.patrol[u];
+            unsigned here = (unsigned)((sr == PRW[u][pi]) & (sc == PCW[u][pi]));
+            pi = (uint8_t)((pi + here) & 3);
+            tgr = PRW[u][pi]; tgc = PCW[u][pi];
+        }
         {
             int d = (tgr > sr ? tgr - sr : sr - tgr) +
                     (tgc > sc ? tgc - sc : sc - tgc);
@@ -309,7 +317,11 @@ GameOutput decide(const GameInput* in) {
         }
 
         // 尾步填充(复用 wv7; 被动 gn_=0 自动跳过)
+#ifdef NS3FILL0
+        if (0) {
+#else
         if (gn_ > 0) {
+#endif
             int r = sr, c = sc;
             for (int i = 0; i < 3; ++i) {
                 if (acts[i] == STAY) {
@@ -390,12 +402,12 @@ GameOutput decide(const GameInput* in) {
     return out;
 }
 
-GameOutput sanitize(GameOutput o) {
+GameOutput sanitize(GameOutput o) {   // 全 cmov, 零分支位点
     for (int i = 0; i < S; ++i)
-        if (o.actions[i] < 0 || o.actions[i] > 4) o.actions[i] = STAY;
-    if (o.k < 0 || o.k > 6) o.k = 3;
-    if (o.order != 0 && o.order != 1) o.order = 0;
-    if (o.vp < 0 || o.vp > 2) o.vp = 0;
+        o.actions[i] = (unsigned)o.actions[i] > 4u ? STAY : o.actions[i];
+    o.k = (unsigned)o.k > 6u ? 3 : o.k;
+    o.order = (unsigned)o.order > 1u ? 0 : o.order;
+    o.vp = (unsigned)o.vp > 2u ? 0 : o.vp;
     return o;
 }
 
