@@ -144,13 +144,16 @@ GameOutput decide(const GameInput* in) {
 
     GameOutput out = SAFE_OUT;
 
-    // ===== 扫描: wv7(7x7 缓冲) + goldm (轮换=仅主动; 双扫=背靠背 MLP) =====
-    int8_t wv7s[2][49];
+    // ===== 扫描: 纯掩码(v39) (轮换=仅主动; 双扫=背靠背 MLP) =====
     uint32_t goldms[2] = {0, 0};
+    // 直读工具: 界内取 grid 值(负值=雾/墙/弹, 用者自行钳 0), 界外=0
+    auto gv = [in](int r, int c) -> int {
+        unsigned ok = ((unsigned)r < (unsigned)N) & ((unsigned)c < (unsigned)N);
+        int v = in->grid[r & -(int)ok][c & -(int)ok];
+        return v & -(int)ok;
+    };
     for (int su = 0; su < 2; ++su) {
-        int8_t* wv7 = wv7s[su];
         uint32_t goldm = 0;
-        memset(wv7, -1, 49);
         if (active >= 0 && su != active) continue;
         int sr = in->my_units[su].row, sc = in->my_units[su].col;
         if (sr >= 0 && sr < N && sc >= 0 && sc < N) {
@@ -183,17 +186,7 @@ GameOutput decide(const GameInput* in) {
                     wallm  |= ((((w8 << 2) >> lsh) & 31u) & rv) << (i * 5);
                     bombm  |= ((((b8 << 2) >> lsh) & 31u) & rv) << (i * 5);
                     validm |= rv << (i * 5);
-                    int32_t tmp[8];
-                    _mm256_storeu_si256((__m256i*)tmp, vrow);
-#pragma GCC unroll 5
-                    for (int j = 0; j < 5; ++j) {
-                        int li = j + lsh - 2;
-                        li &= ~(li >> 31);
-                        int v = tmp[li];
-                        int m = -(int)((rv >> j) & 1u);
-                        wv7[(i + 1) * 7 + (j + 1)] = (int8_t)((v & m) | ~m);
-                    }
-                }
+                }   // (v39: wv7 数值缓冲已砍 —— 打分对稀疏金格直读 grid, L1 已热)
                 wallm &= validm;
                 if (wallm) {                       // 墙并入 bp
                     int r0 = sr - 2 < 0 ? 0 : sr - 2;
@@ -214,12 +207,11 @@ GameOutput decide(const GameInput* in) {
                         g_s.bp[br + 1] |= 1u << (bc + 1);
                     }
                 }
-                {   // 矿堆登记/对账(v36): 窗口内 v>=5 记, 已记但本轮见小/空则摘
+                {   // 矿堆登记(v36/v39): 窗口内 v>=5 记(直读 grid)
                     uint32_t gm = goldm;
                     while (gm) {
                         int i = __builtin_ctz(gm); gm &= gm - 1;
-                        int w = (i / 5 + 1) * 7 + i % 5 + 1;
-                        int v = wv7[w];
+                        int v = gv(sr - 2 + i / 5, sc - 2 + i % 5);
                         if (v >= 5) {
                             int gr_ = sr - 2 + i / 5, gc_ = sc - 2 + i % 5;
                             int k = pileSlot(gr_, gc_);
@@ -239,7 +231,6 @@ GameOutput decide(const GameInput* in) {
                         int cc = sc - 2 + j;
                         if ((unsigned)cc >= (unsigned)N) continue;
                         int v = in->grid[rr][cc];
-                        wv7[(i + 1) * 7 + (j + 1)] = (int8_t)v;
                         int b = i * 5 + j;
                         if (v > 0) goldm |= 1u << b;
                         if (v == -1) g_s.bp[rr + 1] |= 1u << (cc + 1);
@@ -262,7 +253,6 @@ GameOutput decide(const GameInput* in) {
         acts[0] = acts[1] = acts[2] = STAY;
         if (sr < 0 || sr >= N || sc < 0 || sc >= N) continue;
         int tr = in->my_units[1 - u].row, tc = in->my_units[1 - u].col;
-        const int8_t* wv7 = wv7s[u];
         const int act_ = (active < 0) | (u == active);
 #ifndef NS3NOPLAN
         if (!act_ && g_s.plan_ok[u]) {           // v37: 被动轮回放缓存计划
@@ -286,14 +276,15 @@ GameOutput decide(const GameInput* in) {
             while (gm) {
                 int i = __builtin_ctz(gm); gm &= gm - 1;
                 ++gn_;
-                int w = (i / 5 + 1) * 7 + i % 5 + 1;
-                int v = wv7[w];
-                int nu = wv7[w - 7], nd2 = wv7[w + 7], nl = wv7[w - 1], nr2 = wv7[w + 1];
+                int gr_ = sr - 2 + i / 5, gc_ = sc - 2 + i % 5;
+                int v = gv(gr_, gc_);
+                int nu = gv(gr_ - 1, gc_), nd2 = gv(gr_ + 1, gc_);
+                int nl = gv(gr_, gc_ - 1), nr2 = gv(gr_, gc_ + 1);
                 int nb = (nu > 0 ? nu : 0) + (nd2 > 0 ? nd2 : 0) +
                          (nl > 0 ? nl : 0) + (nr2 > 0 ? nr2 : 0);
                 int sc_ = (v * 2 + nb) * REC[MD[i]];
                 if (sc_ > bests) {
-                    bests = sc_; bestr = sr - 2 + i / 5; bestc = sc - 2 + i % 5;
+                    bests = sc_; bestr = gr_; bestc = gc_;
                 }
             }
         }
@@ -396,8 +387,8 @@ GameOutput decide(const GameInput* in) {
                         int nr = r + DR[a], nc = c + DC[a];
                         int ur = nr - sr + 3, uc = nc - sc + 3;
                         unsigned inw = ((unsigned)ur <= 6u) & ((unsigned)uc <= 6u);
-                        int idx = (ur * 7 + uc) & -(int)inw;
-                        int v = wv7[idx];
+                        (void)inw;
+                        int v = gv(nr, nc);
                         int okm = -(int)(inw & (unsigned)(v > bv) &
                                          (unsigned)!(nr == tr && nc == tc));
                         bv = (v & okm) | (bv & ~okm);
