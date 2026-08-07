@@ -138,7 +138,7 @@ GameOutput decide(const GameInput* in) {
         for (int r = 0; r < N; ++r) g_s.bp[r + 1] = 0xFFFC0001u;
     }
     g_s.last_round = (int16_t)in->round;
-    if (in->round % 20 == 0) {                   // 炸弹波: 位图记忆即弃
+    if (in->round % 20 == 0 && g_s.banybomb) {   // 炸弹波: 位图记忆即弃(有弹才清)
         for (int r = 0; r < N; ++r) g_s.bp[r + 1] &= ~(g_s.bombbit[r] << 1);
         memset(g_s.bombbit, 0, sizeof(g_s.bombbit));
         g_s.banybomb = 0;
@@ -252,7 +252,7 @@ GameOutput decide(const GameInput* in) {
     }
 
     // ===== 双单位决策(共用代码; 被动 goldm 视为 0) =====
-#pragma GCC unroll 2
+#pragma GCC unroll 1
     for (int u = 0; u < 2; ++u) {
         int sr = in->my_units[u].row, sc = in->my_units[u].col;
         int* acts = out.actions + u * 3;
@@ -284,11 +284,15 @@ GameOutput decide(const GameInput* in) {
                 ++gn_;
                 int gr_ = sr - 2 + i / 5, gc_ = sc - 2 + i % 5;
                 int v = gv(gr_, gc_);
+#ifdef NS3NONB
+                int sc_ = v * REC[MD[i]];        // 簇加成砍除实验
+#else
                 int nu = gv(gr_ - 1, gc_), nd2 = gv(gr_ + 1, gc_);
                 int nl = gv(gr_, gc_ - 1), nr2 = gv(gr_, gc_ + 1);
                 int nb = (nu > 0 ? nu : 0) + (nd2 > 0 ? nd2 : 0) +
                          (nl > 0 ? nl : 0) + (nr2 > 0 ? nr2 : 0);
                 int sc_ = (v * 2 + nb) * REC[MD[i]];
+#endif
                 if (sc_ > bests) {
                     bests = sc_; bestr = gr_; bestc = gc_;
                 }
@@ -346,6 +350,9 @@ GameOutput decide(const GameInput* in) {
             int d = (tgr > sr ? tgr - sr : sr - tgr) +
                     (tgc > sc ? tgc - sc : sc - tgc);
             if (d == 0) {                          // 站上目标(金格或锚点): 折返
+#ifdef NS3BARE
+                ;
+#else
                 unsigned pm = pass01(sr - 1, sc, tr, tc) |
                               (pass01(sr + 1, sc, tr, tc) << 1) |
                               (pass01(sr, sc - 1, tr, tc) << 2) |
@@ -354,7 +361,37 @@ GameOutput decide(const GameInput* in) {
                     int a = __builtin_ctz(pm);
                     acts[0] = a; acts[1] = a ^ 1;
                 }
+#endif
             } else {
+#ifdef NS3LUT
+                // 直线快路径: 轴差>=3 时前 3 步必同向; 3 格直线包络精确查 bp
+                {
+                    int dr0 = tgr - sr, dc0 = tgc - sc;
+                    int adr0 = dr0 < 0 ? -dr0 : dr0, adc0 = dc0 < 0 ? -dc0 : dc0;
+                    int sgr = dr0 > 0 ? 1 : -1, sgc = dc0 > 0 ? 1 : -1;
+                    if (adr0 >= adc0 + 3) {
+                        unsigned ok = pass01(sr + sgr, sc, tr, tc) &
+                                      pass01(sr + 2 * sgr, sc, tr, tc) &
+                                      pass01(sr + 3 * sgr, sc, tr, tc);
+                        if (ok) {
+                            int a = dr0 > 0 ? 1 : 0;
+                            acts[0] = acts[1] = acts[2] = a;
+                            g_s.last_r[u] = (int8_t)sr; g_s.last_c[u] = (int8_t)sc;
+                            goto steer_fast;
+                        }
+                    } else if (adc0 >= adr0 + 3) {
+                        unsigned ok = pass01(sr, sc + sgc, tr, tc) &
+                                      pass01(sr, sc + 2 * sgc, tr, tc) &
+                                      pass01(sr, sc + 3 * sgc, tr, tc);
+                        if (ok) {
+                            int a = dc0 > 0 ? 3 : 2;
+                            acts[0] = acts[1] = acts[2] = a;
+                            g_s.last_r[u] = (int8_t)sr; g_s.last_c[u] = (int8_t)sc;
+                            goto steer_fast;
+                        }
+                    }
+                }
+#endif
                 int r = sr, c = sc, n = 0;
                 int pr = g_s.last_r[u], pc = g_s.last_c[u];
 #pragma GCC unroll 3
@@ -378,6 +415,9 @@ GameOutput decide(const GameInput* in) {
                     }
                 }
             }
+#ifdef NS3LUT
+            steer_fast:;
+#endif
         }
 
         // 尾步填充(复用 wv7; 被动 gn_=0 自动跳过)
@@ -442,15 +482,19 @@ GameOutput decide(const GameInput* in) {
             g_s.plan_ok[u] = 1;
         }
 #endif
+#ifndef NS3BARE
         // 卡死解困
         unsigned same = (unsigned)((sr == g_s.last_r[u]) &
                                    (sc == g_s.last_c[u]) & (acts[0] == STAY));
         g_s.stuck[u] = (uint8_t)((g_s.stuck[u] + same) & (0u - same));
         if (g_s.stuck[u] >= 2) stuckEscape(u, sr, sc, tr, tc, acts);
+#endif
         g_s.last_r[u] = (int8_t)sr; g_s.last_c[u] = (int8_t)sc;
 
         // 防漂移护栏: 近弹预筛(行位图 7 行并查, 无列表)
-#ifdef NS3GUARD1
+#if defined(NS3BARE)
+        if (0) {
+#elif defined(NS3GUARD1)
         if (act_ && g_s.banybomb && in->my_units_gold[u] >= 300) {
 #else
         if (g_s.banybomb && in->my_units_gold[u] >= 300) {
