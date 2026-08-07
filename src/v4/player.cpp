@@ -103,6 +103,34 @@ void stuckEscape(int u, int sr, int sc, int tr, int tc, int* acts) {
     g_s.stuck[u] = 0;
 }
 
+// LUT 导向(v4.2): (dr,dc)∈[-3,3]² 行优先无阻挡模拟 —— 动作+逐步位置偏移表
+struct SLut {
+    uint8_t act[7][7][3];
+    int8_t  pdr[7][7][3], pdc[7][7][3];   // 第 i 步后的累计位移
+    uint8_t mvn[7][7];                    // 实际移动步数(<=3)
+    constexpr SLut() : act(), pdr(), pdc(), mvn() {
+        for (int dr = -3; dr <= 3; ++dr)
+            for (int dc = -3; dc <= 3; ++dc) {
+                int r = 0, c = 0, n = 0;
+                for (int i = 0; i < 3; ++i) {
+                    int rr = dr - r, cc = dc - c;
+                    int adr = rr < 0 ? -rr : rr, adc = cc < 0 ? -cc : cc;
+                    uint8_t a = STAY;
+                    if (adr | adc) {
+                        if (adr >= adc) { a = rr > 0 ? 1 : 0; r += rr > 0 ? 1 : -1; }
+                        else            { a = cc > 0 ? 3 : 2; c += cc > 0 ? 1 : -1; }
+                        ++n;
+                    }
+                    act[dr + 3][dc + 3][i] = a;
+                    pdr[dr + 3][dc + 3][i] = (int8_t)r;
+                    pdc[dr + 3][dc + 3][i] = (int8_t)c;
+                }
+                mvn[dr + 3][dc + 3] = (uint8_t)n;
+            }
+    }
+};
+constexpr SLut SL;
+
 int steerStep(int r, int c, int gr, int gc, int tr, int tc, int pr, int pc) {
     int drr = gr - r, dcc = gc - c;
     int ar = drr > 0;
@@ -374,28 +402,40 @@ GameOutput decide(const GameInput* in) {
         g_bpp = in->my_units_gold[u] < 50 ? g_s.bpw : g_s.bp;   // 穷=弹透明
         uint32_t gm0 = goldms[u];
 
-        // 打分: 稀疏金格, 簇加成, 距离倒数
-        int bestr = -1, bestc = -1, bests = 0;
+#if defined(NS4P) && NS4P == 1
+        { (void)gm0; int a = (in->round / 4 + u * 2) & 3;
+          acts[0] = acts[1] = acts[2] = a; continue; }
+#endif
+        // 目标: 最近金格(环掩码 cmov 链, 零内存零环; 210 预算删掉了簇加成打分)
+        int bestr = -1, bestc = -1;
         {
-            uint32_t gm = gm0;
-            while (gm) {
-                int i = __builtin_ctz(gm); gm &= gm - 1;
-                int gr_ = sr - 2 + i / 5, gc_ = sc - 2 + i % 5;
-                int v = gv(gr_, gc_);
-                int nu = gv(gr_ - 1, gc_), nd = gv(gr_ + 1, gc_);
-                int nl = gv(gr_, gc_ - 1), nr = gv(gr_, gc_ + 1);
-                int nb = (nu > 0 ? nu : 0) + (nd > 0 ? nd : 0) +
-                         (nl > 0 ? nl : 0) + (nr > 0 ? nr : 0);
-                int sc_ = (v * 2 + nb) * REC[MD[i]];
-                if (sc_ > bests) { bests = sc_; bestr = gr_; bestc = gc_; }
+            // 距离环掩码(MD==d 的位集合)
+            constexpr uint32_t RM0 = 1u << 12;
+            constexpr uint32_t RM1 = (1u<<7)|(1u<<11)|(1u<<13)|(1u<<17);
+            constexpr uint32_t RM2 = (1u<<2)|(1u<<6)|(1u<<8)|(1u<<10)|(1u<<14)|(1u<<16)|(1u<<18)|(1u<<22);
+            constexpr uint32_t RM3 = (1u<<1)|(1u<<3)|(1u<<5)|(1u<<9)|(1u<<15)|(1u<<19)|(1u<<21)|(1u<<23);
+            constexpr uint32_t RM4 = (1u<<0)|(1u<<4)|(1u<<20)|(1u<<24);
+            uint32_t g1 = gm0 & RM1, g2 = gm0 & RM2, g3 = gm0 & RM3;
+            uint32_t g4 = gm0 & RM4, g0 = gm0 & RM0;
+            uint32_t sel = g1 ? g1 : (g2 ? g2 : (g3 ? g3 : (g4 ? g4 : g0)));
+            int i = __builtin_ctz(sel | 1u);
+            int has = -(int)(gm0 != 0);
+            bestr = ((sr - 2 + i / 5) & has) | (-1 & ~has);
+            bestc = ((sc - 2 + i % 5) & has) | (-1 & ~has);
+            // 矿堆登记只查选中格(1 次直读; 全窗登记是 210 预算外的奢侈)
+            if (has) {
+                int v = gv(bestr, bestc);
+                if (v >= 5) pileNote(bestr, bestc, v);
             }
         }
 
         // 目标级联: 窗口金 > 活矿堆(u0 限中心) > 双环巡游
         int tgr, tgc;
-        {
+        if (bestr >= 0) {                        // 有金: 整个级联机器全跳(省功)
+            tgr = bestr; tgc = bestc;
+        } else {
             int bi = -1;
-            if (bestr < 0 && g_s.plive) {        // 门控=省功(v47 教训)
+            if (g_s.plive) {                     // 门控=省功(v47 教训)
                 int bsc = 0;
                 uint8_t tq = nowq();
                 uint32_t lm = g_s.plive;
@@ -418,17 +458,21 @@ GameOutput decide(const GameInput* in) {
             uint8_t& pi = g_s.patrol[u];
             unsigned here = (unsigned)((sr == PRW[u][pi]) & (sc == PCW[u][pi]));
             pi = (uint8_t)((pi + here) & 3);
-            int mw = -(int)(bestr >= 0);
-            int mp = -(int)(bi >= 0) & ~mw;
+            int mp = -(int)(bi >= 0);
             int pilr = g_s.pr_[bi & 7], pilc = g_s.pc_[bi & 7];
-            tgr = (bestr & mw) | (pilr & mp) | (PRW[u][pi] & ~mw & ~mp);
-            tgc = (bestc & mw) | (pilc & mp) | (PCW[u][pi] & ~mw & ~mp);
-            blind |= (unsigned)(~(mw | mp)) & 1u;
+            tgr = (pilr & mp) | (PRW[u][pi] & ~mp);
+            tgc = (pilc & mp) | (PCW[u][pi] & ~mp);
+            blind |= ((unsigned)(~mp) & 1u) |
+                     (unsigned)(__builtin_popcount(g_s.plive) < 2);
             unsigned atp = (unsigned)((sr == tgr) & (sc == tgc)) & (unsigned)(mp & 1);
             g_s.pv_[bi & 7] &= (uint8_t)(atp - 1u);
             g_s.plive &= (uint8_t)~((atp & 1u) << (bi & 7));
         }
 
+#if defined(NS4P) && NS4P == 2
+        { (void)tgr; (void)tgc; int a = (in->round / 4 + u * 2) & 3;
+          acts[0] = acts[1] = acts[2] = a; continue; }
+#endif
         // 导向 / 折返
         {
             int d = (tgr > sr ? tgr - sr : sr - tgr) +
@@ -441,6 +485,31 @@ GameOutput decide(const GameInput* in) {
                 if (pm) {
                     int a = __builtin_ctz(pm);
                     acts[0] = a; acts[1] = a ^ 1;
+                }
+            } else if ((unsigned)(tgr - sr + 3) <= 6u &&
+                       (unsigned)(tgc - sc + 3) <= 6u && d >= 3) {
+                // LUT 快路径: 三步查表 + 途经格并行验证(一层依赖)
+                int ir = tgr - sr + 3, ic = tgc - sc + 3;
+                const uint8_t* pa = SL.act[ir][ic];
+                const int8_t* xr = SL.pdr[ir][ic];
+                const int8_t* xc = SL.pdc[ir][ic];
+                unsigned ok = pass01(sr + xr[0], sc + xc[0], tr, tc) &
+                              pass01(sr + xr[1], sc + xc[1], tr, tc) &
+                              pass01(sr + xr[2], sc + xc[2], tr, tc);
+                if (ok) {
+                    acts[0] = pa[0]; acts[1] = pa[1]; acts[2] = pa[2];
+                } else {                       // 受阻: 回落串行链
+                    int r = sr, c = sc;
+                    int pr = g_s.last_r[u], pc = g_s.last_c[u];
+                    for (int i = 0; i < 3; ++i) {
+                        int notdone = (int)((r != tgr) | (c != tgc));
+                        int a = steerStep(r, c, tgr, tgc, tr, tc, pr, pc);
+                        int m = -(notdone & (int)(a >= 0));
+                        acts[i] = (a & m) | (STAY & ~m);
+                        int nr = r + DR[acts[i]], nc = c + DC[acts[i]];
+                        pr = (r & m) | (pr & ~m); pc = (c & m) | (pc & ~m);
+                        r = (nr & m) | (r & ~m); c = (nc & m) | (c & ~m);
+                    }
                 }
             } else {
                 int r = sr, c = sc, n = 0;
