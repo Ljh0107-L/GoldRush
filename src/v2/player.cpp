@@ -1,4 +1,10 @@
-// ns300/player.cpp — v2 主线: 300ns 预算的延迟优先重写
+// src/v2/player.cpp — v2 主线: 300ns 预算的延迟优先重写
+//
+// ns325 = 窗口折价删除(负结果入册: v2 1μs 行动先于 NPC, 窗口竞速必赢,
+//         折价=弃金, ns323 批量 1525 vs ns322 1695 且两局崩盘);
+//         仅保留矿堆目标折价(远目标多回合行程, NPC 先吃仍成立)
+// ns323 = ns322 + NPC 竞速折价(v1 移植: 目标格 nd*13<d*10 时降权 /4;
+//         v1 消融依据: 放宽竞速拾取 567->479。两打分环稀疏内环+nn==0 门控)
 //
 // ============ 设计契约(用户 2026-08-07 定调) ============
 // 落点目标: 平台 P50 <= 300ns。出现策略问题时不加时间, 而是重新审视
@@ -162,7 +168,7 @@ int steerStep(int r, int c, int gr, int gc, int tr, int tc, int pr, int pc) {
     return (adr | adc) ? escapeStep(r, c, tr, tc, pr, pc) : -1;
 }
 
-#if defined(NSPROBE) && NSPROBE == 9
+#if defined(NSPROBE) && (NSPROBE == 9 || NSPROBE == 12)
 unsigned long long g_t[4]; long g_tn;
 unsigned long long td9_last;
 inline unsigned long long tsc() {
@@ -198,6 +204,8 @@ GameOutput decide(const GameInput* in) {
 #endif
     __builtin_prefetch(&g_s.bp[4]);            // 自身状态热线并行预热
     __builtin_prefetch(g_s.pr_);
+    __builtin_prefetch(&in->num_visible_npcs); // NPC 折价用输入线(与网格行并行传输)
+    __builtin_prefetch(&in->visible_npcs[3]);
     // 窗口行预取(与扫描行程一致: 3 行常扫+隔轮扩展)
     for (int u2 = 0; u2 < 2; ++u2) {
         int ur = in->my_units[u2].row, uc = in->my_units[u2].col;
@@ -330,6 +338,19 @@ GameOutput decide(const GameInput* in) {
 #if defined(NSPROBE) && NSPROBE == 9
     (void)tb9;                                   // B1 已测(421), 槽位让给拆分
 #endif
+
+    // NPC 竞速源数据(v1 移植: 目标格离 NPC 比离我近 -> 白跑送人头, 降权)
+    // 固定 7 槽装载, 无效条目置远哨兵(99) -> 距离恒大不竞速, 免有效性分支
+    int8_t npr[7], npcc[7];
+    int nn = in->num_visible_npcs;
+    if (nn < 0) nn = 0; if (nn > 7) nn = 7;
+    for (int i = 0; i < 7; ++i) {
+        int r = in->visible_npcs[i].pos.row, c = in->visible_npcs[i].pos.col;
+        int ok = -(int)((i < nn) & ((unsigned)r < (unsigned)N) &
+                        ((unsigned)c < (unsigned)N));
+        npr[i] = (int8_t)((r & ok) | (99 & ~ok));
+        npcc[i] = (int8_t)((c & ok) | (99 & ~ok));
+    }
 
     // ===== 阶段2: 决策 =====
     for (int u = 0; u < 2; ++u) {
@@ -487,6 +508,15 @@ GameOutput decide(const GameInput* in) {
                         int pos = g_s.pr_[i] * 32 + g_s.pc_[i];
                         int s = (pos != dedup)
                                     ? g_s.pv_[i] * (30 - age8a[i]) * REC[d8a[i]] : 0;
+                        if (nn) {                  // NPC 竞速折价(同窗口打分)
+                            int race = 0;
+                            for (int j = 0; j < nn; ++j) {
+                                int ar = npr[j] - g_s.pr_[i], ac = npcc[j] - g_s.pc_[i];
+                                ar = ar < 0 ? -ar : ar; ac = ac < 0 ? -ac : ac;
+                                race |= (int)((ar + ac) * 13 < (int)d8a[i] * 10);
+                            }
+                            s >>= (race << 1);
+                        }
                         int gt = -(int)(s > best);
                         best = (s & gt) | (best & ~gt);
                         bi = (i & gt) | (bi & ~gt);
@@ -502,6 +532,15 @@ GameOutput decide(const GameInput* in) {
                                       (unsigned)(age2 <= 30) &
                                       (unsigned)(pos != dedup));
                     int s = (g_s.pv_[i] * (30 - age2) * REC[d]) & live;
+                    if (nn) {                      // NPC 竞速折价(同 AVX2 路径)
+                        int race = 0;
+                        for (int j = 0; j < nn; ++j) {
+                            int ar = npr[j] - g_s.pr_[i], ac = npcc[j] - g_s.pc_[i];
+                            ar = ar < 0 ? -ar : ar; ac = ac < 0 ? -ac : ac;
+                            race |= (int)((ar + ac) * 13 < d * 10);
+                        }
+                        s >>= (race << 1);
+                    }
                     int gt = -(int)(s > best);
                     best = (s & gt) | (best & ~gt);
                     bi = (i & gt) | (bi & ~gt);
@@ -572,6 +611,9 @@ GameOutput decide(const GameInput* in) {
         if (in->round < 250) g_t[2 + u] += tsc() - tc9;   // C 按单位拆分
         (void)td9_last;
 #endif
+#if defined(NSPROBE) && NSPROBE == 12
+        unsigned long long t12a = tsc();
+#endif
         // ---- 尾步填充(v1 实证: 16% 的步在罚站; 复用 wv, 零额外读格) ----
         if (gn_ > 0) {
             int r = sr, c = sc;
@@ -597,6 +639,10 @@ GameOutput decide(const GameInput* in) {
                     !wallAt(nr, nc)) { r = nr; c = nc; }
             }
         }
+#if defined(NSPROBE) && NSPROBE == 12
+        unsigned long long t12b = tsc();
+        if (in->round < 250) g_t[0 + u] += t12b - t12a;   // fill 按单位
+#endif
 
         // ---- 卡死解困(挡两轮 = 换个活法; 主体冷函数) ----
         unsigned same = (unsigned)((sr == g_s.last_r[u]) &
@@ -623,6 +669,9 @@ GameOutput decide(const GameInput* in) {
                 }
             }
         }
+#if defined(NSPROBE) && NSPROBE == 12
+        if (in->round < 250) g_t[2 + u] += tsc() - t12b;  // stuck+护栏 按单位
+#endif
     }
 
     out.k = 3;
@@ -635,7 +684,7 @@ GameOutput decide(const GameInput* in) {
         out.actions[u2 * 3] = out.actions[u2 * 3 + 1] = out.actions[u2 * 3 + 2] = a;
     }
 #endif
-#if defined(NSPROBE) && NSPROBE == 9
+#if defined(NSPROBE) && (NSPROBE == 9 || NSPROBE == 12)
     if (in->round < 250) ++g_tn;
     // vp 信道发射: round 250 起, 4 个 16 位均值(周期), MSB 在前
     if (in->round >= 250 && in->round < 250 + 64 && g_tn > 0) {
