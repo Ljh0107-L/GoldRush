@@ -637,7 +637,10 @@ GameOutput decide(const GameInput* in) {
         int r = in->visible_enemies[i].row, c = in->visible_enemies[i].col;
         if (r >= 0 && r < N && c >= 0 && c < N && g_m.bn < 8) {
             g_m.br[g_m.bn] = (int8_t)r; g_m.bc[g_m.bn] = (int8_t)c; ++g_m.bn;
+#ifndef NOSIGHTSTAMP
+            // 目击盖章: vs 中心蹲守型对手会把最肥刷新区自我禁区化(见 §10), 可关
             g_w.stampContested(r, c);          // 敌人出没区, 选目标折半
+#endif
         }
     }
     for (int i = 0; i < in->num_visible_npcs && i < MAX_NPCS; ++i) {
@@ -651,11 +654,11 @@ GameOutput decide(const GameInput* in) {
     return SAFE_OUT;                       // 只测 update+marks
 #endif
 #if defined(PROBE_LEVEL) && PROBE_LEVEL == 3
-    for (int u2 = 0; u2 < 2; ++u2) {       // 测 update+marks+build+DFS
+    for (int u2 = 0; u2 < 2; ++u2) {       // 测 update+marks+DFS(直读版)
         int sr2 = in->my_units[u2].row, sc2 = in->my_units[u2].col;
         if (sr2 < 0 || sr2 >= N || sc2 < 0 || sc2 >= N) continue;
         int tmp3[3];
-        g_local.run(sr2, sc2, in->my_units_gold[u2], tmp3);
+        g_mini.run(in, sr2, sc2, in->my_units_gold[u2], tmp3);
     }
     return SAFE_OUT;
 #endif
