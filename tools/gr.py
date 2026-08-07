@@ -238,6 +238,20 @@ def cmd_submit(a):
     print("提交成功。用 `gr.py games` 查看对局 id，再用 `gr.py watch <id>` 等结果。")
 
 
+def cmd_publish(a):
+    """上传公开代码(供他人挑战, add_model_4)。被动对局计入外战胜率。"""
+    name, lang, fname, blob = _spec(a.code)
+    # 注意: add_model_4 用单数字段名(model_file/model_lang/model_name), 与 add_model_1 不同
+    fields = [("model_lang", str(lang)), ("model_name", name)]
+    files = [("model_file", fname, blob)]
+    print("发布公开代码: %-14s %-8s %-18s %d 字节" % (name, LANG_NAME[lang], fname, len(blob)))
+    if a.dry_run:
+        print("(--dry-run，未实际发送)")
+        return
+    call("POST", "/api/user/add_model_4", multipart=(fields, files))
+    print("发布成功。他人挑战你时将使用该版本。")
+
+
 def cmd_watch(a):
     deadline = time.time() + a.timeout
     while time.time() < deadline:
@@ -286,6 +300,11 @@ def main():
     q.add_argument("--dry-run", action="store_true")
     q.add_argument("code", nargs="+", metavar="文件:Model名")
     q.set_defaults(func=cmd_submit)
+
+    q = sub.add_parser("publish", help="上传公开代码供他人挑战(add_model_4)")
+    q.add_argument("--dry-run", action="store_true")
+    q.add_argument("code", metavar="文件:Model名")
+    q.set_defaults(func=cmd_publish)
 
     q = sub.add_parser("watch", help="轮询直到可回放并保存日志")
     q.add_argument("game_id")
