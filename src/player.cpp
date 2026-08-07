@@ -1,5 +1,7 @@
 // player.cpp — GoldRush 2.0 主战策略
 //
+// cpp22 = cpp21 + 金币计数分派: 窗口0金->计划(0.5μs), 恰1金->专用直取+振荡(0.7μs),
+//         >=2金才全量DFS(2.5μs) -> P50 目标减半(DFS 336次逐边检查是主成本)。
 // cpp21 = cpp20 策略全保留 + 局部穷举改"直读输入"(免补丁构建, 省~1μs) + 砍视野购买。
 //         目标: P50 3.7 -> ~1.5μs, 策略无损(3步全枚举语义等价)。
 // cpp20 = cpp18 + 争抢章 60->30 轮(A/B 2814>2734); EXPRESS 触发率过低已弃用。
@@ -65,6 +67,8 @@ struct World {
     int   last_round;
     int   last_vp;
     int   vp_spent;
+    int   wgold_n[2];          // 各单位 5x5 窗口内金币格数
+    int   wgold_r[2], wgold_c[2];  // 恰 1 金时的坐标
     // 金币目标列表(懒惰失效: 取用时校验 gold()>0, 满了就压缩)
     uint16_t glist[96];
     int   gn;
@@ -125,6 +129,7 @@ struct World {
         last_round = round = in->round;
         int rad = 2 + last_vp;
         for (int u = 0; u < 2; ++u) {
+            wgold_n[u] = 0;
             int ur = in->my_units[u].row, uc = in->my_units[u].col;
             if (ur < 0 || ur >= N || uc < 0 || uc >= N) continue;
             int r0 = ur - rad < 0 ? 0 : ur - rad, r1 = ur + rad >= N ? N - 1 : ur + rad;
@@ -143,9 +148,12 @@ struct World {
 #endif
                     cell[r][c].known = (int8_t)(v > 127 ? 127 : v);
                     cell[r][c].seen = (uint16_t)(in->round + 1);
-                    if (v >= 1 && !cell[r][c].listed) {
-                        if (gn >= 96) compactList();
-                        if (gn < 96) { glist[gn++] = (uint16_t)(r * N + c); cell[r][c].listed = 1; }
+                    if (v >= 1) {
+                        if (++wgold_n[u] == 1) { wgold_r[u] = r; wgold_c[u] = c; }
+                        if (!cell[r][c].listed) {
+                            if (gn >= 96) compactList();
+                            if (gn < 96) { glist[gn++] = (uint16_t)(r * N + c); cell[r][c].listed = 1; }
+                        }
                     }
                 }
         }
@@ -322,6 +330,48 @@ struct MiniLocal {
     }
 };
 MiniLocal g_mini;
+
+int steerStep(int r, int c, int tr, int tc);   // 前置声明(定义在后)
+
+// 恰 1 金专用: 直取 + d==1 时 enter-leave-enter 双吃; 返回等效收益(>0 即农耕)
+int singleGold(const GameInput* in, int sr, int sc, int gr, int gc, int* acts) {
+    acts[0] = acts[1] = acts[2] = STAY;
+    int v = in->grid[gr][gc];
+    if (v < 1) return 0;
+    int d = (gr > sr ? gr - sr : sr - gr) + (gc > sc ? gc - sc : sc - gc);
+    if (d == 0) {                                   // 站在金上: 吃不到, 离开再回来
+        for (int a = 0; a < 4; ++a) {
+            int nr = sr + DR[a], nc = sc + DC[a];
+            if (nr < 0 || nr >= N || nc < 0 || nc >= N) continue;
+            if (!passable(nr, nc) || g_m.npcs(nr, nc) >= 3) continue;
+            acts[0] = a;
+            acts[1] = a ^ 1;                        // 反方向(0<->1, 2<->3)回来吃
+            return ceilPct(v, 65);
+        }
+        return 0;
+    }
+    int r = sr, c = sc, n = 0;
+    while (n < 3 && !(r == gr && c == gc)) {
+        int a = steerStep(r, c, gr, gc);
+        if (a < 0) return 0;                        // 被挡: 交给通用机器
+        acts[n++] = a;
+        r += DR[a]; c += DC[a];
+    }
+    if (!(r == gr && c == gc)) return 1;            // 3步没到: 也算在途(继续走)
+    int gain = ceilPct(v, 65);
+    if (n <= 1) {                                    // d==1: 还剩>=2步, 出来再进去双吃
+        int back = acts[n - 1] ^ 1;
+        int rem = v - gain;
+        if (rem > 0 && n + 1 < 3) {
+            acts[n] = back;
+            acts[n + 1] = back ^ 1;
+            gain += ceilPct(rem, 65);
+        }
+    } else if (n == 2) {
+        acts[2] = acts[1] ^ 1;                       // 到达后退一步, 备下轮再进
+    }
+    return gain;
+}
 
 // ---------- 多轮计划缓存(砍掉赶路回合的 BFS) ----------
 struct Plan {
@@ -628,7 +678,19 @@ GameOutput decide(const GameInput* in) {
             }
         }
 #endif
-        int gain = g_mini.run(in, sr, sc, in->my_units_gold[u], acts);
+        int gain;
+        int wg = g_w.wgold_n[u];
+        if (wg == 0) {
+            gain = 0;                                // 窗口无金: 直接走计划/目标机器
+            acts[0] = acts[1] = acts[2] = STAY;
+        } else if (wg == 1 && !g_w.bomb(g_w.wgold_r[u], g_w.wgold_c[u]) &&
+                   !g_m.claimed(g_w.wgold_r[u], g_w.wgold_c[u])) {
+            gain = singleGold(in, sr, sc, g_w.wgold_r[u], g_w.wgold_c[u], acts);
+            if (gain == 0)
+                gain = g_mini.run(in, sr, sc, in->my_units_gold[u], acts);
+        } else {
+            gain = g_mini.run(in, sr, sc, in->my_units_gold[u], acts);
+        }
         (void)stale; (void)cells;
         if (gain > 0) {
             g_plan[u].len = 0;                    // 就地开采, 旧行程作废
