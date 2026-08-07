@@ -56,6 +56,12 @@ struct State {
 };
 State g_s;
 
+// 倒数表 REC[d] ~= 4096/(d+1): 打分乘法化(平台老 CPU 的 64 位 idiv ~100 周期,
+// 决策核 1μs 之谜的主犯; 排序语义不变)
+constexpr uint16_t REC[33] = {4096, 2048, 1365, 1024, 819, 683, 585, 512, 455,
+    410, 372, 341, 315, 293, 273, 256, 241, 228, 216, 205, 195, 186, 178, 171,
+    164, 158, 152, 146, 141, 137, 132, 128, 124};
+
 // 巡逻路点: 中心十字 + 四象限(金币主产区为中心 9x9, 外圈大堆由矿堆缓存牵引)
 constexpr int8_t PATROL_R[8] = {8, 5, 8, 11, 8, 3, 13, 8};
 constexpr int8_t PATROL_C[8] = {5, 8, 11, 8, 8, 3, 13, 8};
@@ -80,11 +86,6 @@ inline void bombNote(int r, int c) {
         if (!g_s.bombs[i].seen) free_ = i;
     }
     if (free_ >= 0) g_s.bombs[free_] = {(int8_t)r, (int8_t)c, now2() ? now2() : (uint8_t)1};
-}
-
-inline void bombClear(int r, int c) {
-    for (int i = 0; i < 8; ++i)
-        if (g_s.bombs[i].r == r && g_s.bombs[i].c == c) g_s.bombs[i].seen = 0;
 }
 
 // 矿堆缓存: 只记 v>=6 的堆(小堆不值得专程回访)
@@ -185,7 +186,7 @@ GameOutput decide(const GameInput* in) {
 
         // ---- 窗口扫描(预算大头): 找最优金格 + 增量更新持久结构 ----
         int bestr = -1, bestc = -1;
-        long bests = 0;
+        int bests = 0;
         int r0 = sr - 2 < 0 ? 0 : sr - 2, r1 = sr + 2 >= N ? N - 1 : sr + 2;
         int c0 = sc - 2 < 0 ? 0 : sc - 2, c1 = sc + 2 >= N ? N - 1 : sc + 2;
         for (int r = r0; r <= r1; ++r) {
@@ -196,7 +197,7 @@ GameOutput decide(const GameInput* in) {
                 // (教训: 逐格查 16 堆+8 弹 = ~1000 次多余比较/轮, 占掉半个预算)
                 if (v > 0) {
                     int d = (r > sr ? r - sr : sr - r) + (c > sc ? c - sc : sc - c);
-                    long s = (long)v * 16 / (d + 1);
+                    int s = v * REC[d];
                     if (s > bests) { bests = s; bestr = r; bestc = c; }
                     if (v >= 6) pileNote(r, c, v);
                 } else if (v == OBSTACLE) {
@@ -208,7 +209,15 @@ GameOutput decide(const GameInput* in) {
         }
 
 #if defined(NSPROBE) && NSPROBE == 1
-        (void)bests; continue;               // 探针1: 只测 扫描+对账
+        (void)bests; continue;               // 探针1: 只测 扫描+对账(站桩)
+#endif
+#if defined(NSPROBE) && NSPROBE == 3
+        {   // 探针3: 扫描+对账+轮转走位(窗口移动) —— 分离"输入新鲜区冷读"成本
+            (void)bests;
+            int a = (in->round / 4 + u * 2) & 3;
+            acts[0] = acts[1] = acts[2] = a;
+            continue;
+        }
 #endif
         // ---- 决策核 ----
         if (bestr >= 0) {
@@ -250,7 +259,7 @@ GameOutput decide(const GameInput* in) {
                 valid = !(sr == g_s.goal_r[u] && sc == g_s.goal_c[u]);
             }
             if (!valid) {
-                long best = 0; int bi = -1;
+                int best = 0, bi = -1;
                 uint8_t t2 = now2();
                 for (int i = 0; i < 16; ++i) {
                     Pile& p = g_s.piles[i];
@@ -261,7 +270,7 @@ GameOutput decide(const GameInput* in) {
                         p.r == g_s.goal_r[0] && p.c == g_s.goal_c[0]) continue;
                     int d = (p.r > sr ? p.r - sr : sr - p.r) +
                             (p.c > sc ? p.c - sc : sc - p.c);
-                    long s = (long)p.v * (30 - age2) * 16 / (30 * (d + 1));
+                    int s = p.v * (30 - age2) * REC[d];   // (常数 /30 不影响排序)
                     if (s > best) { best = s; bi = i; }
                 }
                 if (bi >= 0) {
