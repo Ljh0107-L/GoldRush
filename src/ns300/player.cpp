@@ -163,6 +163,9 @@ GameOutput decide(const GameInput* in) {
         memset(g_s.bombbit, 0, sizeof(g_s.bombbit));
         memcpy(g_s.blocked, g_s.wall, sizeof(g_s.blocked));
     }
+#if defined(NSPROBE) && NSPROBE == 9
+    unsigned long long t9 = tsc();
+#endif
     // 窗口行预取(与扫描行程一致: 3 行常扫+隔轮扩展)
     for (int u2 = 0; u2 < 2; ++u2) {
         int ur = in->my_units[u2].row, uc = in->my_units[u2].col;
@@ -177,39 +180,7 @@ GameOutput decide(const GameInput* in) {
 
     GameOutput out = SAFE_OUT;
 
-    // 缓存对账: 24 条记录 x 1 次窗口判定+读格(代替逐格反查)
-#if defined(NSPROBE) && NSPROBE == 9
-    unsigned long long t9 = tsc();
-#endif
-    {
-        int u0r = in->my_units[0].row, u0c = in->my_units[0].col;
-        int u1r = in->my_units[1].row, u1c = in->my_units[1].col;
-        int e0 = in->round & 1, e1 = (in->round ^ 1) & 1;
-        auto inwin = [&](int r, int c) {
-            int d0r = r - u0r, d0c = c - u0c, d1r = r - u1r, d1c = c - u1c;
-            return ((unsigned)(d0r + 1 + e0) <= (unsigned)(2 + 2 * e0) &&
-                    (unsigned)(d0c + 2) <= 4u) ||
-                   ((unsigned)(d1r + 1 + e1) <= (unsigned)(2 + 2 * e1) &&
-                    (unsigned)(d1c + 2) <= 4u);
-        };
-        for (int i = 0; i < 16; ++i) {
-            Pile& p = g_s.piles[i];
-            if (p.v && inwin(p.r, p.c)) {
-                int g = in->grid[p.r][p.c];
-                if (g >= 6) { p.v = (uint8_t)(g > 255 ? 255 : g); p.seen = now2(); }
-                else p.v = 0;                        // 吃小/吃空/变弹: 摘除
-            }
-        }
-        for (int i = 0; i < 8; ++i) {
-            BombM& b = g_s.bombs[i];
-            if (b.seen && inwin(b.r, b.c) && in->grid[b.r][b.c] != BOMB) {
-                b.seen = 0;
-                g_s.bombbit[b.r] &= ~(1u << b.c);
-                g_s.blocked[b.r] = g_s.wall[b.r] | g_s.bombbit[b.r];
-            }
-        }
-    }
-
+    // (缓存对账已迁入单位循环: 用 wv7 校正, 零读格 —— A 段 542 周期的主治)
     // 敌情(便宜: 只记最近一次)
     for (int i = 0; i < 2; ++i) {
         int r = in->visible_enemies[i].row, c = in->visible_enemies[i].col;
@@ -232,46 +203,84 @@ GameOutput decide(const GameInput* in) {
 #if defined(NSPROBE) && NSPROBE == 9
         unsigned long long tb9 = tsc();
 #endif
-        // ---- 掩码化窗口扫描(无分支主体; 冷 BTB 实证: 分支数即延迟) ----
-        // wv7 = 7x7 带哨兵边框的窗口值(邻居访问永远合法); 三张 25 位掩码
+        // ---- wv7 = 7x7 带哨兵边框的窗口值(邻居访问永远合法) ----
         int8_t wv7[49];
         memset(wv7, -1, 49);
-        uint32_t goldm = 0, wallm = 0, bombm = 0;
-        // 行数即延迟(遥测: B=930 周期, 全是冷线): 3 行常扫 + 外侧行隔轮扩展。
-        // 行距 2 的金币最多晚 1 轮发现(矿堆缓存有记忆), 换 ~40% 触线削减。
-        int ext = (in->round ^ u) & 1;
-        int r0 = sr - 1 - ext, r1 = sr + 1 + ext;
-        if (r0 < 0) r0 = 0;
-        if (r1 >= N) r1 = N - 1;
-        int c0 = sc - 2 < 0 ? 0 : sc - 2, c1 = sc + 2 >= N ? N - 1 : sc + 2;
-        for (int r = r0; r <= r1; ++r) {
-            const int* row = in->grid[r];
-            int b7 = (r - sr + 3) * 7 + 3 - sc;
-            int b5 = (r - sr + 2) * 5 + 2 - sc;
-            for (int c = c0; c <= c1; ++c) {
-                int v = row[c];
-                wv7[b7 + c] = (int8_t)(v > 127 ? 127 : v);
-                uint32_t bit = 1u << (b5 + c);
-                goldm |= v > 0 ? bit : 0u;
-                wallm |= v == OBSTACLE ? bit : 0u;
-                bombm |= v == BOMB ? bit : 0u;
+        // 定形无分支扫描(遥测定案: 冷BTB与miss乘性耦合, 分支即延迟):
+        // 固定 5x5 形状全展开, 边界=钳位读+算术有效掩码, 全程无条件分支 →
+        // OoO 自由推测, 加载并行化。恢复全窗口(3行实验的行数论已被证伪)。
+        int cb = sc - 2 < 0 ? 0 : (sc - 2 > N - 5 ? N - 5 : sc - 2);
+        int cshift = sc - 2 - cb + 3;          // blk 中心偏移
+        uint32_t goldm = 0, wallm = 0, bombm = 0, validm = 0;
+        {
+            int32_t blk[12];
+            blk[0] = blk[1] = blk[2] = -1;
+            blk[8] = blk[9] = blk[10] = blk[11] = -1;
+#pragma GCC unroll 5
+            for (int i = 0; i < 5; ++i) {
+                int rr = sr - 2 + i;
+                int cr = rr < 0 ? 0 : (rr > N - 1 ? N - 1 : rr);
+                uint32_t rowok = (uint32_t)0 - ((unsigned)rr < (unsigned)N);
+                memcpy(blk + 3, &in->grid[cr][cb], 5 * sizeof(int32_t));
+#pragma GCC unroll 5
+                for (int j = 0; j < 5; ++j) {
+                    int b = i * 5 + j;
+                    uint32_t colok =
+                        (uint32_t)0 - ((unsigned)(sc - 2 + j) < (unsigned)N);
+                    uint32_t m = rowok & colok;
+                    int v = (blk[cshift + j] & (int)m) | (int)~m;   // 无效=-1
+                    wv7[(i + 1) * 7 + (j + 1)] = (int8_t)v;
+                    goldm  |= (uint32_t)(v > 0) << b;
+                    wallm  |= (uint32_t)(v == OBSTACLE) << b;
+                    bombm  |= (uint32_t)(v == BOMB) << b;
+                    validm |= (m & 1u) << b;
+                }
             }
         }
-#if defined(NSPROBE) && NSPROBE == 9
-        if (in->round < 250) g_t[1] += tsc() - tb9;
-        unsigned long long tb2 = tsc();
-#endif
-        if (wallm)                             // 墙位图: 行片一次并入
+        wallm &= validm;                       // 出界哨兵不是真墙
+        if (wallm) {                           // 墙位图: 行片一次并入
+            int r0 = sr - 2 < 0 ? 0 : sr - 2, r1 = sr + 2 >= N ? N - 1 : sr + 2;
+            int c0 = sc - 2 < 0 ? 0 : sc - 2;
             for (int r = r0; r <= r1; ++r) {
                 int b5 = (r - sr + 2) * 5 + 2 - sc;
                 uint32_t slice = ((wallm >> (b5 + c0)) & 31u) << c0;
                 g_s.wall[r] |= slice;
                 g_s.blocked[r] |= slice;
             }
-        while (bombm) {                        // 炸弹: 稀疏, 逐位处理
-            int i = __builtin_ctz(bombm); bombm &= bombm - 1;
-            bombNote(sr - 2 + i / 5, sc - 2 + i % 5);
         }
+        {                                      // 炸弹: 稀疏, 逐位登记
+            uint32_t bm = bombm;
+            while (bm) {
+                int i = __builtin_ctz(bm); bm &= bm - 1;
+                bombNote(sr - 2 + i / 5, sc - 2 + i % 5);
+            }
+        }
+#if defined(NSPROBE) && NSPROBE == 9
+        if (in->round < 250) g_t[1] += tsc() - tb9;
+        unsigned long long tb2 = tsc();
+#endif
+        // 对账(零读格): 本单位窗口内的堆/弹用 wv7/bombm 校正
+        for (int i = 0; i < 16; ++i) {
+            Pile& p = g_s.piles[i];
+            if (!p.v) continue;
+            int wr = p.r - sr + 2, wc = p.c - sc + 2;
+            if ((unsigned)wr > 4u || (unsigned)wc > 4u) continue;
+            int v = wv7[(wr + 1) * 7 + (wc + 1)];
+            if (v >= 5) { p.v = (uint8_t)v; p.seen = now2(); }
+            else p.v = 0;                          // 吃小/吃空/变弹: 摘除
+        }
+        for (int i = 0; i < 8; ++i) {
+            BombM& b = g_s.bombs[i];
+            if (!b.seen) continue;
+            int wr = b.r - sr + 2, wc = b.c - sc + 2;
+            if ((unsigned)wr > 4u || (unsigned)wc > 4u) continue;
+            if (!((bombm >> (wr * 5 + wc)) & 1u)) {
+                b.seen = 0;
+                g_s.bombbit[b.r] &= ~(1u << b.c);
+                g_s.blocked[b.r] = g_s.wall[b.r] | g_s.bombbit[b.r];
+            }
+        }
+
         // 采集打分(簇加成): 只走置位金格
         constexpr int8_t MD[25] = {4,3,2,3,4, 3,2,1,2,3, 2,1,0,1,2,
                                    3,2,1,2,3, 4,3,2,3,4};
