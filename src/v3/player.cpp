@@ -207,6 +207,7 @@ GameOutput decide(const GameInput* in) {
                         g_s.bp[br + 1] |= 1u << (bc + 1);
                     }
                 }
+#ifndef NS3MIN
                 {   // 矿堆登记(v36/v39): 窗口内 v>=5 记(直读 grid)
                     uint32_t gm = goldm;
                     while (gm) {
@@ -221,6 +222,7 @@ GameOutput decide(const GameInput* in) {
                         }
                     }
                 }
+#endif
             }
 #else
             {   // 标量参考路径(本机测试用)
@@ -254,7 +256,7 @@ GameOutput decide(const GameInput* in) {
         if (sr < 0 || sr >= N || sc < 0 || sc >= N) continue;
         int tr = in->my_units[1 - u].row, tc = in->my_units[1 - u].col;
         const int act_ = (active < 0) | (u == active);
-#ifndef NS3NOPLAN
+#if !defined(NS3NOPLAN) && !defined(NS3MIN)
         if (!act_ && g_s.plan_ok[u]) {           // v37: 被动轮回放缓存计划
             acts[0] = g_s.plan[u][0];
             acts[1] = g_s.plan[u][1];
@@ -301,6 +303,7 @@ GameOutput decide(const GameInput* in) {
         if (bestr >= 0) { tgr = bestr; tgc = bestc; }
         else {
             int bi = -1;
+#ifndef NS3MIN
             if (g_s.plive) {                       // 稀疏: 无堆零成本
                 int bsc = 0;
                 uint8_t tq = nowq();
@@ -322,6 +325,7 @@ GameOutput decide(const GameInput* in) {
                     bi = (k & gt) | (bi & ~gt);
                 }
             }
+#endif
             if (bi >= 0) { tgr = g_s.pr_[bi]; tgc = g_s.pc_[bi]; }
             else {
                 uint8_t& pi = g_s.patrol[u];
@@ -407,7 +411,7 @@ GameOutput decide(const GameInput* in) {
             }
         }
 
-#ifndef NS3NOPLAN
+#if !defined(NS3NOPLAN) && !defined(NS3MIN)
         if (act_) {                              // v37: 预算下轮 3 步(缓存计划)
             int r = sr, c = sc;
             for (int i = 0; i < 3; ++i) {        // 本轮走完后的终点
