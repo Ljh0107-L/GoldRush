@@ -34,12 +34,15 @@ struct alignas(64) State {
     uint32_t bombbit[N + 2]; // 炸弹位图(+1 偏移对齐 bpw; 波清)
     int8_t last_r[2], last_c[2];
     int8_t can0[2], can1[2], can2[2];   // v5s: 罐头 3 步(主动轮存, 被动轮回放)
+    int8_t pr_[8], pc_[8];              // v5u: 8 槽矿堆缓存(永不断粮管线)
+    uint8_t pv_[8], ps_[8], plive;
     int16_t last_round;
 };
 State g_s;
 
 constexpr int8_t ANCH_R[2] = {6, 10};
 constexpr int8_t ANCH_C[2] = {6, 10};
+inline uint8_t nowq() { return (uint8_t)(((uint16_t)g_s.last_round >> 2) | 1); }
 
 // 通行 = 非墙 且 (穷 或 非弹) 且 非队友
 inline unsigned pass01(int r, int c, int tr, int tc, unsigned rich) {
@@ -237,7 +240,22 @@ GameOutput decide(const GameInput* in) {
 #endif
         // (金格与弹格规则上不共存 —— 目标无需剔弹, 途中避弹由 pass01 管)
 
-        // ---- 目标: 最近金(环掩码) 否则锚点 ----
+        // v5u: 矿堆登记(窗口 v>=5, 稀疏直读 L1 已热行)
+        {
+            uint32_t gm = goldm;
+            while (gm) {
+                int i = __builtin_ctz(gm); gm &= gm - 1;
+                int gr_ = sr - 2 + i / 5, gc_ = sc - 2 + i % 5;
+                int v = in->grid[gr_][gc_];
+                if (v >= 5) {
+                    int k = (gr_ * 31 + gc_) & 7;
+                    g_s.pr_[k] = (int8_t)gr_; g_s.pc_[k] = (int8_t)gc_;
+                    g_s.pv_[k] = (uint8_t)v;  g_s.ps_[k] = nowq();
+                    g_s.plive |= (uint8_t)(1u << k);
+                }
+            }
+        }
+        // ---- 目标: 最近金(环掩码) > 活堆 > 锚点 ----
         int tgr, tgc;
         {
             constexpr uint32_t RM0 = 1u << 12;
@@ -255,8 +273,33 @@ GameOutput decide(const GameInput* in) {
             uint32_t sel = (g1 & m1) | (g2 & m2) | (g3 & m3) | (g4 & m4) | (g0 & m0);
             int i = __builtin_ctz(sel | (uint32_t)(sel == 0));   // 仅空时补位(| 1u 恒补是v4d/v5崩盘元凶)
             int has = -(int)(goldm != 0);
-            tgr = ((sr - 2 + i / 5) & has) | (ANCH_R[u] & ~has);
-            tgc = ((sc - 2 + i % 5) & has) | (ANCH_C[u] & ~has);
+            // 活堆候选(无窗金时, 门控省功): 最近新鲜堆
+            int bi = -1;
+            if (!has && g_s.plive) {
+                int bsc = 0; uint8_t tq = nowq();
+                uint32_t lm = g_s.plive;
+                while (lm) {
+                    int k = __builtin_ctz(lm); lm &= lm - 1;
+                    int fr = -(int)((uint8_t)(tq - g_s.ps_[k]) <= 10);
+                    g_s.plive &= (uint8_t)~(((~fr) & 1) << k);
+                    int dr_ = g_s.pr_[k] - sr, dc_ = g_s.pc_[k] - sc;
+                    dr_ = dr_ < 0 ? -dr_ : dr_; dc_ = dc_ < 0 ? -dc_ : dc_;
+                    int dd = dr_ + dc_; dd = dd > 31 ? 31 : dd;
+                    int s2 = (g_s.pv_[k] * (64 - dd * 2)) & fr;
+                    int gt = -(int)(s2 > bsc);
+                    bsc = (s2 & gt) | (bsc & ~gt);
+                    bi = (k & gt) | (bi & ~gt);
+                }
+            }
+            int mp = -(int)(bi >= 0) & ~has;
+            tgr = ((sr - 2 + i / 5) & has) | (g_s.pr_[bi & 7] & mp) |
+                  (ANCH_R[u] & ~has & ~mp);
+            tgc = ((sc - 2 + i % 5) & has) | (g_s.pc_[bi & 7] & mp) |
+                  (ANCH_C[u] & ~has & ~mp);
+            // 到达活堆即摘(防幽灵振荡)
+            unsigned atp = (unsigned)((sr == tgr) & (sc == tgc)) & (unsigned)(mp & 1);
+            g_s.pv_[bi & 7] &= (uint8_t)(atp - 1u);
+            g_s.plive &= (uint8_t)~((atp & 1u) << (bi & 7));
         }
 
         // ---- 导向(v5n 全无分支): LUT 恒查 + cmov 回落 + 折返掩码合流 ----
