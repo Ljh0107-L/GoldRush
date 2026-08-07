@@ -1,5 +1,9 @@
 // src/v2/player.cpp — v2 主线: 300ns 预算的延迟优先重写
 //
+// ns331 = 被动/主动路径统一内核(地板实验: 决策尾段吃掉 ~410ns, 其中
+//         被动独立代码副本 ~115ns/轮 = 冷 i-cache/BTB 罚款):
+//         删被动专用块, 被动走同一条 goal/steer/fill/guard 代码(前端已被
+//         主动单位焐热); 被动折返复用 d==0 离返路径; 对账/摘除按 act_ 门控
 // ns330 = 阶段2 直线化(np9alt/np12alt 定靶: B2 300-430 + C 350-450 / 主动轮):
 //         ①炸弹表 SoA + 固定8行程无分支对账(原 ~16 分支位点 -> 1)
 //         ②goal 校验 cmov 链化 ③被动折返/离返 ctz 掩码化 ④fill besta cmov
@@ -396,92 +400,13 @@ GameOutput decide(const GameInput* in) {
         int slot13 = (u == (in->round & 1)) ? 2 : 3;
 #endif
 #ifdef NS_ALT
-        if (u != (in->round & 1)) {            // 被动路径: 缓存导向, 零输入读
-            unsigned nearbomb = 0;
-#pragma GCC unroll 8
-            for (int i = 0; i < 8; ++i) {
-                int adr_ = g_s.br_[i] - sr, adc_ = g_s.bc_[i] - sc;
-                adr_ = adr_ < 0 ? -adr_ : adr_; adc_ = adc_ < 0 ? -adc_ : adc_;
-                nearbomb |= (unsigned)(g_s.bseen_[i] != 0) &
-                            (unsigned)(adr_ + adc_ <= 3);
-            }
-            if (g_s.goal_kind[u] == 0) {       // 无目标: 就地折返(ctz 化)
-                unsigned pm = pass01(sr - 1, sc, tr, tc) |
-                              (pass01(sr + 1, sc, tr, tc) << 1) |
-                              (pass01(sr, sc - 1, tr, tc) << 2) |
-                              (pass01(sr, sc + 1, tr, tc) << 3);
-                if (pm) {
-                    int a = __builtin_ctz(pm);
-                    acts[0] = a; acts[1] = a ^ 1;
-                }
-            } else {
-                int tgr = g_s.goal_r[u], tgc = g_s.goal_c[u];
-                int d = (tgr > sr ? tgr - sr : sr - tgr) +
-                        (tgc > sc ? tgc - sc : sc - tgc);
-                if (d == 0) {                  // 站上目标: 摘除, 交回主动轮
-                    if (g_s.goal_kind[u] == 1) pileDrop(tgr, tgc);
-                    g_s.goal_kind[u] = 0;
-                } else {
-                    int r = sr, c = sc, n = 0;
-                    int pr = g_s.last_r[u], pc = g_s.last_c[u];
-#pragma GCC unroll 3
-                    for (int i = 0; i < 3; ++i) {
-                        int notdone = (int)((r != tgr) | (c != tgc));
-                        int a = steerStep(r, c, tgr, tgc, tr, tc, pr, pc);
-                        int m = -(notdone & (int)(a >= 0));
-                        acts[i] = (a & m) | (STAY & ~m);
-                        int nr = r + DR[acts[i]], nc = c + DC[acts[i]];
-                        pr = (r & m) | (pr & ~m);
-                        pc = (c & m) | (pc & ~m);
-                        r = (nr & m) | (r & ~m);
-                        c = (nc & m) | (c & ~m);
-                        n -= m;
-                    }
-                    (void)n;
-                    if ((r == tgr) & (c == tgc)) {
-                        if (g_s.goal_kind[u] == 1) pileDrop(tgr, tgc);
-                        g_s.goal_kind[u] = 0;
-                    }
-                }
-            }
-            // 卡死计数与主动轮共用
-            unsigned same = (unsigned)((sr == g_s.last_r[u]) &
-                                       (sc == g_s.last_c[u]) & (acts[0] == STAY));
-            g_s.stuck[u] = (uint8_t)((g_s.stuck[u] + same) & (0u - same));
-            if (g_s.stuck[u] >= 2) stuckEscape(u, sr, sc, tr, tc, acts);
-            g_s.last_r[u] = (int8_t)sr; g_s.last_c[u] = (int8_t)sc;
-            // 防漂移护栏(近弹才模拟)
-            if (in->my_units_gold[u] >= 300 && nearbomb) {
-                for (int blk = 0; blk < 3; ++blk) {
-                    if (acts[blk] == STAY) continue;
-                    int r = sr, c = sc;
-                    for (int i = 0; i < 3; ++i) {
-                        int nrr = r + DR[acts[i]], ncc = c + DC[acts[i]];
-                        unsigned inb = ((unsigned)nrr < (unsigned)N) &
-                                       ((unsigned)ncc < (unsigned)N);
-                        int ri = nrr & -(int)inb, ci = ncc & -(int)inb;
-                        unsigned wb_ = ((g_s.bp[ri + 1] >> (ci + 1)) &
-                                        ~(g_s.bombbit[ri] >> ci)) & 1u;
-                        unsigned adv = (unsigned)(acts[i] != STAY) &
-                                       (unsigned)(i != blk) & inb & (wb_ ^ 1u);
-                        if (adv & ((g_s.bombbit[ri] >> ci) & 1u)) {
-                            for (int j = i; j < 3; ++j) acts[j] = STAY;
-                            break;
-                        }
-                        int m = -(int)adv;
-                        r = (nrr & m) | (r & ~m); c = (ncc & m) | (c & ~m);
-                    }
-                }
-            }
-#if defined(NSPROBE) && NSPROBE == 13
-            if (in->round < 250) g_t[slot13] += tsc() - t13;
+        const int act_ = (u == (in->round & 1));   // 统一内核: 被动共走热代码
+#else
+        const int act_ = 1;
 #endif
-            continue;                          // 被动单位到此为止
-        }
-#endif
-        // 对账(零读格): 本单位窗口内的堆用 wv7 校正
+        // 对账(零读格): 本单位窗口内的堆用 wv7 校正(被动跳过: wv7 无效)
 #if defined(__AVX2__)
-        {   // SIMD: 一次比较得到"窗口内且有货"的堆位图, 逐位校正(稀疏)
+        if (act_) {   // SIMD: 一次比较得到"窗口内且有货"的堆位图, 逐位校正(稀疏)
             __m256i vr_ = _mm256_loadu_si256((const __m256i*)g_s.pr_);
             __m256i vc_ = _mm256_loadu_si256((const __m256i*)g_s.pc_);
             __m256i vv_ = _mm256_loadu_si256((const __m256i*)g_s.pv_);
@@ -508,7 +433,7 @@ GameOutput decide(const GameInput* in) {
             }
         }
 #else
-        for (int i = 0; i < 32; ++i) {
+        if (act_) for (int i = 0; i < 32; ++i) {
             if (!g_s.pv_[i]) continue;
             int wr = g_s.pr_[i] - sr + 2, wc = g_s.pc_[i] - sc + 2;
             if ((unsigned)wr > 4u || (unsigned)wc > 4u) continue;
@@ -528,11 +453,12 @@ GameOutput decide(const GameInput* in) {
                 unsigned inw = ((unsigned)wr <= 4u) & ((unsigned)wc <= 4u) & seen_;
                 unsigned idx = (unsigned)(wr * 5 + wc) & (0u - inw) & 31u;
                 unsigned present = (bombm >> idx) & inw;
-                badm |= (inw & ~present & 1u) << i;
+                badm |= (inw & ~present & 1u) << i;   // (被动: bombm=0 但下方门控)
                 int adr_ = wr < 2 ? 2 - wr : wr - 2;
                 int adc_ = wc < 2 ? 2 - wc : wc - 2;
                 nearbomb |= seen_ & (unsigned)(adr_ + adc_ <= 3);
             }
+            badm &= (uint32_t)0 - (uint32_t)act_;  // 被动无窗口证据, 不摘除
             while (badm) {                     // 罕见: 吃空/幽灵弹摘除
                 int i = __builtin_ctz(badm); badm &= badm - 1;
                 g_s.bseen_[i] = 0;
@@ -587,6 +513,8 @@ GameOutput decide(const GameInput* in) {
         if (bestr >= 0) {
             tgr = bestr; tgc = bestc; mode = 0;
             g_s.goal_kind[u] = 0;            // 就地有活干, 目标层休眠
+        } else if (!act_ && g_s.goal_kind[u] == 0) {
+            tgr = sr; tgc = sc; mode = 0;    // 被动无目标: 复用 d==0 离返=就地折返
         } else {
 #if defined(NSPROBE) && NSPROBE == 5
             {   // 探针5: 目标支砍除, 轮转走位
