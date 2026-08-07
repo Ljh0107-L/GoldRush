@@ -13,6 +13,9 @@
 // 砍掉(以后按预算加回): 矿堆缓存/巡逻表/护栏/卡死机/阶段A B/视野/敌情/快照
 #include <cstdint>
 #include <cstring>
+#ifdef NS5DBG
+#include <cstdio>
+#endif
 #if defined(__AVX2__)
 #include <immintrin.h>
 #endif
@@ -222,7 +225,7 @@ GameOutput decide(const GameInput* in) {
             uint32_t g1 = goldm & RM1, g2 = goldm & RM2, g3 = goldm & RM3;
             uint32_t g4 = goldm & RM4, g0 = goldm & RM0;
             uint32_t sel = g1 ? g1 : (g2 ? g2 : (g3 ? g3 : (g4 ? g4 : g0)));
-            int i = __builtin_ctz(sel | 1u);
+            int i = __builtin_ctz(sel | (uint32_t)(sel == 0));   // 仅空时补位(| 1u 恒补是v4d/v5崩盘元凶)
             int has = -(int)(goldm != 0);
             tgr = ((sr - 2 + i / 5) & has) | (ANCH_R[u] & ~has);
             tgc = ((sc - 2 + i % 5) & has) | (ANCH_C[u] & ~has);
@@ -264,6 +267,13 @@ GameOutput decide(const GameInput* in) {
                    g_s.last_r[u], g_s.last_c[u], rich);
         }
 
+#ifdef NS5DBG
+        if (in->round >= 39 && in->round <= 43) {
+            fprintf(stderr, "r%d u%d pos(%d,%d) gold%d rich%u goldm=%08x tg(%d,%d) acts[%d,%d,%d]\n",
+                in->round, u, sr, sc, in->my_units_gold[u], rich & 1u,
+                goldm, tgr, tgc, acts[0], acts[1], acts[2]);
+        }
+#endif
         g_s.last_r[u] = (int8_t)sr; g_s.last_c[u] = (int8_t)sc;
     }
 

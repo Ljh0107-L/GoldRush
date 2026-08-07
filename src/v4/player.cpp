@@ -418,7 +418,7 @@ GameOutput decide(const GameInput* in) {
             uint32_t g1 = gm0 & RM1, g2 = gm0 & RM2, g3 = gm0 & RM3;
             uint32_t g4 = gm0 & RM4, g0 = gm0 & RM0;
             uint32_t sel = g1 ? g1 : (g2 ? g2 : (g3 ? g3 : (g4 ? g4 : g0)));
-            int i = __builtin_ctz(sel | 1u);
+            int i = __builtin_ctz(sel | (uint32_t)(sel == 0));   // 仅空时补位(| 1u 恒补是v4d/v5崩盘元凶)
             int has = -(int)(gm0 != 0);
             bestr = ((sr - 2 + i / 5) & has) | (-1 & ~has);
             bestc = ((sc - 2 + i % 5) & has) | (-1 & ~has);
