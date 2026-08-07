@@ -159,7 +159,7 @@ int steerStep(int r, int c, int gr, int gc, int tr, int tc, int pr, int pc) {
                    (unsigned)((adr != 0) & (adc != 0));
     if (ok0 | ok1)                                 // 常真(可预测)
         return ok0 ? p0 : p1;                      // cmov 化
-    return escapeStep(r, c, tr, tc, pr, pc);
+    return (adr | adc) ? escapeStep(r, c, tr, tc, pr, pc) : -1;
 }
 
 #if defined(NSPROBE) && NSPROBE == 9
@@ -535,25 +535,32 @@ GameOutput decide(const GameInput* in) {
                     g_s.goal_kind[u] = 0;
                 }
             } else {
+                // 定形 3 步掩码导向(消 while/break 分支位点; 语义与循环版等价:
+                // a<0 或到达后 steerStep 输入不变 -> 输出不变 -> 恒 STAY)
                 int r = sr, c = sc, n = 0;
                 int pr = g_s.last_r[u], pc = g_s.last_c[u];
-                while (n < 3 && !(r == tgr && c == tgc)) {
+#pragma GCC unroll 3
+                for (int i = 0; i < 3; ++i) {
+                    int notdone = (int)((r != tgr) | (c != tgc));
                     int a = steerStep(r, c, tgr, tgc, tr, tc, pr, pc);
-                    if (a < 0) break;
-                    acts[n++] = a;
-                    pr = r; pc = c;
-                    r += DR[a]; c += DC[a];
+                    int m = -(notdone & (int)(a >= 0));
+                    acts[i] = (a & m) | (STAY & ~m);
+                    int nr = r + DR[acts[i]], nc = c + DC[acts[i]];
+                    pr = (r & m) | (pr & ~m);
+                    pc = (c & m) | (pc & ~m);
+                    r = (nr & m) | (r & ~m);
+                    c = (nc & m) | (c & ~m);
+                    n -= m;                          // m=-1 时 +1
                 }
-                if (r == tgr && c == tgc) {
-                    if (mode == 0) {
-                        if (n < 3) {
-                            acts[n] = acts[n - 1] ^ 1;     // 早到: 退一步
-                            if (n + 1 < 3) acts[n + 1] = acts[n] ^ 1;   // d1 双吃回进
-                        }
-                    } else {
-                        if (mode == 1) pileDrop(tgr, tgc);
-                        g_s.goal_kind[u] = 0;              // 到达: 下轮窗口扫描接管
+                int arrived = (int)((r == tgr) & (c == tgc));
+                if (arrived & (int)(mode == 0)) {
+                    if (n > 0 && n < 3) {
+                        acts[n] = acts[n - 1] ^ 1;     // 早到: 退一步
+                        if (n + 1 < 3) acts[n + 1] = acts[n] ^ 1;   // d1 双吃回进
                     }
+                } else if (arrived) {
+                    if (mode == 1) pileDrop(tgr, tgc);
+                    g_s.goal_kind[u] = 0;              // 到达: 下轮窗口扫描接管
                 }
             }
         }
