@@ -39,6 +39,8 @@ struct alignas(64) State {
     int8_t pr_[16], pc_[16];
     uint8_t pv_[16], ps_[16];
     uint16_t plive;          // 活堆位掩码(稀疏门控: 无堆零成本)
+    int8_t plan[2][3];       // v37: 主动轮预算的"下轮 3 步"(被动轮直接回放)
+    uint8_t plan_ok[2];
     int16_t last_round;
 };
 
@@ -262,6 +264,16 @@ GameOutput decide(const GameInput* in) {
         int tr = in->my_units[1 - u].row, tc = in->my_units[1 - u].col;
         const int8_t* wv7 = wv7s[u];
         const int act_ = (active < 0) | (u == active);
+#ifndef NS3NOPLAN
+        if (!act_ && g_s.plan_ok[u]) {           // v37: 被动轮回放缓存计划
+            acts[0] = g_s.plan[u][0];
+            acts[1] = g_s.plan[u][1];
+            acts[2] = g_s.plan[u][2];
+            g_s.plan_ok[u] = 0;
+            g_s.last_r[u] = (int8_t)sr; g_s.last_c[u] = (int8_t)sc;
+            continue;
+        }
+#endif
         uint32_t gm0 = goldms[u] & (uint32_t)(0 - act_);
 
         // 采集打分(簇加成): 只走置位金格
@@ -404,6 +416,33 @@ GameOutput decide(const GameInput* in) {
             }
         }
 
+#ifndef NS3NOPLAN
+        if (act_) {                              // v37: 预算下轮 3 步(缓存计划)
+            int r = sr, c = sc;
+            for (int i = 0; i < 3; ++i) {        // 本轮走完后的终点
+                int a = acts[i];
+                int nr = r + DR[a], nc = c + DC[a];
+                unsigned ok = (~(g_s.bp[nr + 1] >> (nc + 1)) & 1u) |
+                              (unsigned)(a == STAY);
+                int m = -(int)ok;
+                r = (nr & m) | (r & ~m); c = (nc & m) | (c & ~m);
+            }
+            int pr2 = sr, pc2 = sc, n2 = 0;
+#pragma GCC unroll 3
+            for (int i = 0; i < 3; ++i) {
+                int notdone = (int)((r != tgr) | (c != tgc));
+                int a = steerStep(r, c, tgr, tgc, tr, tc, pr2, pc2);
+                int m = -(notdone & (int)(a >= 0));
+                g_s.plan[u][i] = (int8_t)((a & m) | (STAY & ~m));
+                int nr = r + DR[g_s.plan[u][i]], nc = c + DC[g_s.plan[u][i]];
+                pr2 = (r & m) | (pr2 & ~m); pc2 = (c & m) | (pc2 & ~m);
+                r = (nr & m) | (r & ~m); c = (nc & m) | (c & ~m);
+                n2 -= m;
+            }
+            (void)n2;
+            g_s.plan_ok[u] = 1;
+        }
+#endif
         // 卡死解困
         unsigned same = (unsigned)((sr == g_s.last_r[u]) &
                                    (sc == g_s.last_c[u]) & (acts[0] == STAY));
