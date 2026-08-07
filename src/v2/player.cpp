@@ -1,5 +1,8 @@
 // src/v2/player.cpp — v2 主线: 300ns 预算的延迟优先重写
 //
+// ns330 = 阶段2 直线化(np9alt/np12alt 定靶: B2 300-430 + C 350-450 / 主动轮):
+//         ①炸弹表 SoA + 固定8行程无分支对账(原 ~16 分支位点 -> 1)
+//         ②goal 校验 cmov 链化 ③被动折返/离返 ctz 掩码化 ④fill besta cmov
 // ns329 = 代码/输入节食: ①砍敌情块(只写不读, 白读 visible_enemies 线)
 //         ②整段砍 NPC 折价(ns325 已证收入中性, 却每轮读 2 条 NPC 输入线)
 //         ③砍 wall[] 位图(由 bp&~bombbit 推导, 状态 -68B, 扫描单写)
@@ -58,8 +61,6 @@ constexpr int DC[5] = {0, 0, -1, 1, 0};
 constexpr int BOMB = -3, OBSTACLE = -1;   // (FOG=-5 窗外, v2 不读)
 constexpr GameOutput SAFE_OUT = {{STAY, STAY, STAY, STAY, STAY, STAY}, 3, 0, 0};
 
-struct BombM { int8_t r, c; uint8_t seen; };
-
 struct alignas(64) State {   // 热字段排前 2 条缓存线
     uint32_t bombbit[N];     // 炸弹位图(与 bombs 列表同步)
     // (ns329: wall[] 已砍, 墙位 = bp&~bombbit 推导; bp 即唯一地形真值)
@@ -70,7 +71,9 @@ struct alignas(64) State {   // 热字段排前 2 条缓存线
     // 32 槽 x 4 字段 = 每字段 32B = 1 条 YMM(对账 AVX2 一次比完)
     int8_t  pr_[32], pc_[32];
     uint8_t pv_[32], ps_[32];
-    BombM bombs[8];
+    // 炸弹表 SoA(定长 8): 对账/近弹检测固定行程无分支
+    int8_t br_[8], bc_[8];
+    uint8_t bseen_[8];
     uint8_t nbombs;          // 已知炸弹数(护栏门控: 无弹免模拟)
     int8_t goal_r[2], goal_c[2];
     uint8_t goal_kind[2];    // 0=无 1=矿堆 2=巡逻
@@ -94,17 +97,18 @@ constexpr int8_t PATROL_C[8] = {5, 8, 11, 8, 8, 3, 13, 8};
 inline uint8_t now2() { return (uint8_t)(g_s.last_round >> 1); }
 
 
-inline void bombNote(int r, int c) {
+inline void bombNote(int r, int c) {   // 稀疏调用(新弹目击), 保持简单
     int free_ = -1;
     for (int i = 0; i < 8; ++i) {
-        if (g_s.bombs[i].r == r && g_s.bombs[i].c == c && g_s.bombs[i].seen) {
-            g_s.bombs[i].seen = now2() ? now2() : 1;
+        if (g_s.br_[i] == r && g_s.bc_[i] == c && g_s.bseen_[i]) {
+            g_s.bseen_[i] = now2() ? now2() : 1;
             return;
         }
-        if (!g_s.bombs[i].seen) free_ = i;
+        if (!g_s.bseen_[i]) free_ = i;
     }
     if (free_ >= 0) {
-        g_s.bombs[free_] = {(int8_t)r, (int8_t)c, now2() ? now2() : (uint8_t)1};
+        g_s.br_[free_] = (int8_t)r; g_s.bc_[free_] = (int8_t)c;
+        g_s.bseen_[free_] = now2() ? now2() : 1;
         g_s.bombbit[r] |= 1u << c;
         g_s.bp[r + 1] |= 1u << (c + 1);
         ++g_s.nbombs;
@@ -220,7 +224,7 @@ GameOutput decide(const GameInput* in) {
     }
     g_s.last_round = (int16_t)in->round;
     if (in->round % 20 == 0) {                    // 炸弹波: 旧记忆全部过期
-        for (int i = 0; i < 8; ++i) g_s.bombs[i].seen = 0;
+        memset(g_s.bseen_, 0, 8);
         for (int r = 0; r < N; ++r) g_s.bp[r + 1] &= ~(g_s.bombbit[r] << 1);
         memset(g_s.bombbit, 0, sizeof(g_s.bombbit));
         g_s.nbombs = 0;
@@ -394,18 +398,21 @@ GameOutput decide(const GameInput* in) {
 #ifdef NS_ALT
         if (u != (in->round & 1)) {            // 被动路径: 缓存导向, 零输入读
             unsigned nearbomb = 0;
+#pragma GCC unroll 8
             for (int i = 0; i < 8; ++i) {
-                const BombM& b = g_s.bombs[i];
-                int adr_ = b.r - sr, adc_ = b.c - sc;
+                int adr_ = g_s.br_[i] - sr, adc_ = g_s.bc_[i] - sc;
                 adr_ = adr_ < 0 ? -adr_ : adr_; adc_ = adc_ < 0 ? -adc_ : adc_;
-                nearbomb |= (unsigned)(b.seen && adr_ + adc_ <= 3);
+                nearbomb |= (unsigned)(g_s.bseen_[i] != 0) &
+                            (unsigned)(adr_ + adc_ <= 3);
             }
-            if (g_s.goal_kind[u] == 0) {       // 无目标: 就地折返吃残堆/新刷
-                for (int a = 0; a < 4; ++a) {
-                    if (passable(sr + DR[a], sc + DC[a], tr, tc)) {
-                        acts[0] = a; acts[1] = a ^ 1;
-                        break;
-                    }
+            if (g_s.goal_kind[u] == 0) {       // 无目标: 就地折返(ctz 化)
+                unsigned pm = pass01(sr - 1, sc, tr, tc) |
+                              (pass01(sr + 1, sc, tr, tc) << 1) |
+                              (pass01(sr, sc - 1, tr, tc) << 2) |
+                              (pass01(sr, sc + 1, tr, tc) << 3);
+                if (pm) {
+                    int a = __builtin_ctz(pm);
+                    acts[0] = a; acts[1] = a ^ 1;
                 }
             } else {
                 int tgr = g_s.goal_r[u], tgc = g_s.goal_c[u];
@@ -510,21 +517,29 @@ GameOutput decide(const GameInput* in) {
             else g_s.pv_[i] = 0;                   // 吃小/吃空/变弹: 摘除
         }
 #endif
-        unsigned nearbomb = 0;                     // 幸存弹中曼哈顿<=3 者(护栏预筛)
-        for (int i = 0; i < 8; ++i) {
-            BombM& b = g_s.bombs[i];
-            if (!b.seen) continue;
-            int wr = b.r - sr + 2, wc = b.c - sc + 2;
-            if ((unsigned)wr <= 4u && (unsigned)wc <= 4u &&
-                !((bombm >> (wr * 5 + wc)) & 1u)) {
-                b.seen = 0;
-                g_s.bombbit[b.r] &= ~(1u << b.c);
-                g_s.bp[b.r + 1] &= ~(1u << (b.c + 1));   // 墙弹不同格, 直接清
-                --g_s.nbombs;
-                continue;
+        // 炸弹对账: 固定 8 行程无分支(原 ~16 分支位点), 摘除位稀疏后处理
+        unsigned nearbomb = 0;
+        {
+            uint32_t badm = 0;
+#pragma GCC unroll 8
+            for (int i = 0; i < 8; ++i) {
+                int wr = g_s.br_[i] - sr + 2, wc = g_s.bc_[i] - sc + 2;
+                unsigned seen_ = (unsigned)(g_s.bseen_[i] != 0);
+                unsigned inw = ((unsigned)wr <= 4u) & ((unsigned)wc <= 4u) & seen_;
+                unsigned idx = (unsigned)(wr * 5 + wc) & (0u - inw) & 31u;
+                unsigned present = (bombm >> idx) & inw;
+                badm |= (inw & ~present & 1u) << i;
+                int adr_ = wr < 2 ? 2 - wr : wr - 2;
+                int adc_ = wc < 2 ? 2 - wc : wc - 2;
+                nearbomb |= seen_ & (unsigned)(adr_ + adc_ <= 3);
             }
-            int adr_ = wr < 2 ? 2 - wr : wr - 2, adc_ = wc < 2 ? 2 - wc : wc - 2;
-            nearbomb |= (unsigned)(adr_ + adc_ <= 3);
+            while (badm) {                     // 罕见: 吃空/幽灵弹摘除
+                int i = __builtin_ctz(badm); badm &= badm - 1;
+                g_s.bseen_[i] = 0;
+                g_s.bombbit[g_s.br_[i]] &= ~(1u << g_s.bc_[i]);
+                g_s.bp[g_s.br_[i] + 1] &= ~(1u << (g_s.bc_[i] + 1));
+                --g_s.nbombs;
+            }
         }
 
         // 采集打分(簇加成): 只走置位金格
@@ -580,14 +595,15 @@ GameOutput decide(const GameInput* in) {
                 goto probe5_done;
             }
 #endif
-            bool valid = false;
-            if (g_s.goal_kind[u] == 1) {           // 哈希 O(1) 校验
-                int pi_ = pileSlot(g_s.goal_r[u], g_s.goal_c[u]);
-                valid = g_s.pv_[pi_] && g_s.pr_[pi_] == g_s.goal_r[u] &&
-                        g_s.pc_[pi_] == g_s.goal_c[u];
-            } else if (g_s.goal_kind[u] == 2) {
-                valid = !(sr == g_s.goal_r[u] && sc == g_s.goal_c[u]);
-            }
+            // goal 校验 cmov 链(消 2 分支位点): 哈希/巡逻两式并算, 按 kind 选
+            int gk_ = g_s.goal_kind[u];
+            int pi_ = pileSlot(g_s.goal_r[u], g_s.goal_c[u]);
+            unsigned vh_ = (unsigned)(g_s.pv_[pi_] != 0) &
+                           (unsigned)(g_s.pr_[pi_] == g_s.goal_r[u]) &
+                           (unsigned)(g_s.pc_[pi_] == g_s.goal_c[u]);
+            unsigned vp_ = (unsigned)!((sr == g_s.goal_r[u]) &
+                                       (sc == g_s.goal_c[u]));
+            bool valid = gk_ == 1 ? (bool)vh_ : (gk_ == 2 ? (bool)vp_ : false);
             if (!valid) {
                 int best = 0, bi = -1;
                 uint8_t t2 = now2();
@@ -655,12 +671,14 @@ GameOutput decide(const GameInput* in) {
             int d = (tgr > sr ? tgr - sr : sr - tgr) +
                     (tgc > sc ? tgc - sc : sc - tgc);
             if (d == 0) {
-                if (mode == 0) {               // 站在金上: 出去再回来吃
-                    for (int a = 0; a < 4; ++a) {
-                        if (passable(sr + DR[a], sc + DC[a], tr, tc)) {
-                            acts[0] = a; acts[1] = a ^ 1;
-                            break;
-                        }
+                if (mode == 0) {               // 站在金上: 出去再回来吃(ctz 化)
+                    unsigned pm = pass01(sr - 1, sc, tr, tc) |
+                                  (pass01(sr + 1, sc, tr, tc) << 1) |
+                                  (pass01(sr, sc - 1, tr, tc) << 2) |
+                                  (pass01(sr, sc + 1, tr, tc) << 3);
+                    if (pm) {
+                        int a = __builtin_ctz(pm);
+                        acts[0] = a; acts[1] = a ^ 1;
                     }
                 } else {                        // 站在目标上(幽灵堆): 摘除
                     if (mode == 1) pileDrop(tgr, tgc);
@@ -725,7 +743,7 @@ GameOutput decide(const GameInput* in) {
                         bv = (v & okm) | (bv & ~okm);
                         besta = (a & okm) | (besta & ~okm);
                     }
-                    if (besta >= 0) acts[i] = besta;
+                    acts[i] = besta >= 0 ? besta : acts[i];   // cmov
                 }
                 // 位置推进无分支化(墙表掩码索引; 出界读 wall[0] 被 inb 掩掉)
                 int nr = r + DR[acts[i]], nc = c + DC[acts[i]];
