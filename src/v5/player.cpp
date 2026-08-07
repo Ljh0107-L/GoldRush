@@ -33,7 +33,7 @@ struct alignas(64) State {
     uint32_t bpw[N + 2];     // 墙|边界(哨兵位图; 弹不入内)
     uint32_t bombbit[N + 2]; // 炸弹位图(+1 偏移对齐 bpw; 波清)
     int8_t last_r[2], last_c[2];
-    int8_t can0[2], can1[2];   // v5r: 罐头折返对(主动轮存, 被动轮回放)
+    int8_t can0[2], can1[2], can2[2];   // v5s: 罐头 3 步(主动轮存, 被动轮回放)
     int16_t last_round;
 };
 State g_s;
@@ -159,8 +159,8 @@ GameOutput decide(const GameInput* in) {
         int* acts = out.actions + u * 3;
         acts[0] = acts[1] = acts[2] = STAY;
 #ifdef NS5ALT
-        if (u != act5) {                       // 被动轮: 罐头折返(~10 指令)
-            acts[0] = g_s.can0[u]; acts[1] = g_s.can1[u];
+        if (u != act5) {                       // 被动轮: 罐头回放(~12 指令)
+            acts[0] = g_s.can0[u]; acts[1] = g_s.can1[u]; acts[2] = g_s.can2[u];
             continue;
         }
 #endif
@@ -303,9 +303,28 @@ GameOutput decide(const GameInput* in) {
             acts[1] = (((((sa ^ 1) & hv) | (STAY & ~hv))) & z) | (a1 & ~z);
             acts[2] = (STAY & z) | (a2 & ~z);
 #ifdef NS5ALT
-            // 罐头: 本轮终点若在金上(z) -> 下轮继续折返对; 否则 STAY
-            g_s.can0[u] = (int8_t)(((sa & hv) | (STAY & ~hv)) & z) | (int8_t)(STAY & ~z);
-            g_s.can1[u] = (int8_t)((((sa ^ 1) & hv) | (STAY & ~hv)) & z) | (int8_t)(STAY & ~z);
+            {   // v5s 肥罐头: 从本轮终点(r3,c3)向原目标续算下轮 3 步
+                int mvz = ~z;                    // z=站金轮: 终点=原地
+                int r3 = sr + ((dr0 & ml & mvz)) + ((DR[a0 & 7] & ~ml & mvz));
+                int c3 = sc + ((dc0 & ml & mvz)) + ((DC[a0 & 7] & ~ml & mvz));
+                int nr_ = tgr - r3, nc_ = tgc - c3;
+                nr_ = nr_ < -3 ? -3 : (nr_ > 3 ? 3 : nr_);
+                nc_ = nc_ < -3 ? -3 : (nc_ > 3 ? 3 : nc_);
+                uint32_t K2 = SL.pk[nr_ + 3][nc_ + 3];
+                // 终点站金(nr_==nc_==0): 用自家位图做折返对
+                unsigned pm3 = pass01(r3 - 1, c3, tr, tc, rich) |
+                               (pass01(r3 + 1, c3, tr, tc, rich) << 1) |
+                               (pass01(r3, c3 - 1, tr, tc, rich) << 2) |
+                               (pass01(r3, c3 + 1, tr, tc, rich) << 3);
+                int sa3 = __builtin_ctz(pm3 | (uint32_t)(pm3 == 0));
+                int hv3 = -(int)(pm3 != 0);
+                int z3 = -(int)((nr_ | nc_) == 0);
+                g_s.can0[u] = (int8_t)(((((sa3 & hv3) | (STAY & ~hv3))) & z3) |
+                                       ((int)(K2 & 7) & ~z3));
+                g_s.can1[u] = (int8_t)((((((sa3 ^ 1) & hv3) | (STAY & ~hv3))) & z3) |
+                                       ((int)((K2 >> 3) & 7) & ~z3));
+                g_s.can2[u] = (int8_t)((STAY & z3) | ((int)((K2 >> 6) & 7) & ~z3));
+            }
 #endif
         }
         g_s.last_r[u] = (int8_t)sr; g_s.last_c[u] = (int8_t)sc;
