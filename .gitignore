@@ -18,3 +18,9 @@ venv/
 # 编辑器
 .vscode/
 .idea/
+
+# 平台会话 token
+tools/.gr_token
+
+# 对局日志 (1.5MB/局)
+logs/

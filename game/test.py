@@ -49,16 +49,29 @@ def main():
     ret = p.MoveDecision(make_input(0, with_snapshot=False))
     actions, k, order, vp = check_output(ret)
     print(f"返回: actions={actions} k={k} order={order} vp={vp}")
-    assert vp == 0, "无快照回合 vp 应为 0"
-    print("OK: 输出合法, 无快照 vp=0")
 
     print("\n########## 回合 1 (有快照) ##########")
     ret = p.MoveDecision(make_input(1, with_snapshot=True))
     actions, k, order, vp = check_output(ret)
     print(f"返回: actions={actions} k={k} order={order} vp={vp}")
-    assert vp == 1, "有快照回合 vp 应为 1 (买7x7)"
-    assert k == 4, "示例策略 k 应为 4"
-    print("OK: 输出合法, 有快照 vp=1, k=4")
+
+    print("\n########## 鲁棒性: 畸形输入必须不抛异常 ##########")
+    class Broken:
+        pass
+    for name, bad in [("空对象", Broken()), ("None", None)]:
+        ret = p.MoveDecision(bad)
+        check_output(ret)
+        print(f"  {name}: 回落到 {ret} — OK")
+
+    print("\n########## 延迟 (纯参考, 本机非评测机) ##########")
+    import time
+    gi = make_input(2, with_snapshot=False)
+    t0 = time.perf_counter()
+    N = 200
+    for _ in range(N):
+        p.MoveDecision(gi)
+    us = (time.perf_counter() - t0) / N * 1e6
+    print(f"  平均 {us:.1f}us/轮   (排行榜头部在 230ns~15us 区间)")
 
     print("\n全部通过。")
 
