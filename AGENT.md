@@ -7,9 +7,31 @@
 
 ## 1. 任务目标
 
-在九坤 GoldRush 2.0 编程掘金争夺赛中，把 [game/player.py](game/player.py) 从随机策略优化成有竞争力的策略，冲击初赛前 16 名（晋级决赛）。
+在九坤 GoldRush 2.0 编程掘金争夺赛中，把 [src/player.cpp](src/player.cpp)（**C++ 是主战语言**，见 §6.1）优化成有竞争力的策略，冲击初赛前 16 名（晋级决赛）。
 
 **优化目标函数**：`最终得分 = 毛金币 − 视野花费`，500 轮结束时高者胜；相等时 P90 延迟低者胜。
+
+### 仓库结构
+
+```
+AGENT.md          ← 本手册（活文档：§7 状态、§10 实验日志随迭代更新）
+CHANGELOG.md      ← 仓库/工具链变更记录（实验结论记 §10，两边不重复）
+src/              ← 策略代码
+  player.cpp        主战（提交 .so，开发机编译）；边界层/策略层分离，新想法只动 decide()
+  player.py         Python 版（原型验证用，p0greedy）
+  baseline_random.py 固定陪练 rand0
+  game_api.h        官方接口头（编译依赖）
+  Makefile          make=开发机出.so | make check=本机语法查 | make local=本机测试用.so
+tests/            ← 本地测试台（不模拟游戏逻辑，只验合法性/鲁棒性/延迟）
+  test_player.py    测 src/player.py
+  test_so.py        ctypes 测 src/player.so（500 轮压测 + 延迟基准）
+  game_api.py       本地 mock（评测环境没有，提交代码禁止 import）
+tools/            ← 平台自动化
+  gr.py             提交/对战/榜单/取日志（§12）
+  grlog.py          日志分析：净分/耗时分位/先手率/金币曲线（§13）
+docs/             ← 赛事文档（只读）
+logs/             ← 对局日志（gitignored，1.5MB/局）
+```
 
 **关键日期**（今天以系统时间为准）：
 - 报名截止 8.14 23:59 · 模拟赛 8.15–8.16 · **初赛 8.17–8.21** · 决赛 9.6（支持远程）
@@ -49,6 +71,15 @@
 ```bash
 ssh Ubiquant220@8.153.76.120
 ```
+
+> **免密登录已配置**（2026-08-06 所有者跑过 `ssh-copy-id`），Agent 可直接非交互
+> 执行远程编译。标准流程（远端目录 `~/goldrush/`，已建好）：
+> ```bash
+> rsync -a src/ Ubiquant220@8.153.76.120:~/goldrush/src/
+> ssh Ubiquant220@8.153.76.120 'cd ~/goldrush/src && make && python3 ../tests/test_so.py'
+> scp Ubiquant220@8.153.76.120:~/goldrush/src/player.so src/player.so
+> ```
+> 开发机 GCC 14.3 / x86_64。若安全规则不允许 Agent 输密码而免密又失效了，让所有者重跑一次 `ssh-copy-id`。
 
 环境（来自 FAQ）：
 - 与评测机接近，用于开发、调试、编译 `.so`
@@ -157,7 +188,7 @@ NPC **不在 grid 上标记**，走 `visible_npcs`；己方位置看 `my_units`�
 ### 输入字段
 `round` / `grid[17][17]` / `my_units[2]` / `my_units_gold[2]` / `gold_opp` / `visible_enemies[2]` / `visible_npcs` / `snapshot_valid` / `snapshot`
 
-字段定义见 [game/game_api.py](game/game_api.py)（仅本地参考）。
+字段定义见 [src/game_api.h](src/game_api.h)（C++，编译依赖）与 [tests/game_api.py](tests/game_api.py)（本地 mock，提交代码禁止 import）。
 
 ### 输出
 长度 9 的 list：`[a0,a1,a2,a3,a4,a5, k, order, vp]`，动作 `0=上 1=下 2=左 3=右 4=不动`
@@ -199,7 +230,7 @@ NPC **不在 grid 上标记**，走 `visible_npcs`；己方位置看 `my_units`�
 慢的一方 **96% 的回合在后手**。`end.dispatch_order[0]` 直接给出每回合谁先手，这条因果链可以实证，不用猜。
 
 实践含义：
-- **C++ 是入场券，不是优化项。** 纯 Python 一次函数调用就 ~50-100ns，跑个 BFS 就是几百微秒，结构性出局。榜上第 3 名 14.65μs 大概是 Python 的天花板。
+- **C++ 是入场券，不是优化项——已转正为主战语言**（2026-08-06 决定）。纯 Python 一次函数调用就 ~50-100ns，跑个 BFS 就是几百微秒，结构性出局。榜上第 3 名 14.65μs 大概是 Python 的天花板。实测同一套贪心 BFS：Python 332μs vs C++ ≤1.5μs（本机、含 ctypes 开销）。Python 版只用于快速原型验证想法，验证过的逻辑落到 [src/player.cpp](src/player.cpp)。
 - 目标量级是**亚微秒**；重计算全部前移到 `__init__`（10s 预算）
 - 用 anytime 算法：设软时限，到点返回当前最优解
 - 平局也是 P90 低者胜——延迟是双重收益
@@ -232,15 +263,21 @@ FAQ 明确：`grid` 只含**本轮决策时最终位置**的视野，不提供�
 
 ## 7. 优化路线图
 
-**当前状态：P0 未做，策略仍是随机基线。**
+**当前状态（2026-08-06）**：P0 + P0.5 完成。C++ 版 `cpp1` 已上线（对局 138842：
+683:143 胜 rand0，**先手率 500/500**，P90 6.92μs——比 Python 版快 160 倍，0 判负）。
+下一步 = **P1 世界模型 + P2 探索 fallback**（贪心无探索会卡死，见 §10）。
+延迟注意：6.92μs 只够榜上第 3 名水平，头部是几百 ns——P5 持续压。
 
-### P0 · 防御性基建（先做，不做别的）
-- [ ] `try/except` + `_sanitize` 兜底（见 §3）
-- [ ] 关掉 debug 打印：[game/player.py:10](game/player.py:10) 的 `DEBUG_ROUNDS` 置 0
-- [ ] 每轮软时限 + anytime 返回
-- [ ] 上传一版，确认能跑完 500 轮不判负
+### P0 · 防御性基建 ✅（2026-08-06 完成）
+- [x] `try/except` + `_sanitize` 兜底（见 §3）；C++ 版为 try/catch + clamp 边界层
+- [x] 无 print / 无文件 IO
+- [x] 提交验证：对局 137528 / 137958 跑完 500 轮，0 判负
+- [ ] 每轮软时限 + anytime 返回（进入复杂搜索时再做，贪心 BFS 用不上）
 
-**验收**：官网发起 10 场对局，0 判负。
+### P0.5 · C++ 链路首跑 ✅（2026-08-06 完成）
+- [x] 开发机 `make` 出 player.so，`tests/test_so.py` 开发机复验通过
+- [x] 提交 .so 自博弈 vs rand0（对局 138842），0 判负
+- [x] `grlog.py` 对比：先手率 4% → **100%**，P90 1.15ms → 6.92μs
 
 ### P1 · 持久世界模型
 - [ ] `known_grid` / `last_seen` / 障碍永久化 / 金币置信度衰减
@@ -250,6 +287,7 @@ FAQ 明确：`grid` 只含**本轮决策时最终位置**的视野，不提供�
 **验收**：日志中已探索格子占比随回合稳定上升。
 
 ### P2 · 贪心寻路 + 步数分配
+- [ ] **探索 fallback**：视野内无金币时朝最近的"从未见过"区域移动（修复 §10 观测到的卡死：贪心无目标就永久原地不动）
 - [ ] BFS 最短路（17×17，成本可忽略；`__init__` 里预计算全图距离表）
 - [ ] 目标价值 = `金币量 × 0.65 × 可达性 − 风险成本(炸弹 10%持币 + 踩踏 5%持币)`
 - [ ] 两角色**目标去重**，避免抢同一块
@@ -271,9 +309,10 @@ FAQ 明确：`grid` 只含**本轮决策时最终位置**的视野，不提供�
 - [ ] 记账自己的累计花费（引擎不告诉你净分，自己算）
 
 ### P5 · 延迟优化（**贯穿全程，不是最后才做**）
-- [ ] 每轮耗时打点（注意：打点本身别做 IO，见 §8）
-- [ ] 热路径去掉分配、避免重复建表
-- [ ] 策略定型后移植 C++（[game/player.cpp](game/player.cpp) + `make`）
+- [x] ~~策略定型后移植 C++~~ → 已改为 C++ 直接开发（P0.5），Python 只做原型
+- [ ] 每轮耗时用 `grlog.py` 的分位数跟踪，别自己在代码里做 IO 打点（见 §8）
+- [ ] 热路径零堆分配（现有 Bfs 静态缓冲已是此模式，保持）
+- [ ] 目标量级亚微秒：定期用 `tests/test_so.py` 基准回归，防止改策略把延迟改炸
 
 ### P6 · 对手与 NPC 建模
 - [ ] 从对局日志学 NPC 行为模式
@@ -288,7 +327,7 @@ FAQ 明确：`grid` 只含**本轮决策时最终位置**的视野，不提供�
 
 ```bash
 # 新版本 vs 固定基线，跑一局
-./tools/gr.py submit --map 1 game/player.py:v7 game/baseline_random.py:rand0
+./tools/gr.py submit --map 1 src/player.so:v2 src/baseline_random.py:rand0
 ./tools/gr.py games                     # 取 game_id
 ./tools/gr.py watch <game_id>           # 等完成并自动存日志
 ```
@@ -317,24 +356,29 @@ FAQ 明确：`grid` 只含**本轮决策时最终位置**的视野，不提供�
 ## 9. 开发工作流
 
 ```bash
-# 本地格式自检（只验证输出合法性，不模拟游戏逻辑）
-cd game && python3 test.py
+# 本地自检（只验证输出合法性/鲁棒性/延迟，不模拟游戏逻辑）
+python3 tests/test_player.py            # Python 版
+cd src && make local && cd ..           # 本机架构 .so（仅供本地测试）
+python3 tests/test_so.py                # C++ 版：合法性 + 500 轮压测 + 延迟基准
 
-# C++ 编译（建议在开发机上编，指令集与评测机一致）
-cd game && make          # -> player.so
+# 提交用 .so：必须在开发机上编（本机 arm64 产物评测机不认）
+ssh Ubiquant220@8.153.76.120 'cd ~/goldrush/src && make'     # 见 §2 免密待办
 ```
 
-**迭代闭环（全命令行，见 §12）**：
+**迭代闭环（全命令行，见 §12/§13）**：
 
 ```bash
-cd game && python3 test.py                                   # 1. 本地格式+鲁棒性自检
-./tools/gr.py submit --map 1 game/player.py:v7 game/baseline_random.py:rand0
+python3 tests/test_so.py                                     # 1. 本地自检
+./tools/gr.py submit --map 1 src/player.so:v2 src/baseline_random.py:rand0
 ./tools/gr.py games                                          # 2. 取 game_id
-./tools/gr.py watch <game_id>                                # 3. 等完成并存日志
-                                                             # 4. 解析日志(§13)，记录到 §10
+./tools/gr.py watch <game_id> -o logs/game_<id>.log          # 3. 等完成并存日志
+./tools/grlog.py logs/game_<id>.log --rounds                 # 4. 量化分析
+#                                                              5. 结论记入 §10，代码/工具变更记 CHANGELOG.md
 ```
 
 日志里能拿到对局中拿不到的信息：双方真实耗时、视野花费、每回合先后手、完整无雾地图。
+`grlog.py` 一次给出净分、每轮耗时 P50/P90/P99、先手率、事件统计与金币曲线；
+金币曲线出现长平台 = 策略卡死（无目标不动），优先排查。
 
 **看榜的正确姿势**：
 - "外战胜率" = 最近 24h 内，新旧代码 + 主动/被动对局**混合**的结果 → 换代码后不会立刻反映，别过度解读短期波动
@@ -347,7 +391,9 @@ cd game && python3 test.py                                   # 1. 本地格式+�
 | 日期 | 对局 | 版本 | 改动 | 结果 | 耗时 | 结论 |
 |---|---|---|---|---|---|---|
 | 2026-08-07 | — | v0 `rand0` | 官方随机基线，加防御层 | — | 289μs | 固定陪练 |
-| 2026-08-07 | 137528 | v1 `p0greedy` | P0：try/except + sanitize + 关 debug + BFS 贪心最近金币 | **370 : 166 胜** | 932μs | 贪心 = 随机的 2.2×；但 96% 回合后手，Python 必须换 C++ |
+| 2026-08-07 | 137528 | v1 `p0greedy` | P0：try/except + sanitize + 关 debug + BFS 贪心最近金币 | **370 : 166 胜** | P90 1.07ms | 贪心 = 随机的 2.2×；但 96% 回合后手，Python 必须换 C++ |
+| 2026-08-07 | 137958 | v1 `p0greedy` | 同 v1（链路复验局） | **778 : 224 胜** | P90 1.15ms | ①先手率仍仅 4%；②137528 金币从 200 轮起零增长、本局 300 轮后近乎停滞——**贪心无探索，视野内没金币就永久卡死**，P2 首项修它；③单局方差大（370 vs 778），版本对比至少跑 3-5 局 |
+| 2026-08-07 | 138842 | v2 `cpp1` | C++ 移植（逻辑同 v1），开发机编译 .so 首次提交 | **683 : 143 胜** | **P90 6.92μs** | 先手率 **500/500**；同逻辑快 160 倍验证 §6.1；6.92μs≈榜第 3 名水平，离头部 ns 级还有 P5 空间；卡死缺陷依旧（100-300 轮曲线平缓） |
 
 > 每次上传都追加一行。记录**改了什么**和**观测到什么**，即使是负结果。
 > 日志存 `logs/game_<id>.log`（已 gitignore，1.5MB/局）。
@@ -385,11 +431,14 @@ cd game && python3 test.py                                   # 1. 本地格式+�
 ./tools/gr.py watch <game_id>                       # 轮询至完成并自动存日志
 
 # 自博弈（不计入公开外战胜率，用于版本对比）
-./tools/gr.py submit --map 1 game/player.py:v7 game/baseline_random.py:rand0
+./tools/gr.py submit --map 1 src/player.so:v2 src/baseline_random.py:rand0
 # 挑战他人（计入 24h 外战胜率，弱版本别打）
-./tools/gr.py submit --map 1 --vs <model_id> game/player.py:v7
+./tools/gr.py submit --map 1 --vs <model_id> src/player.so:v2
 # 只组装不发送
 ./tools/gr.py submit --dry-run ...
+
+# 日志分析（gr.py 的下游，见 §13）
+./tools/grlog.py logs/game_<id>.log --rounds
 ```
 
 ### 接口契约
@@ -429,12 +478,13 @@ Model名 限字母数字、字母开头
 
 ## 13. 对局日志格式
 
-`get_game_log` 返回按行分隔的 JSON，一局约 **1.5MB / 502 行**：
+`get_game_log` 返回按行分隔的 JSON，一局约 **1.5MB / 502 行**。
+**先用 [tools/grlog.py](tools/grlog.py) 看摘要**，只有它答不了的问题才手写解析。
 
 | 行 | 内容 |
 |---|---|
 | 1 | `{"player1":"名字","player2":"名字"}` |
-| 2 | **17×17 真实地图**（字符串值，含障碍物全貌——无迷雾） |
+| 2 | **17×17 真实地图**（字符串值，无迷雾）：`"0"`空地 `"1"`障碍 `"2"`炸弹刷新位 |
 | 3+ | 每行一个回合 |
 
 回合对象：
@@ -450,6 +500,6 @@ Model名 限字母数字、字母开头
 - `players[].gold` / `vision_spent` — 毛金币与视野花费
 - `players[].units[].actions` / `pickup` / `position` / `gold`
 - `start.vision_r` — 各玩家视野半径（默认 2，即 5×5）
-- `trample_events` / `burned` — 踩踏与炸弹事件
+- `trample_events` / `burned` — 踩踏与炸弹事件；`burned` 是**当轮全场损失量合计（含 NPC），不区分归属**，双方各自的炸弹损失要靠金币曲线突降反推
 
 > ⚠️ **日志按视角过滤**：对手 `units[].position` 全是 `null`，只能看到对手的金币总数。无法从自己的日志完整反推对手走位——对手建模只能靠间接推断。
