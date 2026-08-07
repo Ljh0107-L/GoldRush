@@ -252,7 +252,6 @@ GameOutput decide(const GameInput* in) {
     }
 
     // ===== 双单位决策(共用代码; 被动 goldm 视为 0) =====
-#pragma GCC unroll 1
     for (int u = 0; u < 2; ++u) {
         int sr = in->my_units[u].row, sc = in->my_units[u].col;
         int* acts = out.actions + u * 3;
@@ -307,12 +306,12 @@ GameOutput decide(const GameInput* in) {
         }
 #endif
         // 目标 = 窗口最优金格 > 活矿堆(u1 矿堆农) > 巡游路点
+        // v47: 三候选无条件计算 + 掩码级联(消 4 分支位点/单位)
         int tgr, tgc;
-        if (bestr >= 0) { tgr = bestr; tgc = bestc; }
-        else {
+        {
             int bi = -1;
 #ifndef NS3MIN
-            if (g_s.plive) {                       // 稀疏: 无堆零成本
+            if (bestr < 0 && g_s.plive) {   // 门控=省功(v47 无条件跑 +300ops 判负)
                 int bsc = 0;
                 uint8_t tq = nowq();
                 uint32_t lm = g_s.plive;
@@ -324,7 +323,6 @@ GameOutput decide(const GameInput* in) {
                     dr_ = dr_ < 0 ? -dr_ : dr_; dc_ = dc_ < 0 ? -dc_ : dc_;
                     int d_ = dr_ + dc_; d_ = d_ > 31 ? 31 : d_;
                     int sc2 = (g_s.pv_[k] * (64 - d_ * 2)) & fresh;
-                    // u0 只追中心堆(专注新刷), u1 全图矿堆农
                     unsigned cen = ((unsigned)(g_s.pr_[k] - 4) <= 8u) &
                                    ((unsigned)(g_s.pc_[k] - 4) <= 8u);
                     sc2 &= -(int)((u == 1) | cen);
@@ -334,17 +332,20 @@ GameOutput decide(const GameInput* in) {
                 }
             }
 #endif
-            if (bi >= 0) { tgr = g_s.pr_[bi]; tgc = g_s.pc_[bi]; }
-            else {
-                uint8_t& pi = g_s.patrol[u];
-                unsigned here = (unsigned)((sr == PRW[u][pi]) & (sc == PCW[u][pi]));
-                pi = (uint8_t)((pi + here) & 3);
-                tgr = PRW[u][pi]; tgc = PCW[u][pi];
-            }
-            // 到达矿堆目标 -> 摘除(下轮扫描若仍>=5 会重新登记; 防幽灵振荡)
-            if (bi >= 0 && sr == tgr && sc == tgc) {
-                g_s.pv_[bi] = 0; g_s.plive &= (uint16_t)~(1u << bi);
-            }
+            // 巡游路点(无条件推进逻辑: 掩码化)
+            uint8_t& pi = g_s.patrol[u];
+            unsigned here = (unsigned)((sr == PRW[u][pi]) & (sc == PCW[u][pi]));
+            pi = (uint8_t)((pi + here) & 3);
+            // 掩码级联: 窗口金 > 矿堆 > 路点
+            int mw = -(int)(bestr >= 0);
+            int mp = -(int)(bi >= 0) & ~mw;
+            int pilr = g_s.pr_[bi & 15], pilc = g_s.pc_[bi & 15];
+            tgr = (bestr & mw) | (pilr & mp) | (PRW[u][pi] & ~mw & ~mp);
+            tgc = (bestc & mw) | (pilc & mp) | (PCW[u][pi] & ~mw & ~mp);
+            // 到达矿堆目标 -> 摘除(掩码化)
+            unsigned atp = (unsigned)((sr == tgr) & (sc == tgc)) & (unsigned)(mp & 1);
+            g_s.pv_[bi & 15] &= (uint8_t)(atp - 1u);
+            g_s.plive &= (uint16_t)~((atp & 1u) << (bi & 15));
         }
         {
             int d = (tgr > sr ? tgr - sr : sr - tgr) +
