@@ -63,6 +63,17 @@ State g_s;
 constexpr int8_t ANCH_R[2] = {6, 10};
 constexpr int8_t ANCH_C[2] = {6, 10};
 
+#ifdef NS6RT
+// 开局烘焙路线(map1, BFS 最优 4 轮出角; 起点恒 (0,0)/(16,16) 三局核验)
+// 盲轮(goldm==0)且位置吻合才生效; 任何漂移(NPC 挡步/中途吃金)自动放弃回落正常管线
+constexpr uint8_t ORT_A[2][4][3] = {
+    {{1,3,3},{3,1,3},{1,3,1},{3,1,1}},           // u0 (0,0)->(6,6)
+    {{0,2,2},{2,0,2},{0,2,0},{2,0,0}},           // u1 (16,16)->(10,10)
+};
+constexpr int8_t ORT_R[2][4] = {{0,1,2,4},{16,15,14,12}};
+constexpr int8_t ORT_C[2][4] = {{0,2,4,5},{16,14,12,11}};
+#endif
+
 #ifdef NS6C3
 struct SctT {                                    // 扫描边缘常量表: sc 纯函数(cb/lsh/colv)
     int8_t cb[17], lsh[17]; uint8_t colv[17];
@@ -589,6 +600,9 @@ GameOutput decide(const GameInput* in) {
 #endif
         // ---- 目标: 最近金(环掩码) 否则锚点 ----
         int tgr, tgc;
+#ifdef NS6RT
+        int rt_blind;                            // 盲轮标志提前折算(免 goldm 活跃期拖长)
+#endif
 #ifdef NS6R
         int vtg = 0;                             // 目标格现值(计划枯竭判定用)
 #endif
@@ -619,6 +633,9 @@ GameOutput decide(const GameInput* in) {
             int i = __builtin_ctz(sel | (uint32_t)(sel == 0));   // 仅空时补位(| 1u 恒补是v4d/v5崩盘元凶)
 #endif
             int has = -(int)(goldm != 0);
+#ifdef NS6RT
+            rt_blind = ~has;
+#endif
 #ifdef NS6C2
             tgr = ((sr - 2 + DM5.d[i]) & has) | (ANCH_R[u] & ~has);
             tgc = ((sc - 2 + DM5.m[i]) & has) | (ANCH_C[u] & ~has);
@@ -790,6 +807,17 @@ GameOutput decide(const GameInput* in) {
             }
 #endif
             g_s.plan_ok[u] = 1;
+        }
+#endif
+#ifdef NS6RT
+        // 开局行军(定律3: 4/500 轮的功能用门控省功, 掩码版 +73 指令判负)
+        if (__builtin_expect(in->round < 4, 0)) {
+            int ri = in->round & 3;
+            if (rt_blind & -(int)((sr == ORT_R[u][ri]) & (sc == ORT_C[u][ri]))) {
+                acts[0] = ORT_A[u][ri][0];
+                acts[1] = ORT_A[u][ri][1];
+                acts[2] = ORT_A[u][ri][2];
+            }
         }
 #endif
         g_s.last_r[u] = (int8_t)sr; g_s.last_c[u] = (int8_t)sc;

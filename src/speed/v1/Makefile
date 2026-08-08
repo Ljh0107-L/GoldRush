@@ -3,9 +3,10 @@
 # vs T-1(150894): 210/290 vs 290/350, 先手 427/500(85%) —— 首次翻转第一快枪手
 # 架构: 烘焙墙+轻扫描 / 装载-扫描融合 / pext环级联 / 折返预折LUT / 队友检查下岗 /
 #       sanitize+SAFE_OUT+钳位军械库下岗 / 弹窗rows3 / 边缘常量表
-# 指令账: 645/调用(前任 g5nd 764, 初代 v5f 1008); 模型 40壳+20载+129计算=189
+# 指令账: 659/调用(g11 645 + 开局路线门控 14; 前任 g5nd 764, 初代 v5f 1008)
+# NS6RT 开局烘焙路线: BFS 4 轮出角(旧 9-10 轮), 盲轮+位置吻合才生效, 漂移自弃; 起点/路线=map1 常量
 # 警告: BAKED_W1 是 map1 常量 —— 换图必须重烘焙(源内有生成说明)
-NSFLAGS = -DNS6W -DNS6K -DNS6O -DNS6X -DNS6B3 -DNS6F -DNS6C2 -DNS6C3 -DNS6FU -DNS6NS -DNS6NC -DNS6NT
+NSFLAGS = -DNS6W -DNS6K -DNS6O -DNS6X -DNS6B3 -DNS6F -DNS6C2 -DNS6C3 -DNS6FU -DNS6NS -DNS6NC -DNS6NT -DNS6RT
 player.so: player.cpp ../../game_api.h
 	g++ -std=c++17 -O3 -march=native -fPIC -Wall -Wextra -shared -I../.. $(NSFLAGS) -o $@ $<
 v5f:
