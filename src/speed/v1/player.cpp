@@ -143,6 +143,11 @@ inline unsigned pass01(int r, int c, int tr, int tc, unsigned rich) {
     return (~(((uint32_t)w | (rich & (uint32_t)(w >> 32))) >> (c + 1)) & 1u) &
            (unsigned)((r != tr) | (c != tc));
 }
+#elif defined(NS6NT)
+inline unsigned pass01(int r, int c, int tr, int tc, unsigned rich) {
+    (void)tr; (void)tc;                          // 队友检查下岗(-20): 撞位由引擎记4+自愈
+    return (~((g_s.bpw[r + 1] | (rich & g_s.bombbit[r + 1])) >> (c + 1)) & 1u);
+}
 #else
 inline unsigned pass01(int r, int c, int tr, int tc, unsigned rich) {
     return (~((g_s.bpw[r + 1] | (rich & g_s.bombbit[r + 1])) >> (c + 1)) & 1u) &
@@ -225,8 +230,9 @@ GameOutput decide(const GameInput* in) {
 #if defined(NS6P) || defined(NS6Q)
     const int act6 = in->round & 1;              // 轮换: 每轮一个单位全管线
 #endif
-#if defined(__AVX2__)
+#if defined(__AVX2__) && !defined(NS6FU)
     // 输入行前置装载: 行 miss 最早并行发射(轮换: 仅主动单位 5 行, 免溢出税)
+    // (NS6FU 融合后此块整体下线: 载荷是热的, 前置无红利, rowbufs 溢出是纯税)
     __m256i rowbufs[2][5];
     int rb_oks[2] = {0, 0}, rb_cbs[2] = {0, 0};
 #ifdef NS6Q
@@ -404,8 +410,10 @@ GameOutput decide(const GameInput* in) {
     for (int u = 0; u < 2; ++u) {
 #endif
         int sr = in->my_units[u].row, sc = in->my_units[u].col;
+#ifndef NS6NC
         sr = sr < 0 ? 0 : (sr > 16 ? 16 : sr);        // 单位恒在板上; cmov 双钳防御
         sc = sc < 0 ? 0 : (sc > 16 ? 16 : sc);
+#endif
         int* acts = out.actions + u * 3;
         acts[0] = acts[1] = acts[2] = STAY;
 #ifdef NS6P
@@ -429,7 +437,11 @@ GameOutput decide(const GameInput* in) {
             const __m256i vz = _mm256_setzero_si256();
             const __m256i vm1 = _mm256_set1_epi32(-1);
             const __m256i vm3 = _mm256_set1_epi32(-3);
+#ifdef NS6FU
+            int cb = 0; (void)cb;                // 融合路径: cb 内联于载入
+#else
             int cb = rb_cbs[u];
+#endif
 #ifdef NS6C3
             int lsh = SCT.lsh[sc];
             uint32_t colv = SCT.colv[sc];
@@ -460,11 +472,22 @@ GameOutput decide(const GameInput* in) {
 #ifdef NS6W
             {
             uint32_t bombm2 = 0;
+#ifdef NS6FU
+            int cb_ = SCT.cb[sc];
+#pragma GCC unroll 5
+            for (int i = 0; i < 5; ++i) {
+                int rr = sr - 2 + i;
+                uint32_t rowok = (uint32_t)0 - ((unsigned)rr < (unsigned)N);
+                int cr_ = RCL.v[rr + 2];
+                __m256i vrow = _mm256_loadu_si256(
+                    (const __m256i*)&in->grid[cr_][cb_]);
+#else
 #pragma GCC unroll 5
             for (int i = 0; i < 5; ++i) {
                 int rr = sr - 2 + i;
                 uint32_t rowok = (uint32_t)0 - ((unsigned)rr < (unsigned)N);
                 __m256i vrow = rowbufs[u][i];
+#endif
 #if defined(NS6K) && defined(__AVX512VL__)
                 uint32_t g8 = (uint32_t)_mm256_cmpgt_epi32_mask(vrow, vz);
                 uint32_t b8 = (uint32_t)_mm256_cmpeq_epi32_mask(vrow, vm3);
@@ -792,7 +815,11 @@ GameOutput sanitize(GameOutput o) {
 extern "C" GameOutput moveDecision(const GameInput* input) {
     try {
         if (input == nullptr) return SAFE_OUT;
+#ifdef NS6NS
+        return decide(input);                    // 输出全路径可证合法(军械库下岗, -24)
+#else
         return sanitize(decide(input));
+#endif
     } catch (...) {
         return SAFE_OUT;
     }
