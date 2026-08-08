@@ -85,4 +85,6 @@ docs/             官方赛制（只读）    logs/  对局日志（gitignored�
 **结构军规**（所有者定的，别破）：
 1. 不设 archive 目录；不设多版本目录——旧物只活在 git 历史 + CHANGELOG 谱系表。
 2. 改 `player.cpp` 算法 → 同步其头注释与 CHANGELOG；平台物理新证据 → 更新 INFRA.md。
-3. `BAKED_W1`/`ORT_*` 是 map1 常量——**换图必须重烘焙**（方法注在 player.cpp）。
+3. 三张官方图墙表已全烘焙（`BAKED_W[3]`，运行时指纹自动锁图；map2/3 锚点自动修正）。
+   正赛出现**新图**也能跑（陌生图懒学习兜底，稳态 ~+5ns），但拿到新图日志后应尽快
+   把墙表入册换回 +0ns（方法注在 player.cpp `BAKED_W` 旁）。
