@@ -31,12 +31,8 @@ constexpr GameOutput SAFE_OUT = {{STAY, STAY, STAY, STAY, STAY, STAY}, 3, 0, 0};
 
 struct alignas(64) State {
     uint32_t bombbit[N];     // 炸弹位图(护栏用; 波清)
-    uint32_t bp[N + 2];      // 阻挡位图: 墙|弹|边界(富单位导向用)
-    uint32_t bpw[N + 2];     // 墙|边界(穷单位<50金 导向用: 烧10%x0=0, 炸弹透明
-                             //  —— 修复开局"弹口袋"19轮振荡致死, 见 145653)
+    uint32_t bp[N + 2];      // 哨兵阻挡位图: 墙|弹|边界(导向用唯一地形真值)
     int8_t last_r[2], last_c[2];
-    int8_t r2_[2], c2_[2];   // 2 轮前位置(振荡检测: A-B-A-B 净位移 0)
-    int16_t last_gold[2];    // 上轮持金(在挣钱的折返不算卡死)
     uint8_t stuck[2];
     uint8_t patrol[2];       // 巡游路点下标
     // 迷你矿堆缓存(16 槽直映射哈希): 外圈堆积存量的记忆(v36)
@@ -52,7 +48,6 @@ struct alignas(64) State {
 
 inline int pileSlot(int r, int c);
 State g_s;
-const uint32_t* g_bpp = g_s.bp;   // 当前单位导向位图(按持金选)
 
 inline int pileSlot(int r, int c) { return (r * 31 + c) & 15; }
 inline uint8_t nowq() { return (uint8_t)(((uint16_t)g_s.last_round >> 2) | 1); }
@@ -66,7 +61,7 @@ constexpr int8_t PRW[2][4] = {{5, 5, 10, 10}, {3, 3, 13, 13}};
 constexpr int8_t PCW[2][4] = {{6, 10, 10, 6}, {3, 13, 13, 3}};
 
 inline unsigned pass01(int r, int c, int tr, int tc) {
-    return (~(g_bpp[r + 1] >> (c + 1)) & 1u) &
+    return (~(g_s.bp[r + 1] >> (c + 1)) & 1u) &
            (unsigned)((r != tr) | (c != tc));
 }
 
@@ -144,8 +139,8 @@ GameOutput decide(const GameInput* in) {
         for (int r = 0; r < N; ++r) g_s.bp[r + 1] = 0xFFFC0001u;
     }
     g_s.last_round = (int16_t)in->round;
-    if (in->round % 20 == 0 && g_s.banybomb) {   // 炸弹波: 弹记忆即弃, bp=墙版
-        memcpy(g_s.bp, g_s.bpw, sizeof(g_s.bp));
+    if (in->round % 20 == 0 && g_s.banybomb) {   // 炸弹波: 位图记忆即弃(有弹才清)
+        for (int r = 0; r < N; ++r) g_s.bp[r + 1] &= ~(g_s.bombbit[r] << 1);
         memset(g_s.bombbit, 0, sizeof(g_s.bombbit));
         g_s.banybomb = 0;
     }
@@ -204,7 +199,6 @@ GameOutput decide(const GameInput* in) {
                         int b5 = (r - sr + 2) * 5 + 2 - sc;
                         uint32_t slice = ((wallm >> (b5 + c0)) & 31u) << c0;
                         g_s.bp[r + 1] |= slice << 1;
-                        g_s.bpw[r + 1] |= slice << 1;
                     }
                 }
                 if (bombm) {                       // 弹并入位图(无列表)
@@ -291,8 +285,6 @@ GameOutput decide(const GameInput* in) {
         acts[0] = acts[1] = acts[2] = STAY;
         if (sr < 0 || sr >= N || sc < 0 || sc >= N) continue;
         int tr = in->my_units[1 - u].row, tc = in->my_units[1 - u].col;
-        // 修复1: 穷单位(<50金)炸弹透明 —— 指针选择, 零热路径分支
-        g_bpp = in->my_units_gold[u] < 50 ? g_s.bpw : g_s.bp;
         const int act_ = (active < 0) | (u == active);
 #if !defined(NS3NOPLAN) && !defined(NS3MIN)
         if (!act_ && g_s.plan_ok[u]) {           // v37: 被动轮回放缓存计划
@@ -522,18 +514,12 @@ GameOutput decide(const GameInput* in) {
         }
 #endif
 #ifndef NS3BARE
-        // 卡死解困(修复2: 冻结 或 振荡[与2轮前同位], 且没在挣钱)
-        unsigned earn = (unsigned)(in->my_units_gold[u] != g_s.last_gold[u]);
-        unsigned frz = (unsigned)((sr == g_s.last_r[u]) &
-                                  (sc == g_s.last_c[u]) & (acts[0] == STAY));
-        unsigned osc = (unsigned)((sr == g_s.r2_[u]) & (sc == g_s.c2_[u]));
-        unsigned same = (frz | osc) & ~earn & 1u;
+        // 卡死解困
+        unsigned same = (unsigned)((sr == g_s.last_r[u]) &
+                                   (sc == g_s.last_c[u]) & (acts[0] == STAY));
         g_s.stuck[u] = (uint8_t)((g_s.stuck[u] + same) & (0u - same));
-        if (g_s.stuck[u] >= 3) { stuckEscape(u, sr, sc, tr, tc, acts);
-            g_s.patrol[u] = (uint8_t)((g_s.patrol[u] + 1) & 3); }
+        if (g_s.stuck[u] >= 2) stuckEscape(u, sr, sc, tr, tc, acts);
 #endif
-        g_s.r2_[u] = g_s.last_r[u]; g_s.c2_[u] = g_s.last_c[u];
-        g_s.last_gold[u] = (int16_t)in->my_units_gold[u];
         g_s.last_r[u] = (int8_t)sr; g_s.last_c[u] = (int8_t)sc;
 
         // 防漂移护栏: 近弹预筛(行位图 7 行并查, 无列表)
