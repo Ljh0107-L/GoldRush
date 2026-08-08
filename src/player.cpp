@@ -48,7 +48,7 @@ constexpr GameOutput SAFE_OUT = {{STAY, STAY, STAY, STAY, STAY, STAY}, 3, 0, 0};
 // map_id: -1 未定 0/1/2 已锁 -2 陌生图
 struct alignas(64) State {
     uint32_t bpw[N + 2];     // 墙|边界哨兵位图(bit c+1; 指纹锁图或在线学习灌入)
-    uint32_t bombbit[N + 2]; // 炸弹位图(+1 偏移对齐 bpw; 每 20 轮波清)
+    uint32_t bombbit[N + 6]; // 炸弹位图(带±2垫行, 写入下标 r+3; 免行钳位 cmov)
     int8_t last_r[2], last_c[2];
     int16_t last_round;
     uint8_t mode;
@@ -56,6 +56,11 @@ struct alignas(64) State {
     uint8_t cand;            // 候选图位掩码(bit m)
     uint8_t vp_buy;          // 本轮 vp 输出(稳态恒 0; 也用作"上轮买了视野"标记)
     int8_t anch_r[2], anch_c[2];
+    uint8_t exc;             // 突击进行中(waveTick 置/清)
+    int8_t sv_ar, sv_ac;     // u1 基地锚点备份(远征结束恢复)
+    int8_t hunt_r, hunt_c;   // 最近入镜敌单位位置(寄生跟随)
+    int16_t hunt_t;          // 其入镜轮(新鲜度)
+    int8_t bh_r, bh_c;       // u1 哨位(锁图后定, 无猎物时回驻)
     uint32_t seen[N];        // 已观测格(bit c+1; 指纹比对掩码)
     uint32_t visited[N];     // 站过的格(bit c+1; 学墙门控)
 };
@@ -76,6 +81,8 @@ constexpr uint32_t BAKED_W[3][N] = {
      0x00003de0u, 0x0000e038u, 0x0000e038u, 0x00000000u, 0x00000000u},
 };
 constexpr uint32_t INTERIOR = 0x0003FFFEu;       // bit 1..17 = c 0..16
+
+
 
 // map1 开局烘焙路线(BFS 最优 4 轮出角; 起点恒 (0,0)/(16,16); 仅 map_id==0 使用)
 constexpr uint8_t ORT_A[2][4][3] = {
@@ -117,7 +124,7 @@ constexpr Dm5T DM5;
 
 // 通行 = 非墙 且 (穷 或 非弹)。队友检查已退役(撞位实测 0 轮, 引擎记4+自愈兜底)
 inline unsigned pass01(int r, int c, unsigned rich) {
-    return (~((g_s.bpw[r + 1] | (rich & g_s.bombbit[r + 1])) >> (c + 1)) & 1u);
+    return (~((g_s.bpw[r + 1] | (rich & g_s.bombbit[r + 3])) >> (c + 1)) & 1u);
 }
 
 __attribute__((noinline, cold))
@@ -200,6 +207,33 @@ void fixAnchor(int u) {                          // 锚点是墙 → 改指最�
 }
 
 __attribute__((noinline, cold))
+void waveTick(const GameInput* in) {             // 波清 + u1 滑扫突击(骑 %20 位点)
+    memset(g_s.bombbit, 0, sizeof(g_s.bombbit));
+    int r = in->round;
+    if (g_s.map_id >= 0) {
+        if (r == 100) {
+            g_s.exc = 1;
+            g_s.sv_ar = g_s.anch_r[1]; g_s.sv_ac = g_s.anch_c[1];
+            g_s.anch_r[1] = 1; g_s.anch_c[1] = 3;      // 上带东进西出
+        } else if (r == 120 && g_s.exc) {
+            g_s.anch_r[1] = 1; g_s.anch_c[1] = 13;
+        } else if (r == 140 && g_s.exc) {
+            g_s.exc = 0;
+            g_s.anch_r[1] = g_s.sv_ar; g_s.anch_c[1] = g_s.sv_ac;
+        } else if (r == 300) {
+            g_s.exc = 1;
+            g_s.sv_ar = g_s.anch_r[1]; g_s.sv_ac = g_s.anch_c[1];
+            g_s.anch_r[1] = 15; g_s.anch_c[1] = 13;    // 下带西进东出
+        } else if (r == 320 && g_s.exc) {
+            g_s.anch_r[1] = 15; g_s.anch_c[1] = 3;
+        } else if (r == 340 && g_s.exc) {
+            g_s.exc = 0;
+            g_s.anch_r[1] = g_s.sv_ar; g_s.anch_c[1] = g_s.sv_ac;
+        }
+    }
+}
+
+__attribute__((noinline, cold))
 void slowTick(const GameInput* in) {
     int rad = g_s.vp_buy == 2 ? 4 : 2;           // 上轮买了 9×9 → 本轮窗口半径 4
     g_s.vp_buy = 0;
@@ -234,25 +268,30 @@ void slowTick(const GameInput* in) {
         if (g_s.cand == 0) {
             g_s.map_id = -2;                     // 陌生图: 懒学习伴终局
             fixAnchor(0); fixAnchor(1);
+            g_s.bh_r = g_s.anch_r[1]; g_s.bh_c = g_s.anch_c[1];
         } else if (!(g_s.cand & (g_s.cand - 1))) {
             int m = __builtin_ctz(g_s.cand);     // 唯一候选: 锁图直灌
             g_s.map_id = (int8_t)m;
             for (int r = 0; r < N; ++r) g_s.bpw[r + 1] = 0xFFFC0001u | BAKED_W[m][r];
             fixAnchor(0); fixAnchor(1);
+            g_s.bh_r = g_s.anch_r[1]; g_s.bh_c = g_s.anch_c[1];
         }
         if (in->round == 0 && g_s.map_id < 0)
             g_s.vp_buy = 2;                      // 角落区分不了/陌生图 → 买下一轮 9×9
     } else if (g_s.map_id == -2 && learned) {
-        fixAnchor(0); fixAnchor(1);              // 学到新墙才需要重验锚点
+        fixAnchor(0); fixAnchor(1);              // 学到新墙才需要重验锚点/重烘流场
     }
     // 模式退场: map1 与旧版同窗(4 轮); 其余图行军窗 8 轮; 未锁/陌生图转懒学习长驻
     if (g_s.map_id == 0) { if (in->round >= 4) g_s.mode = 0; }
     else if (g_s.map_id > 0) { if (in->round >= 8) g_s.mode = 0; }
-    else if (in->round >= 8) g_s.mode = 2;
+    else if (in->round >= 8) {
+        if (g_s.mode != 2)        g_s.mode = 2;
+    }
 }
 
 __attribute__((noinline, cold))
-void slowMove(const GameInput* in, int u, int sr, int sc, int* acts) {
+void slowMove(const GameInput* in, int u, int sr, int sc, unsigned rich, int* acts) {
+    (void)rich;
     if (g_s.map_id == 0) {                       // map1: 烘焙路线原样(保逐位等价)
         if (in->round < 4) {
             int ri = in->round & 3;
@@ -312,8 +351,25 @@ GameOutput decide(const GameInput* in) {
         }
     }
     g_s.last_round = (int16_t)in->round;
-    if (in->round % 20 == 0)                     // 炸弹波: 弹记忆即弃
-        memset(g_s.bombbit, 0, sizeof(g_s.bombbit));
+    if (in->round % 20 == 0)                     // 炸弹波清 + 远征开拔/归队(骑同一位点)
+        waveTick(in);
+
+    {   // 寄生跟随: u1 盯梢入镜敌单位, 先手轮抢吃其精选目标(拒止+搭车其目标选择)
+        int er = in->visible_enemies[0].row;
+        int seen0 = -(int)(er >= 0);
+        g_s.hunt_r = (int8_t)((er & seen0) | (g_s.hunt_r & ~seen0));
+        g_s.hunt_c = (int8_t)((in->visible_enemies[0].col & seen0) | (g_s.hunt_c & ~seen0));
+        g_s.hunt_t = (int16_t)((in->round & seen0) | (g_s.hunt_t & ~seen0));
+        int live = -(int)((unsigned)(in->round - g_s.hunt_t) < 4u) &
+                   -(int)(g_s.map_id >= 0) & ~-(int)(g_s.exc != 0);
+        g_s.anch_r[1] = (int8_t)((g_s.hunt_r & live) | (g_s.anch_r[1] & ~live));
+        g_s.anch_c[1] = (int8_t)((g_s.hunt_c & live) | (g_s.anch_c[1] & ~live));
+        int home = ~live & -(int)(g_s.map_id >= 0) & ~-(int)(g_s.exc != 0) &
+                   -(int)((unsigned)(in->round - g_s.hunt_t) >= 8u);
+        g_s.anch_r[1] = (int8_t)((g_s.bh_r & home) | (g_s.anch_r[1] & ~home));
+        g_s.anch_c[1] = (int8_t)((g_s.bh_c & home) | (g_s.anch_c[1] & ~home));
+    }
+
 
     if (__builtin_expect(g_s.mode != 0, 0)) {    // 慢开局层(学墙/指纹/锚点/vp)
         if (g_s.mode == 1 ||                     // 懒学习长驻期: 站格门控内联, 静轮免调用
@@ -334,12 +390,13 @@ GameOutput decide(const GameInput* in) {
         uint32_t goldm = 0;
 #if defined(__AVX2__)
         {
-            const __m256i vz = _mm256_setzero_si256();
+            const __m256i v2s = _mm256_set1_epi32(2);   // 挑食: 只标 ≥3 整格(≥2 版判负: 1184视2388)
             const __m256i vm3 = _mm256_set1_epi32(-3);
             int lsh = SCT.lsh[sc];
             uint32_t colv = SCT.colv[sc];
             uint32_t bombm = 0;
             int cb = SCT.cb[sc];
+            (void)0;                             // (弹片写已改行内 pop-loop, 见扫描尾)
 #pragma GCC unroll 5
             for (int i = 0; i < 5; ++i) {
                 int rr = sr - 2 + i;
@@ -348,27 +405,26 @@ GameOutput decide(const GameInput* in) {
                 __m256i vrow = _mm256_loadu_si256(
                     (const __m256i*)&in->grid[cr][cb]);
 #if defined(__AVX512VL__)
-                uint32_t g8 = (uint32_t)_mm256_cmpgt_epi32_mask(vrow, vz);
+                uint32_t g8 = (uint32_t)_mm256_cmpgt_epi32_mask(vrow, v2s);
                 uint32_t b8 = (uint32_t)_mm256_cmpeq_epi32_mask(vrow, vm3);
 #else
                 uint32_t g8 = (uint32_t)_mm256_movemask_ps(_mm256_castsi256_ps(
-                    _mm256_cmpgt_epi32(vrow, vz)));
+                    _mm256_cmpgt_epi32(vrow, v2s)));
                 uint32_t b8 = (uint32_t)_mm256_movemask_ps(_mm256_castsi256_ps(
                     _mm256_cmpeq_epi32(vrow, vm3)));
 #endif
                 uint32_t rv = colv & rowok;
                 goldm |= ((((g8 << 2) >> lsh) & 31u) & rv) << (i * 5);
-                if (i >= 1 && i <= 3)            // 编译期常量条件: 弹仅记 ±1 行
                 bombm |= ((((b8 << 2) >> lsh) & 31u) & rv) << (i * 5);
+                // 弹记全窗: LUT 一轮 3 步, ±1 行记法让第 2/3 步踩盲区雷(158287 烧 335 案)
             }
 #pragma GCC unroll 5
-            for (int i = 0; i < 5; ++i) {        // 弹行片写(空片写=无操作, 零分支)
-                int rr = sr - 2 + i;
-                int ri = ((unsigned)rr < (unsigned)N ? rr : 0) + 1;
+            for (int i = 0; i < 5; ++i) {        // 弹行片写(空片写=无操作, 零分支;
+                int rr = sr - 2 + i;             //  越界行 bsl 恒 0, 写进垫行无害免钳位)
                 int shl = sc - 1;
                 uint32_t bsl = (bombm >> (i * 5)) & 31u;
                 uint32_t bv = shl >= 0 ? (bsl << shl) : (bsl >> -shl);
-                g_s.bombbit[ri] |= bv;
+                g_s.bombbit[rr + 3] |= bv;
             }
         }
 #else
@@ -379,8 +435,8 @@ GameOutput decide(const GameInput* in) {
                 int cc = sc - 2 + j;
                 if ((unsigned)cc >= (unsigned)N) continue;
                 int v = in->grid[rr][cc];
-                if (v > 0) goldm |= 1u << (i * 5 + j);
-                else if (v == -3) g_s.bombbit[rr + 1] |= 1u << (cc + 1);
+                if (v > 2) goldm |= 1u << (i * 5 + j);
+                else if (v == -3) g_s.bombbit[rr + 3] |= 1u << (cc + 1);
             }
         }
 #endif
@@ -415,10 +471,13 @@ GameOutput decide(const GameInput* in) {
             uint32_t sel = (g1 & m1) | (g2 & m2) | (g3 & m3) | (g4 & m4) | (g0 & m0);
             int i = __builtin_ctz(sel | (uint32_t)(sel == 0));   // 仅空时补位(恒补 bit0 是历史崩盘元凶)
 #endif
+            // 三路目标: 整格(≥3) > 站金残值(标量兜底, 折返双吃) > 锚点
             int has = -(int)(goldm != 0);
-            blind = ~has;
-            tgr = ((sr - 2 + DM5.d[i]) & has) | (g_s.anch_r[u] & ~has);
-            tgc = ((sc - 2 + DM5.m[i]) & has) | (g_s.anch_c[u] & ~has);
+            int standing = -(int)(in->grid[sr][sc] > 1);   // 1金残渣不折返: 回哨位张网(驻留窗口守恒)
+            int selfm = ~has & standing;
+            blind = ~has & ~standing;
+            tgr = ((sr - 2 + DM5.d[i]) & has) | (sr & selfm) | (g_s.anch_r[u] & blind);
+            tgc = ((sc - 2 + DM5.m[i]) & has) | (sc & selfm) | (g_s.anch_c[u] & blind);
         }
 
         // ---- 导向 ----
@@ -453,9 +512,9 @@ GameOutput decide(const GameInput* in) {
             }
         }
 
-        // ---- 开局行军(盲轮才走; mode==1 才进, 稳态恒不取) ----
+        // ---- 开局行军/远征转场(盲轮才走; mode==1 才进, 稳态恒不取) ----
         if (__builtin_expect(g_s.mode == 1, 0)) {
-            if (blind) slowMove(in, u, sr, sc, acts);
+            if (blind) slowMove(in, u, sr, sc, rich, acts);
         }
         g_s.last_r[u] = (int8_t)sr; g_s.last_c[u] = (int8_t)sc;
     }
