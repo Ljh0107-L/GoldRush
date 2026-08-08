@@ -24,3 +24,4 @@ tools/.gr_token
 
 # 对局日志 (1.5MB/局)
 logs/
+tools/.arena_token
