@@ -1,48 +1,23 @@
-// player.cpp — GoldRush 2.0 主战策略
+// src/v3/player.cpp — v3: 300ns 单内核(2026-08-08 立项)
 //
-// cpp22 = cpp21 + 金币计数分派: 窗口0金->计划(0.5μs), 恰1金->专用直取+振荡(0.7μs),
-//         >=2金才全量DFS(2.5μs) -> P50 目标减半(DFS 336次逐边检查是主成本)。
-// cpp21 = cpp20 策略全保留 + 局部穷举改"直读输入"(免补丁构建, 省~1μs) + 砍视野购买。
-//         目标: P50 3.7 -> ~1.5μs, 策略无损(3步全枚举语义等价)。
-// cpp20 = cpp18 + 争抢章 60->30 轮(A/B 2814>2734); EXPRESS 触发率过低已弃用。
-// cpp19 = cpp18 + EXPRESS 快车道: 有有效计划且输入窗口无金时, 跳过补丁+DFS(省1.4μs)
-//         直接走缓存计划 -> 赶路回合 ~0.6μs, P50 目标 <2.6μs(凑企鹅线) 且策略无损。
-// cpp18 = cpp15 + 刷新热度图(默认开, A/B 基线 2734 vs 2597 且方差骤降)。
-// 开关: OPENING=开局冲刺(A/B 均值持平方差巨大, 默认关); ROTATION/TERRITORY(已否决)。
-// cpp17 = cpp15 + 轮作制(已被 A/B 否决, 默认关): 外圈(NPC罕至)金币记忆衰减 30->60 轮, 存量堆保持可作目标
-//         + 双角色软分区(按出生对角线各守半场, 越界目标估值 x0.8) 减少重复覆盖。
-//         依据: #1/#4 后期收入反增(存量轮巡收割), NPC 常驻中心不吃外圈(§6.2b)。
-// cpp15 = cpp14 + 避让加码(盖章半径3/时长60/罚3倍) + 争抢区残渣过滤(<3金不去)。
-// cpp14 = cpp13 + 导向目标缓存(is_gold=2 表示导向模式, 失效才重扫列表)
-//         + 金币列表扫描时顺手 swap-remove 空条目 -> 消灭每轮全列表重扫。
-// cpp13 = cpp12 + 争抢热度图(目标被人吃空/目击敌人 -> 周边盖章40轮, 选目标折半)
-//         + 探索去中心化(中心是NPC+快手主场, 后手方正确活法=收割外圈存量;
-//           实证: P^GPT 43μs全程后手仍 2332 分)。
-// cpp12 = cpp11 + 金币目标列表(世界模型增量维护) + 曼哈顿选目标 + 导向走位,
-//         BFS 仅在 导向卡死/探索 时兜底 -> 砍掉大部分重规划回合的 BFS。
-// cpp11 = cpp10 + NPC竞速回滚保守版(消融)。
-// cpp10 = cpp9 + 补丁构建盖章化(先填地形, NPC/占位列表各扫一遍盖上去,
-//         省 ~500 次/轮 的逐格线性扫; 环统计移出主循环) -> 压 P50 过 2.7μs 线。
-// cpp9 = cpp8 + 两段式BFS(9步无目标则全图, 恢复外圈大堆远征) + 行军目标衰减校验。
-//        教训(139155-58): 镜像局赢的是相对抢夺, 不是绝对效率; 评估改用固定基线+外战。
-// cpp8 = cpp7 + 尾步填充(把尾部STAY贪心替换为进入相邻金格; 实证16%的步在罚站,
-//        其中大头是吃完堆/到达目标后的收尾步)。
-// cpp7 = cpp6 + NPC竞速修正/目标簇加成/无金补丁跳过DFS。
-// cpp6 (P5 计划缓存)：探针实测(139118)推翻冷缓存论——平台纯返回 30ns、
-//   世界模型更新+补丁读 110ns。延迟大头是"赶路回合"的全图 BFS+扫描(每轮 2 次)。
-//   因此: 远程目标的 BFS 路径缓存为多轮计划, 之后每轮弹 3 步 + 补丁廉价校验,
-//   仅在 计划失效/走完/过期/本地有收益 时重规划 -> BFS 频率 ~1/5-1/10,
-//   P50 直奔亚微秒(这也是榜首 230ns P90 的形态: 重计算只占少数回合)。
-//   数据结构沿用 cpp5 压位(世界 4B/格, BFS 压位, 小列表标记)。
+// ============ 立项依据(实测, 见 CHANGELOG 2026-08-08) ============
+// 1. 地板实验: 扫描+打分(站桩)=360ns, +走位=390; v2 决策尾(goal/pile/patrol/
+//    被动路径)吃 ~410ns —— 全部砍掉, 决策尾预算 <100ns
+// 2. 策略解剖: Tundra(290ns/收入2662) 先手时 5.5金/轮 全程无衰减; 我们先手时
+//    仅 ~3金/轮 —— 差距在中心 9x9 占位覆盖, 不在复杂策略。外圈矿堆追逐是
+//    后手时代遗产, 先手时代中心常驻更优 → 矿堆缓存/巡逻表/目标机器全砍,
+//    换双锚点(6,6)/(10,10)中心驻守 —— 延迟与收入同向
+// 3. 平台物理(三次验证): 成本 ∝ 分支位点数 x 冷前端; 代码/状态越小溢价越低
 //
-// 结构分层（新策略只动"策略层"，边界层不要碰）：
-//   moveDecision()  ← extern "C" 边界层：兜底 + sanitize
-//     └─ decide()   ← 策略层
-//
-// 编译：开发机(8.153.76.120) make 出 player.so 提交；本机只 make check / make local。
+// ============ 形态 ============
+// 轮换单管线(active=round&1): 主动单位 扫描->打分->导向/折返; 被动单位零输入读,
+// 与主动共用同一条导向/折返代码(无独立副本)。
+// 状态 ~160B: bombbit[17]+bp[19]+杂项 —— 炸弹列表已砍(位图纯记忆, 波清即弃,
+// 停留期误差 <=20 轮的保守绕行可接受)。
 #include <cstdint>
-#ifdef PROFILE
-#include <ctime>
+#include <cstring>
+#if defined(__AVX2__)
+#include <immintrin.h>
 #endif
 #include "game_api.h"
 
@@ -52,1026 +27,560 @@ constexpr int N = GRID_SIZE;
 constexpr int STAY = 4;
 constexpr int DR[5] = {-1, 1, 0, 0, 0};
 constexpr int DC[5] = {0, 0, -1, 1, 0};
-constexpr int FOG = -5, BOMB = -3, OBSTACLE = -1;
-
 constexpr GameOutput SAFE_OUT = {{STAY, STAY, STAY, STAY, STAY, STAY}, 3, 0, 0};
 
-inline int ceilPct(int v, int pct) { return (v * pct + 99) / 100; }
-
-#ifdef PROFILE
-// -DPROFILE: 逐轮记录 decide() 周期数 + 组件命中位掩码(不改行为)。
-// 用 tests/profile_replay.py 驱动真实对局输入, 得到"分支频率x耗时"矩阵。
-struct Prof {
-    unsigned long long cyc[600];
-    int flags[600];
-    int n;
+struct alignas(64) State {
+    uint32_t bombbit[N];     // 炸弹位图(护栏用; 波清)
+    uint32_t bp[N + 2];      // 哨兵阻挡位图: 墙|弹|边界(导向用唯一地形真值)
+    int8_t last_r[2], last_c[2];
+    uint8_t stuck[2];
+    uint8_t patrol[2];       // 巡游路点下标
+    // 迷你矿堆缓存(16 槽直映射哈希): 外圈堆积存量的记忆(v36)
+    int8_t pr_[16], pc_[16];
+    uint8_t pv_[16], ps_[16];
+    uint16_t plive;          // 活堆位掩码(稀疏门控: 无堆零成本)
+    uint8_t banybomb;        // 已知炸弹存在标志(护栏全局门控)
+    int8_t plan[2][3];       // v37: 主动轮预算的"下轮 3 步"(被动轮直接回放)
+    uint8_t plan_ok[2];
+    uint8_t vbought;         // v49: 上轮买过视野 -> 本轮读外环找矿堆
+    int16_t last_round;
 };
-Prof g_prof;
-inline unsigned long long profNow() {
-#if defined(__x86_64__)
-    unsigned lo, hi;
-    __asm__ __volatile__("rdtsc" : "=a"(lo), "=d"(hi));
-    return ((unsigned long long)hi << 32) | lo;
-#else
-    struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
-    return (unsigned long long)ts.tv_sec * 1000000000ull + ts.tv_nsec;
-#endif
-}
-#define PROF_FLAG(bit) (g_prof.n < 600 ? (void)(g_prof.flags[g_prof.n] |= (bit)) : (void)0)
-// 位: 1=DFS 2=singleGold 4=steerCached命中 8=followPlan命中 16=pickGold扫描
-//     32=globalBFS 64=explore 128=本地收益>0 256=wg0 512=wg1 1024=wg2 2048=尾步填充改动
-#else
-#define PROF_FLAG(bit) ((void)0)
-#endif
 
-// ---------- 跨回合常驻世界模型(打包 4B/格, 全图 1156B) ----------
-struct Cell {
-    int8_t   known;   // 最后观测值(-5雾 -3炸弹 -1障碍 0空 1..127金)
-    int8_t   listed;  // 已在金币目标列表中
-    uint16_t seen;    // 最后观测回合+1；0=从未见过
-};
-struct World {
-    Cell  cell[N][N];
-    int   round;
-    int   wave;                // 最近一次炸弹刷新波的回合(round - round%20)
-    int   last_round;
-    int   last_vp;
-    int   vp_spent;
-    int   wgold_n[2];          // 各单位 5x5 窗口内金币格数
-    int   wgold_r[2], wgold_c[2];  // 恰 1 金时的坐标
-    int8_t wg_r[2][8], wg_c[2][8]; // 窗口内前 8 个金币格坐标(候选路径评估用)
-    uint8_t wg_v[2][8];            // 对应可见金量
-    // 窗口紧凑缓冲(update 顺手填, 25B/单位 = 1 条缓存线): 与 in->grid 同编码。
-    // DFS/候选评估的热读走这里, 免去每轮冷读散装网格 ~25 条缓存线(平台冷态主成本)。
-    int8_t wbuf[2][25];
-    int8_t wbase_r[2], wbase_c[2]; // 缓冲左上角(=单位位置-2)
-    // 金币目标列表(懒惰失效: 取用时校验 gold()>0, 满了就压缩)
-    uint16_t glist[96];
-    int   gn;
-    uint16_t contested[N][N];   // 该格附近有竞争者的有效期(回合号)
-    int8_t split_axis;          // 软分区轴: 0 = r+c-16, 1 = c-r (出生时检测)
-    int8_t half_sign[2];        // 各角色守的半场符号
-    uint8_t yield_[N][N];       // 观测到的金币刷新热度(SPAWNMAP)
+inline int pileSlot(int r, int c);
+State g_s;
 
-    inline bool isContested(int r, int c) const { return (uint16_t)round < contested[r][c]; }
-#ifdef OPPTRACK
-    void opp_evidence(const GameInput* in, int r, int c) {
-        for (int j = 0; j < in->num_visible_npcs && j < MAX_NPCS; ++j) {
-            int nr = in->visible_npcs[j].pos.row, nc = in->visible_npcs[j].pos.col;
-            if (nr < 0) continue;
-            int d = (nr > r ? nr - r : r - nr) + (nc > c ? nc - c : c - nc);
-            if (d <= 3) return;               // 可能是 NPC 吃的, 不算证据
-        }
-        stampContested(r, c);
-    }
-#endif
-    void stampContested(int cr0, int cc0) {
-#ifdef CONTEST60
-        constexpr int DUR = 60;
-#else
-        constexpr int DUR = 30;   // A/B: 30 均 2814 > 60 均 2734
-#endif
-        for (int r = cr0 - 3 <= 0 ? 0 : cr0 - 3; r <= (cr0 + 3 >= N ? N - 1 : cr0 + 3); ++r)
-            for (int c = cc0 - 3 <= 0 ? 0 : cc0 - 3; c <= (cc0 + 3 >= N ? N - 1 : cc0 + 3); ++c)
-                contested[r][c] = (uint16_t)(round + DUR);
-    }
+inline int pileSlot(int r, int c) { return (r * 31 + c) & 15; }
+inline uint8_t nowq() { return (uint8_t)(((uint16_t)g_s.last_round >> 2) | 1); }
 
-    void compactList() {
-        int w = 0;
-        for (int i = 0; i < gn; ++i) {
-            int r = glist[i] / N, c = glist[i] % N;
-            if (cell[r][c].known >= 1) glist[w++] = glist[i];
-            else cell[r][c].listed = 0;
-        }
-        gn = w;
-    }
+// 打分距离倒数表(排序语义, 免除法)
+constexpr uint16_t REC[8] = {4096, 2048, 1365, 1024, 819, 683, 585, 512};
 
-    World() { reset(); }
+// v36 角色分工(收入节奏解剖: 赢家暴击轮贡献 64-72%, 全是矿堆农):
+// u0 中心环抢新刷(先手红利); u1 外环收堆积存量(矿堆无争议, 后手也稳赚)
+constexpr int8_t PRW[2][4] = {{5, 5, 10, 10}, {3, 3, 13, 13}};
+constexpr int8_t PCW[2][4] = {{6, 10, 10, 6}, {3, 13, 13, 3}};
 
-    void reset();     // 定义在 g_plan 之后(需要清计划)
-    void update(const GameInput* in) {
-        if (in->round <= last_round) reset();
-        if (last_round < 0) {                     // 开局: 按出生位置定分区轴
-            int r0 = in->my_units[0].row, c0 = in->my_units[0].col;
-            int v0 = r0 + c0 - 16, v1 = c0 - r0;
-            split_axis = (v0 < 0 ? -v0 : v0) >= (v1 < 0 ? -v1 : v1) ? 0 : 1;
-            for (int u = 0; u < 2; ++u) {
-                int rr = in->my_units[u].row, cc = in->my_units[u].col;
-                int av = split_axis == 0 ? rr + cc - 16 : cc - rr;
-                half_sign[u] = (int8_t)(av >= 0 ? 1 : -1);
-            }
-            if (half_sign[0] == half_sign[1]) half_sign[1] = (int8_t)-half_sign[0];
-        }
-        last_round = round = in->round;
-        wave = round - round % 20;
-        int rad = 2 + last_vp;
-        for (int u = 0; u < 2; ++u) {
-            wgold_n[u] = 0;
-            int ur = in->my_units[u].row, uc = in->my_units[u].col;
-            if (ur < 0 || ur >= N || uc < 0 || uc >= N) continue;
-            wbase_r[u] = (int8_t)(ur - 2); wbase_c[u] = (int8_t)(uc - 2);
-            for (int i = 0; i < 25; ++i) wbuf[u][i] = OBSTACLE;   // 出界=不可走
-            int r0 = ur - rad < 0 ? 0 : ur - rad, r1 = ur + rad >= N ? N - 1 : ur + rad;
-            int c0 = uc - rad < 0 ? 0 : uc - rad, c1 = uc + rad >= N ? N - 1 : uc + rad;
-            for (int r = r0; r <= r1; ++r)
-                for (int c = c0; c <= c1; ++c) {
-                    int v = in->grid[r][c];
-                    {   // 紧凑缓冲(rad>2 时只存 5x5 核心)
-                        int dr2 = r - ur + 2, dc2 = c - uc + 2;
-                        if ((unsigned)dr2 < 5u && (unsigned)dc2 < 5u)
-                            wbuf[u][dr2 * 5 + dc2] = (int8_t)(v > 127 ? 127 : v);
-                    }
-                    if (v == FOG) continue;
-                    if (cell[r][c].known == OBSTACLE) continue;   // 障碍永久
-                    // 可见格金币比记忆多 = 刷新事件(拾取只会变少); A/B: 2734 vs 2597
-                    if (v >= 1 && cell[r][c].known >= 0 && v > cell[r][c].known &&
-                        yield_[r][c] < 250) yield_[r][c] += 2;
-#ifdef OPPTRACK
-                    // 记忆≥3金突然清零且附近无可见NPC = 对手来过, 实时盖争抢章
-                    if (v == 0 && cell[r][c].known >= 3) opp_evidence(in, r, c);
-#endif
-                    cell[r][c].known = (int8_t)(v > 127 ? 127 : v);
-                    cell[r][c].seen = (uint16_t)(in->round + 1);
-                    if (v >= 1) {
-                        if (wgold_n[u] < 8) {
-                            wg_r[u][wgold_n[u]] = (int8_t)r;
-                            wg_c[u][wgold_n[u]] = (int8_t)c;
-                            wg_v[u][wgold_n[u]] = (uint8_t)(v > 255 ? 255 : v);
-                        }
-                        if (++wgold_n[u] == 1) { wgold_r[u] = r; wgold_c[u] = c; }
-                        if (!cell[r][c].listed) {
-                            if (gn >= 96) compactList();
-                            if (gn < 96) { glist[gn++] = (uint16_t)(r * N + c); cell[r][c].listed = 1; }
-                        }
-                    }
-                }
-        }
-    }
-    inline int age(const Cell& x) const { return x.seen ? round - (int)(x.seen - 1) : 999; }
-    inline int gold(int r, int c) const {
-        const Cell& x = cell[r][c];
-        if (x.known < 1) return 0;
-        int a = age(x);
-#ifdef ROTATION
-        // 外圈 NPC 罕至, 存量堆衰减慢一倍(轮作收割的基础)
-        int cr = r > 8 ? r - 8 : 8 - r, cc = c > 8 ? c - 8 : 8 - c;
-        int T = (cr >= 6 || cc >= 6) ? 60 : 30;
-#elif defined(T45)
-        int T = 45;
-#else
-        int T = 30;
-#endif
-        return a < T ? x.known * (T - a) / T : 0;
-    }
-    inline bool bomb(int r, int c) const {
-        const Cell& x = cell[r][c];
-        return x.known == BOMB && age(x) <= 20;
-    }
-    // 陈旧格: 上一波炸弹刷新(mod20==0)之后没再看过 -> 可能藏新炸弹(~6.5%)
-    inline bool stale(int r, int c) const {
-        const Cell& x = cell[r][c];
-        return x.seen == 0 || (int)(x.seen - 1) < wave;
-    }
-    inline bool wall(int r, int c) const { return cell[r][c].known == OBSTACLE; }
-};
-World g_w;
-
-// ---------- 回合内小列表(寄存器/单 cache line 级, 无大数组清零) ----------
-struct Marks {
-    int8_t br[8], bc[8]; int bn;      // 占位: 敌人+队友
-    int8_t nr[8], nc[8]; int nn;      // 可见 NPC 位置(可重叠)
-    int8_t cr[8], cc[8]; int cn;      // 已认领目标
-
-    inline bool blocked(int r, int c) const {
-        for (int i = 0; i < bn; ++i) if (br[i] == r && bc[i] == c) return true;
-        return false;
-    }
-    inline int npcs(int r, int c) const {
-        int k = 0;
-        for (int i = 0; i < nn; ++i) k += (nr[i] == r && nc[i] == c);
-        return k;
-    }
-    inline bool claimed(int r, int c) const {
-        for (int i = 0; i < cn; ++i) if (cr[i] == r && cc[i] == c) return true;
-        return false;
-    }
-    inline void claim(int r, int c) { if (cn < 8) { cr[cn] = (int8_t)r; cc[cn] = (int8_t)c; ++cn; } }
-};
-Marks g_m;
-
-inline bool passable(int r, int c) {
-    return !g_w.wall(r, c) && !g_w.bomb(r, c) && !g_m.blocked(r, c);
+inline unsigned pass01(int r, int c, int tr, int tc) {
+    return (~(g_s.bp[r + 1] >> (c + 1)) & 1u) &
+           (unsigned)((r != tr) | (c != tc));
 }
 
-// ---------- BFS(压位, 仅回退路径时触碰) ----------
-struct Bfs {
-    uint16_t visit[N * N] = {};
-    uint16_t epoch = 0;
-    int8_t  prev[N * N];
-    uint8_t dist[N * N];
-    uint16_t q[N * N];
-    int qlen = 0;
-
-    // maxd: 距离上限(默认9) — 更远的目标经 年龄衰减+距离折价 后无竞争力, 扫描减半
-    void run(int sr, int sc, int maxd = 9) {
-        if (++epoch == 0) { for (int i = 0; i < N * N; ++i) visit[i] = 0; epoch = 1; }
-        qlen = 0;
-        int s = sr * N + sc;
-        q[qlen++] = (uint16_t)s;
-        visit[s] = epoch;
-        prev[s] = -1;
-        dist[s] = 0;
-        for (int head = 0; head < qlen; ++head) {
-            int idx = q[head], r = idx / N, c = idx % N;
-            if (dist[idx] >= maxd) continue;
-            for (int a = 0; a < 4; ++a) {
-                int nrr = r + DR[a], ncc = c + DC[a];
-                if (nrr < 0 || nrr >= N || ncc < 0 || ncc >= N) continue;
-                int ni = nrr * N + ncc;
-                if (visit[ni] == epoch) continue;
-                if (!passable(nrr, ncc)) continue;
-                visit[ni] = epoch;
-                prev[ni] = (int8_t)a;
-                dist[ni] = (uint8_t)(dist[idx] + 1);
-                q[qlen++] = (uint16_t)ni;
-            }
-        }
-    }
-    int pathTo(int sr, int sc, int tr, int tc, int* out, int cap) const {
-        int s = sr * N + sc, t = tr * N + tc;
-        if (visit[t] != epoch) return 0;
-        int tmp[64];
-        int len = 0;
-        while (t != s && len < 64) {
-            int a = prev[t];
-            if (a < 0) break;
-            tmp[len++] = a;
-            t -= DR[a] * N + DC[a];
-        }
-        int n = len < cap ? len : cap;
-        for (int i = 0; i < n; ++i) out[i] = tmp[len - 1 - i];
-        return n;
-    }
-};
-Bfs g_bfs;
-
-// (LocalSearch 补丁版已由 MiniLocal 直读版取代, 旧实现见 git 历史)
-
-int g_cur_unit = 0;    // 当前决策中的角色(软分区/窗口缓冲选择用)
-
-// ---------- cpp27: 3 步穷举, 局部坐标直接索引 + 惰性记忆化 ----------
-// 语义与 cpp21 直读版逐位等价(同一搜索树/同一评分), 只砍每节点常数:
-//  - 覆盖层 ov_idx 线性扫 -> eaten[49] 直接索引
-//  - 金币/旗标(墙/炸弹/踩踏)每格首次访问算一次, 记忆化(3步可达域仅 25 格)
-//  - 炸弹罚 run() 里预计算(每 run 常量)
-// 7x7 补丁以单位为中心; 3 步内的"尝试移动"永远落在补丁内, 无需边界检查
-// (深度 d<=2 的出发格离中心 <=2, 目标 <=3)。地图边界格标记为不可走。
-struct MiniLocal {
-    const GameInput* in;
-    int pen;                   // 炸弹罚(本 run 常量)
-    int best; int bacts[3];
-    int16_t eaten[49];         // 路径消耗覆盖: -1=未动
-    int16_t gmemo[49];         // 金币记忆化: -1=未算
-    uint8_t fmemo[49];         // 旗标: 0xFF=未算; 位 1=不可走 2=炸弹 4=踩踏
-    int8_t  base_r, base_c;    // 补丁左上角(中心-3)
-
-    static constexpr int DIDX[4] = {-7, 7, -1, 1};   // 与 DR/DC 同序: 上下左右
-
-    inline uint8_t flagsAt(int pi) {
-        uint8_t f = fmemo[pi];
-        if (f != 0xFF) return f;
-        int pr = pi / 7, pc = pi % 7;
-        int r = base_r + pr, c = base_c + pc;
-        int wr = pr - 1, wc = pc - 1;          // 5x5 窗口缓冲坐标
-        f = 0;
-        if ((unsigned)wr < 5u && (unsigned)wc < 5u) {
-            int v = g_w.wbuf[g_cur_unit][wr * 5 + wc];   // 热读 1 条缓存线
-            if (v == OBSTACLE || g_m.blocked(r, c)) f |= 1;
-            if (v == BOMB) f |= 2;
-            if (g_m.npcs(r, c) >= 3) f |= 4;
-        } else if (r < 0 || r >= N || c < 0 || c >= N) f = 1;
-        else {                                  // 7x7 边缘环(距离3): 冷读兜底
-            int iv = in->grid[r][c];
-            if (iv == OBSTACLE || g_w.wall(r, c) || g_m.blocked(r, c)) f |= 1;
-            if (iv == BOMB || (iv == FOG && g_w.bomb(r, c))) f |= 2;
-            if (g_m.npcs(r, c) >= 3) f |= 4;
-        }
-        fmemo[pi] = f;
-        return f;
-    }
-    inline int goldAt(int pi) {
-        int g = gmemo[pi];
-        if (g >= 0) return g;
-        int pr = pi / 7, pc = pi % 7;
-        int wr = pr - 1, wc = pc - 1;
-        if ((unsigned)wr < 5u && (unsigned)wc < 5u) {
-            int v = g_w.wbuf[g_cur_unit][wr * 5 + wc];
-            g = v >= 1 ? v : 0;                 // 窗口内无雾, 语义等价
-        } else {
-            int r = base_r + pr, c = base_c + pc;
-            int iv = in->grid[r][c];
-            g = iv >= 1 ? iv : (iv == FOG ? g_w.gold(r, c) : 0);
-        }
-        gmemo[pi] = (int16_t)g;
-        return g;
-    }
-
-    void dfs(int pi, int depth, int acts[3], int sc) {
-        if (sc > best) {
-            best = sc;
-            for (int t = 0; t < 3; ++t) bacts[t] = t < depth ? acts[t] : STAY;
-        }
-        if (depth == 3) return;
-        for (int a = 0; a < 4; ++a) {
-            int ni = pi + DIDX[a];
-            uint8_t f = flagsAt(ni);
-            if (f & 5) continue;               // 不可走/踩踏
-            acts[depth] = a;
-            int add = 0;
-            int prev_e = eaten[ni];
-            int v = prev_e >= 0 ? prev_e : goldAt(ni);
-            if (v > 0) {
-                int take = ceilPct(v, 65);
-                add = take * 10;
-                eaten[ni] = (int16_t)(v - take);
-            }
-            if (f & 2) add -= pen;
-            dfs(ni, depth + 1, acts, sc + add);
-            eaten[ni] = (int16_t)prev_e;
-        }
-    }
-    int run(const GameInput* in_, int sr, int sc, int gold_now, int* acts_out) {
-        in = in_;
-        int bp = ceilPct(gold_now, 10) * 20;   // 惩罚x2 + 下限(防零持币白穿)
-        pen = bp < 60 ? 60 : bp;
-        base_r = (int8_t)(sr - 3); base_c = (int8_t)(sc - 3);
-        for (int i = 0; i < 49; ++i) { eaten[i] = -1; gmemo[i] = -1; fmemo[i] = 0xFF; }
-        best = 0;
-        bacts[0] = bacts[1] = bacts[2] = STAY;
-        int tmp[3];
-        dfs(24, 0, tmp, 0);                    // 中心 = (3,3) = 24
-        for (int t = 0; t < 3; ++t) acts_out[t] = bacts[t];
-        return best;
-    }
-};
-constexpr int MiniLocal::DIDX[4];
-MiniLocal g_mini;
-
-int steerStep(int r, int c, int tr, int tc);   // 前置声明(定义在后)
-
-// ---------- cpp27: 接近型回合的候选路径评估(免盲 DFS) ----------
-// 窗口最近金距离>=2 时, 3 步内的最优动作 ≈ 面向某金格的导向路径
-// (含途中拾取 + 到位后顺吃相邻/退步备双吃)。逐候选精确评分(与 DFS 同公式),
-// ~n 次导向 vs 84 路径树。近身混战(mind<2)仍用全量 DFS(链式吃的真正价值区)。
-inline int wread(const GameInput* in, int u, int r, int c) {   // 窗口热读, 窗外冷读
-    int wr = r - g_w.wbase_r[u], wc = c - g_w.wbase_c[u];
-    if ((unsigned)wr < 5u && (unsigned)wc < 5u) return g_w.wbuf[u][wr * 5 + wc];
-    if (r < 0 || r >= N || c < 0 || c >= N) return OBSTACLE;
-    return in->grid[r][c];
-}
-
-int candEval(const GameInput* in, int u, int sr, int sc, int* acts_out) {
-    int n = g_w.wgold_n[u] < 8 ? g_w.wgold_n[u] : 8;
-    int best = 0;
-    int bacts[3] = {STAY, STAY, STAY};
-    for (int i = 0; i < n; ++i) {
-        int gr = g_w.wg_r[u][i], gc = g_w.wg_c[u][i];
-        if (g_m.claimed(gr, gc)) continue;
-        int d0 = (gr > sr ? gr - sr : sr - gr) + (gc > sc ? gc - sc : sc - gc);
-        if (d0 < 2 || d0 > 3) continue;
-        int acts[3] = {STAY, STAY, STAY};
-        int r = sr, c = sc, k = 0, score = 0;
-        bool ok = true;
-        while (k < 3 && !(r == gr && c == gc)) {
-            int a = steerStep(r, c, gr, gc);
-            if (a < 0) { ok = false; break; }
-            acts[k++] = a;
-            r += DR[a]; c += DC[a];
-            int iv = wread(in, u, r, c);             // 途中拾取(与 DFS 同估值)
-            int v = iv >= 1 ? iv : (iv == FOG ? g_w.gold(r, c) : 0);
-            if (v > 0) score += ceilPct(v, 65) * 10;
-        }
-        if (!ok || score == 0) continue;             // 被挡/没吃到: 不构成收益
-        if (k < 3) {
-            // 剩一步: 顺吃相邻未认领金格, 否则退一步(下轮再进吃残量)
-            int besta = -1, bestv = 0;
-            for (int a2 = 0; a2 < 4; ++a2) {
-                int rr = r + DR[a2], cc2 = c + DC[a2];
-                if (rr < 0 || rr >= N || cc2 < 0 || cc2 >= N) continue;
-                if (!passable(rr, cc2) || g_m.npcs(rr, cc2) >= 3) continue;
-                int iv2 = wread(in, u, rr, cc2);
-                if (iv2 >= 1 && iv2 > bestv && !g_m.claimed(rr, cc2)) {
-                    bestv = iv2; besta = a2;
-                }
-            }
-            if (besta >= 0) { acts[k] = besta; score += ceilPct(bestv, 65) * 10; }
-            else acts[k] = acts[k - 1] ^ 1;
-        }
-        if (score > best) {
-            best = score;
-            bacts[0] = acts[0]; bacts[1] = acts[1]; bacts[2] = acts[2];
-        }
-    }
-    if (best > 0) {
-        acts_out[0] = bacts[0]; acts_out[1] = bacts[1]; acts_out[2] = bacts[2];
-    }
-    return best;
-}
-
-// 恰 1 金专用: 直取 + d==1 时 enter-leave-enter 双吃; 返回等效收益(>0 即农耕)
-int singleGold(const GameInput* in, int sr, int sc, int gr, int gc, int* acts) {
-    acts[0] = acts[1] = acts[2] = STAY;
-    int v = in->grid[gr][gc];
-    if (v < 1) return 0;
-    int d = (gr > sr ? gr - sr : sr - gr) + (gc > sc ? gc - sc : sc - gc);
-    if (d == 0) {                                   // 站在金上: 吃不到, 离开再回来
-        for (int a = 0; a < 4; ++a) {
-            int nr = sr + DR[a], nc = sc + DC[a];
-            if (nr < 0 || nr >= N || nc < 0 || nc >= N) continue;
-            if (!passable(nr, nc) || g_m.npcs(nr, nc) >= 3) continue;
-            acts[0] = a;
-            acts[1] = a ^ 1;                        // 反方向(0<->1, 2<->3)回来吃
-            return ceilPct(v, 65);
-        }
-        return 0;
-    }
-    int r = sr, c = sc, n = 0;
-    while (n < 3 && !(r == gr && c == gc)) {
-        int a = steerStep(r, c, gr, gc);
-        if (a < 0) return 0;                        // 被挡: 交给通用机器
-        acts[n++] = a;
-        r += DR[a]; c += DC[a];
-    }
-    if (!(r == gr && c == gc)) return 1;            // 3步没到: 也算在途(继续走)
-    int gain = ceilPct(v, 65);
-    if (n <= 1) {                                    // d==1: 还剩>=2步, 出来再进去双吃
-        int back = acts[n - 1] ^ 1;
-        int rem = v - gain;
-        if (rem > 0 && n + 1 < 3) {
-            acts[n] = back;
-            acts[n + 1] = back ^ 1;
-            gain += ceilPct(rem, 65);
-        }
-    } else if (n == 2) {
-        acts[2] = acts[1] ^ 1;                       // 到达后退一步, 备下轮再进
-    }
-    return gain;
-}
-
-// ---------- 多轮计划缓存(砍掉赶路回合的 BFS) ----------
-struct Plan {
-    int8_t acts[64];      // 完整路径动作
-    int8_t len, pos;      // 总长/已执行
-    int8_t er, ec;        // 当前应在位置(校验用; 不符=发生过碰撞, 作废)
-    int8_t tr, tc;        // 目标格
-    int8_t is_gold;       // 1=金币目标(目标空了要作废) 0=探索目标
-    uint16_t born;        // 制定回合(过期重规划)
-    // 备胎目标: pick 扫描时顺存第二名; 主目标吃空/失效时直接顶上, 免重扫
-    // (平台探针实证: 目标层执行 ~2.2μs 且骑在 P50 边界, 频率就是延迟)
-    int8_t alt_tr, alt_tc;
-    uint16_t alt_born;    // 0 = 无备胎
-};
-Plan g_plan[2];
-
-int steerStep(int r, int c, int tr, int tc);
-#ifdef OPENING
-// 开局冲刺: 中心 9x9 每轮刷金, 先到先吃; 目标 = 中心区靠己方侧的入口点
-bool openingSprint(int u, int sr, int sc, int* out) {
-    int tr = sr <= 8 ? 5 : 11, tc = sc <= 8 ? 5 : 11;   // 靠自己侧的中心区入口
-    if (u == 1) { tc = sc <= 8 ? 6 : 10; }              // 两角色错开一列
-    int r = sr, c = sc, n = 0;
-    out[0] = out[1] = out[2] = STAY;
-    while (n < 3 && !(r == tr && c == tc)) {
-        int a = steerStep(r, c, tr, tc);
-        if (a < 0) break;
-        out[n++] = a;
-        r += DR[a]; c += DC[a];
-    }
-    return n > 0;
-}
-#endif
-bool steerCached(int u, int sr, int sc, int* out) {
-    Plan& p = g_plan[u];
-    if (p.is_gold != 2) return false;
-    for (int attempt = 0; attempt < 2; ++attempt) {
-        bool bad = g_w.round - (int)p.born > 12 || g_w.gold(p.tr, p.tc) <= 0 ||
-                   g_w.isContested(p.tr, p.tc);
-        if (!bad) {
-            int r = sr, c = sc, n = 0;
-            out[0] = out[1] = out[2] = STAY;
-            while (n < 3 && !(r == p.tr && c == p.tc)) {
-                int a = steerStep(r, c, p.tr, p.tc);
-                if (a < 0) { p.is_gold = 0; return n > 0; }   // 卡住: 下轮重规划
-                out[n++] = a;
-                r += DR[a]; c += DC[a];
-            }
-            // 到达不清目标: 采集期间保留, 吃空后经 gold<=0 分支换备胎(粘性闭环)
-            if (n > 0) { g_m.claim(p.tr, p.tc); return true; }
-            // n==0 站在目标上却无本地收益: 当失效处理, 落到备胎
-        } else if (g_w.gold(p.tr, p.tc) <= 0 && g_w.round - (int)p.born <= 12 &&
-                   !(p.tr == sr && p.tc == sc)) {
-            g_w.stampContested(p.tr, p.tc);      // 未到手就被吃 = 竞争证据
-        }
-        p.is_gold = 0;
-        // 备胎顶上(免 pick+gBFS 重扫): 仍新鲜、有金、无争抢、未认领
-        if (p.alt_born && g_w.round - (int)p.alt_born <= 12 &&
-            g_w.gold(p.alt_tr, p.alt_tc) > 0 &&
-            !g_w.isContested(p.alt_tr, p.alt_tc) &&
-            !g_m.claimed(p.alt_tr, p.alt_tc)) {
-            p.tr = p.alt_tr; p.tc = p.alt_tc;
-            p.born = p.alt_born; p.alt_born = 0;
-            p.is_gold = 2;
-            continue;
-        }
-        return false;
-    }
-    return false;
-}
-
-// 从缓存计划弹出至多 3 步; 校验通过返回 true 并填 acts
-bool followPlan(int u, int sr, int sc, int* out) {
-    Plan& p = g_plan[u];
-    if (p.len == 0 || p.pos >= p.len) return false;
-    if (p.er != sr || p.ec != sc) { p.len = 0; return false; }      // 碰撞过, 作废
-    if (g_w.round - (int)p.born > 10) { p.len = 0; return false; }  // 过期
-    if (p.is_gold && g_w.gold(p.tr, p.tc) == 0) {          // 目标已空: 有竞争者出没
-        g_w.stampContested(p.tr, p.tc);
-        p.len = 0;
-        return false;
-    }
-    int r = sr, c = sc, n = 0;
-    int tmp[3];
-    while (n < 3 && p.pos + n < p.len) {
-        int a = p.acts[p.pos + n];
+__attribute__((noinline, cold))
+int escapeStep(int r, int c, int tr, int tc, int pr, int pc) {
+    for (int a = 0; a < 4; ++a) {
         int nr = r + DR[a], nc = c + DC[a];
-        if (nr < 0 || nr >= N || nc < 0 || nc >= N ||
-            g_w.wall(nr, nc) || g_w.bomb(nr, nc) || g_m.blocked(nr, nc)) {
-            p.len = 0; return false;                                 // 路上有新障碍, 作废
-        }
-        tmp[n++] = a;
-        r = nr; c = nc;
-    }
-    if (n == 0) { p.len = 0; return false; }
-    for (int i = 0; i < 3; ++i) out[i] = i < n ? tmp[i] : STAY;
-    p.pos = (int8_t)(p.pos + n);
-    p.er = (int8_t)r; p.ec = (int8_t)c;
-    g_m.claim(p.tr, p.tc);                                           // 维持目标去重
-    return true;
-}
-
-void storePlan(int u, int sr, int sc, int tr, int tc, bool is_gold) {
-    Plan& p = g_plan[u];
-    int full[64];
-    int len = g_bfs.pathTo(sr, sc, tr, tc, full, 64);
-    int n = len < 64 ? len : 64;
-    for (int i = 0; i < n; ++i) p.acts[i] = (int8_t)full[i];
-    p.len = (int8_t)n;
-    p.pos = 0;
-    p.er = (int8_t)sr; p.ec = (int8_t)sc;
-    p.tr = (int8_t)tr; p.tc = (int8_t)tc;
-    p.is_gold = (int8_t)is_gold;
-    p.born = (uint16_t)g_w.round;
-}
-
-// ---------- 金币目标: 从列表曼哈顿选取(无 BFS); alt_out 顺带输出第二名 ----------
-int pickGoldTarget(const GameInput* in, int sr, int sc, int* alt_out = nullptr) {
-    long best = 0, best2 = 0;
-    int bi = -1, bi2 = -1;
-    for (int i = 0; i < g_w.gn; ++i) {
-        int idx = g_w.glist[i], r = idx / N, c = idx % N;
-        if (g_w.cell[r][c].known < 1) {          // 已确认空: 顺手摘除
-            g_w.cell[r][c].listed = 0;
-            g_w.glist[i--] = g_w.glist[--g_w.gn];
-            continue;
-        }
-        int v = g_w.gold(r, c);
-        if (v <= 0 || g_m.claimed(r, c)) continue;
-        if (r == sr && c == sc) continue;
-        int d = (r > sr ? r - sr : sr - r) + (c > sc ? c - sc : sc - c);
-        long val = v * 100L;
-        int nb = 0;
-        for (int a2 = 0; a2 < 4; ++a2) {
-            int rr = r + DR[a2], cc2 = c + DC[a2];
-            if (rr >= 0 && rr < N && cc2 >= 0 && cc2 < N) nb += g_w.gold(rr, cc2);
-        }
-        val += nb * 50L;
-        if (g_w.isContested(r, c)) val /= 2;    // 有竞争者的区域折半
-        for (int j = 0; j < in->num_visible_npcs && j < MAX_NPCS; ++j) {
-            int nrr = in->visible_npcs[j].pos.row, ncc = in->visible_npcs[j].pos.col;
-            if (nrr < 0) continue;
-            int nd = (nrr > r ? nrr - r : r - nrr) + (ncc > c ? ncc - c : c - ncc);
-#ifdef NPCD2
-            if (nd * 13 < d * 10) { val /= 2; break; }
-#else
-            if (nd * 13 < d * 10) { val /= 3; break; }
-#endif
-        }
-        long score = val / (d + 1);
-        if (score > best) { best2 = best; bi2 = bi; best = score; bi = idx; }
-        else if (score > best2) { best2 = score; bi2 = idx; }
-    }
-    if (alt_out) *alt_out = bi2;
-    return bi;
-}
-
-// 曼哈顿导向一步: 只朝缩短距离的方向走; 全被挡返回 -1(交给 BFS)
-// (cpp23 曾在此加"富时绕陈旧格"——探索方向必然全陈旧, 行军蛇形, 基线-600, 已撤)
-int steerStep(int r, int c, int tr, int tc) {
-    int drr = tr - r, dcc = tc - c;
-    int ar = drr < 0 ? 0 : 1, ac = dcc < 0 ? 2 : 3;
-    int adr = drr < 0 ? -drr : drr, adc = dcc < 0 ? -dcc : dcc;
-    int p0 = adr >= adc ? ar : ac, p1 = adr >= adc ? ac : ar;
-    if (adr && adc) {
-        int nr = r + DR[p0], nc = c + DC[p0];
-        if (passable(nr, nc)) return p0;
-        nr = r + DR[p1]; nc = c + DC[p1];
-        if (passable(nr, nc)) return p1;
-    } else {
-        int a = adr ? ar : ac;
-        int nr = r + DR[a], nc = c + DC[a];
-        if (passable(nr, nc)) return a;
+        if (nr == pr && nc == pc) continue;
+        if (pass01(nr, nc, tr, tc)) return a;
     }
     return -1;
 }
 
-// ---------- 全局目标(NPC 折价) ----------
-int g_full_cool[2] = {0, 0};   // 全图 BFS 冷却(每单位每 3 轮至多一次, 压 P90 尾)
-
-bool globalTarget(const GameInput* in, int sr, int sc, int* out, int* otr, int* otc) {
-    long best = 0;
-    int bi = -1;
-    // 两段式: 先 9 步(常见情形, 便宜); 无目标再全图(恢复外圈大堆远征, 摊薄进计划缓存)
-    // 全图段带冷却: 反复找不到目标时(explore 会兜底)别每轮都付 ~10μs 的全图扫
-    int max_stage = 2;
-    if (g_w.round < g_full_cool[g_cur_unit]) max_stage = 1;
-    for (int stage = 0; stage < max_stage && bi < 0; ++stage) {
-    if (stage == 1) g_full_cool[g_cur_unit] = g_w.round + 3;
-    g_bfs.run(sr, sc, stage == 0 ? 9 : 32);
-    for (int h = 1; h < g_bfs.qlen; ++h) {
-        int idx = g_bfs.q[h], r = idx / N, c = idx % N;
-        int v = g_w.gold(r, c);
-        if (v <= 0 || g_m.claimed(r, c)) continue;
-        int d = g_bfs.dist[idx];
-        // 簇加成: 目标四邻的金币折半计入(富矿区优先于孤立小堆)
-        long val = v * 100L;
-        {
-            int nb = 0;
-            for (int a2 = 0; a2 < 4; ++a2) {
-                int rr = r + DR[a2], cc2 = c + DC[a2];
-                if (rr >= 0 && rr < N && cc2 >= 0 && cc2 < N) nb += g_w.gold(rr, cc2);
-            }
-            val += nb * 50L;
-        }
-        if (g_w.isContested(r, c)) val /= 2;    // 有竞争者的区域折半
-        // NPC折价(保守版): NPC 常驻中心离金更近, 放宽竞速=白跑送人头
-        // (139155-58 消融: 放宽后拾取次数 567->479)
-        for (int j = 0; j < in->num_visible_npcs && j < MAX_NPCS; ++j) {
-            int nrr = in->visible_npcs[j].pos.row, ncc = in->visible_npcs[j].pos.col;
-            if (nrr < 0) continue;
-            int nd = (nrr > r ? nrr - r : r - nrr) + (ncc > c ? ncc - c : c - ncc);
-            if (nd * 13 < d * 10) { val /= 3; break; }
-        }
-        long score = val / (d + 1);
-        if (score > best) { best = score; bi = idx; }
-    }
-    }
-    if (bi < 0) return false;
-    g_m.claim(bi / N, bi % N);
-    for (int i = 0; i < 3; ++i) out[i] = STAY;
-    g_bfs.pathTo(sr, sc, bi / N, bi % N, out, 3);
-    *otr = bi / N; *otc = bi % N;
-    return true;
+__attribute__((noinline, cold))
+void stuckEscape(int u, int sr, int sc, int tr, int tc, int* acts) {
+    for (int a = 0; a < 4; ++a)
+        if (pass01(sr + DR[a], sc + DC[a], tr, tc)) { acts[0] = a; break; }
+    g_s.stuck[u] = 0;
 }
 
-// ---------- 探索(陈旧度驱动; 复用 globalTarget 刚跑的 BFS) ----------
-void explore(int sr, int sc, int* out, int* otr, int* otc) {
-    long best = -1;
-    int bi = -1;
-    *otr = -1; *otc = -1;
-    // 两遍: 先只考虑距离>=4的边疆(计划够长, BFS摊薄到多轮); 无候选再放开
-    for (int pass = 0; pass < 2 && bi < 0; ++pass) {
-        for (int h = 1; h < g_bfs.qlen; ++h) {
-            int idx = g_bfs.q[h], r = idx / N, c = idx % N;
-            if (pass == 0 && g_bfs.dist[idx] < 4) continue;
-            if (g_m.claimed(r, c)) continue;
-            int a = g_w.age(g_w.cell[r][c]);
-            if (a > 60) a = a > 900 ? 100 : 60;
-            long s = (long)a * 100;
-#ifdef YIELD80
-            s += (long)g_w.yield_[r][c] * 80;    // 历史高产区优先巡回(权重加倍实验)
-#else
-            s += (long)g_w.yield_[r][c] * 40;    // 历史高产区优先巡回
-#endif
-            if (g_w.isContested(r, c)) s /= 2;
-            s /= g_bfs.dist[idx] + 1;
-            if (s > best) { best = s; bi = idx; }
-        }
-    }
-    for (int i = 0; i < 3; ++i) out[i] = STAY;
-    if (bi >= 0) {
-        g_m.claim(bi / N, bi % N);
-        g_bfs.pathTo(sr, sc, bi / N, bi % N, out, 3);
-        *otr = bi / N; *otc = bi % N;
-    }
-}
-
-// ---------- 策略层 ----------
-void World::reset() {
-    for (int r = 0; r < N; ++r)
-        for (int c = 0; c < N; ++c) cell[r][c] = {(int8_t)FOG, 0, 0};
-    last_round = -1;
-    last_vp = 0;
-    vp_spent = 0;
-    gn = 0;
-    for (int r = 0; r < N; ++r)
-        for (int c = 0; c < N; ++c) { contested[r][c] = 0; yield_[r][c] = 0; }
-    g_plan[0].len = g_plan[1].len = 0;
-    g_plan[0].is_gold = g_plan[1].is_gold = 0;
-    g_plan[0].alt_born = g_plan[1].alt_born = 0;
-    g_full_cool[0] = g_full_cool[1] = 0;
+int steerStep(int r, int c, int gr, int gc, int tr, int tc, int pr, int pc) {
+    int drr = gr - r, dcc = gc - c;
+    int ar = drr > 0;
+    int ac = 2 + (dcc > 0);
+    int adr = drr < 0 ? -drr : drr, adc = dcc < 0 ? -dcc : dcc;
+    int rowf = adr >= adc;
+    int p0 = rowf ? ar : ac, p1 = rowf ? ac : ar;
+    unsigned ok0 = pass01(r + DR[p0], c + DC[p0], tr, tc);
+    unsigned ok1 = pass01(r + DR[p1], c + DC[p1], tr, tc) &
+                   (unsigned)((adr != 0) & (adc != 0));
+    if (ok0 | ok1)
+        return ok0 ? p0 : p1;
+    return (adr | adc) ? escapeStep(r, c, tr, tc, pr, pc) : -1;
 }
 
 GameOutput decide(const GameInput* in) {
-    g_w.update(in);
-    g_m.bn = g_m.nn = g_m.cn = 0;
-    for (int i = 0; i < 2; ++i) {
-        int r = in->visible_enemies[i].row, c = in->visible_enemies[i].col;
-        if (r >= 0 && r < N && c >= 0 && c < N && g_m.bn < 8) {
-            g_m.br[g_m.bn] = (int8_t)r; g_m.bc[g_m.bn] = (int8_t)c; ++g_m.bn;
-#ifndef NOSIGHTSTAMP
-            // 目击盖章: vs 中心蹲守型对手会把最肥刷新区自我禁区化(见 §10), 可关
-            g_w.stampContested(r, c);          // 敌人出没区, 选目标折半
+#ifdef NS3DUAL
+    const int active = -1;                       // 双扫: 无被动单位
+#else
+    const int active = in->round & 1;
+#endif
+#if defined(__AVX2__)
+    // 输入行前置装载: miss 最早发射, 账务藏进阴影
+    __m256i rowbufs[2][5];
+    int rb_oks[2] = {0, 0}, rb_cbs[2] = {0, 0};
+    for (int lu = 0; lu < 2; ++lu) {
+        if (active >= 0 && lu != active) continue;
+        __m256i* rowbuf = rowbufs[lu];
+        int sr0 = in->my_units[lu].row, sc0 = in->my_units[lu].col;
+        if (sr0 >= 0 && sr0 < N && sc0 >= 0 && sc0 < N) {
+            int cb = sc0 - 2 < 0 ? 0 : (sc0 - 2 > N - 5 ? N - 5 : sc0 - 2);
+            rb_oks[lu] = 1; rb_cbs[lu] = cb;
+#ifdef NS3ROWS
+#pragma GCC unroll 3
+            for (int i = 1; i < 4; ++i) {
+                int rr = sr0 - 2 + i;
+                int cr = rr < 0 ? 0 : (rr > N - 1 ? N - 1 : rr);
+                rowbuf[i] = _mm256_loadu_si256((const __m256i*)&in->grid[cr][cb]);
+            }
+            rowbuf[0] = rowbuf[4] = _mm256_set1_epi32(-5);   // 视为雾
+#else
+#pragma GCC unroll 5
+            for (int i = 0; i < 5; ++i) {
+                int rr = sr0 - 2 + i;
+                int cr = rr < 0 ? 0 : (rr > N - 1 ? N - 1 : rr);
+                rowbuf[i] = _mm256_loadu_si256((const __m256i*)&in->grid[cr][cb]);
+            }
 #endif
         }
     }
-    for (int i = 0; i < in->num_visible_npcs && i < MAX_NPCS; ++i) {
-        int r = in->visible_npcs[i].pos.row, c = in->visible_npcs[i].pos.col;
-        if (r >= 0 && r < N && c >= 0 && c < N && g_m.nn < 8) {
-            g_m.nr[g_m.nn] = (int8_t)r; g_m.nc[g_m.nn] = (int8_t)c; ++g_m.nn;
-        }
+#endif
+    if (in->round <= g_s.last_round) {           // 新局
+        memset(&g_s, 0, sizeof(g_s));
+        g_s.bp[0] = g_s.bp[N + 1] = ~0u;
+        for (int r = 0; r < N; ++r) g_s.bp[r + 1] = 0xFFFC0001u;
+    }
+    g_s.last_round = (int16_t)in->round;
+    if (in->round % 20 == 0 && g_s.banybomb) {   // 炸弹波: 位图记忆即弃(有弹才清)
+        for (int r = 0; r < N; ++r) g_s.bp[r + 1] &= ~(g_s.bombbit[r] << 1);
+        memset(g_s.bombbit, 0, sizeof(g_s.bombbit));
+        g_s.banybomb = 0;
     }
 
-#if defined(PROBE_LEVEL) && PROBE_LEVEL == 1
-    return SAFE_OUT;                       // 只测 update+marks
-#endif
-#if defined(PROBE_LEVEL) && PROBE_LEVEL == 3
-    for (int u2 = 0; u2 < 2; ++u2) {       // 测 update+marks+DFS(直读版)
-        g_cur_unit = u2;
-        int sr2 = in->my_units[u2].row, sc2 = in->my_units[u2].col;
-        if (sr2 < 0 || sr2 >= N || sc2 < 0 || sc2 >= N) continue;
-        int tmp3[3];
-        g_mini.run(in, sr2, sc2, in->my_units_gold[u2], tmp3);
-    }
-    return SAFE_OUT;
-#endif
     GameOutput out = SAFE_OUT;
-    int stale = 0, cells = 0;
 
+    // ===== 扫描: 纯掩码(v39) (轮换=仅主动; 双扫=背靠背 MLP) =====
+    uint32_t goldms[2] = {0, 0};
+    // 直读工具: 界内取 grid 值(负值=雾/墙/弹, 用者自行钳 0), 界外=0
+    auto gv = [in](int r, int c) -> int {
+        unsigned ok = ((unsigned)r < (unsigned)N) & ((unsigned)c < (unsigned)N);
+        int v = in->grid[r & -(int)ok][c & -(int)ok];
+        return v & -(int)ok;
+    };
+    for (int su = 0; su < 2; ++su) {
+        uint32_t goldm = 0;
+        if (active >= 0 && su != active) continue;
+        int sr = in->my_units[su].row, sc = in->my_units[su].col;
+        if (sr >= 0 && sr < N && sc >= 0 && sc < N) {
+#if defined(__AVX2__)
+            const __m256i* rowbuf = rowbufs[su];
+            int rb_cb = rb_cbs[su];
+            if (rb_oks[su]) {
+                const __m256i vz = _mm256_setzero_si256();
+                const __m256i vm1 = _mm256_set1_epi32(-1);
+                const __m256i vm3 = _mm256_set1_epi32(-3);
+                int cb = rb_cb;
+                int lsh = 2 + (sc - 2 - cb);
+                int lo = sc - 2 < 0 ? -(sc - 2) : 0;
+                int hix = sc + 2 > N - 1 ? sc + 2 - (N - 1) : 0;
+                uint32_t colv = ((31u >> hix) & (31u << lo)) & 31u;
+                uint32_t wallm = 0, bombm = 0, validm = 0;
+#pragma GCC unroll 5
+                for (int i = 0; i < 5; ++i) {
+                    int rr = sr - 2 + i;
+                    uint32_t rowok = (uint32_t)0 - ((unsigned)rr < (unsigned)N);
+                    __m256i vrow = rowbuf[i];
+                    uint32_t g8 = (uint32_t)_mm256_movemask_ps(_mm256_castsi256_ps(
+                        _mm256_cmpgt_epi32(vrow, vz)));
+                    uint32_t w8 = (uint32_t)_mm256_movemask_ps(_mm256_castsi256_ps(
+                        _mm256_cmpeq_epi32(vrow, vm1)));
+                    uint32_t b8 = (uint32_t)_mm256_movemask_ps(_mm256_castsi256_ps(
+                        _mm256_cmpeq_epi32(vrow, vm3)));
+                    uint32_t rv = colv & rowok;
+                    goldm  |= ((((g8 << 2) >> lsh) & 31u) & rv) << (i * 5);
+                    wallm  |= ((((w8 << 2) >> lsh) & 31u) & rv) << (i * 5);
+                    bombm  |= ((((b8 << 2) >> lsh) & 31u) & rv) << (i * 5);
+                    validm |= rv << (i * 5);
+                }   // (v39: wv7 数值缓冲已砍 —— 打分对稀疏金格直读 grid, L1 已热)
+                wallm &= validm;
+                if (wallm) {                       // 墙并入 bp
+                    int r0 = sr - 2 < 0 ? 0 : sr - 2;
+                    int r1 = sr + 2 >= N ? N - 1 : sr + 2;
+                    int c0 = sc - 2 < 0 ? 0 : sc - 2;
+                    for (int r = r0; r <= r1; ++r) {
+                        int b5 = (r - sr + 2) * 5 + 2 - sc;
+                        uint32_t slice = ((wallm >> (b5 + c0)) & 31u) << c0;
+                        g_s.bp[r + 1] |= slice << 1;
+                    }
+                }
+                if (bombm) {                       // 弹并入位图(无列表)
+                    uint32_t bm = bombm;
+                    while (bm) {
+                        int i = __builtin_ctz(bm); bm &= bm - 1;
+                        int br = sr - 2 + i / 5, bc = sc - 2 + i % 5;
+                        g_s.bombbit[br] |= 1u << bc;
+                        g_s.bp[br + 1] |= 1u << (bc + 1);
+                        g_s.banybomb = 1;
+                    }
+                }
+#ifndef NS3MIN
+                {   // 矿堆登记(v36/v39): 窗口内 v>=5 记(直读 grid)
+                    uint32_t gm = goldm;
+                    while (gm) {
+                        int i = __builtin_ctz(gm); gm &= gm - 1;
+                        int v = gv(sr - 2 + i / 5, sc - 2 + i % 5);
+                        if (v >= 5) {
+                            int gr_ = sr - 2 + i / 5, gc_ = sc - 2 + i % 5;
+                            int k = pileSlot(gr_, gc_);
+                            g_s.pr_[k] = (int8_t)gr_; g_s.pc_[k] = (int8_t)gc_;
+                            g_s.pv_[k] = (uint8_t)v;  g_s.ps_[k] = nowq();
+                            g_s.plive |= (uint16_t)(1u << k);
+                        }
+                    }
+                }
+#endif
+            }
+#else
+            {   // 标量参考路径(本机测试用)
+                for (int i = 0; i < 5; ++i) {
+                    int rr = sr - 2 + i;
+                    if ((unsigned)rr >= (unsigned)N) continue;
+                    for (int j = 0; j < 5; ++j) {
+                        int cc = sc - 2 + j;
+                        if ((unsigned)cc >= (unsigned)N) continue;
+                        int v = in->grid[rr][cc];
+                        int b = i * 5 + j;
+                        if (v > 0) goldm |= 1u << b;
+                        if (v == -1) g_s.bp[rr + 1] |= 1u << (cc + 1);
+                        if (v == -3) {
+                            g_s.bombbit[rr] |= 1u << cc;
+                            g_s.bp[rr + 1] |= 1u << (cc + 1);
+                        }
+                    }
+                }
+            }
+#endif
+        }
+        goldms[su] = goldm;
+    }
+
+#ifdef NS3VP
+    if (g_s.vbought) {                 // 7x7 外环探针: 只为找堆(pileNote), 不动主机器
+        g_s.vbought = 0;
+        for (int su = 0; su < 2; ++su) {
+            int sr = in->my_units[su].row, sc = in->my_units[su].col;
+            if ((unsigned)sr >= (unsigned)N) continue;
+            for (int k = -3; k <= 3; ++k) {       // 上下两行 + 左右两列
+                int v1_ = gv(sr - 3, sc + k), v2_ = gv(sr + 3, sc + k);
+                if (v1_ >= 5) { int gr_ = sr - 3, gc_ = sc + k; int q = pileSlot(gr_, gc_);
+                    g_s.pr_[q]=(int8_t)gr_; g_s.pc_[q]=(int8_t)gc_; g_s.pv_[q]=(uint8_t)v1_; g_s.ps_[q]=nowq(); g_s.plive|=(uint16_t)(1u<<q); }
+                if (v2_ >= 5) { int gr_ = sr + 3, gc_ = sc + k; int q = pileSlot(gr_, gc_);
+                    g_s.pr_[q]=(int8_t)gr_; g_s.pc_[q]=(int8_t)gc_; g_s.pv_[q]=(uint8_t)v2_; g_s.ps_[q]=nowq(); g_s.plive|=(uint16_t)(1u<<q); }
+                if (k >= -2 && k <= 2) {
+                    int v3_ = gv(sr + k, sc - 3), v4_ = gv(sr + k, sc + 3);
+                    if (v3_ >= 5) { int gr_ = sr + k, gc_ = sc - 3; int q = pileSlot(gr_, gc_);
+                        g_s.pr_[q]=(int8_t)gr_; g_s.pc_[q]=(int8_t)gc_; g_s.pv_[q]=(uint8_t)v3_; g_s.ps_[q]=nowq(); g_s.plive|=(uint16_t)(1u<<q); }
+                    if (v4_ >= 5) { int gr_ = sr + k, gc_ = sc + 3; int q = pileSlot(gr_, gc_);
+                        g_s.pr_[q]=(int8_t)gr_; g_s.pc_[q]=(int8_t)gc_; g_s.pv_[q]=(uint8_t)v4_; g_s.ps_[q]=nowq(); g_s.plive|=(uint16_t)(1u<<q); }
+                }
+            }
+        }
+    }
+#endif
+    // ===== 双单位决策(共用代码; 被动 goldm 视为 0) =====
+#ifdef NS3VP
+    unsigned g_blind = 1;   // 双单位均纯巡游 = 盲轮
+#endif
     for (int u = 0; u < 2; ++u) {
         int sr = in->my_units[u].row, sc = in->my_units[u].col;
         int* acts = out.actions + u * 3;
         acts[0] = acts[1] = acts[2] = STAY;
         if (sr < 0 || sr >= N || sc < 0 || sc >= N) continue;
-
-        g_cur_unit = u;
-        // 队友占位(自撞=浪费步)
         int tr = in->my_units[1 - u].row, tc = in->my_units[1 - u].col;
-        int saved_bn = g_m.bn;
-        if (tr >= 0 && tr < N && tc >= 0 && tc < N && g_m.bn < 8) {
-            g_m.br[g_m.bn] = (int8_t)tr; g_m.bc[g_m.bn] = (int8_t)tc; ++g_m.bn;
+        const int act_ = (active < 0) | (u == active);
+#if !defined(NS3NOPLAN) && !defined(NS3MIN)
+        if (!act_ && g_s.plan_ok[u]) {           // v37: 被动轮回放缓存计划
+            acts[0] = g_s.plan[u][0];
+            acts[1] = g_s.plan[u][1];
+            acts[2] = g_s.plan[u][2];
+            g_s.plan_ok[u] = 0;
+            g_s.last_r[u] = (int8_t)sr; g_s.last_c[u] = (int8_t)sc;
+            continue;
+        }
+#endif
+        uint32_t gm0 = goldms[u] & (uint32_t)(0 - act_);
+
+        // 采集打分(簇加成): 只走置位金格
+        constexpr int8_t MD[25] = {4,3,2,3,4, 3,2,1,2,3, 2,1,0,1,2,
+                                   3,2,1,2,3, 4,3,2,3,4};
+        int bestr = -1, bestc = -1, bests = 0;
+        int gn_ = 0;
+        {
+            uint32_t gm = gm0;
+            while (gm) {
+                int i = __builtin_ctz(gm); gm &= gm - 1;
+                ++gn_;
+                int gr_ = sr - 2 + i / 5, gc_ = sc - 2 + i % 5;
+                int v = gv(gr_, gc_);
+#ifdef NS3NONB
+                int sc_ = v * REC[MD[i]];        // 簇加成砍除实验
+#else
+                int nu = gv(gr_ - 1, gc_), nd2 = gv(gr_ + 1, gc_);
+                int nl = gv(gr_, gc_ - 1), nr2 = gv(gr_, gc_ + 1);
+                int nb = (nu > 0 ? nu : 0) + (nd2 > 0 ? nd2 : 0) +
+                         (nl > 0 ? nl : 0) + (nr2 > 0 ? nr2 : 0);
+                int sc_ = (v * 2 + nb) * REC[MD[i]];
+#endif
+                if (sc_ > bests) {
+                    bests = sc_; bestr = gr_; bestc = gc_;
+                }
+            }
         }
 
-#ifdef EXPRESS
-        // 快车道: 有有效行程 且 视野窗口(输入直读)无金 -> 跳过补丁+DFS
-        if (g_plan[u].is_gold == 2 || (g_plan[u].len > 0 && g_plan[u].pos < g_plan[u].len)) {
-            bool any_gold = false;
-            int wr0 = sr - 2 < 0 ? 0 : sr - 2, wr1 = sr + 2 >= N ? N - 1 : sr + 2;
-            int wc0 = sc - 2 < 0 ? 0 : sc - 2, wc1 = sc + 2 >= N ? N - 1 : sc + 2;
-            for (int r2 = wr0; r2 <= wr1 && !any_gold; ++r2)
-                for (int c2 = wc0; c2 <= wc1; ++c2)
-                    if (in->grid[r2][c2] >= 1) { any_gold = true; break; }
-            if (!any_gold) {
-                if (steerCached(u, sr, sc, acts)) { g_m.bn = saved_bn; continue; }
-                if (followPlan(u, sr, sc, acts)) { g_m.bn = saved_bn; continue; }
-            }
-        }
-#endif
-        int gain;
-        int wg = g_w.wgold_n[u];
-        if (wg == 0) {
-            PROF_FLAG(256);
-            gain = 0;                                // 窗口无金: 直接走计划/目标机器
-            acts[0] = acts[1] = acts[2] = STAY;
-        } else if (wg == 1 && !g_w.bomb(g_w.wgold_r[u], g_w.wgold_c[u]) &&
-                   !g_m.claimed(g_w.wgold_r[u], g_w.wgold_c[u])) {
-            PROF_FLAG(512);
-            PROF_FLAG(2);
-            gain = singleGold(in, sr, sc, g_w.wgold_r[u], g_w.wgold_c[u], acts);
-            if (gain == 0) {
-                PROF_FLAG(1);
-                gain = g_mini.run(in, sr, sc, in->my_units_gold[u], acts);
-            }
-        } else {
-            PROF_FLAG(1024);
-            int mind = 99;
-            for (int i2 = 0; i2 < g_w.wgold_n[u] && i2 < 8; ++i2) {
-                int dd = (g_w.wg_r[u][i2] > sr ? g_w.wg_r[u][i2] - sr : sr - g_w.wg_r[u][i2]) +
-                         (g_w.wg_c[u][i2] > sc ? g_w.wg_c[u][i2] - sc : sc - g_w.wg_c[u][i2]);
-                if (dd < mind) mind = dd;
-            }
-#ifndef NOCANDEVAL
-            if (mind >= 2) {                          // 接近型: 候选评估代替盲 DFS
-                PROF_FLAG(2048);
-                gain = candEval(in, u, sr, sc, acts);
-                if (gain == 0) {                      // 全部被挡/够不到: 回退
-                    PROF_FLAG(1);
-                    gain = g_mini.run(in, sr, sc, in->my_units_gold[u], acts);
-                }
-            } else
-#endif
-            {
-                PROF_FLAG(1);
-                (void)mind;
-                gain = g_mini.run(in, sr, sc, in->my_units_gold[u], acts);
-            }
-        }
-        (void)stale; (void)cells;
-        if (gain > 0) {
-            PROF_FLAG(128);
-            g_plan[u].len = 0;                    // 就地开采, BFS 路径作废(位置将偏移)
-#ifdef NOSTICKY
-            g_plan[u].is_gold = 0;                // 旧行为: 导向目标一并作废(对照用)
-#endif
-            // 粘性导向(默认): is_gold==2 的导向目标保留(steerCached 自带校验),
-            // 采集结束后直接续走, 免掉 pick+gBFS 重建(profiling: 缓存命中率 11%->?)
-            int r = sr, c = sc;
-            for (int i = 0; i < 3; ++i) {
-                int nrr = r + DR[acts[i]], ncc = c + DC[acts[i]];
-                if (acts[i] != STAY && nrr >= 0 && nrr < N && ncc >= 0 && ncc < N &&
-                    !g_w.wall(nrr, ncc) && !g_m.blocked(nrr, ncc)) {
-                    r = nrr; c = ncc;
-                    g_m.claim(r, c);
-                }
-            }
-#if defined(PROBE_LEVEL) && (PROBE_LEVEL == 5 || PROBE_LEVEL == 6)
-        } else {  // 探针: 目标层砍除, 用轮转走位保持巡图(状态分布接近实战)
-            int a = (g_w.round / 4 + u * 2) & 3;
+#ifdef NS3PROBE
+        {   (void)bests; (void)gn_;
+            int a = (in->round / 4 + u * 2) & 3;
             acts[0] = acts[1] = acts[2] = a;
-        }
-#else
-#ifdef OPENING
-        } else if (in->round < 12 && g_w.gn == 0 && g_local.best_score == 0 &&
-                   openingSprint(u, sr, sc, acts)) {
-#endif
-        } else if (steerCached(u, sr, sc, acts)) {   // 导向目标缓存命中: 最廉价路径
-            PROF_FLAG(4);
-        } else if (followPlan(u, sr, sc, acts)) {
-            PROF_FLAG(8);
-        } else {                                     // 目标层: 扫列表(+可能 BFS)
-            PROF_FLAG(16);
-            int alt_ = -1;
-            int gi_ = pickGoldTarget(in, sr, sc, &alt_);
-            bool steered = false;
-            if (gi_ >= 0) {
-                int gtr = gi_ / N, gtc = gi_ % N;
-                int r = sr, c = sc;
-                steered = true;
-                for (int i = 0; i < 3 && !(r == gtr && c == gtc); ++i) {
-                    int a = steerStep(r, c, gtr, gtc);
-                    if (a < 0) { steered = false; break; }
-                    acts[i] = a;
-                    r += DR[a]; c += DC[a];
-                }
-                if (steered) {
-                    g_m.claim(gtr, gtc);
-                    Plan& p = g_plan[u];        // 缓存导向目标(不存路径)
-                    p.len = 0; p.is_gold = 2;
-                    p.tr = (int8_t)gtr; p.tc = (int8_t)gtc;
-                    p.born = (uint16_t)g_w.round;
-                    if (alt_ >= 0) {            // 备胎(第二名)顺带入库
-                        p.alt_tr = (int8_t)(alt_ / N);
-                        p.alt_tc = (int8_t)(alt_ % N);
-                        p.alt_born = (uint16_t)g_w.round;
-                    } else p.alt_born = 0;
-                } else acts[0] = acts[1] = acts[2] = STAY;
-            }
-            int ttr = -1, ttc = -1;
-            if (steered) {
-            } else if (PROF_FLAG(32), globalTarget(in, sr, sc, acts, &ttr, &ttc)) {
-                storePlan(u, sr, sc, ttr, ttc, true);
-                g_plan[u].pos = 3 <= g_plan[u].len ? 3 : g_plan[u].len;  // 本轮已执行前3步
-                { int r = sr, c = sc;
-                  for (int i = 0; i < g_plan[u].pos; ++i) { r += DR[(int)g_plan[u].acts[i]]; c += DC[(int)g_plan[u].acts[i]]; }
-                  g_plan[u].er = (int8_t)r; g_plan[u].ec = (int8_t)c; }
-            } else {
-                PROF_FLAG(64);
-                explore(sr, sc, acts, &ttr, &ttc);
-                if (ttr >= 0) {
-                    storePlan(u, sr, sc, ttr, ttc, false);
-                    g_plan[u].pos = 3 <= g_plan[u].len ? 3 : g_plan[u].len;
-                    int r = sr, c = sc;
-                    for (int i = 0; i < g_plan[u].pos; ++i) { r += DR[(int)g_plan[u].acts[i]]; c += DC[(int)g_plan[u].acts[i]]; }
-                    g_plan[u].er = (int8_t)r; g_plan[u].ec = (int8_t)c;
-                }
-            }
+            continue;
         }
 #endif
-#if !(defined(PROBE_LEVEL) && PROBE_LEVEL == 5)
-        // 尾步填充: 尾部 STAY 若有相邻金格(未认领), 改为进入它
+        // 目标 = 窗口最优金格 > 活矿堆(u1 矿堆农) > 巡游路点
+        // v47: 三候选无条件计算 + 掩码级联(消 4 分支位点/单位)
+        int tgr, tgc;
         {
+            int bi = -1;
+#ifndef NS3MIN
+            if (bestr < 0 && g_s.plive) {   // 门控=省功(v47 无条件跑 +300ops 判负)
+                int bsc = 0;
+                uint8_t tq = nowq();
+                uint32_t lm = g_s.plive;
+                while (lm) {
+                    int k = __builtin_ctz(lm); lm &= lm - 1;
+                    int fresh = -(int)((uint8_t)(tq - g_s.ps_[k]) <= 10);  // ~40轮
+                    g_s.plive &= (uint16_t)~(((~fresh) & 1) << k);         // 过期顺手清
+                    int dr_ = g_s.pr_[k] - sr, dc_ = g_s.pc_[k] - sc;
+                    dr_ = dr_ < 0 ? -dr_ : dr_; dc_ = dc_ < 0 ? -dc_ : dc_;
+                    int d_ = dr_ + dc_; d_ = d_ > 31 ? 31 : d_;
+                    int sc2 = (g_s.pv_[k] * (64 - d_ * 2)) & fresh;
+                    unsigned cen = ((unsigned)(g_s.pr_[k] - 4) <= 8u) &
+                                   ((unsigned)(g_s.pc_[k] - 4) <= 8u);
+                    sc2 &= -(int)((u == 1) | cen);
+                    int gt = -(int)(sc2 > bsc);
+                    bsc = (sc2 & gt) | (bsc & ~gt);
+                    bi = (k & gt) | (bi & ~gt);
+                }
+            }
+#endif
+            // 巡游路点(无条件推进逻辑: 掩码化)
+            uint8_t& pi = g_s.patrol[u];
+            unsigned here = (unsigned)((sr == PRW[u][pi]) & (sc == PCW[u][pi]));
+            pi = (uint8_t)((pi + here) & 3);
+            // 掩码级联: 窗口金 > 矿堆 > 路点
+            int mw = -(int)(bestr >= 0);
+            int mp = -(int)(bi >= 0) & ~mw;
+#ifdef NS3VP
+            g_blind &= (unsigned)(~(mw | mp)) & 1u;   // 该单位有金/堆则非盲
+#endif
+            int pilr = g_s.pr_[bi & 15], pilc = g_s.pc_[bi & 15];
+            tgr = (bestr & mw) | (pilr & mp) | (PRW[u][pi] & ~mw & ~mp);
+            tgc = (bestc & mw) | (pilc & mp) | (PCW[u][pi] & ~mw & ~mp);
+            // 到达矿堆目标 -> 摘除(掩码化)
+            unsigned atp = (unsigned)((sr == tgr) & (sc == tgc)) & (unsigned)(mp & 1);
+            g_s.pv_[bi & 15] &= (uint8_t)(atp - 1u);
+            g_s.plive &= (uint16_t)~((atp & 1u) << (bi & 15));
+        }
+        {
+            int d = (tgr > sr ? tgr - sr : sr - tgr) +
+                    (tgc > sc ? tgc - sc : sc - tgc);
+            if (d == 0) {                          // 站上目标(金格或锚点): 折返
+#ifdef NS3BARE
+                ;
+#else
+                unsigned pm = pass01(sr - 1, sc, tr, tc) |
+                              (pass01(sr + 1, sc, tr, tc) << 1) |
+                              (pass01(sr, sc - 1, tr, tc) << 2) |
+                              (pass01(sr, sc + 1, tr, tc) << 3);
+                if (pm) {
+                    int a = __builtin_ctz(pm);
+                    acts[0] = a; acts[1] = a ^ 1;
+                }
+#endif
+            } else {
+#ifdef NS3LUT
+                // 直线快路径: 轴差>=3 时前 3 步必同向; 3 格直线包络精确查 bp
+                {
+                    int dr0 = tgr - sr, dc0 = tgc - sc;
+                    int adr0 = dr0 < 0 ? -dr0 : dr0, adc0 = dc0 < 0 ? -dc0 : dc0;
+                    int sgr = dr0 > 0 ? 1 : -1, sgc = dc0 > 0 ? 1 : -1;
+                    if (adr0 >= adc0 + 3) {
+                        unsigned ok = pass01(sr + sgr, sc, tr, tc) &
+                                      pass01(sr + 2 * sgr, sc, tr, tc) &
+                                      pass01(sr + 3 * sgr, sc, tr, tc);
+                        if (ok) {
+                            int a = dr0 > 0 ? 1 : 0;
+                            acts[0] = acts[1] = acts[2] = a;
+                            g_s.last_r[u] = (int8_t)sr; g_s.last_c[u] = (int8_t)sc;
+                            goto steer_fast;
+                        }
+                    } else if (adc0 >= adr0 + 3) {
+                        unsigned ok = pass01(sr, sc + sgc, tr, tc) &
+                                      pass01(sr, sc + 2 * sgc, tr, tc) &
+                                      pass01(sr, sc + 3 * sgc, tr, tc);
+                        if (ok) {
+                            int a = dc0 > 0 ? 3 : 2;
+                            acts[0] = acts[1] = acts[2] = a;
+                            g_s.last_r[u] = (int8_t)sr; g_s.last_c[u] = (int8_t)sc;
+                            goto steer_fast;
+                        }
+                    }
+                }
+#endif
+                int r = sr, c = sc, n = 0;
+                int pr = g_s.last_r[u], pc = g_s.last_c[u];
+#pragma GCC unroll 3
+                for (int i = 0; i < 3; ++i) {
+                    int notdone = (int)((r != tgr) | (c != tgc));
+                    int a = steerStep(r, c, tgr, tgc, tr, tc, pr, pc);
+                    int m = -(notdone & (int)(a >= 0));
+                    acts[i] = (a & m) | (STAY & ~m);
+                    int nr = r + DR[acts[i]], nc = c + DC[acts[i]];
+                    pr = (r & m) | (pr & ~m);
+                    pc = (c & m) | (pc & ~m);
+                    r = (nr & m) | (r & ~m);
+                    c = (nc & m) | (c & ~m);
+                    n -= m;
+                }
+                int arrived = (int)((r == tgr) & (c == tgc));
+                if (arrived & (int)(bestr >= 0)) {
+                    if (n > 0 && n < 3) {          // 早到金格: 退一步/双吃回进
+                        acts[n] = acts[n - 1] ^ 1;
+                        if (n + 1 < 3) acts[n + 1] = acts[n] ^ 1;
+                    }
+                }
+            }
+#ifdef NS3LUT
+            steer_fast:;
+#endif
+        }
+
+        // 尾步填充(复用 wv7; 被动 gn_=0 自动跳过)
+#ifdef NS3FILL0
+        if (0) {
+#else
+        if (gn_ > 0) {
+#endif
             int r = sr, c = sc;
             for (int i = 0; i < 3; ++i) {
                 if (acts[i] == STAY) {
-                    int besta = -1, bestv = 0;
-                    for (int a2 = 0; a2 < 4; ++a2) {
-                        int rr = r + DR[a2], cc2 = c + DC[a2];
-                        if (rr < 0 || rr >= N || cc2 < 0 || cc2 >= N) continue;
-                        if (g_w.wall(rr, cc2) || g_w.bomb(rr, cc2) || g_m.blocked(rr, cc2)) continue;
-                        if (g_m.npcs(rr, cc2) >= 3) continue;
-                        int v = g_w.gold(rr, cc2);
-                        if (v > bestv && !g_m.claimed(rr, cc2)) { bestv = v; besta = a2; }
+                    int besta = -1, bv = 0;
+#pragma GCC unroll 4
+                    for (int a = 0; a < 4; ++a) {
+                        int nr = r + DR[a], nc = c + DC[a];
+                        int ur = nr - sr + 3, uc = nc - sc + 3;
+                        unsigned inw = ((unsigned)ur <= 6u) & ((unsigned)uc <= 6u);
+                        (void)inw;
+                        int v = gv(nr, nc);
+                        int okm = -(int)(inw & (unsigned)(v > bv) &
+                                         (unsigned)!(nr == tr && nc == tc));
+                        bv = (v & okm) | (bv & ~okm);
+                        besta = (a & okm) | (besta & ~okm);
                     }
-                    if (besta >= 0) {
-                        acts[i] = besta;
-                        g_plan[u].len = 0;      // 偏离计划, 作废防错位
-                    }
+                    acts[i] = besta >= 0 ? besta : acts[i];
                 }
-                int nrr = r + DR[acts[i]], ncc = c + DC[acts[i]];
-                if (acts[i] != STAY && nrr >= 0 && nrr < N && ncc >= 0 && ncc < N &&
-                    !g_w.wall(nrr, ncc) && !g_m.blocked(nrr, ncc)) {
-                    r = nrr; c = ncc;
-                    if (g_w.gold(r, c) > 0) g_m.claim(r, c);
-                }
+                int nr = r + DR[acts[i]], nc = c + DC[acts[i]];
+                unsigned inb = ((unsigned)nr < (unsigned)N) &
+                               ((unsigned)nc < (unsigned)N);
+                int ri_ = nr & -(int)inb, ci_ = nc & -(int)inb;
+                unsigned w_ = ((g_s.bp[ri_ + 1] >> (ci_ + 1)) &
+                               ~(g_s.bombbit[ri_] >> ci_)) & 1u;
+                int m = -(int)((unsigned)(acts[i] != STAY) & inb & (w_ ^ 1u));
+                r = (nr & m) | (r & ~m); c = (nc & m) | (c & ~m);
             }
         }
-        // 防漂移(实测 6 局被炸 25 次的主因): 引擎对被挡的步只跳过、后续步照走,
-        // (探针 P5 时随尾步填充一起砍除)
-        // 落点会整体偏移一格。可信的阻挡场景下, 后续落点若是已知炸弹就从该步截断。
-        // 可信 = 被挡步目标是雾, 或 3 格内有可见 NPC/单位(动态实体一轮能走 3 步)。
-        // 无门控版触发 93 次/局(实际事件 ~4 次), 基线 -300; 门控是必需的。
-        // 持币 300+: 单次被炸 ≥30 金 >> 截断浪费的 1-2 步(~3-6 金), 期望明确为正;
-        // 低持币时期望反而为负, 不做。
-        if (in->my_units_gold[u] >= 300) {
-            for (int blk = 0; blk < 3; ++blk) {
-                if (acts[blk] == STAY) continue;
-                int br2 = sr, bc2 = sc;                    // 被挡步的出发点
-                {
-                    int r = sr, c = sc;
-                    for (int i = 0; i < blk; ++i) {
-                        int nrr = r + DR[acts[i]], ncc = c + DC[acts[i]];
-                        if (acts[i] != STAY && nrr >= 0 && nrr < N && ncc >= 0 &&
-                            ncc < N && !g_w.wall(nrr, ncc)) { r = nrr; c = ncc; }
-                    }
-                    br2 = r + DR[acts[blk]]; bc2 = c + DC[acts[blk]];
-                }
-                if (br2 < 0 || br2 >= N || bc2 < 0 || bc2 >= N) continue;
-                bool plausible = g_w.cell[br2][bc2].known == FOG;
-                for (int i2 = 0; i2 < g_m.nn && !plausible; ++i2) {
-                    int dr2 = g_m.nr[i2] - br2, dc2 = g_m.nc[i2] - bc2;
-                    if ((dr2 < 0 ? -dr2 : dr2) <= 3 && (dc2 < 0 ? -dc2 : dc2) <= 3)
-                        plausible = true;
-                }
-                for (int i2 = 0; i2 < g_m.bn && !plausible; ++i2) {
-                    int dr2 = g_m.br[i2] - br2, dc2 = g_m.bc[i2] - bc2;
-                    if ((dr2 < 0 ? -dr2 : dr2) <= 3 && (dc2 < 0 ? -dc2 : dc2) <= 3)
-                        plausible = true;
-                }
-                if (!plausible) continue;
-                int r = sr, c = sc;
-                for (int i = 0; i < 3; ++i) {
-                    if (acts[i] == STAY) continue;
-                    int nrr = r + DR[acts[i]], ncc = c + DC[acts[i]];
-                    if (i == blk || nrr < 0 || nrr >= N || ncc < 0 || ncc >= N ||
-                        g_w.wall(nrr, ncc)) continue;      // 该步被挡/无效: 原地
-                    if (g_w.bomb(nrr, ncc)) {
-                        for (int j = i; j < 3; ++j) acts[j] = STAY;
-                        g_plan[u].len = 0;                 // 截断后计划错位, 作废
-                        break;
-                    }
-                    r = nrr; c = ncc;
-                }
+
+#if !defined(NS3NOPLAN) && !defined(NS3MIN)
+        if (act_) {                              // v37: 预算下轮 3 步(缓存计划)
+            int r = sr, c = sc;
+            for (int i = 0; i < 3; ++i) {        // 本轮走完后的终点
+                int a = acts[i];
+                int nr = r + DR[a], nc = c + DC[a];
+                unsigned ok = (~(g_s.bp[nr + 1] >> (nc + 1)) & 1u) |
+                              (unsigned)(a == STAY);
+                int m = -(int)ok;
+                r = (nr & m) | (r & ~m); c = (nc & m) | (c & ~m);
             }
+            int pr2 = sr, pc2 = sc, n2 = 0;
+#pragma GCC unroll 3
+            for (int i = 0; i < 3; ++i) {
+                int notdone = (int)((r != tgr) | (c != tgc));
+                int a = steerStep(r, c, tgr, tgc, tr, tc, pr2, pc2);
+                int m = -(notdone & (int)(a >= 0));
+                g_s.plan[u][i] = (int8_t)((a & m) | (STAY & ~m));
+                int nr = r + DR[g_s.plan[u][i]], nc = c + DC[g_s.plan[u][i]];
+                pr2 = (r & m) | (pr2 & ~m); pc2 = (c & m) | (pc2 & ~m);
+                r = (nr & m) | (r & ~m); c = (nc & m) | (c & ~m);
+                n2 -= m;
+            }
+            (void)n2;
+            g_s.plan_ok[u] = 1;
         }
 #endif
-        g_m.bn = saved_bn;
+#ifndef NS3BARE
+        // 卡死解困
+        unsigned same = (unsigned)((sr == g_s.last_r[u]) &
+                                   (sc == g_s.last_c[u]) & (acts[0] == STAY));
+        g_s.stuck[u] = (uint8_t)((g_s.stuck[u] + same) & (0u - same));
+        if (g_s.stuck[u] >= 2) stuckEscape(u, sr, sc, tr, tc, acts);
+#endif
+        g_s.last_r[u] = (int8_t)sr; g_s.last_c[u] = (int8_t)sc;
+
+        // 防漂移护栏: 近弹预筛(行位图 7 行并查, 无列表)
+#if defined(NS3BARE)
+        if (0) {
+#elif defined(NS3GUARD1)
+        if (act_ && g_s.banybomb && in->my_units_gold[u] >= 300) {
+#else
+        if (g_s.banybomb && in->my_units_gold[u] >= 300) {
+#endif
+            uint32_t near_ = 0;
+#pragma GCC unroll 7
+            for (int dr2 = -3; dr2 <= 3; ++dr2) {
+                int rr = sr + dr2;
+                unsigned okr = (unsigned)rr < (unsigned)N;
+                near_ |= g_s.bombbit[rr & -(int)okr] & (0u - okr);
+            }
+            if (near_) {
+                for (int blk = 0; blk < 3; ++blk) {
+                    if (acts[blk] == STAY) continue;
+                    int r = sr, c = sc;
+                    for (int i = 0; i < 3; ++i) {
+                        int nrr = r + DR[acts[i]], ncc = c + DC[acts[i]];
+                        unsigned inb = ((unsigned)nrr < (unsigned)N) &
+                                       ((unsigned)ncc < (unsigned)N);
+                        int ri = nrr & -(int)inb, ci = ncc & -(int)inb;
+                        unsigned wb_ = ((g_s.bp[ri + 1] >> (ci + 1)) &
+                                        ~(g_s.bombbit[ri] >> ci)) & 1u;
+                        unsigned adv = (unsigned)(acts[i] != STAY) &
+                                       (unsigned)(i != blk) & inb & (wb_ ^ 1u);
+                        if (adv & ((g_s.bombbit[ri] >> ci) & 1u)) {
+                            for (int j = i; j < 3; ++j) acts[j] = STAY;
+                            break;
+                        }
+                        int m = -(int)adv;
+                        r = (nrr & m) | (r & ~m); c = (ncc & m) | (c & ~m);
+                    }
+                }
+            }
+        }
     }
 
     out.k = 3;
     out.order = in->my_units_gold[0] >= in->my_units_gold[1] ? 0 : 1;
-    // cpp21: 视野购买砍掉(A/B 中性 + 顶级选手全不买 + 省 ring 统计的常数)
+#ifdef NS3VP
+    // 盲轮买视野: 两单位都无金无堆(纯巡游)时 vp=1 (2金/轮, 下轮 7x7 找矿堆)
+    // (Convergens 198/啊对对对 119/若叶 72 的视野投资全是正 ROI 的旁证)
+    out.vp = (int)g_blind;
+    g_s.vbought = (uint8_t)g_blind;
+#else
     out.vp = 0;
-    g_w.last_vp = 0;
+#endif
     return out;
 }
 
-// ---------- 边界层：兜底 + 逐字段 clamp，永远不要删 ----------
-GameOutput sanitize(GameOutput o) {
+GameOutput sanitize(GameOutput o) {   // 全 cmov, 零分支位点
     for (int i = 0; i < S; ++i)
-        if (o.actions[i] < 0 || o.actions[i] > 4) o.actions[i] = STAY;
-    if (o.k < 0 || o.k > S) o.k = 3;
-    if (o.order != 0 && o.order != 1) o.order = 0;
-    if (o.vp < 0 || o.vp > 2) o.vp = 0;
+        o.actions[i] = (unsigned)o.actions[i] > 4u ? STAY : o.actions[i];
+    o.k = (unsigned)o.k > 6u ? 3 : o.k;
+    o.order = (unsigned)o.order > 1u ? 0 : o.order;
+    o.vp = (unsigned)o.vp > 2u ? 0 : o.vp;
     return o;
 }
 
@@ -1080,25 +589,8 @@ GameOutput sanitize(GameOutput o) {
 extern "C" GameOutput moveDecision(const GameInput* input) {
     try {
         if (input == nullptr) return SAFE_OUT;
-#ifdef PROFILE
-        if (g_prof.n < 600) {
-            g_prof.flags[g_prof.n] = 0;
-            unsigned long long t0 = profNow();
-            GameOutput o = sanitize(decide(input));
-            g_prof.cyc[g_prof.n] = profNow() - t0;
-            ++g_prof.n;
-            return o;
-        }
-#endif
         return sanitize(decide(input));
     } catch (...) {
         return SAFE_OUT;
     }
 }
-
-#ifdef PROFILE
-extern "C" int profRounds() { return g_prof.n; }
-extern "C" unsigned long long profCyc(int i) { return i >= 0 && i < g_prof.n ? g_prof.cyc[i] : 0; }
-extern "C" int profFlags(int i) { return i >= 0 && i < g_prof.n ? g_prof.flags[i] : 0; }
-extern "C" void profReset() { g_prof.n = 0; }
-#endif

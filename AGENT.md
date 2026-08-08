@@ -9,13 +9,14 @@
 九坤 GoldRush 2.0：17×17 夺金，500 轮，`得分=毛金币−视野费`，延迟决定每轮先手权。
 目标：初赛前 16（晋级决赛）。**关键日期**：报名截止 8.14 · 模拟赛 8.15-16 · 初赛 8.17-21 · 决赛 9.6。
 
-**双轨现役**（详见各轨 CHANGELOG）：
+**双轨现役**（每轨工作区只保留最强一版，退役版本 = git 历史 + 轨 CHANGELOG 档案行）：
 
 | 轨 | 冠军 | 平台战绩 | 用途 |
 |---|---|---|---|
 | `src/speed/v1` | 曾名 v5f | **P50 250-260 / P90 340-400 / 收入 1550-1900**；4/4 扫荡；对第一名先手 249:251 | 提交/对外首选 |
-| `src/strategy/v2` | 曾名 v42 | 700-790ns / **收入 1660-2120** | 收入研究基线 |
-| `src/strategy/v1` | cpp27b | 3.7μs / 2712 | **天梯防守位现役** |
+| `src/strategy/v1` | 曾名 v42（旧号 v2，8.7 版本号重置） | 700-790ns / **收入 1660-2120** | 收入研究基线 |
+
+天梯防守位现挂的 .so 仍是已退役的 cpp27b（3.7μs / 2712，源在 git 历史）——换代评估在开题清单。
 
 天梯头部实测：Tiuntled-1 200-250（同速对撞时与我们同地板）、Tundra 290、rikka 350-400、量衡 570-640。榜显 P90 全体失真，以实测为准。
 
@@ -61,7 +62,7 @@ ssh Ubiquant220@8.153.76.120 'cd ~/goldrush/src/speed/v1 && make'
 4. **unroll 展开 = 静态位点翻倍 = 平台负优化**（三案）。
 5. 执行指令单价 ~0.2ns（perf 差分标定）；位点清到 ~13 后进入吞吐期，唯一税基是执行指令数。
 6. **延迟读数必须配行为体检**：冻结/死锁的单位少跑内存会"假快"（v5n 冻结红利案）。
-7. 轮 0 冷启动 3-4μs 人人都有；轮 0 没人有金，**开局重计算免费**（strategy/v2a 的 A 段依据）。
+7. 轮 0 冷启动 3-4μs 人人都有；轮 0 没人有金，**开局重计算免费**（已退役实验线 v2a 的 A 段依据）。
 8. 对手越重、缓存污染越大，你越慢（对撞局：第一名对我们时从 210 退化到 250）。
 9. 机器窗口漂移 ±50-80ns：**一切 A/B 必须同窗交错 + ≥2-4 局**；单局收入噪声 ±300。
 
@@ -77,9 +78,9 @@ ssh Ubiquant220@8.153.76.120 'cd ~/goldrush/src/speed/v1 && make'
 
 1. **大堆驻留深度**（对撞局破译：与第一名同速同节奏，差距=每口吃多少）——站金轮脚下残值≥邻域最优则继续折返；装在 speed/v1 尾段。
 2. **环内金额平局裁决**装回 speed/v1（r9 标本：等距 {1,6,8} 该拿 8）——注意必须基于 v1 尾段（v5x 案基座污染教训）。
-3. strategy/v2a 修复后平台复测（A 段开局 BFS 的价值已单独证实）。
+3. v2a 实验线复活复测（A 段开局 BFS 的价值已单独证实；含 ctz 修复的源在 git 历史 `git show 2b5a2b0:src/strategy/v2a/player.cpp`）。
 4. 视野触发器三设计（前两版全哑：矿堆喂太忙）。
-5. 天梯防守位换代评估（strategy/v1 已两世代落后）。
+5. 天梯防守位换代评估（现挂 cpp27b 已两世代落后，源在 git 历史）。
 
 ## 7. 仓库结构
 
@@ -87,13 +88,17 @@ ssh Ubiquant220@8.153.76.120 'cd ~/goldrush/src/speed/v1 && make'
 AGENT.md            本手册
 README.md           一页地图
 src/game_api.h      官方接口头（共用）
-src/speed/          速度优先轨: CHANGELOG.md + v1(冠军) v2(210ns储备)
-src/strategy/       策略优先轨: CHANGELOG.md + v1(天梯防守) v2(矿堆农冠军) v2a(时间框架实验)
+src/speed/          速度优先轨: CHANGELOG.md + v1（总冠军: player.cpp + Makefile + LOOP.md）
+src/strategy/       策略优先轨: CHANGELOG.md + v1（矿堆农冠军: player.cpp + Makefile + LOOP.md）
 tests/              replay.py(回放) pair_diff.py(逐位对账) dump_inputs.py bench.cpp game_api.py(mock)
 tools/              gr.py(平台客户端) grlog.py(战报) runbatch.sh(跑批)
 docs/               官方赛制文档（只读）
-archive/            史前原型
-logs/               对局日志（gitignored；最新平铺+archive/）
+logs/               对局日志（gitignored）
 ```
 
-每个版本目录的 Makefile 头注释 = 该版本的战绩档案与精确复现 flags。改版本 → 更新所在轨的 CHANGELOG.md；平台定律新证据 → 更新本文 §4。
+**结构军规**（仓库所有者定的，别破）：
+
+1. **不设 archive 目录**——史前原型与一切旧物只活在 git 历史。
+2. **每轨工作区只保留现役最强一版**。新版夺冠 → 旧冠军 `git rm`，并在轨 CHANGELOG 档案表补一行"退役 + `git show <commit>:<path>` 取用命令"。
+3. 每个在役版本目录必须有 **LOOP.md**（算法流程文档）——改算法必须同步更新。
+4. 每个版本目录的 Makefile 头注释 = 战绩档案与精确复现 flags。改版本 → 更新所在轨 CHANGELOG.md；平台定律新证据 → 更新本文 §4。
