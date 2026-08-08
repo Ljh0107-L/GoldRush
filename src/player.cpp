@@ -51,7 +51,6 @@ struct alignas(64) State {
     uint32_t bombbit[N + 2]; // 炸弹位图(+1 偏移对齐 bpw; 每 20 轮波清)
     int8_t last_r[2], last_c[2];
     int16_t last_round;
-    uint8_t phase;           // u1 巡逻环相位(外圈四角轮转)
     uint8_t mode;
     int8_t map_id;
     uint8_t cand;            // 候选图位掩码(bit m)
@@ -59,7 +58,6 @@ struct alignas(64) State {
     int8_t anch_r[2], anch_c[2];
     uint32_t seen[N];        // 已观测格(bit c+1; 指纹比对掩码)
     uint32_t visited[N];     // 站过的格(bit c+1; 学墙门控)
-    uint8_t flow[4][N * N];  // 流场: flow[k][r*17+c]=去环角k的下一步(锁图/学墙时烘焙)
 };
 State g_s;
 
@@ -78,11 +76,6 @@ constexpr uint32_t BAKED_W[3][N] = {
      0x00003de0u, 0x0000e038u, 0x0000e038u, 0x00000000u, 0x00000000u},
 };
 constexpr uint32_t INTERIOR = 0x0003FFFEu;       // bit 1..17 = c 0..16
-
-// u1 巡逻环(方案B: u0 常驻中心, u1 外圈清扫)。row/col 1 与 15 三图皆无墙,
-// 5×5 视野沿线走可全覆盖 4 条 13×4 边带; 途中见金即吃(盲轮才行军, 主管线原语义)
-constexpr int8_t PWR[4] = {1, 1, 15, 15};        // 顺时针 (1,1)→(1,15)→(15,15)→(15,1)
-constexpr int8_t PWC[4] = {1, 15, 15, 1};
 
 // map1 开局烘焙路线(BFS 最优 4 轮出角; 起点恒 (0,0)/(16,16); 仅 map_id==0 使用)
 constexpr uint8_t ORT_A[2][4][3] = {
@@ -207,49 +200,6 @@ void fixAnchor(int u) {                          // 锚点是墙 → 改指最�
 }
 
 __attribute__((noinline, cold))
-void bakeFlow() {                                // 4 环角各一次反向 BFS → 全图下一步表
-    for (int k = 0; k < 4; ++k) {
-        uint8_t* fl = g_s.flow[k];
-        memset(fl, STAY, N * N);
-        int tr = PWR[k], tc = PWC[k];
-        if (wallbit(tr, tc)) {                   // 陌生图环角是墙: 改种最近开格
-            int br = tr, bc = tc, bd = 999;
-            for (int r = 0; r < N; ++r)
-                for (int c = 0; c < N; ++c) {
-                    if (wallbit(r, c)) continue;
-                    int d = (r > tr ? r - tr : tr - r) + (c > tc ? c - tc : tc - c);
-                    if (d < bd) { bd = d; br = r; bc = c; }
-                }
-            tr = br; tc = bc;
-        }
-        // 加权 Dijkstra: 边带车道权重1, 内部格权重4 —— 巡逻贴边扫带,
-        // 只有迷宫堵死车道时才借内圈绕行(map1 左带口袋案)。冷路径 O(n²) 无妨。
-        uint16_t dist[N * N];
-        bool done[N * N] = {};
-        memset(dist, 0xff, sizeof dist);
-        dist[tr * N + tc] = 0;
-        for (int it = 0; it < N * N; ++it) {
-            int cur = -1; uint16_t bd = 0xffff;
-            for (int i = 0; i < N * N; ++i)
-                if (!done[i] && dist[i] < bd) { bd = dist[i]; cur = i; }
-            if (cur < 0) break;
-            done[cur] = true;
-            int r = cur / N, c = cur % N;
-            for (int a = 0; a < 4; ++a) {
-                int nr = r + DR[a], nc = c + DC[a];
-                if ((unsigned)nr >= (unsigned)N || (unsigned)nc >= (unsigned)N) continue;
-                if (wallbit(nr, nc)) continue;
-                uint16_t w = (nr < 4 || nr > 12 || nc < 4 || nc > 12) ? 1 : 4;
-                if ((uint16_t)(dist[cur] + w) < dist[nr * N + nc]) {
-                    dist[nr * N + nc] = (uint16_t)(dist[cur] + w);
-                    fl[nr * N + nc] = (uint8_t)(a ^ 1);   // 反向步: 指回 corner 方向
-                }
-            }
-        }
-    }
-}
-
-__attribute__((noinline, cold))
 void slowTick(const GameInput* in) {
     int rad = g_s.vp_buy == 2 ? 4 : 2;           // 上轮买了 9×9 → 本轮窗口半径 4
     g_s.vp_buy = 0;
@@ -289,27 +239,21 @@ void slowTick(const GameInput* in) {
             g_s.map_id = (int8_t)m;
             for (int r = 0; r < N; ++r) g_s.bpw[r + 1] = 0xFFFC0001u | BAKED_W[m][r];
             fixAnchor(0); fixAnchor(1);
-            bakeFlow();
         }
-        if (g_s.map_id == -2) bakeFlow();        // 陌生图初判也得有流场
         if (in->round == 0 && g_s.map_id < 0)
             g_s.vp_buy = 2;                      // 角落区分不了/陌生图 → 买下一轮 9×9
     } else if (g_s.map_id == -2 && learned) {
-        fixAnchor(0); fixAnchor(1);              // 学到新墙才需要重验锚点/重烘流场
-        bakeFlow();
+        fixAnchor(0); fixAnchor(1);              // 学到新墙才需要重验锚点
     }
     // 模式退场: map1 与旧版同窗(4 轮); 其余图行军窗 8 轮; 未锁/陌生图转懒学习长驻
     if (g_s.map_id == 0) { if (in->round >= 4) g_s.mode = 0; }
     else if (g_s.map_id > 0) { if (in->round >= 8) g_s.mode = 0; }
-    else if (in->round >= 8) {
-        if (g_s.mode != 2) bakeFlow();           // 指纹未定长驻懒学习: 先按已知墙烘流场
-        g_s.mode = 2;
-    }
+    else if (in->round >= 8) g_s.mode = 2;
 }
 
 __attribute__((noinline, cold))
 void slowMove(const GameInput* in, int u, int sr, int sc, int* acts) {
-    if (g_s.map_id == 0 && u == 0) {             // map1 u0: 烘焙路线原样进中心
+    if (g_s.map_id == 0) {                       // map1: 烘焙路线原样(保逐位等价)
         if (in->round < 4) {
             int ri = in->round & 3;
             if (sr == ORT_R[u][ri] && sc == ORT_C[u][ri]) {
@@ -318,7 +262,7 @@ void slowMove(const GameInput* in, int u, int sr, int sc, int* acts) {
                 acts[2] = ORT_A[u][ri][2];
             }
         }
-        return;                                  // u1 走通用 BFS 去巡逻环起点
+        return;
     }
     if (in->round >= 8) return;                  // 通用行军窗口(map2/3 实测 4-5 轮出角)
     // 运行时 BFS(已知墙, 雾当可通行; 穷单位弹透明, 与主管线富度门一致) → 取前 3 步
@@ -359,7 +303,6 @@ void slowMove(const GameInput* in, int u, int sr, int sc, int* acts) {
 GameOutput decide(const GameInput* in) {
     if (in->round <= g_s.last_round) {           // 新局: 重置; 墙由指纹/学习灌入
         memset(&g_s, 0, sizeof(g_s));
-        memset(g_s.flow, STAY, sizeof(g_s.flow));   // 未烘焙前流场必须是 STAY 而非动作0
         g_s.bpw[0] = g_s.bpw[N + 1] = ~0u;
         for (int r = 0; r < N; ++r) g_s.bpw[r + 1] = 0xFFFC0001u;
         g_s.mode = 1; g_s.map_id = -1; g_s.cand = 7;
@@ -367,9 +310,6 @@ GameOutput decide(const GameInput* in) {
             g_s.anch_r[u] = (int8_t)(in->my_units[u].row < 8 ? 6 : 10);
             g_s.anch_c[u] = (int8_t)(in->my_units[u].col < 8 ? 6 : 10);
         }
-        g_s.phase = (uint8_t)(in->my_units[1].row < 8   // u1 从出生角最近的环角起巡
-                    ? (in->my_units[1].col < 8 ? 0 : 1)
-                    : (in->my_units[1].col < 8 ? 3 : 2));
     }
     g_s.last_round = (int16_t)in->round;
     if (in->round % 20 == 0)                     // 炸弹波: 弹记忆即弃
@@ -380,15 +320,6 @@ GameOutput decide(const GameInput* in) {
             !(g_s.visited[in->my_units[0].row] >> (in->my_units[0].col + 1) & 1u) ||
             !(g_s.visited[in->my_units[1].row] >> (in->my_units[1].col + 1) & 1u))
             slowTick(in);
-    }
-
-    {   // u1 巡逻环推进(无分支): 到点(切比≤1)即切下一角, 锚点=当前环角
-        int pr = in->my_units[1].row, pc = in->my_units[1].col;
-        unsigned near1 = ((unsigned)(pr - PWR[g_s.phase] + 1) <= 2u) &
-                         ((unsigned)(pc - PWC[g_s.phase] + 1) <= 2u);
-        g_s.phase = (uint8_t)((g_s.phase + near1) & 3);
-        g_s.anch_r[1] = PWR[g_s.phase];
-        g_s.anch_c[1] = PWC[g_s.phase];
     }
 
     GameOutput out;                              // 全字段必写, 免 SAFE_OUT 拷贝
@@ -519,19 +450,6 @@ GameOutput decide(const GameInput* in) {
                 int a = steerStep(sr, sc, tgr, tgc,
                                   g_s.last_r[u], g_s.last_c[u], rich);
                 if (a >= 0) acts[0] = a;
-            }
-        }
-
-        // ---- u1 巡逻转场: 盲轮走流场(墙口袋迷宫免疫), 逐步 pass01 验证 ----
-        if ((u == 1) & (blind != 0)) {
-            int fr = sr, fc = sc;
-            const uint8_t* fl = g_s.flow[g_s.phase];
-            acts[0] = acts[1] = acts[2] = STAY;
-            for (int i = 0; i < 3; ++i) {
-                int a = fl[fr * N + fc];
-                if (a == STAY || !pass01(fr + DR[a], fc + DC[a], rich)) break;
-                acts[i] = a;
-                fr += DR[a]; fc += DC[a];
             }
         }
 
