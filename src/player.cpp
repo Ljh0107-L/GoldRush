@@ -203,28 +203,26 @@ __attribute__((noinline, cold))
 void slowTick(const GameInput* in) {
     int rad = g_s.vp_buy == 2 ? 4 : 2;           // 上轮买了 9×9 → 本轮窗口半径 4
     g_s.vp_buy = 0;
+    unsigned learned = 0;
     if (g_s.map_id < 0) {                        // 未锁图才需要学(锁图后墙全知)
-        unsigned novel = 0;
-        for (int u = 0; u < 2; ++u)
-            novel |= ~(g_s.visited[in->my_units[u].row] >> (in->my_units[u].col + 1)) & 1u;
-        if (novel) {
-            for (int u = 0; u < 2; ++u) {
-                int sr = in->my_units[u].row, sc = in->my_units[u].col;
-                int r0 = sr - rad < 0 ? 0 : sr - rad, r1 = sr + rad > 16 ? 16 : sr + rad;
-                int c0 = sc - rad < 0 ? 0 : sc - rad, c1 = sc + rad > 16 ? 16 : sc + rad;
-                for (int r = r0; r <= r1; ++r)
-                    for (int c = c0; c <= c1; ++c) {
-                        int v = in->grid[r][c];
-                        if (v != -5) {
-                            g_s.seen[r] |= 1u << (c + 1);
-                            if (v == -1) g_s.bpw[r + 1] |= 1u << (c + 1);
-                        }
+        for (int u = 0; u < 2; ++u) {            // 站格单bit门控, 按单位各自判(站过⇒窗口已学)
+            int sr = in->my_units[u].row, sc = in->my_units[u].col;
+            if (g_s.visited[sr] >> (sc + 1) & 1u) continue;
+            learned = 1;
+            int r0 = sr - rad < 0 ? 0 : sr - rad, r1 = sr + rad > 16 ? 16 : sr + rad;
+            int c0 = sc - rad < 0 ? 0 : sc - rad, c1 = sc + rad > 16 ? 16 : sc + rad;
+            for (int r = r0; r <= r1; ++r)
+                for (int c = c0; c <= c1; ++c) {
+                    int v = in->grid[r][c];
+                    if (v != -5) {
+                        g_s.seen[r] |= 1u << (c + 1);
+                        if (v == -1) g_s.bpw[r + 1] |= 1u << (c + 1);
                     }
-                g_s.visited[sr] |= 1u << (sc + 1);
-            }
+                }
+            g_s.visited[sr] |= 1u << (sc + 1);
         }
     }
-    if (g_s.map_id == -1) {                      // 指纹淘汰赛
+    if (g_s.map_id == -1 && learned) {           // 指纹淘汰赛(seen 没变就不必重判)
         for (int m = 0; m < 3; ++m) {
             if (!(g_s.cand >> m & 1)) continue;
             for (int r = 0; r < N; ++r)
@@ -244,8 +242,8 @@ void slowTick(const GameInput* in) {
         }
         if (in->round == 0 && g_s.map_id < 0)
             g_s.vp_buy = 2;                      // 角落区分不了/陌生图 → 买下一轮 9×9
-    } else if (g_s.map_id == -2) {
-        fixAnchor(0); fixAnchor(1);              // 在线学到锚点是墙时同样修正
+    } else if (g_s.map_id == -2 && learned) {
+        fixAnchor(0); fixAnchor(1);              // 学到新墙才需要重验锚点
     }
     // 模式退场: map1 与旧版同窗(4 轮); 其余图行军窗 8 轮; 未锁/陌生图转懒学习长驻
     if (g_s.map_id == 0) { if (in->round >= 4) g_s.mode = 0; }
@@ -317,8 +315,12 @@ GameOutput decide(const GameInput* in) {
     if (in->round % 20 == 0)                     // 炸弹波: 弹记忆即弃
         memset(g_s.bombbit, 0, sizeof(g_s.bombbit));
 
-    if (__builtin_expect(g_s.mode != 0, 0))      // 慢开局层(学墙/指纹/锚点/vp)
-        slowTick(in);
+    if (__builtin_expect(g_s.mode != 0, 0)) {    // 慢开局层(学墙/指纹/锚点/vp)
+        if (g_s.mode == 1 ||                     // 懒学习长驻期: 站格门控内联, 静轮免调用
+            !(g_s.visited[in->my_units[0].row] >> (in->my_units[0].col + 1) & 1u) ||
+            !(g_s.visited[in->my_units[1].row] >> (in->my_units[1].col + 1) & 1u))
+            slowTick(in);
+    }
 
     GameOutput out;                              // 全字段必写, 免 SAFE_OUT 拷贝
 
