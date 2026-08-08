@@ -17,7 +17,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from test_so import (GameInput, GameOutput, Position, NpcInfo,
+from api import (GameInput, GameOutput, Position, NpcInfo,
                      GRID_SIZE, MAX_NPCS, SO_PATH)
 
 N = GRID_SIZE

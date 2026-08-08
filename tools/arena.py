@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""gr.py — GoldRush 2.0 平台命令行客户端（纯标准库，无依赖）
+"""arena.py — GoldRush 2.0 平台命令行客户端（纯标准库，无依赖）
 
 给 Agent 用的提交/对战/取日志工具，替代浏览器点击流程。
 
@@ -9,15 +9,15 @@
   日志端点  直接返回纯文本
 
 用法：
-  ./gr.py rank                                    排行榜
-  ./gr.py maps                                    地图列表
-  ./gr.py opponents                               可挑战的他人代码
-  ./gr.py games [-n 20]                           我的对局记录
-  ./gr.py info <game_id>                          单局状态
-  ./gr.py log <game_id> [-o out.log]              下载对局日志
-  ./gr.py submit --map 1 --self A.py:v1 B.py:v2   自博弈
-  ./gr.py submit --map 1 --vs <model_id> A.py:v1  挑战他人
-  ./gr.py watch <game_id>                         轮询直到可回放，然后自动存日志
+  ./arena.py rank                                    排行榜
+  ./arena.py maps                                    地图列表
+  ./arena.py opponents                               可挑战的他人代码
+  ./arena.py games [-n 20]                           我的对局记录
+  ./arena.py info <game_id>                          单局状态
+  ./arena.py log <game_id> [-o out.log]              下载对局日志
+  ./arena.py submit --map 1 --self A.py:v1 B.py:v2   自博弈
+  ./arena.py submit --map 1 --vs <model_id> A.py:v1  挑战他人
+  ./arena.py watch <game_id>                         轮询直到可回放，然后自动存日志
 """
 import argparse
 import json
@@ -32,7 +32,7 @@ import uuid
 
 BASE = os.environ.get("GR_BASE", "http://47.103.127.219")
 KEY = os.environ.get("GR_KEY", "LqUcsD1cyA")
-TOKEN_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".gr_token")
+TOKEN_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".arena_token")
 
 LANG = {"py": 1, "so": 2}          # Python=1, C++=2
 LANG_NAME = {1: "Python", 2: "C++"}

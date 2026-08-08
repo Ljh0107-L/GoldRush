@@ -10,7 +10,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import replay as rp
 from dump_inputs import build_input
-from test_so import GameInput
+from api import GameInput
 
 
 def pair_diff(so_a, so_b, logs):

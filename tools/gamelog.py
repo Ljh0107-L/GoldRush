@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""grlog.py — GoldRush 2.0 对局日志分析（纯标准库）
+"""gamelog.py — GoldRush 2.0 对局日志分析（纯标准库）
 
 把 gr.py 下载的日志变成可决策的数字：净分、每轮耗时分位数、先手率、
 事件统计、金币曲线。这是"提交→对战→取日志→分析→改代码"闭环的分析环节。
 
 用法:
-  ./grlog.py logs/game_137528.log              单局摘要
-  ./grlog.py logs/*.log                        多局逐一摘要
-  ./grlog.py --rounds logs/game_137528.log     追加逐 100 轮金币曲线
+  ./gamelog.py logs/game_137528.log              单局摘要
+  ./gamelog.py logs/*.log                        多局逐一摘要
+  ./gamelog.py --rounds logs/game_137528.log     追加逐 100 轮金币曲线
 
 日志格式(见 AGENT.md §13):
   行1  {"player1":名, "player2":名}

@@ -8,7 +8,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from test_so import GameInput, MAX_NPCS
+from api import GameInput, MAX_NPCS
 
 N = 17
 

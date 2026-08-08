@@ -3,16 +3,17 @@
 九坤编程掘金赛（17×17 夺金，延迟定先手权）。**私有仓库，含平台凭据（AGENT.md §2），严禁公开。**
 
 ```
-AGENT.md          ← 作战手册: 现状/凭据/规则/平台物理定律/评测纪律/开题清单 (入口必读)
+AGENT.md          ← 作战手册: 现状/凭据/规则/纪律/开题 (入口必读)
 src/
-  speed/          ← 速度优先轨 (CHANGELOG.md + v1 现役总冠军 250ns, 内含 LOOP.md 算法流程)
-  strategy/       ← 策略优先轨 (CHANGELOG.md + v1 矿堆农冠军, 内含 LOOP.md 算法流程)
+  player.cpp      ← 现役冠军 (P50 ~200ns / 收入 ~1515; 头注释=算法流程)
   game_api.h      ← 官方接口头
-tests/            ← replay / pair_diff / dump_inputs / bench / game_api mock
-tools/            ← gr.py 平台客户端 · grlog.py 战报 · runbatch.sh 跑批
+  INFRA.md        ← 平台成本模型: 每种操作值多少 ns, 算法预算换算表
+  CHANGELOG.md    ← 版本史 + 负结果军规 + 策略遗产 (旧版本取用命令在谱系表)
+tests/            ← api.py(ctypes桥) · replay · pair_diff · dump_inputs · bench
+tools/            ← arena.py(平台客户端) · gamelog.py(战报) · batch.sh(跑批)
 docs/             ← 官方赛制文档 | logs/ 对局日志(gitignored)
 ```
 
-- 结构军规: 不设 archive 目录; 每轨只保留现役最强一版, 退役版本 = git 历史 + 轨 CHANGELOG 档案行
-- 每个版本目录: Makefile 头注释 = 战绩档案 + 精确复现 flags; LOOP.md = 算法流程
-- 历史逐日战报: `git show bc011e0:CHANGELOG.md`（根 CHANGELOG 已退役进 git 历史）
+构建：`g++ -std=c++17 -O3 -march=native -fPIC -Wall -Wextra -shared -o player.so src/player.cpp -Isrc`
+
+当前阶段：延迟已打到头部（先手权在手），正用 INFRA 预算表做算法/收入的 tradeoff。
