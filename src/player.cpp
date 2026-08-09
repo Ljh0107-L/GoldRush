@@ -61,9 +61,6 @@ struct alignas(64) State {
     int8_t anch_r[2], anch_c[2];
     uint8_t exc;             // 突击进行中(waveTick 置/清)
     int8_t sv_ar, sv_ac;     // u1 基地锚点备份(远征结束恢复)
-    int8_t hunt_r, hunt_c;   // 最近入镜敌单位位置(寄生跟随)
-    int16_t hunt_t;          // 其入镜轮(新鲜度)
-    int8_t bh_r, bh_c;       // u1 哨位(锁图后定, 无猎物时回驻)
     int16_t rem_prev[4];     // 上次快照外区(id 2-5)存量
     int16_t exc_t0;          // 远征开拔轮(超时归队判据)
     int8_t exc_reg;          // 远征目标区 2-5(0=未出征)
@@ -330,13 +327,11 @@ void slowTick(const GameInput* in) {
         if (g_s.cand == 0) {
             g_s.map_id = -2;                     // 陌生图: 懒学习伴终局
             fixAnchor(0); fixAnchor(1);
-            g_s.bh_r = g_s.anch_r[1]; g_s.bh_c = g_s.anch_c[1];
         } else if (!(g_s.cand & (g_s.cand - 1))) {
             int m = __builtin_ctz(g_s.cand);     // 唯一候选: 锁图直灌
             g_s.map_id = (int8_t)m;
             for (int r = 0; r < N; ++r) g_s.bpw[r + 1] = 0xFFFC0001u | BAKED_W[m][r];
             fixAnchor(0); fixAnchor(1);
-            g_s.bh_r = g_s.anch_r[1]; g_s.bh_c = g_s.anch_c[1];
         }
         if (in->round == 0 && g_s.map_id < 0)
             g_s.vp_buy = 2;                      // 角落区分不了/陌生图 → 买下一轮 9×9
