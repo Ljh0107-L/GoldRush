@@ -52,7 +52,7 @@ def analyze(path, show_rounds=False):
     names, truemap, rounds = load(path)
     p1, p2 = names.get("player1", "p1"), names.get("player2", "p2")
     obstacles = sum(row.count("1") for row in truemap)
-    bomb_spawns = sum(row.count("2") for row in truemap)
+    gold_hotspots = sum(row.count("2") for row in truemap)
 
     costs = {1: [], 2: []}
     first_mover = {1: 0, 2: 0}
@@ -85,8 +85,8 @@ def analyze(path, show_rounds=False):
     total = len(rounds)
 
     print("=" * 64)
-    print("%s   [%s vs %s]   %d 回合   障碍 %d 格 / 炸弹刷新位 %d 格"
-          % (path, p1, p2, total, obstacles, bomb_spawns))
+    print("%s   [%s vs %s]   %d 回合   障碍 %d 格 / 外圈金币热点 %d 格"
+          % (path, p1, p2, total, obstacles, gold_hotspots))
     print("-" * 64)
     print("%-4s %-14s %6s %6s %6s   %8s %8s %8s   %5s" %
           ("", "选手", "毛金币", "视野费", "净分", "P50", "P90", "P99", "先手"))
