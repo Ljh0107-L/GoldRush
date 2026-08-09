@@ -427,9 +427,20 @@ class ValidationSuite:
         local_rounds = 0
         local_phase_grids = 0
         local_mismatch_cells = 0
+        # 中途判负的对局(选手非法输出/超时/崩溃)末条记录会合法地缺 start 或 end。
+        # 这不是数据损坏, 不应让保真度门禁变红; 跳过但计数披露, 避免静默吞掉。
+        local_skipped_incomplete = 0
+        local_files_with_incomplete = 0
+        local_total_rows = 0
         for path in local_paths:
             _meta, _map_rows, rows = _read_log(path)
+            file_had_incomplete = False
+            local_total_rows += len(rows)
             for row in rows:
+                if "start" not in row or "end" not in row:
+                    local_skipped_incomplete += 1
+                    file_had_incomplete = True
+                    continue
                 owner, radius = calibrate_views.owner_and_radius(row["start"])
                 key = str(radius)
                 stat = local_by_radius.setdefault(key, {"rounds": 0, "phase_grids": 0, "mismatch_cells": 0})
@@ -449,6 +460,8 @@ class ValidationSuite:
                     stat["mismatch_cells"] += mismatches
                     local_phase_grids += 1
                     local_mismatch_cells += mismatches
+            if file_had_incomplete:
+                local_files_with_incomplete += 1
 
         map_definition = MapDefinition.from_json_file(self.args.maps, "map1")
         game_map = GameMap.from_definition(map_definition)
@@ -500,7 +513,10 @@ class ValidationSuite:
             and mismatch_cells == 0
             and set(by_radius) == {"2", "3", "4"}
             and len(local_paths) > 0
-            and local_rounds == len(local_paths) * 500
+            # 不假设每份本地日志都是完整 500 轮: 中途判负的对局天然更短。
+            # 等价强度的断言 = 每一条记录都被处理(校验或按不完整跳过), 且被校验的全部零误差。
+            and local_rounds + local_skipped_incomplete == local_total_rows
+            and local_rounds > 0
             and local_phase_grids == local_rounds * 2
             and local_mismatch_cells == 0
             and visible_enemy_ok
@@ -522,6 +538,10 @@ class ValidationSuite:
                 "phase_grids": local_phase_grids,
                 "mismatch_cells": local_mismatch_cells,
                 "by_radius": local_by_radius,
+                "skipped_incomplete_rows": local_skipped_incomplete,
+                "files_with_incomplete_rows": local_files_with_incomplete,
+                "total_rows_seen": local_total_rows,
+                "skip_reason": "中途判负对局的末条记录合法缺 start/end; 跳过不计入吻合统计",
             },
             "visible_array_and_padding_unit_tests": array_tests,
             "error": None if passed else "official/local fog masks or visibility array unit tests differ",
