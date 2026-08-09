@@ -480,16 +480,20 @@ GameOutput decide(const GameInput* in) {
             tgc = ((sc - 2 + DM5.m[i]) & has) | (sc & selfm) | (g_s.anch_c[u] & blind);
         }
 
+        uint32_t blk[N + 2];                     // blocked 位图预合成(扫描后! 含当轮新见弹)
+        for (int bi_ = 0; bi_ < N + 2; ++bi_)
+            blk[bi_] = g_s.bpw[bi_] | (rich & g_s.bombbit[bi_ + 2]);
+
         // ---- 导向 ----
         int dr0 = tgr - sr, dc0 = tgc - sc;
         dr0 = dr0 < -3 ? -3 : (dr0 > 3 ? 3 : dr0);   // 钳进 LUT 域:
         dc0 = dc0 < -3 ? -3 : (dc0 > 3 ? 3 : dc0);   // 远目标前3步与逐步串行同构
         int d = (dr0 < 0 ? -dr0 : dr0) + (dc0 < 0 ? -dc0 : dc0);
         if (d == 0) {                            // 站金: 折返双吃
-            unsigned pm = pass01(sr - 1, sc, rich) |
-                          (pass01(sr + 1, sc, rich) << 1) |
-                          (pass01(sr, sc - 1, rich) << 2) |
-                          (pass01(sr, sc + 1, rich) << 3);
+            unsigned pm = (~(blk[sr] >> (sc + 1)) & 1u) |
+                          ((~(blk[sr + 2] >> (sc + 1)) & 1u) << 1) |
+                          ((~(blk[sr + 1] >> (sc)) & 1u) << 2) |
+                          ((~(blk[sr + 1] >> (sc + 2)) & 1u) << 3);
             if (pm) {
                 int a = __builtin_ctz(pm);
                 acts[0] = a; acts[1] = a ^ 1;
@@ -499,9 +503,9 @@ GameOutput decide(const GameInput* in) {
             const uint8_t* pa = SL.fact[ir][ic];
             const int8_t* xr = SL.pdr[ir][ic];
             const int8_t* xc = SL.pdc[ir][ic];
-            unsigned ok = pass01(sr + xr[0], sc + xc[0], rich) &
-                          pass01(sr + xr[1], sc + xc[1], rich) &
-                          pass01(sr + xr[2], sc + xc[2], rich);
+            unsigned ok = (~(blk[sr + xr[0] + 1] >> (sc + xc[0] + 1)) & 1u) &
+                          (~(blk[sr + xr[1] + 1] >> (sc + xc[1] + 1)) & 1u) &
+                          (~(blk[sr + xr[2] + 1] >> (sc + xc[2] + 1)) & 1u);
             if (ok) {
                 acts[0] = pa[0]; acts[1] = pa[1]; acts[2] = pa[2];
             } else {
