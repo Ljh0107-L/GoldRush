@@ -15,7 +15,10 @@
 //    0.3 锚点修正: 锁图/学到锚点是墙时, 改指最近可通行格(map2/3 的 (6,6)/(10,10) 均是墙!)
 //    0.4 三图全不吻合 → 陌生图模式: 懒学习伴终局(稳态只付 visited 门控 ~+5ns), 行军窗自然导向
 // 1. 新局检测(round 回绕) → 重置状态, bpw = 边界哨兵(墙由指纹/学习灌入)
-// 2. 炸弹波清(每 20 轮): bombbit 清零, 等扫描重建
+// 2. %20 冷位点: 炸弹波清 + 快照远征调度(8.9 路线1, v3 形态; 收入中性但结构合规存留)
+//    外区存量>80 且较上次未降(降=有人收割, 绕开)-40×occupants 避人 → u1 车道中线
+//    一趟扫(近端进远端出, 抵A切B抵B归队); 吸干<30/超时40轮归队复锚; <70/>460 禁足。
+//    判决史(CHANGELOG 详): v1扎营/v2往返/v4堆记忆突袭皆判负, 外圈收割精度 1.4 vs T-1 4.81
 // 3. 对每个单位(双全管线, 无轮换):
 //    3.1 富度门: 持金≥100 才把炸弹并入阻挡(穷单位踩弹烧 10%×0=0, 弹透明)
 //    3.2 扫描: 5×5 窗口 5 行就地 AVX 载入 → goldm 25位(金) / bombm 15位(弹, 仅±1行)
@@ -61,6 +64,11 @@ struct alignas(64) State {
     int8_t hunt_r, hunt_c;   // 最近入镜敌单位位置(寄生跟随)
     int16_t hunt_t;          // 其入镜轮(新鲜度)
     int8_t bh_r, bh_c;       // u1 哨位(锁图后定, 无猎物时回驻)
+    int16_t rem_prev[4];     // 上次快照外区(id 2-5)存量
+    int16_t exc_t0;          // 远征开拔轮(超时归队判据)
+    int8_t exc_reg;          // 远征目标区 2-5(0=未出征)
+    int8_t exc_br, exc_bc;   // 远征车道 B 端点(抵 A 后切换)
+    uint8_t exc_wp;          // 0=去程 A 段 1=已切 B 段
     uint32_t seen[N];        // 已观测格(bit c+1; 指纹比对掩码)
     uint32_t visited[N];     // 站过的格(bit c+1; 学墙门控)
 };
@@ -134,6 +142,17 @@ struct TabsT {                                   // 表合一: 单基址消灭 x
     }
 };
 constexpr TabsT TT;
+
+__attribute__((noinline, cold))
+void excNext(const GameInput*) {                 // 抵锚事件: 车道切换/归队
+    if (g_s.exc_wp == 0) {                       // 抵 A 切 B
+        g_s.exc_wp = 1;
+        g_s.anch_r[1] = g_s.exc_br; g_s.anch_c[1] = g_s.exc_bc;
+        return;
+    }
+    g_s.exc = 0; g_s.exc_reg = 0;                // 扫完: 归队复锚
+    g_s.anch_r[1] = g_s.sv_ar; g_s.anch_c[1] = g_s.sv_ac;
+}
 
 // 通行 = 非墙 且 (穷 或 非弹)。队友检查已退役(撞位实测 0 轮, 引擎记4+自愈兜底)
 inline unsigned pass01(int r, int c, unsigned rich) {
@@ -220,30 +239,55 @@ void fixAnchor(int u) {                          // 锚点是墙 → 改指最�
 }
 
 __attribute__((noinline, cold))
-void waveTick(const GameInput* in) {             // 波清 + u1 滑扫突击(骑 %20 位点)
+void waveTick(const GameInput* in) {             // 波清 + 快照远征调度(骑 %20 位点)
     memset(g_s.bombbit, 0, sizeof(g_s.bombbit));
-    int r = in->round;
-    if (g_s.map_id >= 0) {
-        if (r == 100) {
-            g_s.exc = 1;
-            g_s.sv_ar = g_s.anch_r[1]; g_s.sv_ac = g_s.anch_c[1];
-            g_s.anch_r[1] = 1; g_s.anch_c[1] = 3;      // 上带东进西出
-        } else if (r == 120 && g_s.exc) {
-            g_s.anch_r[1] = 1; g_s.anch_c[1] = 13;
-        } else if (r == 140 && g_s.exc) {
-            g_s.exc = 0;
-            g_s.anch_r[1] = g_s.sv_ar; g_s.anch_c[1] = g_s.sv_ac;
-        } else if (r == 300) {
-            g_s.exc = 1;
-            g_s.sv_ar = g_s.anch_r[1]; g_s.sv_ac = g_s.anch_c[1];
-            g_s.anch_r[1] = 15; g_s.anch_c[1] = 13;    // 下带西进东出
-        } else if (r == 320 && g_s.exc) {
-            g_s.anch_r[1] = 15; g_s.anch_c[1] = 3;
-        } else if (r == 340 && g_s.exc) {
-            g_s.exc = 0;
-            g_s.anch_r[1] = g_s.sv_ar; g_s.anch_c[1] = g_s.sv_ac;
+    // ---- 后手远征器官(8.9 路线1): 外圈存量是后手无关粮(没人抢, 不怕情报过期) ----
+    // 触发: 外区 gold_remaining>80 且较上次未降(降=有人在收割, 绕开) - 40×occupants 避人;
+    // 归队: 吸干(<30)或超时(40轮); 开局<70/终局>460 禁足。快照 5 轮一发, %20 轮必踩到。
+    if (!in->snapshot_valid) return;
+    int rd = in->round;
+    int16_t rem[4] = {0, 0, 0, 0};
+    int occ[4] = {0, 0, 0, 0};
+    for (int i = 0; i < REGION_COUNT; ++i) {
+        const RegionStat& rs = in->snapshot.regions[i];
+        if (rs.id >= 2 && rs.id <= 5) {
+            rem[rs.id - 2] = (int16_t)rs.gold_remaining;
+            occ[rs.id - 2] = rs.occupants;
         }
     }
+    if (g_s.exc_reg) {
+        if (rem[g_s.exc_reg - 2] < 30 || rd - g_s.exc_t0 >= 40) {
+            g_s.exc = 0; g_s.exc_reg = 0;
+            g_s.anch_r[1] = g_s.sv_ar; g_s.anch_c[1] = g_s.sv_ac;
+        }
+    } else if (rd >= 70 && rd <= 460 && g_s.map_id != -1) {
+        int best = -1, bs = 0;
+        for (int k = 0; k < 4; ++k) {
+            int s = rem[k] - 40 * occ[k];
+            if (rem[k] > 80 && rem[k] >= g_s.rem_prev[k] && s > bs) { bs = s; best = k; }
+        }
+        if (best >= 0) {
+            static constexpr int8_t LR[4][2][2] = {  // 车道端点[区-2][端][r,c]: 4宽带的
+                {{1, 3}, {1, 13}},                   // 中线, 5×5 视野一趟扫全区
+                {{3, 1}, {13, 1}},
+                {{15, 3}, {15, 13}},
+                {{3, 15}, {13, 15}},
+            };
+            int ur = in->my_units[1].row, uc = in->my_units[1].col;
+            int d0 = (ur > LR[best][0][0] ? ur - LR[best][0][0] : LR[best][0][0] - ur) +
+                     (uc > LR[best][0][1] ? uc - LR[best][0][1] : LR[best][0][1] - uc);
+            int d1 = (ur > LR[best][1][0] ? ur - LR[best][1][0] : LR[best][1][0] - ur) +
+                     (uc > LR[best][1][1] ? uc - LR[best][1][1] : LR[best][1][1] - uc);
+            int aA = d0 <= d1 ? 0 : 1;               // 近端进, 远端出
+            g_s.exc = 1; g_s.exc_reg = (int8_t)(best + 2);
+            g_s.exc_t0 = (int16_t)rd; g_s.exc_wp = 0;
+            g_s.sv_ar = g_s.anch_r[1]; g_s.sv_ac = g_s.anch_c[1];
+            g_s.anch_r[1] = LR[best][aA][0]; g_s.anch_c[1] = LR[best][aA][1];
+            g_s.exc_br = LR[best][aA ^ 1][0]; g_s.exc_bc = LR[best][aA ^ 1][1];
+            fixAnchor(1);                            // 陌生图上车道点可能是墙
+        }
+    }
+    for (int k = 0; k < 4; ++k) g_s.rem_prev[k] = rem[k];
 }
 
 __attribute__((noinline, cold))
@@ -353,6 +397,22 @@ void slowMove(const GameInput* in, int u, int sr, int sc, unsigned rich, int* ac
 }
 
 GameOutput decide(const GameInput* in) {
+    {   // 冷启动税对冲: 入口并行预取热工作集(轮间350ms全被逐出, 串行回填≈+200ns)
+        _mm_prefetch((const char*)&g_s, _MM_HINT_T0);
+        _mm_prefetch((const char*)&g_s + 64, _MM_HINT_T0);
+        _mm_prefetch((const char*)&g_s + 128, _MM_HINT_T0);
+        _mm_prefetch((const char*)&TT, _MM_HINT_T0);
+        _mm_prefetch((const char*)&TT + 64, _MM_HINT_T0);
+        _mm_prefetch((const char*)&SCT, _MM_HINT_T0);
+        _mm_prefetch((const char*)&SL, _MM_HINT_T0);
+        _mm_prefetch((const char*)&SL + 64, _MM_HINT_T0);
+        _mm_prefetch((const char*)&SL.pdr, _MM_HINT_T0);
+        int r0 = in->my_units[0].row, r1 = in->my_units[1].row;
+        _mm_prefetch((const char*)&in->grid[r0 < 2 ? 0 : r0 - 2][0], _MM_HINT_T0);
+        _mm_prefetch((const char*)&in->grid[r0][0], _MM_HINT_T0);
+        _mm_prefetch((const char*)&in->grid[r1 < 2 ? 0 : r1 - 2][0], _MM_HINT_T0);
+        _mm_prefetch((const char*)&in->grid[r1][0], _MM_HINT_T0);
+    }
     if (in->round <= g_s.last_round) {           // 新局: 重置; 墙由指纹/学习灌入
         memset(&g_s, 0, sizeof(g_s));
         g_s.bpw[0] = g_s.bpw[N + 1] = ~0u;
@@ -383,6 +443,14 @@ GameOutput decide(const GameInput* in) {
         g_s.anch_c[1] = (int8_t)((g_s.bh_c & home) | (g_s.anch_c[1] & ~home));
     }
 
+    {   // 远征抵锚事件 → 冷推进(拔点链/车道切换/归队)。exc 期成段连续, 分支按段预测,
+        // 误预测只在段边界 ~10-20 次/局(谱系: v1 B端扎营/v2 回程扫空车道皆判负, 见 CHANGELOG)
+        if (__builtin_expect(g_s.exc_reg != 0, 0)) {
+            int dr_ = in->my_units[1].row - g_s.anch_r[1];
+            int dc_ = in->my_units[1].col - g_s.anch_c[1];
+            if ((dr_ < 0 ? -dr_ : dr_) + (dc_ < 0 ? -dc_ : dc_) <= 1) excNext(in);
+        }
+    }
 
     if (__builtin_expect(g_s.mode != 0, 0)) {    // 慢开局层(学墙/指纹/锚点/vp)
         if (g_s.mode == 1 ||                     // 懒学习长驻期: 站格门控内联, 静轮免调用
@@ -398,6 +466,7 @@ GameOutput decide(const GameInput* in) {
         int* acts = out.actions + u * 3;
         acts[0] = acts[1] = acts[2] = STAY;
         unsigned rich = 0u - (unsigned)(in->my_units_gold[u] >= 100);
+
 
         // ---- 扫描: 5 行就地载入 + 行级 LUT 选择(pack→pext 串行链退役) ----
         uint16_t rowsel[5];
