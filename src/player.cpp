@@ -112,12 +112,25 @@ struct TabsT {                                   // 表合一: 单基址消灭 x
     int8_t rclv[21];                             // 行钳位
     int8_t d5[25], m5[25];                       // 除模5
     uint8_t remap[26];                           // pext 环距重排
-    constexpr TabsT() : rclv(), d5(), m5(), remap() {
+    uint16_t bestrow[5][32];                     // 行级选择: 切片→(环距优先级<<5|窗位)
+    constexpr TabsT() : rclv(), d5(), m5(), remap(), bestrow() {
         for (int x = 0; x < 21; ++x) { int t = x - 2; rclv[x] = (int8_t)(t < 0 ? 0 : (t > 16 ? 16 : t)); }
         for (int x = 0; x < 25; ++x) { d5[x] = (int8_t)(x / 5); m5[x] = (int8_t)(x % 5); }
         constexpr uint8_t rm[26] = {
             7,11,13,17, 2,6,8,10,14,16,18,22, 1,3,5,9,15,19,21,23, 0,4,20,24, 12, 12};
         for (int x = 0; x < 26; ++x) remap[x] = rm[x];
+        uint8_t prio[25] = {};
+        for (int k = 0; k < 25; ++k) prio[rm[k]] = (uint8_t)k;
+        for (int i = 0; i < 5; ++i)
+            for (int s = 0; s < 32; ++s) {
+                uint16_t best = 0xFFFF;
+                for (int j = 0; j < 5; ++j)
+                    if (s >> j & 1) {
+                        uint16_t v = (uint16_t)((prio[i * 5 + j] << 5) | (i * 5 + j));
+                        if (v < best) best = v;
+                    }
+                bestrow[i][s] = best;
+            }
     }
 };
 constexpr TabsT TT;
@@ -386,8 +399,8 @@ GameOutput decide(const GameInput* in) {
         acts[0] = acts[1] = acts[2] = STAY;
         unsigned rich = 0u - (unsigned)(in->my_units_gold[u] >= 100);
 
-        // ---- 扫描: 5 行就地载入 + 掩码提取 ----
-        uint32_t goldm = 0;
+        // ---- 扫描: 5 行就地载入 + 行级 LUT 选择(pack→pext 串行链退役) ----
+        uint16_t rowsel[5];
 #if defined(__AVX2__)
         {
             const __m256i v2s = _mm256_set1_epi32(2);   // 挑食: 只标 ≥3 整格(≥2 版判负: 1184视2388)
@@ -414,7 +427,7 @@ GameOutput decide(const GameInput* in) {
                     _mm256_cmpeq_epi32(vrow, vm3)));
 #endif
                 uint32_t rv = colv & rowok;
-                goldm |= ((((g8 << 2) >> lsh) & 31u) & rv) << (i * 5);
+                rowsel[i] = TT.bestrow[i][(((g8 << 2) >> lsh) & 31u) & rv];
                 bombm |= ((((b8 << 2) >> lsh) & 31u) & rv) << (i * 5);
                 // 弹记全窗: LUT 一轮 3 步, ±1 行记法让第 2/3 步踩盲区雷(158287 烧 335 案)
             }
@@ -428,6 +441,7 @@ GameOutput decide(const GameInput* in) {
             }
         }
 #else
+        rowsel[0] = rowsel[1] = rowsel[2] = rowsel[3] = rowsel[4] = 0xFFFF;
         for (int i = 0; i < 5; ++i) {            // 标量参考(仅本机测试)
             int rr = sr - 2 + i;
             if ((unsigned)rr >= (unsigned)N) continue;
@@ -435,47 +449,31 @@ GameOutput decide(const GameInput* in) {
                 int cc = sc - 2 + j;
                 if ((unsigned)cc >= (unsigned)N) continue;
                 int v = in->grid[rr][cc];
-                if (v > 2) goldm |= 1u << (i * 5 + j);
-                else if (v == -3) g_s.bombbit[rr + 3] |= 1u << (cc + 1);
+                if (v > 2) {
+                    uint16_t e = TT.bestrow[i][1u << j];
+                    if (e < rowsel[i]) rowsel[i] = e;
+                } else if (v == -3) g_s.bombbit[rr + 3] |= 1u << (cc + 1);
             }
         }
 #endif
         // (金格与弹格规则上不共存 —— 目标无需剔弹, 途中避弹由 pass01 管)
 
-        // ---- 目标: 最近金(环距优先) 否则锚点 ----
+        // ---- 目标: 行级 min 收敛(pext 级联退役, 5 独立载入换串行链) ----
         int tgr, tgc;
         int blind;
         {
-            constexpr uint32_t RM0 = 1u << 12;
-            constexpr uint32_t RM1 = (1u<<7)|(1u<<11)|(1u<<13)|(1u<<17);
-            constexpr uint32_t RM2 = (1u<<2)|(1u<<6)|(1u<<8)|(1u<<10)|(1u<<14)|(1u<<16)|(1u<<18)|(1u<<22);
-            constexpr uint32_t RM3 = (1u<<1)|(1u<<3)|(1u<<5)|(1u<<9)|(1u<<15)|(1u<<19)|(1u<<21)|(1u<<23);
-            constexpr uint32_t RM4 = (1u<<0)|(1u<<4)|(1u<<20)|(1u<<24);
-#if defined(__BMI2__)
-            // pext 重排: 位序=环优先级(1>2>3>4>0), 一次 ctz 完成级联(表在 TT)
-            uint32_t re = _pext_u32(goldm, RM1) | (_pext_u32(goldm, RM2) << 4) |
-                          (_pext_u32(goldm, RM3) << 12) | (_pext_u32(goldm, RM4) << 20) |
-                          (((goldm >> 12) & 1u) << 24);
-            (void)RM0;
-            int i = TT.remap[__builtin_ctz(re | (uint32_t)(re == 0)) & 31];
-#else
-            uint32_t g1 = goldm & RM1, g2 = goldm & RM2, g3 = goldm & RM3;
-            uint32_t g4 = goldm & RM4, g0 = goldm & RM0;
-            uint32_t m1 = (uint32_t)0 - (g1 != 0);
-            uint32_t m2 = ((uint32_t)0 - (g2 != 0)) & ~m1;
-            uint32_t m3 = ((uint32_t)0 - (g3 != 0)) & ~m1 & ~m2;
-            uint32_t m4 = ((uint32_t)0 - (g4 != 0)) & ~m1 & ~m2 & ~m3;
-            uint32_t m0 = ~m1 & ~m2 & ~m3 & ~m4;
-            uint32_t sel = (g1 & m1) | (g2 & m2) | (g3 & m3) | (g4 & m4) | (g0 & m0);
-            int i = __builtin_ctz(sel | (uint32_t)(sel == 0));   // 仅空时补位(恒补 bit0 是历史崩盘元凶)
-#endif
+            uint16_t b01 = rowsel[0] < rowsel[1] ? rowsel[0] : rowsel[1];
+            uint16_t b23 = rowsel[2] < rowsel[3] ? rowsel[2] : rowsel[3];
+            uint16_t b0123 = b01 < b23 ? b01 : b23;
+            uint16_t bv = b0123 < rowsel[4] ? b0123 : rowsel[4];
+            int w = bv & 31;
             // 三路目标: 整格(≥3) > 站金残值(标量兜底, 折返双吃) > 锚点
-            int has = -(int)(goldm != 0);
-            int standing = -(int)(in->grid[sr][sc] > 1);   // 1金残渣不折返: 回哨位张网(驻留窗口守恒)
+            int has = -(int)(bv != 0xFFFF);
+            int standing = -(int)(in->grid[sr][sc] > 1);   // 1金残渣不折返: 回哨位张网
             int selfm = ~has & standing;
             blind = ~has & ~standing;
-            tgr = ((sr - 2 + TT.d5[i]) & has) | (sr & selfm) | (g_s.anch_r[u] & blind);
-            tgc = ((sc - 2 + TT.m5[i]) & has) | (sc & selfm) | (g_s.anch_c[u] & blind);
+            tgr = ((sr - 2 + TT.d5[w]) & has) | (sr & selfm) | (g_s.anch_r[u] & blind);
+            tgc = ((sc - 2 + TT.m5[w]) & has) | (sc & selfm) | (g_s.anch_c[u] & blind);
         }
 
         uint32_t blk[N + 2];                     // blocked 位图预合成(扫描后! 含当轮新见弹)
