@@ -1,0 +1,3081 @@
+{
+  "aggregate": {
+    "active_round_fraction": 0.8862333333333333,
+    "active_rounds": 26587,
+    "expeditions": {
+      "arrival_rounds": {
+        "max": 12,
+        "mean": 6.221157850895461,
+        "median": 6,
+        "min": 0,
+        "n": 2401,
+        "p10": 4,
+        "p90": 9
+      },
+      "arrived_count": 2401,
+      "count": 2458,
+      "end_reasons": {
+        "game_end": 55,
+        "retargeted_by_new_pulse": 1705,
+        "returned_after_timeout": 698
+      },
+      "endpoint_deviation_rounds": {
+        "max": 6,
+        "mean": 0.3336045565500407,
+        "median": 0.0,
+        "min": 0,
+        "n": 2458,
+        "p10": 0,
+        "p90": 1
+      },
+      "harvest_rounds": {
+        "max": 12,
+        "mean": 3.948738812042311,
+        "median": 4.0,
+        "min": 0,
+        "n": 2458,
+        "p10": 2,
+        "p90": 7
+      },
+      "losses": {
+        "max": 98,
+        "mean": 10.113913751017087,
+        "median": 6.0,
+        "min": 0,
+        "n": 2458,
+        "p10": 0,
+        "p90": 26
+      },
+      "pickup_at_station": {
+        "max": 102,
+        "mean": 3.981692432872254,
+        "median": 0.0,
+        "min": 0,
+        "n": 2458,
+        "p10": 0,
+        "p90": 14
+      },
+      "pickup_in_travel": {
+        "max": 66,
+        "mean": 6.730268510984541,
+        "median": 2.0,
+        "min": 0,
+        "n": 2458,
+        "p10": 0,
+        "p90": 19
+      },
+      "pickup_on_return": {
+        "max": 13,
+        "mean": 0.2530512611879577,
+        "median": 0.0,
+        "min": 0,
+        "n": 2458,
+        "p10": 0,
+        "p90": 0
+      },
+      "pickup_total": {
+        "max": 121,
+        "mean": 10.965012205044752,
+        "median": 4.0,
+        "min": 0,
+        "n": 2458,
+        "p10": 0,
+        "p90": 34
+      },
+      "return_rounds": {
+        "max": 14,
+        "mean": 2.5024410089503664,
+        "median": 2.0,
+        "min": 0,
+        "n": 2458,
+        "p10": 0,
+        "p90": 6
+      },
+      "snapshot_occupants": {
+        "max": 7,
+        "mean": 1.756712774613507,
+        "median": 1.0,
+        "min": 0,
+        "n": 2458,
+        "p10": 0,
+        "p90": 4
+      },
+      "station_coverage": {
+        "one": 427,
+        "two": 1976,
+        "zero": 55
+      },
+      "travel_rounds": {
+        "max": 12,
+        "mean": 4.365337672904801,
+        "median": 4.0,
+        "min": 0,
+        "n": 2458,
+        "p10": 2,
+        "p90": 6
+      },
+      "visible_interference_rounds": {
+        "max": 20,
+        "mean": 8.413344182262001,
+        "median": 8.0,
+        "min": 0,
+        "n": 2458,
+        "p10": 4,
+        "p90": 13
+      }
+    },
+    "game_count": 60,
+    "leg_income_delta": {
+      "max": 508,
+      "mean": -475.03333333333336,
+      "median": -403.5,
+      "min": -1596,
+      "n": 60,
+      "p10": -1371,
+      "p90": 340
+    },
+    "pair_count": 30,
+    "seat_averaged_income_delta": {
+      "max": -241.5,
+      "mean": -475.03333333333336,
+      "median": -477.0,
+      "min": -661.5,
+      "n": 30,
+      "p10": -622.5,
+      "p90": -356.5
+    }
+  },
+  "baked_tables": {
+    "action_codes": {
+      "0": "up",
+      "1": "down",
+      "2": "left",
+      "3": "right"
+    },
+    "actions_per_round": 3,
+    "anchors": [
+      [
+        6,
+        8
+      ],
+      [
+        11,
+        8
+      ]
+    ],
+    "maps": {
+      "map1": {
+        "arms": {
+          "2": {
+            "double": {
+              "between": {
+                "actions": [
+                  3,
+                  3,
+                  3,
+                  3
+                ],
+                "directions": "RRRR",
+                "from": [
+                  2,
+                  6
+                ],
+                "rounds_at_3_steps": 2,
+                "steps": 4,
+                "to": [
+                  2,
+                  10
+                ]
+              },
+              "covered_hotspots": [
+                [
+                  [
+                    0,
+                    4
+                  ],
+                  [
+                    0,
+                    5
+                  ],
+                  [
+                    1,
+                    6
+                  ]
+                ],
+                [
+                  [
+                    0,
+                    12
+                  ],
+                  [
+                    1,
+                    10
+                  ]
+                ]
+              ],
+              "stations": [
+                [
+                  2,
+                  6
+                ],
+                [
+                  2,
+                  10
+                ]
+              ]
+            },
+            "hotspots": [
+              [
+                0,
+                4
+              ],
+              [
+                0,
+                5
+              ],
+              [
+                0,
+                12
+              ],
+              [
+                1,
+                6
+              ],
+              [
+                1,
+                10
+              ]
+            ],
+            "minimum_station_count": 2,
+            "routes": {
+              "anchor_11_8": [
+                {
+                  "actions": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    2,
+                    2,
+                    2
+                  ],
+                  "directions": "UUUUUUUUUUULLL",
+                  "from": [
+                    11,
+                    8
+                  ],
+                  "rounds_at_3_steps": 5,
+                  "steps": 14,
+                  "to": [
+                    0,
+                    5
+                  ]
+                },
+                {
+                  "actions": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    2,
+                    2
+                  ],
+                  "directions": "UUUUUUUUULL",
+                  "from": [
+                    11,
+                    8
+                  ],
+                  "rounds_at_3_steps": 4,
+                  "steps": 11,
+                  "to": [
+                    2,
+                    6
+                  ]
+                },
+                {
+                  "actions": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    3,
+                    3
+                  ],
+                  "directions": "UUUUUUUUURR",
+                  "from": [
+                    11,
+                    8
+                  ],
+                  "rounds_at_3_steps": 4,
+                  "steps": 11,
+                  "to": [
+                    2,
+                    10
+                  ]
+                }
+              ],
+              "anchor_6_8": [
+                {
+                  "actions": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    2,
+                    2,
+                    2
+                  ],
+                  "directions": "UUUUUULLL",
+                  "from": [
+                    6,
+                    8
+                  ],
+                  "rounds_at_3_steps": 3,
+                  "steps": 9,
+                  "to": [
+                    0,
+                    5
+                  ]
+                },
+                {
+                  "actions": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    2,
+                    2
+                  ],
+                  "directions": "UUUULL",
+                  "from": [
+                    6,
+                    8
+                  ],
+                  "rounds_at_3_steps": 2,
+                  "steps": 6,
+                  "to": [
+                    2,
+                    6
+                  ]
+                },
+                {
+                  "actions": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    3,
+                    3
+                  ],
+                  "directions": "UUUURR",
+                  "from": [
+                    6,
+                    8
+                  ],
+                  "rounds_at_3_steps": 2,
+                  "steps": 6,
+                  "to": [
+                    2,
+                    10
+                  ]
+                }
+              ]
+            },
+            "single": {
+              "covered_hotspots": [
+                [
+                  0,
+                  4
+                ],
+                [
+                  0,
+                  5
+                ],
+                [
+                  1,
+                  6
+                ]
+              ],
+              "covered_weight": 3,
+              "station": [
+                0,
+                5
+              ]
+            }
+          },
+          "3": {
+            "double": {
+              "between": {
+                "actions": [
+                  1,
+                  1,
+                  1,
+                  1
+                ],
+                "directions": "DDDD",
+                "from": [
+                  7,
+                  2
+                ],
+                "rounds_at_3_steps": 2,
+                "steps": 4,
+                "to": [
+                  11,
+                  2
+                ]
+              },
+              "covered_hotspots": [
+                [
+                  [
+                    5,
+                    0
+                  ],
+                  [
+                    7,
+                    1
+                  ],
+                  [
+                    9,
+                    2
+                  ]
+                ],
+                [
+                  [
+                    9,
+                    2
+                  ],
+                  [
+                    11,
+                    0
+                  ],
+                  [
+                    12,
+                    3
+                  ]
+                ]
+              ],
+              "stations": [
+                [
+                  7,
+                  2
+                ],
+                [
+                  11,
+                  2
+                ]
+              ]
+            },
+            "hotspots": [
+              [
+                5,
+                0
+              ],
+              [
+                7,
+                1
+              ],
+              [
+                9,
+                2
+              ],
+              [
+                11,
+                0
+              ],
+              [
+                12,
+                3
+              ]
+            ],
+            "minimum_station_count": 2,
+            "routes": {
+              "anchor_11_8": [
+                {
+                  "actions": [
+                    0,
+                    2,
+                    2,
+                    0,
+                    2,
+                    0,
+                    0,
+                    2,
+                    2,
+                    2,
+                    2
+                  ],
+                  "directions": "ULLULUULLLL",
+                  "from": [
+                    11,
+                    8
+                  ],
+                  "rounds_at_3_steps": 4,
+                  "steps": 11,
+                  "to": [
+                    7,
+                    1
+                  ]
+                },
+                {
+                  "actions": [
+                    0,
+                    2,
+                    2,
+                    0,
+                    2,
+                    0,
+                    0,
+                    2,
+                    2,
+                    2
+                  ],
+                  "directions": "ULLULUULLL",
+                  "from": [
+                    11,
+                    8
+                  ],
+                  "rounds_at_3_steps": 4,
+                  "steps": 10,
+                  "to": [
+                    7,
+                    2
+                  ]
+                },
+                {
+                  "actions": [
+                    0,
+                    2,
+                    2,
+                    2,
+                    2,
+                    1,
+                    2,
+                    2
+                  ],
+                  "directions": "ULLLLDLL",
+                  "from": [
+                    11,
+                    8
+                  ],
+                  "rounds_at_3_steps": 3,
+                  "steps": 8,
+                  "to": [
+                    11,
+                    2
+                  ]
+                }
+              ],
+              "anchor_6_8": [
+                {
+                  "actions": [
+                    2,
+                    2,
+                    1,
+                    2,
+                    2,
+                    2,
+                    2,
+                    2
+                  ],
+                  "directions": "LLDLLLLL",
+                  "from": [
+                    6,
+                    8
+                  ],
+                  "rounds_at_3_steps": 3,
+                  "steps": 8,
+                  "to": [
+                    7,
+                    1
+                  ]
+                },
+                {
+                  "actions": [
+                    2,
+                    2,
+                    1,
+                    2,
+                    2,
+                    2,
+                    2
+                  ],
+                  "directions": "LLDLLLL",
+                  "from": [
+                    6,
+                    8
+                  ],
+                  "rounds_at_3_steps": 3,
+                  "steps": 7,
+                  "to": [
+                    7,
+                    2
+                  ]
+                },
+                {
+                  "actions": [
+                    1,
+                    1,
+                    1,
+                    1,
+                    2,
+                    2,
+                    2,
+                    2,
+                    1,
+                    2,
+                    2
+                  ],
+                  "directions": "DDDDLLLLDLL",
+                  "from": [
+                    6,
+                    8
+                  ],
+                  "rounds_at_3_steps": 4,
+                  "steps": 11,
+                  "to": [
+                    11,
+                    2
+                  ]
+                }
+              ]
+            },
+            "single": {
+              "covered_hotspots": [
+                [
+                  5,
+                  0
+                ],
+                [
+                  7,
+                  1
+                ],
+                [
+                  9,
+                  2
+                ]
+              ],
+              "covered_weight": 3,
+              "station": [
+                7,
+                1
+              ]
+            }
+          },
+          "4": {
+            "double": {
+              "between": {
+                "actions": [
+                  3,
+                  3,
+                  3,
+                  3
+                ],
+                "directions": "RRRR",
+                "from": [
+                  14,
+                  6
+                ],
+                "rounds_at_3_steps": 2,
+                "steps": 4,
+                "to": [
+                  14,
+                  10
+                ]
+              },
+              "covered_hotspots": [
+                [
+                  [
+                    15,
+                    6
+                  ],
+                  [
+                    16,
+                    4
+                  ],
+                  [
+                    16,
+                    5
+                  ]
+                ],
+                [
+                  [
+                    15,
+                    10
+                  ],
+                  [
+                    16,
+                    12
+                  ]
+                ]
+              ],
+              "stations": [
+                [
+                  14,
+                  6
+                ],
+                [
+                  14,
+                  10
+                ]
+              ]
+            },
+            "hotspots": [
+              [
+                15,
+                6
+              ],
+              [
+                15,
+                10
+              ],
+              [
+                16,
+                4
+              ],
+              [
+                16,
+                5
+              ],
+              [
+                16,
+                12
+              ]
+            ],
+            "minimum_station_count": 2,
+            "routes": {
+              "anchor_11_8": [
+                {
+                  "actions": [
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    2,
+                    2,
+                    2
+                  ],
+                  "directions": "DDDDDLLL",
+                  "from": [
+                    11,
+                    8
+                  ],
+                  "rounds_at_3_steps": 3,
+                  "steps": 8,
+                  "to": [
+                    16,
+                    5
+                  ]
+                },
+                {
+                  "actions": [
+                    1,
+                    1,
+                    1,
+                    2,
+                    2
+                  ],
+                  "directions": "DDDLL",
+                  "from": [
+                    11,
+                    8
+                  ],
+                  "rounds_at_3_steps": 2,
+                  "steps": 5,
+                  "to": [
+                    14,
+                    6
+                  ]
+                },
+                {
+                  "actions": [
+                    1,
+                    1,
+                    1,
+                    3,
+                    3
+                  ],
+                  "directions": "DDDRR",
+                  "from": [
+                    11,
+                    8
+                  ],
+                  "rounds_at_3_steps": 2,
+                  "steps": 5,
+                  "to": [
+                    14,
+                    10
+                  ]
+                }
+              ],
+              "anchor_6_8": [
+                {
+                  "actions": [
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    2,
+                    2,
+                    2
+                  ],
+                  "directions": "DDDDDDDDDDLLL",
+                  "from": [
+                    6,
+                    8
+                  ],
+                  "rounds_at_3_steps": 5,
+                  "steps": 13,
+                  "to": [
+                    16,
+                    5
+                  ]
+                },
+                {
+                  "actions": [
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    2,
+                    2
+                  ],
+                  "directions": "DDDDDDDDLL",
+                  "from": [
+                    6,
+                    8
+                  ],
+                  "rounds_at_3_steps": 4,
+                  "steps": 10,
+                  "to": [
+                    14,
+                    6
+                  ]
+                },
+                {
+                  "actions": [
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    3,
+                    3
+                  ],
+                  "directions": "DDDDDDDDRR",
+                  "from": [
+                    6,
+                    8
+                  ],
+                  "rounds_at_3_steps": 4,
+                  "steps": 10,
+                  "to": [
+                    14,
+                    10
+                  ]
+                }
+              ]
+            },
+            "single": {
+              "covered_hotspots": [
+                [
+                  15,
+                  6
+                ],
+                [
+                  16,
+                  4
+                ],
+                [
+                  16,
+                  5
+                ]
+              ],
+              "covered_weight": 3,
+              "station": [
+                16,
+                5
+              ]
+            }
+          },
+          "5": {
+            "double": {
+              "between": {
+                "actions": [
+                  1,
+                  1,
+                  1,
+                  1
+                ],
+                "directions": "DDDD",
+                "from": [
+                  7,
+                  14
+                ],
+                "rounds_at_3_steps": 2,
+                "steps": 4,
+                "to": [
+                  11,
+                  14
+                ]
+              },
+              "covered_hotspots": [
+                [
+                  [
+                    5,
+                    16
+                  ],
+                  [
+                    7,
+                    15
+                  ],
+                  [
+                    9,
+                    14
+                  ]
+                ],
+                [
+                  [
+                    9,
+                    14
+                  ],
+                  [
+                    11,
+                    16
+                  ],
+                  [
+                    12,
+                    13
+                  ]
+                ]
+              ],
+              "stations": [
+                [
+                  7,
+                  14
+                ],
+                [
+                  11,
+                  14
+                ]
+              ]
+            },
+            "hotspots": [
+              [
+                5,
+                16
+              ],
+              [
+                7,
+                15
+              ],
+              [
+                9,
+                14
+              ],
+              [
+                11,
+                16
+              ],
+              [
+                12,
+                13
+              ]
+            ],
+            "minimum_station_count": 2,
+            "routes": {
+              "anchor_11_8": [
+                {
+                  "actions": [
+                    0,
+                    3,
+                    3,
+                    0,
+                    3,
+                    0,
+                    0,
+                    3,
+                    3,
+                    3,
+                    3
+                  ],
+                  "directions": "URRURUURRRR",
+                  "from": [
+                    11,
+                    8
+                  ],
+                  "rounds_at_3_steps": 4,
+                  "steps": 11,
+                  "to": [
+                    7,
+                    15
+                  ]
+                },
+                {
+                  "actions": [
+                    0,
+                    3,
+                    3,
+                    0,
+                    3,
+                    0,
+                    0,
+                    3,
+                    3,
+                    3
+                  ],
+                  "directions": "URRURUURRR",
+                  "from": [
+                    11,
+                    8
+                  ],
+                  "rounds_at_3_steps": 4,
+                  "steps": 10,
+                  "to": [
+                    7,
+                    14
+                  ]
+                },
+                {
+                  "actions": [
+                    0,
+                    3,
+                    3,
+                    3,
+                    3,
+                    1,
+                    3,
+                    3
+                  ],
+                  "directions": "URRRRDRR",
+                  "from": [
+                    11,
+                    8
+                  ],
+                  "rounds_at_3_steps": 3,
+                  "steps": 8,
+                  "to": [
+                    11,
+                    14
+                  ]
+                }
+              ],
+              "anchor_6_8": [
+                {
+                  "actions": [
+                    3,
+                    3,
+                    1,
+                    3,
+                    3,
+                    3,
+                    3,
+                    3
+                  ],
+                  "directions": "RRDRRRRR",
+                  "from": [
+                    6,
+                    8
+                  ],
+                  "rounds_at_3_steps": 3,
+                  "steps": 8,
+                  "to": [
+                    7,
+                    15
+                  ]
+                },
+                {
+                  "actions": [
+                    3,
+                    3,
+                    1,
+                    3,
+                    3,
+                    3,
+                    3
+                  ],
+                  "directions": "RRDRRRR",
+                  "from": [
+                    6,
+                    8
+                  ],
+                  "rounds_at_3_steps": 3,
+                  "steps": 7,
+                  "to": [
+                    7,
+                    14
+                  ]
+                },
+                {
+                  "actions": [
+                    1,
+                    1,
+                    1,
+                    1,
+                    3,
+                    3,
+                    3,
+                    3,
+                    1,
+                    3,
+                    3
+                  ],
+                  "directions": "DDDDRRRRDRR",
+                  "from": [
+                    6,
+                    8
+                  ],
+                  "rounds_at_3_steps": 4,
+                  "steps": 11,
+                  "to": [
+                    11,
+                    14
+                  ]
+                }
+              ]
+            },
+            "single": {
+              "covered_hotspots": [
+                [
+                  5,
+                  16
+                ],
+                [
+                  7,
+                  15
+                ],
+                [
+                  9,
+                  14
+                ]
+              ],
+              "covered_weight": 3,
+              "station": [
+                7,
+                15
+              ]
+            }
+          }
+        },
+        "status": "baked"
+      },
+      "map2": {
+        "arms": {
+          "2": {
+            "double": {
+              "between": {
+                "actions": [
+                  3,
+                  1,
+                  1,
+                  3,
+                  3,
+                  3
+                ],
+                "directions": "RDDRRR",
+                "from": [
+                  1,
+                  6
+                ],
+                "rounds_at_3_steps": 2,
+                "steps": 6,
+                "to": [
+                  3,
+                  10
+                ]
+              },
+              "covered_hotspots": [
+                [
+                  [
+                    0,
+                    4
+                  ],
+                  [
+                    0,
+                    8
+                  ],
+                  [
+                    1,
+                    6
+                  ]
+                ],
+                [
+                  [
+                    1,
+                    12
+                  ],
+                  [
+                    3,
+                    10
+                  ]
+                ]
+              ],
+              "stations": [
+                [
+                  1,
+                  6
+                ],
+                [
+                  3,
+                  10
+                ]
+              ]
+            },
+            "hotspots": [
+              [
+                0,
+                4
+              ],
+              [
+                0,
+                8
+              ],
+              [
+                1,
+                6
+              ],
+              [
+                1,
+                12
+              ],
+              [
+                3,
+                10
+              ]
+            ],
+            "minimum_station_count": 2,
+            "routes": {
+              "anchor_11_8": [
+                {
+                  "actions": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    2,
+                    0,
+                    0,
+                    0,
+                    0,
+                    2
+                  ],
+                  "directions": "UUUUUULUUUUL",
+                  "from": [
+                    11,
+                    8
+                  ],
+                  "rounds_at_3_steps": 4,
+                  "steps": 12,
+                  "to": [
+                    1,
+                    6
+                  ]
+                },
+                {
+                  "actions": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    2,
+                    0,
+                    0,
+                    0,
+                    0,
+                    2
+                  ],
+                  "directions": "UUUUUULUUUUL",
+                  "from": [
+                    11,
+                    8
+                  ],
+                  "rounds_at_3_steps": 4,
+                  "steps": 12,
+                  "to": [
+                    1,
+                    6
+                  ]
+                },
+                {
+                  "actions": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    3,
+                    0,
+                    0,
+                    3
+                  ],
+                  "directions": "UUUUUURUUR",
+                  "from": [
+                    11,
+                    8
+                  ],
+                  "rounds_at_3_steps": 4,
+                  "steps": 10,
+                  "to": [
+                    3,
+                    10
+                  ]
+                }
+              ],
+              "anchor_6_8": [
+                {
+                  "actions": [
+                    0,
+                    2,
+                    0,
+                    0,
+                    0,
+                    0,
+                    2
+                  ],
+                  "directions": "ULUUUUL",
+                  "from": [
+                    6,
+                    8
+                  ],
+                  "rounds_at_3_steps": 3,
+                  "steps": 7,
+                  "to": [
+                    1,
+                    6
+                  ]
+                },
+                {
+                  "actions": [
+                    0,
+                    2,
+                    0,
+                    0,
+                    0,
+                    0,
+                    2
+                  ],
+                  "directions": "ULUUUUL",
+                  "from": [
+                    6,
+                    8
+                  ],
+                  "rounds_at_3_steps": 3,
+                  "steps": 7,
+                  "to": [
+                    1,
+                    6
+                  ]
+                },
+                {
+                  "actions": [
+                    0,
+                    3,
+                    0,
+                    0,
+                    3
+                  ],
+                  "directions": "URUUR",
+                  "from": [
+                    6,
+                    8
+                  ],
+                  "rounds_at_3_steps": 2,
+                  "steps": 5,
+                  "to": [
+                    3,
+                    10
+                  ]
+                }
+              ]
+            },
+            "single": {
+              "covered_hotspots": [
+                [
+                  0,
+                  4
+                ],
+                [
+                  0,
+                  8
+                ],
+                [
+                  1,
+                  6
+                ]
+              ],
+              "covered_weight": 3,
+              "station": [
+                1,
+                6
+              ]
+            }
+          },
+          "3": {
+            "double": {
+              "between": {
+                "actions": [
+                  1,
+                  1,
+                  2,
+                  1,
+                  1,
+                  3
+                ],
+                "directions": "DDLDDR",
+                "from": [
+                  7,
+                  2
+                ],
+                "rounds_at_3_steps": 2,
+                "steps": 6,
+                "to": [
+                  11,
+                  2
+                ]
+              },
+              "covered_hotspots": [
+                [
+                  [
+                    5,
+                    0
+                  ],
+                  [
+                    7,
+                    2
+                  ],
+                  [
+                    9,
+                    1
+                  ]
+                ],
+                [
+                  [
+                    9,
+                    1
+                  ],
+                  [
+                    11,
+                    3
+                  ],
+                  [
+                    12,
+                    0
+                  ]
+                ]
+              ],
+              "stations": [
+                [
+                  7,
+                  2
+                ],
+                [
+                  11,
+                  2
+                ]
+              ]
+            },
+            "hotspots": [
+              [
+                5,
+                0
+              ],
+              [
+                7,
+                2
+              ],
+              [
+                9,
+                1
+              ],
+              [
+                11,
+                3
+              ],
+              [
+                12,
+                0
+              ]
+            ],
+            "minimum_station_count": 2,
+            "routes": {
+              "anchor_11_8": [
+                {
+                  "actions": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    2,
+                    2,
+                    2,
+                    2,
+                    2,
+                    2
+                  ],
+                  "directions": "UUUULLLLLL",
+                  "from": [
+                    11,
+                    8
+                  ],
+                  "rounds_at_3_steps": 4,
+                  "steps": 10,
+                  "to": [
+                    7,
+                    2
+                  ]
+                },
+                {
+                  "actions": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    2,
+                    2,
+                    2,
+                    2,
+                    2,
+                    2
+                  ],
+                  "directions": "UUUULLLLLL",
+                  "from": [
+                    11,
+                    8
+                  ],
+                  "rounds_at_3_steps": 4,
+                  "steps": 10,
+                  "to": [
+                    7,
+                    2
+                  ]
+                },
+                {
+                  "actions": [
+                    2,
+                    2,
+                    2,
+                    2,
+                    2,
+                    2
+                  ],
+                  "directions": "LLLLLL",
+                  "from": [
+                    11,
+                    8
+                  ],
+                  "rounds_at_3_steps": 2,
+                  "steps": 6,
+                  "to": [
+                    11,
+                    2
+                  ]
+                }
+              ],
+              "anchor_6_8": [
+                {
+                  "actions": [
+                    1,
+                    2,
+                    2,
+                    2,
+                    2,
+                    2,
+                    2
+                  ],
+                  "directions": "DLLLLLL",
+                  "from": [
+                    6,
+                    8
+                  ],
+                  "rounds_at_3_steps": 3,
+                  "steps": 7,
+                  "to": [
+                    7,
+                    2
+                  ]
+                },
+                {
+                  "actions": [
+                    1,
+                    2,
+                    2,
+                    2,
+                    2,
+                    2,
+                    2
+                  ],
+                  "directions": "DLLLLLL",
+                  "from": [
+                    6,
+                    8
+                  ],
+                  "rounds_at_3_steps": 3,
+                  "steps": 7,
+                  "to": [
+                    7,
+                    2
+                  ]
+                },
+                {
+                  "actions": [
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    2,
+                    2,
+                    2,
+                    2,
+                    2,
+                    2
+                  ],
+                  "directions": "DDDDDLLLLLL",
+                  "from": [
+                    6,
+                    8
+                  ],
+                  "rounds_at_3_steps": 4,
+                  "steps": 11,
+                  "to": [
+                    11,
+                    2
+                  ]
+                }
+              ]
+            },
+            "single": {
+              "covered_hotspots": [
+                [
+                  5,
+                  0
+                ],
+                [
+                  7,
+                  2
+                ],
+                [
+                  9,
+                  1
+                ]
+              ],
+              "covered_weight": 3,
+              "station": [
+                7,
+                2
+              ]
+            }
+          },
+          "4": {
+            "double": {
+              "between": {
+                "actions": [
+                  2,
+                  1,
+                  1,
+                  2,
+                  2,
+                  2
+                ],
+                "directions": "LDDLLL",
+                "from": [
+                  13,
+                  10
+                ],
+                "rounds_at_3_steps": 2,
+                "steps": 6,
+                "to": [
+                  15,
+                  6
+                ]
+              },
+              "covered_hotspots": [
+                [
+                  [
+                    13,
+                    10
+                  ],
+                  [
+                    15,
+                    12
+                  ]
+                ],
+                [
+                  [
+                    15,
+                    6
+                  ],
+                  [
+                    16,
+                    4
+                  ],
+                  [
+                    16,
+                    8
+                  ]
+                ]
+              ],
+              "stations": [
+                [
+                  13,
+                  10
+                ],
+                [
+                  15,
+                  6
+                ]
+              ]
+            },
+            "hotspots": [
+              [
+                13,
+                10
+              ],
+              [
+                15,
+                6
+              ],
+              [
+                15,
+                12
+              ],
+              [
+                16,
+                4
+              ],
+              [
+                16,
+                8
+              ]
+            ],
+            "minimum_station_count": 2,
+            "routes": {
+              "anchor_11_8": [
+                {
+                  "actions": [
+                    2,
+                    1,
+                    1,
+                    1,
+                    1,
+                    2
+                  ],
+                  "directions": "LDDDDL",
+                  "from": [
+                    11,
+                    8
+                  ],
+                  "rounds_at_3_steps": 2,
+                  "steps": 6,
+                  "to": [
+                    15,
+                    6
+                  ]
+                },
+                {
+                  "actions": [
+                    3,
+                    1,
+                    1,
+                    3
+                  ],
+                  "directions": "RDDR",
+                  "from": [
+                    11,
+                    8
+                  ],
+                  "rounds_at_3_steps": 2,
+                  "steps": 4,
+                  "to": [
+                    13,
+                    10
+                  ]
+                },
+                {
+                  "actions": [
+                    2,
+                    1,
+                    1,
+                    1,
+                    1,
+                    2
+                  ],
+                  "directions": "LDDDDL",
+                  "from": [
+                    11,
+                    8
+                  ],
+                  "rounds_at_3_steps": 2,
+                  "steps": 6,
+                  "to": [
+                    15,
+                    6
+                  ]
+                }
+              ],
+              "anchor_6_8": [
+                {
+                  "actions": [
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    2,
+                    1,
+                    1,
+                    1,
+                    1,
+                    2
+                  ],
+                  "directions": "DDDDDLDDDDL",
+                  "from": [
+                    6,
+                    8
+                  ],
+                  "rounds_at_3_steps": 4,
+                  "steps": 11,
+                  "to": [
+                    15,
+                    6
+                  ]
+                },
+                {
+                  "actions": [
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    3,
+                    1,
+                    1,
+                    3
+                  ],
+                  "directions": "DDDDDRDDR",
+                  "from": [
+                    6,
+                    8
+                  ],
+                  "rounds_at_3_steps": 3,
+                  "steps": 9,
+                  "to": [
+                    13,
+                    10
+                  ]
+                },
+                {
+                  "actions": [
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    2,
+                    1,
+                    1,
+                    1,
+                    1,
+                    2
+                  ],
+                  "directions": "DDDDDLDDDDL",
+                  "from": [
+                    6,
+                    8
+                  ],
+                  "rounds_at_3_steps": 4,
+                  "steps": 11,
+                  "to": [
+                    15,
+                    6
+                  ]
+                }
+              ]
+            },
+            "single": {
+              "covered_hotspots": [
+                [
+                  15,
+                  6
+                ],
+                [
+                  16,
+                  4
+                ],
+                [
+                  16,
+                  8
+                ]
+              ],
+              "covered_weight": 3,
+              "station": [
+                15,
+                6
+              ]
+            }
+          },
+          "5": {
+            "double": {
+              "between": {
+                "actions": [
+                  1,
+                  1,
+                  2,
+                  1,
+                  1,
+                  3
+                ],
+                "directions": "DDLDDR",
+                "from": [
+                  7,
+                  14
+                ],
+                "rounds_at_3_steps": 2,
+                "steps": 6,
+                "to": [
+                  11,
+                  14
+                ]
+              },
+              "covered_hotspots": [
+                [
+                  [
+                    5,
+                    16
+                  ],
+                  [
+                    7,
+                    14
+                  ],
+                  [
+                    9,
+                    15
+                  ]
+                ],
+                [
+                  [
+                    9,
+                    15
+                  ],
+                  [
+                    11,
+                    13
+                  ],
+                  [
+                    12,
+                    16
+                  ]
+                ]
+              ],
+              "stations": [
+                [
+                  7,
+                  14
+                ],
+                [
+                  11,
+                  14
+                ]
+              ]
+            },
+            "hotspots": [
+              [
+                5,
+                16
+              ],
+              [
+                7,
+                14
+              ],
+              [
+                9,
+                15
+              ],
+              [
+                11,
+                13
+              ],
+              [
+                12,
+                16
+              ]
+            ],
+            "minimum_station_count": 2,
+            "routes": {
+              "anchor_11_8": [
+                {
+                  "actions": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    3,
+                    3,
+                    3,
+                    3,
+                    3,
+                    3
+                  ],
+                  "directions": "UUUURRRRRR",
+                  "from": [
+                    11,
+                    8
+                  ],
+                  "rounds_at_3_steps": 4,
+                  "steps": 10,
+                  "to": [
+                    7,
+                    14
+                  ]
+                },
+                {
+                  "actions": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    3,
+                    3,
+                    3,
+                    3,
+                    3,
+                    3
+                  ],
+                  "directions": "UUUURRRRRR",
+                  "from": [
+                    11,
+                    8
+                  ],
+                  "rounds_at_3_steps": 4,
+                  "steps": 10,
+                  "to": [
+                    7,
+                    14
+                  ]
+                },
+                {
+                  "actions": [
+                    3,
+                    3,
+                    3,
+                    3,
+                    3,
+                    3
+                  ],
+                  "directions": "RRRRRR",
+                  "from": [
+                    11,
+                    8
+                  ],
+                  "rounds_at_3_steps": 2,
+                  "steps": 6,
+                  "to": [
+                    11,
+                    14
+                  ]
+                }
+              ],
+              "anchor_6_8": [
+                {
+                  "actions": [
+                    1,
+                    3,
+                    3,
+                    3,
+                    3,
+                    3,
+                    3
+                  ],
+                  "directions": "DRRRRRR",
+                  "from": [
+                    6,
+                    8
+                  ],
+                  "rounds_at_3_steps": 3,
+                  "steps": 7,
+                  "to": [
+                    7,
+                    14
+                  ]
+                },
+                {
+                  "actions": [
+                    1,
+                    3,
+                    3,
+                    3,
+                    3,
+                    3,
+                    3
+                  ],
+                  "directions": "DRRRRRR",
+                  "from": [
+                    6,
+                    8
+                  ],
+                  "rounds_at_3_steps": 3,
+                  "steps": 7,
+                  "to": [
+                    7,
+                    14
+                  ]
+                },
+                {
+                  "actions": [
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    3,
+                    3,
+                    3,
+                    3,
+                    3,
+                    3
+                  ],
+                  "directions": "DDDDDRRRRRR",
+                  "from": [
+                    6,
+                    8
+                  ],
+                  "rounds_at_3_steps": 4,
+                  "steps": 11,
+                  "to": [
+                    11,
+                    14
+                  ]
+                }
+              ]
+            },
+            "single": {
+              "covered_hotspots": [
+                [
+                  5,
+                  16
+                ],
+                [
+                  7,
+                  14
+                ],
+                [
+                  9,
+                  15
+                ]
+              ],
+              "covered_weight": 3,
+              "station": [
+                7,
+                14
+              ]
+            }
+          }
+        },
+        "status": "baked"
+      },
+      "map3": {
+        "policy": "central_only_no_raid",
+        "reason": "map3 has walls but no token-2 cells; map1/map2 hotspot layouts are not symmetry-equivalent",
+        "status": "unsupported_no_hotspot_metadata"
+      }
+    },
+    "schema_version": 1,
+    "vision_radius": 2,
+    "weight_model": "all token-2 hotspots have equal fitted weight"
+  },
+  "biases": [
+    {
+      "direction": "makes central residence worse, so raid-minus-baseline delta is optimistically biased upward",
+      "source": "NPC model is too greedy and too central"
+    },
+    {
+      "direction": "small additional optimistic bias toward raids; fit is close but not exact",
+      "source": "fitted outer hotspot share 0.553 versus observed truth 0.541"
+    }
+  ],
+  "by_map": {
+    "map1": {
+      "active_round_fraction": 0.8988,
+      "active_rounds": 13482,
+      "expeditions": {
+        "arrival_rounds": {
+          "max": 12,
+          "mean": 6.334175084175084,
+          "median": 6.0,
+          "min": 0,
+          "n": 1188,
+          "p10": 4,
+          "p90": 9
+        },
+        "arrived_count": 1188,
+        "count": 1234,
+        "end_reasons": {
+          "game_end": 29,
+          "retargeted_by_new_pulse": 882,
+          "returned_after_timeout": 323
+        },
+        "endpoint_deviation_rounds": {
+          "max": 5,
+          "mean": 0.24473257698541329,
+          "median": 0.0,
+          "min": 0,
+          "n": 1234,
+          "p10": 0,
+          "p90": 1
+        },
+        "harvest_rounds": {
+          "max": 11,
+          "mean": 4.172609400324149,
+          "median": 4.0,
+          "min": 0,
+          "n": 1234,
+          "p10": 2,
+          "p90": 7
+        },
+        "losses": {
+          "max": 98,
+          "mean": 11.815235008103727,
+          "median": 7.0,
+          "min": 0,
+          "n": 1234,
+          "p10": 0,
+          "p90": 31
+        },
+        "pickup_at_station": {
+          "max": 102,
+          "mean": 5.158022690437601,
+          "median": 0.0,
+          "min": 0,
+          "n": 1234,
+          "p10": 0,
+          "p90": 20
+        },
+        "pickup_in_travel": {
+          "max": 66,
+          "mean": 7.832252836304701,
+          "median": 4.0,
+          "min": 0,
+          "n": 1234,
+          "p10": 0,
+          "p90": 23
+        },
+        "pickup_on_return": {
+          "max": 13,
+          "mean": 0.28444084278768234,
+          "median": 0.0,
+          "min": 0,
+          "n": 1234,
+          "p10": 0,
+          "p90": 0
+        },
+        "pickup_total": {
+          "max": 121,
+          "mean": 13.274716369529983,
+          "median": 5.0,
+          "min": 0,
+          "n": 1234,
+          "p10": 0,
+          "p90": 41
+        },
+        "return_rounds": {
+          "max": 14,
+          "mean": 2.325769854132901,
+          "median": 2.0,
+          "min": 0,
+          "n": 1234,
+          "p10": 0,
+          "p90": 6
+        },
+        "snapshot_occupants": {
+          "max": 7,
+          "mean": 1.5243111831442464,
+          "median": 1.0,
+          "min": 0,
+          "n": 1234,
+          "p10": 0,
+          "p90": 4
+        },
+        "station_coverage": {
+          "one": 242,
+          "two": 948,
+          "zero": 44
+        },
+        "travel_rounds": {
+          "max": 12,
+          "mean": 4.427066450567261,
+          "median": 5.0,
+          "min": 0,
+          "n": 1234,
+          "p10": 2,
+          "p90": 6
+        },
+        "visible_interference_rounds": {
+          "max": 19,
+          "mean": 8.410048622366288,
+          "median": 8.0,
+          "min": 0,
+          "n": 1234,
+          "p10": 4,
+          "p90": 13
+        }
+      },
+      "game_count": 30,
+      "leg_income_delta": {
+        "max": 508,
+        "mean": -470.6666666666667,
+        "median": -368.0,
+        "min": -1596,
+        "n": 30,
+        "p10": -1465,
+        "p90": 322
+      },
+      "pair_count": 15,
+      "seat_averaged_income_delta": {
+        "max": -241.5,
+        "mean": -470.6666666666667,
+        "median": -478.5,
+        "min": -661.5,
+        "n": 15,
+        "p10": -612.0,
+        "p90": -365.5
+      }
+    },
+    "map2": {
+      "active_round_fraction": 0.8736666666666667,
+      "active_rounds": 13105,
+      "expeditions": {
+        "arrival_rounds": {
+          "max": 12,
+          "mean": 6.110469909315746,
+          "median": 6,
+          "min": 0,
+          "n": 1213,
+          "p10": 3,
+          "p90": 9
+        },
+        "arrived_count": 1213,
+        "count": 1224,
+        "end_reasons": {
+          "game_end": 26,
+          "retargeted_by_new_pulse": 823,
+          "returned_after_timeout": 375
+        },
+        "endpoint_deviation_rounds": {
+          "max": 6,
+          "mean": 0.42320261437908496,
+          "median": 0.0,
+          "min": 0,
+          "n": 1224,
+          "p10": 0,
+          "p90": 1
+        },
+        "harvest_rounds": {
+          "max": 12,
+          "mean": 3.7230392156862746,
+          "median": 3.0,
+          "min": 0,
+          "n": 1224,
+          "p10": 2,
+          "p90": 6
+        },
+        "losses": {
+          "max": 76,
+          "mean": 8.398692810457517,
+          "median": 6.0,
+          "min": 0,
+          "n": 1224,
+          "p10": 0,
+          "p90": 22
+        },
+        "pickup_at_station": {
+          "max": 65,
+          "mean": 2.795751633986928,
+          "median": 0.0,
+          "min": 0,
+          "n": 1224,
+          "p10": 0,
+          "p90": 9
+        },
+        "pickup_in_travel": {
+          "max": 60,
+          "mean": 5.619281045751634,
+          "median": 1.0,
+          "min": 0,
+          "n": 1224,
+          "p10": 0,
+          "p90": 18
+        },
+        "pickup_on_return": {
+          "max": 12,
+          "mean": 0.22140522875816993,
+          "median": 0.0,
+          "min": 0,
+          "n": 1224,
+          "p10": 0,
+          "p90": 0
+        },
+        "pickup_total": {
+          "max": 97,
+          "mean": 8.636437908496733,
+          "median": 2.0,
+          "min": 0,
+          "n": 1224,
+          "p10": 0,
+          "p90": 27
+        },
+        "return_rounds": {
+          "max": 12,
+          "mean": 2.6805555555555554,
+          "median": 2.0,
+          "min": 0,
+          "n": 1224,
+          "p10": 0,
+          "p90": 6
+        },
+        "snapshot_occupants": {
+          "max": 7,
+          "mean": 1.9910130718954249,
+          "median": 2.0,
+          "min": 0,
+          "n": 1224,
+          "p10": 0,
+          "p90": 4
+        },
+        "station_coverage": {
+          "one": 185,
+          "two": 1028,
+          "zero": 11
+        },
+        "travel_rounds": {
+          "max": 10,
+          "mean": 4.303104575163399,
+          "median": 4.0,
+          "min": 0,
+          "n": 1224,
+          "p10": 2,
+          "p90": 6
+        },
+        "visible_interference_rounds": {
+          "max": 20,
+          "mean": 8.416666666666666,
+          "median": 8.0,
+          "min": 0,
+          "n": 1224,
+          "p10": 4,
+          "p90": 13
+        }
+      },
+      "game_count": 30,
+      "leg_income_delta": {
+        "max": 499,
+        "mean": -479.4,
+        "median": -533.0,
+        "min": -1402,
+        "n": 30,
+        "p10": -1349,
+        "p90": 340
+      },
+      "pair_count": 15,
+      "seat_averaged_income_delta": {
+        "max": -351.0,
+        "mean": -479.4,
+        "median": -475.5,
+        "min": -655.0,
+        "n": 15,
+        "p10": -622.5,
+        "p90": -352.0
+      }
+    }
+  },
+  "design": {
+    "baseline": "two anchor-biased 5x5 local harvesters at (6,8) and (11,8)",
+    "dispatch": "fixed; two seat-swapped legs per seed",
+    "map3": "not run: no token-2 metadata, central-only policy",
+    "pairs_per_map": 15,
+    "raid_max_rounds": 12,
+    "threshold": 40,
+    "total_pairs": 30,
+    "treatment": "unit0 baseline; unit1 triggers on outer RegionStat.gold_generated>=40, visits baked two-station cover, then returns"
+  },
+  "pairs": [
+    {
+      "legs": [
+        {
+          "baseline": 1524,
+          "delta": -1206,
+          "raid": 318
+        },
+        {
+          "baseline": 669,
+          "delta": 223,
+          "raid": 892
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "10845469759e63124f7c6dcb724a4835b64bfc620030aa2e1da84354ed4970cd",
+      "seat_averaged_delta": -491.5,
+      "seed": 2026080900
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1370,
+          "delta": -945,
+          "raid": 425
+        },
+        {
+          "baseline": 787,
+          "delta": 44,
+          "raid": 831
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "3fa7de7556ba7771b70dee373e204846410f3afcfd7be54df7fae08a838a2b05",
+      "seat_averaged_delta": -450.5,
+      "seed": 2026080901
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1547,
+          "delta": -1049,
+          "raid": 498
+        },
+        {
+          "baseline": 632,
+          "delta": 284,
+          "raid": 916
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "e4f9b1396f3beb5fb40ee349a6a24c8435518b590a722fd14a717cff33609412",
+      "seat_averaged_delta": -382.5,
+      "seed": 2026080902
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1437,
+          "delta": -1096,
+          "raid": 341
+        },
+        {
+          "baseline": 788,
+          "delta": 126,
+          "raid": 914
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "869d94257536bdfa3c21c440620106c1cb258e233cfeb9c95f2028ffd85b0b72",
+      "seat_averaged_delta": -485.0,
+      "seed": 2026080903
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1867,
+          "delta": -1596,
+          "raid": 271
+        },
+        {
+          "baseline": 709,
+          "delta": 273,
+          "raid": 982
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "c6652aaf57704728851f91d06aa32c41766e8996276341c14d758dd7369dc831",
+      "seat_averaged_delta": -661.5,
+      "seed": 2026080904
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1917,
+          "delta": -1468,
+          "raid": 449
+        },
+        {
+          "baseline": 760,
+          "delta": 385,
+          "raid": 1145
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "f0847c7dc882b102e56937d0eef49bc708ec86b139dfb5f9e63c62c8ac79ca33",
+      "seat_averaged_delta": -541.5,
+      "seed": 2026080905
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1400,
+          "delta": -1052,
+          "raid": 348
+        },
+        {
+          "baseline": 557,
+          "delta": 321,
+          "raid": 878
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "c962d24c30e475f68f2aa7dfb0d0568a0e4b9b729ae5747a1f8cf33cd6d86c70",
+      "seat_averaged_delta": -365.5,
+      "seed": 2026080906
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1597,
+          "delta": -1273,
+          "raid": 324
+        },
+        {
+          "baseline": 632,
+          "delta": 137,
+          "raid": 769
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "4b06e73a605201c428b6895a6a540592b1476a266d736c33d2b9f4306ea80ba2",
+      "seat_averaged_delta": -568.0,
+      "seed": 2026080907
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1686,
+          "delta": -1371,
+          "raid": 315
+        },
+        {
+          "baseline": 627,
+          "delta": 147,
+          "raid": 774
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "aecb2a1bc366abf79b5227eaea4431e431c6d25e8895c5741de3b09c8d76e922",
+      "seat_averaged_delta": -612.0,
+      "seed": 2026080908
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1584,
+          "delta": -1202,
+          "raid": 382
+        },
+        {
+          "baseline": 660,
+          "delta": 353,
+          "raid": 1013
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "64020f37be8e7d78978aa147ed1754733804652dc590d197aba5b76144fcd84b",
+      "seat_averaged_delta": -424.5,
+      "seed": 2026080909
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1658,
+          "delta": -1244,
+          "raid": 414
+        },
+        {
+          "baseline": 758,
+          "delta": 265,
+          "raid": 1023
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "021db42bd362f3e74e37367fbe8ed04d544497297e60be8d9780a05e4580a56d",
+      "seat_averaged_delta": -489.5,
+      "seed": 2026080910
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1842,
+          "delta": -1465,
+          "raid": 377
+        },
+        {
+          "baseline": 512,
+          "delta": 508,
+          "raid": 1020
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "3caea5eb293ec83d53c05144bdb720c6dc013f0cb6021e13b7e4614e083318e4",
+      "seat_averaged_delta": -478.5,
+      "seed": 2026080911
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1185,
+          "delta": -780,
+          "raid": 405
+        },
+        {
+          "baseline": 620,
+          "delta": 297,
+          "raid": 917
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "246f49f35bc196df2d4dc16171e031f03ff95869ae4b8c9ec67ad6e880275ef8",
+      "seat_averaged_delta": -241.5,
+      "seed": 2026080912
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1528,
+          "delta": -1133,
+          "raid": 395
+        },
+        {
+          "baseline": 652,
+          "delta": 322,
+          "raid": 974
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "ea74ae97267edb51a8d41611cc418c59a799e33be44441ec9a01e87c62be09d2",
+      "seat_averaged_delta": -405.5,
+      "seed": 2026080913
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1639,
+          "delta": -1226,
+          "raid": 413
+        },
+        {
+          "baseline": 817,
+          "delta": 301,
+          "raid": 1118
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "67be387386167e5a6c0e851a824a10a58a5161c776700c1d7f9e0843e705b1f7",
+      "seat_averaged_delta": -462.5,
+      "seed": 2026080914
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1539,
+          "delta": -1222,
+          "raid": 317
+        },
+        {
+          "baseline": 723,
+          "delta": 80,
+          "raid": 803
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "6aedb8280ab0ed32b195a85617a3eb060eee9631883116fa099687c828be5bc3",
+      "seat_averaged_delta": -571.0,
+      "seed": 2026081900
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1721,
+          "delta": -1402,
+          "raid": 319
+        },
+        {
+          "baseline": 642,
+          "delta": 157,
+          "raid": 799
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "df73b18a2b04d335375e8cf854b13b231a72686084430e138506e167946a2a79",
+      "seat_averaged_delta": -622.5,
+      "seed": 2026081901
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1665,
+          "delta": -1371,
+          "raid": 294
+        },
+        {
+          "baseline": 706,
+          "delta": 204,
+          "raid": 910
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "7361fafa4a78849cb70ee6f88f04dcda68335e96fa508a92dff9d65b1b7d64cd",
+      "seat_averaged_delta": -583.5,
+      "seed": 2026081902
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1562,
+          "delta": -1283,
+          "raid": 279
+        },
+        {
+          "baseline": 727,
+          "delta": -27,
+          "raid": 700
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "d4d48c67a0aa7303a6632887df3a783311ee42d1e6ed416af1193563bb9ecf67",
+      "seat_averaged_delta": -655.0,
+      "seed": 2026081903
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1658,
+          "delta": -1349,
+          "raid": 309
+        },
+        {
+          "baseline": 670,
+          "delta": 221,
+          "raid": 891
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "b038465eeb9e61c5fc405f4a0e2833ce0dea82782bb2d436d8aed3597e75e4f3",
+      "seat_averaged_delta": -564.0,
+      "seed": 2026081904
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1535,
+          "delta": -1042,
+          "raid": 493
+        },
+        {
+          "baseline": 674,
+          "delta": 340,
+          "raid": 1014
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "227e8bea3a390777f2a04f6d0f17d2f8b70c9203ed310feadbd28262de050e7d",
+      "seat_averaged_delta": -351.0,
+      "seed": 2026081905
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1528,
+          "delta": -1169,
+          "raid": 359
+        },
+        {
+          "baseline": 593,
+          "delta": 456,
+          "raid": 1049
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "204ecd14f4e114cae14e77433822263c84daf59287c0a357c3e3f8f2ac5da4fd",
+      "seat_averaged_delta": -356.5,
+      "seed": 2026081906
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1428,
+          "delta": -1048,
+          "raid": 380
+        },
+        {
+          "baseline": 653,
+          "delta": 297,
+          "raid": 950
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "54fa1cea856aa75785f85fbc990c1fc0054fc91c81100515107b06ec8cb5349a",
+      "seat_averaged_delta": -375.5,
+      "seed": 2026081907
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1529,
+          "delta": -1287,
+          "raid": 242
+        },
+        {
+          "baseline": 635,
+          "delta": 336,
+          "raid": 971
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "cc2a9b74254e183c82769843ab8ecdb23afe183a8eea4520a2d85e928bc7a49d",
+      "seat_averaged_delta": -475.5,
+      "seed": 2026081908
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1482,
+          "delta": -1152,
+          "raid": 330
+        },
+        {
+          "baseline": 779,
+          "delta": -8,
+          "raid": 771
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "fc2b9fdfaca44bed78f92f18d93dc3721dfa35a0c212a0bd8bd7bcc5dbc24994",
+      "seat_averaged_delta": -580.0,
+      "seed": 2026081909
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1502,
+          "delta": -1252,
+          "raid": 250
+        },
+        {
+          "baseline": 637,
+          "delta": 277,
+          "raid": 914
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "d99b07edc030b1d40f450629475147e27973a2afb18f7f076f8f40fa381e2836",
+      "seat_averaged_delta": -487.5,
+      "seed": 2026081910
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1428,
+          "delta": -1039,
+          "raid": 389
+        },
+        {
+          "baseline": 754,
+          "delta": 267,
+          "raid": 1021
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "e04fdebcb53574f43f2eb97c537657266a8abd2cc5d1218a066e9a3b2275e9e8",
+      "seat_averaged_delta": -386.0,
+      "seed": 2026081911
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1531,
+          "delta": -1213,
+          "raid": 318
+        },
+        {
+          "baseline": 608,
+          "delta": 266,
+          "raid": 874
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "deff38d62b719b0b78c30345ac116bece2314cb90246c1f7457bb4127b5ade75",
+      "seat_averaged_delta": -473.5,
+      "seed": 2026081912
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1542,
+          "delta": -1203,
+          "raid": 339
+        },
+        {
+          "baseline": 555,
+          "delta": 499,
+          "raid": 1054
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "82d02eed6e76d38265665abc31bbe0427ff64380d81a56f082db051025374b92",
+      "seat_averaged_delta": -352.0,
+      "seed": 2026081913
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1558,
+          "delta": -1181,
+          "raid": 377
+        },
+        {
+          "baseline": 639,
+          "delta": 466,
+          "raid": 1105
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "e31cd220ce00bd1c982c73a407f9c4f66a7d699d2bd773c13ceaef5b148df1ad",
+      "seat_averaged_delta": -357.5,
+      "seed": 2026081914
+    }
+  ],
+  "schema_version": 1,
+  "status": "complete"
+}
