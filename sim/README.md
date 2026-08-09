@@ -92,6 +92,7 @@ python3 sim/calibrate_views.py --repo . --maps sim/maps.json \
 | `validate.py` | 一键权威验收 |
 | `calibrate_*.py` | 从官方日志重建标定报告 |
 | `reports/*.json` | 可审计证据、直方图、残差和逐项验收数字 |
+| `GENERATION.md` | **金币生成机制实测分析**（公测期数据）：中央向心加权、外圈单臂脉冲、热点坐标、通用规则、换赛段重标定方法 |
 
 ## 4. 保真度矩阵
 
