@@ -108,19 +108,19 @@ struct SctT {
 };
 constexpr SctT SCT;
 
-struct RclT {                                    // 行钳位表: 2 cmov -> 1 载
-    int8_t v[21];
-    constexpr RclT() : v() {
-        for (int x = 0; x < 21; ++x) { int t = x - 2; v[x] = (int8_t)(t < 0 ? 0 : (t > 16 ? 16 : t)); }
+struct TabsT {                                   // 表合一: 单基址消灭 xmm 指针停放(§3.4)
+    int8_t rclv[21];                             // 行钳位
+    int8_t d5[25], m5[25];                       // 除模5
+    uint8_t remap[26];                           // pext 环距重排
+    constexpr TabsT() : rclv(), d5(), m5(), remap() {
+        for (int x = 0; x < 21; ++x) { int t = x - 2; rclv[x] = (int8_t)(t < 0 ? 0 : (t > 16 ? 16 : t)); }
+        for (int x = 0; x < 25; ++x) { d5[x] = (int8_t)(x / 5); m5[x] = (int8_t)(x % 5); }
+        constexpr uint8_t rm[26] = {
+            7,11,13,17, 2,6,8,10,14,16,18,22, 1,3,5,9,15,19,21,23, 0,4,20,24, 12, 12};
+        for (int x = 0; x < 26; ++x) remap[x] = rm[x];
     }
 };
-constexpr RclT RCL;
-
-struct Dm5T {                                    // 除模5 表
-    int8_t d[25], m[25];
-    constexpr Dm5T() : d(), m() { for (int x = 0; x < 25; ++x) { d[x] = (int8_t)(x / 5); m[x] = (int8_t)(x % 5); } }
-};
-constexpr Dm5T DM5;
+constexpr TabsT TT;
 
 // 通行 = 非墙 且 (穷 或 非弹)。队友检查已退役(撞位实测 0 轮, 引擎记4+自愈兜底)
 inline unsigned pass01(int r, int c, unsigned rich) {
@@ -401,7 +401,7 @@ GameOutput decide(const GameInput* in) {
             for (int i = 0; i < 5; ++i) {
                 int rr = sr - 2 + i;
                 uint32_t rowok = (uint32_t)0 - ((unsigned)rr < (unsigned)N);
-                int cr = RCL.v[rr + 2];
+                int cr = TT.rclv[rr + 2];
                 __m256i vrow = _mm256_loadu_si256(
                     (const __m256i*)&in->grid[cr][cb]);
 #if defined(__AVX512VL__)
@@ -452,14 +452,12 @@ GameOutput decide(const GameInput* in) {
             constexpr uint32_t RM3 = (1u<<1)|(1u<<3)|(1u<<5)|(1u<<9)|(1u<<15)|(1u<<19)|(1u<<21)|(1u<<23);
             constexpr uint32_t RM4 = (1u<<0)|(1u<<4)|(1u<<20)|(1u<<24);
 #if defined(__BMI2__)
-            // pext 重排: 位序=环优先级(1>2>3>4>0), 一次 ctz 完成级联
-            static constexpr uint8_t REMAP[26] = {
-                7,11,13,17, 2,6,8,10,14,16,18,22, 1,3,5,9,15,19,21,23, 0,4,20,24, 12, 12};
+            // pext 重排: 位序=环优先级(1>2>3>4>0), 一次 ctz 完成级联(表在 TT)
             uint32_t re = _pext_u32(goldm, RM1) | (_pext_u32(goldm, RM2) << 4) |
                           (_pext_u32(goldm, RM3) << 12) | (_pext_u32(goldm, RM4) << 20) |
                           (((goldm >> 12) & 1u) << 24);
             (void)RM0;
-            int i = REMAP[__builtin_ctz(re | (uint32_t)(re == 0)) & 31];
+            int i = TT.remap[__builtin_ctz(re | (uint32_t)(re == 0)) & 31];
 #else
             uint32_t g1 = goldm & RM1, g2 = goldm & RM2, g3 = goldm & RM3;
             uint32_t g4 = goldm & RM4, g0 = goldm & RM0;
@@ -476,8 +474,8 @@ GameOutput decide(const GameInput* in) {
             int standing = -(int)(in->grid[sr][sc] > 1);   // 1金残渣不折返: 回哨位张网(驻留窗口守恒)
             int selfm = ~has & standing;
             blind = ~has & ~standing;
-            tgr = ((sr - 2 + DM5.d[i]) & has) | (sr & selfm) | (g_s.anch_r[u] & blind);
-            tgc = ((sc - 2 + DM5.m[i]) & has) | (sc & selfm) | (g_s.anch_c[u] & blind);
+            tgr = ((sr - 2 + TT.d5[i]) & has) | (sr & selfm) | (g_s.anch_r[u] & blind);
+            tgc = ((sc - 2 + TT.m5[i]) & has) | (sc & selfm) | (g_s.anch_c[u] & blind);
         }
 
         uint32_t blk[N + 2];                     // blocked 位图预合成(扫描后! 含当轮新见弹)
