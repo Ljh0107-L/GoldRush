@@ -25,7 +25,7 @@
 //    3.3 目标: goldm 按环距优先级 pext 重排 + ctz = 最近金格; 无金 → 中央生成峰双驻守
 //    3.4 站金(d==0): 折返双吃 —— 出格再回格, 链式收 35% 残值
 //    3.5 行进: LUT 三步导向(constexpr 表, 早到折返已预折叠) + pass01 途经验证;
-//        受阻(罕见, 锁图后墙全知) → 单步谨慎 + 下轮自愈
+//        受阻 → 单步谨慎 + 下轮自愈; 逃逸四向掩码+ctz 恒形选首路(消灭循环早退尾部)
 //    3.6 开局行军(盲轮才走): map1 = 烘焙 BFS 路线 4 轮出角(位置吻合门控, 漂移自弃);
 //        map2/3/指纹未定 = 运行时 BFS(已知墙, 雾当可通行) 3 步/轮, 窗口 round<8
 // 4. 输出: k=3, order=持金多者先走, vp=慢开局层裁定(稳态恒 0)
@@ -161,12 +161,17 @@ inline unsigned pass01(int r, int c, unsigned rich) {
 
 __attribute__((noinline, cold))
 int escapeStep(int r, int c, int pr, int pc, unsigned rich) {
-    for (int a = 0; a < 4; ++a) {
-        int nr = r + DR[a], nc = c + DC[a];
-        if (nr == pr && nc == pc) continue;      // 禁回头格(防振荡)
-        if (pass01(nr, nc, rich)) return a;
-    }
-    return -1;
+    // 四向同时查询 + 掩码选首路，等价于旧 for/continue/early-return，但无数据依赖分支。
+    unsigned pm = pass01(r - 1, c, rich) |
+                  (pass01(r + 1, c, rich) << 1) |
+                  (pass01(r, c - 1, rich) << 2) |
+                  (pass01(r, c + 1, rich) << 3);
+    unsigned back = (unsigned)((r - 1 == pr) & (c == pc)) |
+                    ((unsigned)((r + 1 == pr) & (c == pc)) << 1) |
+                    ((unsigned)((r == pr) & (c - 1 == pc)) << 2) |
+                    ((unsigned)((r == pr) & (c + 1 == pc)) << 3);
+    int a = __builtin_ctz((pm & ~back) | 16u);   // bit4 哨兵: 无路时 a=4
+    return a - 5 * (a == 4);                    // 4→-1，其余保持 0..3
 }
 
 int steerStep(int r, int c, int gr, int gc, int pr, int pc, unsigned rich) {
