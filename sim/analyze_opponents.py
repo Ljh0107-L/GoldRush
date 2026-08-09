@@ -271,11 +271,10 @@ def load_games(repo: Path) -> tuple[dict[str, list[Game]], dict[str, list[Game]]
         complete = sum(g.complete for g in games)
         censored = len(games) - complete
         maps = collections.Counter(g.map_name for g in games)
-        assert len(games) == len(spec["ids"]), (team, len(games))
-        assert valid == spec["valid_rounds"], (team, valid, spec["valid_rounds"])
-        assert complete == spec["complete"], (team, complete, spec["complete"])
-        assert censored == spec["censored"], (team, censored, spec["censored"])
-        assert dict(sorted(maps.items())) == spec["maps"], (team, maps, spec["maps"])
+        observed = (len(games), valid, complete, censored, dict(sorted(maps.items())))
+        expected = (len(spec["ids"]), spec["valid_rounds"], spec["complete"], spec["censored"], spec["maps"])
+        if observed != expected:
+            raise AssertionError((team, observed, expected))
 
     probes: dict[str, list[Game]] = {}
     for team, ids in PROBE_IDS.items():
@@ -315,7 +314,8 @@ def load_games(repo: Path) -> tuple[dict[str, list[Game]], dict[str, list[Game]]
             if [r.get("round") for r in parsed_rows] != list(range(500)):
                 raise AssertionError(f"non-contiguous probe rounds in game {gid}")
             visibility = entry.get("opponent_visibility", {}).get("start", {})
-            if visibility.get("rounds") != 500 or "opponent_uncontested_net" not in entry:
+            target_score = entry.get("scores", {}).get(TEAM_SPECS[team]["account"], {})
+            if visibility.get("rounds") != 500 or "net_score" not in target_score:
                 raise AssertionError(f"probe metadata incomplete for game {gid}")
             probe_games.append(Game(
                 team=team,
@@ -448,6 +448,54 @@ def cost_bin_summary(games: Sequence[Game], pid: int) -> list[tuple[str, int, fl
     return result
 
 
+def ordered_histogram(counter: collections.Counter[int], lo: int, hi: int) -> str:
+    return ", ".join(f"{value}:{counter[value]}" for value in range(lo, hi + 1, 10))
+
+
+def cheap_cost_features(games: Sequence[Game], threshold: int = 120) -> dict[str, Any]:
+    groups: dict[str, list[tuple[Game, dict[str, Any]]]] = {"cheap": [], "other": []}
+    for game in games:
+        for row in rows_after(game, CUT_PRIMARY):
+            groups["cheap" if cost(game, row, 2) <= threshold else "other"].append((game, row))
+    output: dict[str, Any] = {}
+    for label, pairs in groups.items():
+        rounds = len(pairs)
+        output[label] = {
+            "rounds": rounds,
+            "round_median": median([int(row["round"]) for _, row in pairs]),
+            "snapshot": sum(int(row["round"]) > 0 and int(row["round"]) % 5 == 0 for _, row in pairs),
+            "bomb": sum(int(row["round"]) % 20 == 0 for _, row in pairs),
+            "visible": sum(any(pos is not None for pos in unit_positions(row, 2)) for _, row in pairs),
+            "target_positive_complete": sum(
+                unit_pickups(row, 2)[1] and sum(unit_pickups(row, 2)[0]) > 0 for _, row in pairs
+            ),
+            "own_pickup": sum(sum(unit_pickups(row, 1)[0]) > 0 for _, row in pairs),
+        }
+    return output
+
+
+def repeated_version_rows(games: Sequence[Game], sample: str) -> list[tuple[Any, ...]]:
+    groups: dict[str, list[Game]] = collections.defaultdict(list)
+    for game in games:
+        groups[game.own_version].append(game)
+    output = []
+    for version, group in groups.items():
+        if len(group) < 2:
+            continue
+        ordered = sorted(group, key=lambda game: game.game_id)
+        target_p50s = [pct([cost(game, row, 2) for row in rows_after(game, CUT_PRIMARY)], 50) for game in ordered]
+        target_p90s = [pct([cost(game, row, 2) for row in rows_after(game, CUT_PRIMARY)], 90) for game in ordered]
+        own_p50s = [pct([cost(game, row, 1) for row in rows_after(game, CUT_PRIMARY)], 50) for game in ordered]
+        output.append((
+            team_short(ordered[0].team), sample, version,
+            ",".join(str(game.game_id) for game in ordered),
+            ",".join(fmt_num(value) for value in target_p50s),
+            ",".join(fmt_num(value) for value in target_p90s),
+            ",".join(fmt_num(value) for value in own_p50s),
+        ))
+    return output
+
+
 def chronological_cohorts(games: Sequence[Game]) -> list[tuple[str, list[Game]]]:
     ordered = sorted(games, key=lambda g: g.game_id)
     n = len(ordered)
@@ -511,6 +559,97 @@ def held_window_rates(games: Sequence[Game]) -> list[dict[str, float]]:
             "gap": median(gaps),
         })
     return result
+
+
+def held_delta(game: Game, index: int, pid: int) -> int:
+    previous = held(game.rows[index - 1], pid) if index else 0
+    return held(game.rows[index], pid) - previous
+
+
+def steady_variance_summary(games: Sequence[Game], pid: int = 2) -> dict[str, float]:
+    pooled = pooled_costs(games, pid, CUT_PRIMARY)
+    per_game = [
+        statistics.pstdev([cost(game, row, pid) for row in rows_after(game, CUT_PRIMARY)])
+        for game in games if rows_after(game, CUT_PRIMARY)
+    ]
+    return {
+        "pooled_variance": statistics.pvariance(pooled),
+        "pooled_sd": statistics.pstdev(pooled),
+        "per_game_sd_median": median(per_game),
+        "per_game_sd_p90": pct(per_game, 90),
+        "per_game_sd_max": max(per_game),
+    }
+
+
+def held_increment_summary(games: Sequence[Game]) -> list[dict[str, float]]:
+    output = []
+    for pid, label in ((2, "目标"), (1, "我方")):
+        deltas = [
+            held_delta(game, index, pid)
+            for game in games
+            for index, row in enumerate(game.rows)
+            if int(row["round"]) >= CUT_PRIMARY
+        ]
+        output.append({
+            "side": label,
+            "rounds": len(deltas),
+            "at_least_6": sum(value >= 6 for value in deltas),
+            "positive": sum(value > 0 for value in deltas),
+            "mean": mean(deltas),
+        })
+    return output
+
+
+def local_visible_gold_density(row: dict[str, Any], pid: int = 2, radius: int = 2) -> Optional[float]:
+    positions = [
+        tuple(unit["position"])
+        for unit in player(row["start"], pid).get("units", [])
+        if unit.get("position") is not None
+    ]
+    if not positions:
+        return None
+    grid = row["start"]["grid"]
+    cells: set[tuple[int, int]] = set()
+    for center_row, center_col in positions:
+        for grid_row in range(max(0, center_row - radius), min(17, center_row + radius + 1)):
+            for grid_col in range(max(0, center_col - radius), min(17, center_col + radius + 1)):
+                if int(grid[grid_row][grid_col]) != -5:
+                    cells.add((grid_row, grid_col))
+    if not cells:
+        return None
+    return sum(max(0, int(grid[row_index][col_index])) for row_index, col_index in cells) / len(cells)
+
+
+def first_mover_monetization(games: Sequence[Game]) -> dict[str, float]:
+    target_effects: list[float] = []
+    relative_effects: list[float] = []
+    high_increment_effects: list[float] = []
+    for game in games:
+        target_by_first: dict[bool, list[int]] = {True: [], False: []}
+        relative_by_first: dict[bool, list[int]] = {True: [], False: []}
+        high_by_first: dict[bool, list[int]] = {True: [], False: []}
+        for index, row in enumerate(game.rows):
+            if int(row["round"]) < CUT_PRIMARY:
+                continue
+            dispatch = row["end"].get("dispatch_order") or []
+            if not dispatch:
+                continue
+            target_first = dispatch[0] == 2
+            target_delta = held_delta(game, index, 2)
+            own_delta = held_delta(game, index, 1)
+            target_by_first[target_first].append(target_delta)
+            relative_by_first[target_first].append(target_delta - own_delta)
+            high_by_first[target_first].append(int(target_delta >= 6))
+        if all(target_by_first.values()):
+            target_effects.append(mean(target_by_first[True]) - mean(target_by_first[False]))
+            relative_effects.append(mean(relative_by_first[True]) - mean(relative_by_first[False]))
+            high_increment_effects.append(mean(high_by_first[True]) - mean(high_by_first[False]))
+    return {
+        "games": len(target_effects),
+        "target_delta": median(target_effects),
+        "relative_delta": median(relative_effects),
+        "high_increment_pp": 100 * median(high_increment_effects),
+    }
 
 
 def final_score_summary(games: Sequence[Game]) -> dict[str, float]:
@@ -842,14 +981,14 @@ def render_report(corpus: dict[str, list[Game]], probes: dict[str, list[Game]], 
     lines.extend([
         "# Tiuntled-1 / Tundra-wawa 对手逆向报告",
         "",
-        "> 本文由 `sim/analyze_opponents.py` 从固定的 88 份历史日志确定性生成，并把 4 份高可见率/不争金探针作为独立验证集；探针绝不混入历史主分布。没有联网、没有提交对局；所有百分位采用与 `tools/gamelog.py` 相同的 `floor(n*p/100)` 经验索引。",
+        "> 本文由 `sim/analyze_opponents.py` 从固定的 88 份历史日志确定性生成，并把 4 份高可见率、低金币目标的 `probeobs` 对局作为独立描述样本；探针绝不混入历史主分布。没有联网、没有提交对局；所有百分位采用与 `tools/gamelog.py` 相同的 `floor(n*p/100)` 经验索引。",
         "",
         "## 0. 结论先行与证据等级",
         "",
         "- **测量事实**：直接来自日志字段或其确定性差分；表格默认主口径为稳态 `r>=20`。",
         "- **受条件测量**：对手位置、动作、`pickup` 只在我方视野过滤后出现，结论只代表“被我方看见”的子样本，不能外推全局路线或总拾取。",
         "- **机制推断**：由多项测量共同支持，但没有对手源码，均不是实现真值。特别是原始输出里的 `k`、`order`、被墙改写前动作和目标函数无法从过滤日志唯一恢复。",
-        "- **核心画像**：历史主分布 T-1 约 200ns、Tundra 约 260ns；独立轻对手探针为 T-1 200/220ns、Tundra 270ns P50。两者稳态都有明显量化台阶且远比开局稳定。高可见探针表明历史中心占比确受近身视野选择偏倚；不争金净分则给出其策略上限锚点，而不是历史对撞收入的替代。",
+        "- **核心画像**：历史主分布 T-1 约 200ns、Tundra 约 260ns；高可见 `probeobs` 对局为 T-1 200/220ns、Tundra 270ns P50。两者稳态都有明显量化台阶且远比开局稳定。probe 的高覆盖暴露出历史空间样本的近身视野偏倚，但 probe 自身极慢、会主动跟踪对手且实际持金 115-152，因此其目标终局净分只是低金币目标对局的描述值，不是无竞争上限。",
         "",
         "## 1. 语料、断言与复现",
         "",
@@ -870,19 +1009,22 @@ def render_report(corpus: dict[str, list[Game]], probes: dict[str, list[Game]], 
             entry = game.manifest_entry
             start_vis = entry["opponent_visibility"]["start"]
             observed_net = held(game.rows[-1], 2) - vision(game.rows[-1], 2)
-            if observed_net != entry["opponent_uncontested_net"]:
-                raise AssertionError((game.game_id, observed_net, entry["opponent_uncontested_net"]))
+            manifest_net = entry["scores"][game.account]["net_score"]
+            if observed_net != manifest_net:
+                raise AssertionError((game.game_id, observed_net, manifest_net))
             values = [cost(game, row, 2) for row in game.rows]
+            probe_costs = [cost(game, row, 1) for row in game.rows]
             probe_rows.append((
                 team_short(team), game.game_id, game.map_name, len(game.rows),
                 fmt_num(pct(values, 50)), fmt_num(pct(values, 90)), observed_net,
+                fmt_num(pct(probe_costs, 50)), held(game.rows[-1], 1),
                 fmt_rate(start_vis["visible_rounds"], start_vis["rounds"]),
                 fmt_rate(start_vis["both_visible_rounds"], start_vis["rounds"]),
             ))
     lines.extend(["**独立 probeobs 探针（不混入上表或后文历史主分布）**", ""])
-    append_table(lines, ["目标", "game_id", "地图", "轮", "目标P50", "P90", "不争金净分", "start至少一敌可见", "start双敌可见"], probe_rows)
+    append_table(lines, ["目标", "game_id", "地图", "轮", "目标P50", "P90", "目标终局净分", "probe P50", "probe持金", "start至少一敌可见", "start双敌可见"], probe_rows)
     lines.extend([
-        "脚本内固定 88 个历史 `game_id`，并逐项断言：首行名字、manifest 账号、我方/player1、目标/player2、轮号连续、有效轮数、完整/截尾数和地图混合。另固定 4 个 `probeobs` ID，逐项断言 500 轮、可见率元数据与 `opponent_uncontested_net`。manifest 其他后来新增日志不会悄悄改变任一口径。",
+        "脚本内固定 88 个历史 `game_id`，并逐项断言：首行名字、manifest 账号、我方/player1、目标/player2、轮号连续、有效轮数、完整/截尾数和地图混合。另固定 4 个 `probeobs` ID，逐项断言 500 轮、可见率元数据与目标终局净分。manifest 的旧字段名 `opponent_uncontested_net` 由归档器对所有对局机械复制目标净分，并不证明该局无竞争；其他后来新增日志不会悄悄改变任一口径。",
         "",
         "复现命令：",
         "",
@@ -940,14 +1082,52 @@ def render_report(corpus: dict[str, list[Game]], probes: dict[str, list[Game]], 
             gv = [cost(g, row, 2) for row in rows_after(g, CUT_PRIMARY)]
             spreads.append(pct(gv, 90) - pct(gv, 50))
         modes = collections.Counter(post)
+        variance = steady_variance_summary(games)
         lines.extend([
             f"**warmup 前后。** `r<20` 共 {len(pre)} 轮，P50/P90={fmt_num(pct(pre,50))}/{fmt_num(pct(pre,90))}ns；`r>=20` 共 {len(post)} 轮，为 {fmt_num(pct(post,50))}/{fmt_num(pct(post,90))}ns。开局高成本不能混入稳态实现预算。",
-            f"**稳定性。** 每局稳态 P50 的跨局 P10/P50/P90={fmt_num(pct(game_p50s,10))}/{fmt_num(pct(game_p50s,50))}/{fmt_num(pct(game_p50s,90))}ns；每局 `(P90-P50)` 中位 {fmt_num(median(spreads))}ns。稳态最常见成本台阶：{render_counter(modes, 8)}。这描述量化分布，不等于 CPU 周期或源码分支。",
+            f"**稳定性。** 每局稳态 P50 的跨局 P10/P50/P90={fmt_num(pct(game_p50s,10))}/{fmt_num(pct(game_p50s,50))}/{fmt_num(pct(game_p50s,90))}ns；每局 `(P90-P50)` 中位 {fmt_num(median(spreads))}ns。稳态 pooled σ²={variance['pooled_variance']:.1f}ns²、σ={variance['pooled_sd']:.1f}ns，每局 σ 的中位/P90/最大={variance['per_game_sd_median']:.1f}/{variance['per_game_sd_p90']:.1f}/{variance['per_game_sd_max']:.1f}ns；σ 会被少量毫秒/微秒尾部显著放大，不能替代分位数。稳态最常见成本台阶：{render_counter(modes, 8)}。这描述量化分布，不等于 CPU 周期或源码分支。",
             "",
         ])
 
     lines.extend([
-        "### 2.3 独立轻对手探针锚点",
+        "`dispatch目标先动` 与 `目标更快` 数值相同不是独立复核：引擎按实测 cost 决定快方，`dispatch_order` 只是该规则的日志结果。",
+        "",
+        "### 2.3 稳态尖刺、直方图与 T-1 低成本尾",
+        "",
+    ])
+    tail_rows = []
+    histogram_rows = []
+    cheap_feature_rows = []
+    for team, games in corpus.items():
+        values = pooled_costs(games, 2, CUT_PRIMARY)
+        counter = collections.Counter(values)
+        cheap = sum(count for value, count in counter.items() if value <= 120)
+        tail_rows.append((team_short(team), len(values), fmt_num(pct(values, 99)), fmt_num(max(values)),
+                          cheap, fmt_rate(cheap, len(values)), ordered_histogram(counter, 80, 120)))
+        histogram_rows.extend([
+            (team_short(team), "130-220", ordered_histogram(counter, 130, 220)),
+            (team_short(team), "230-310", ordered_histogram(counter, 230, 310)),
+            (team_short(team), "320-410", ordered_histogram(counter, 320, 410)),
+        ])
+        features = cheap_cost_features(games)
+        for label in ("cheap", "other"):
+            feature = features[label]
+            cheap_feature_rows.append((
+                team_short(team), "<=120ns" if label == "cheap" else ">120ns", feature["rounds"],
+                fmt_num(feature["round_median"]), fmt_rate(feature["snapshot"], feature["rounds"]),
+                fmt_rate(feature["bomb"], feature["rounds"]), fmt_rate(feature["visible"], feature["rounds"]),
+                fmt_rate(feature["target_positive_complete"], feature["rounds"]),
+                fmt_rate(feature["own_pickup"], feature["rounds"]),
+            ))
+    append_table(lines, ["目标", "稳态轮", "P99", "最大", "<=120ns轮", "占比", "80-120ns逐10ns计数"], tail_rows)
+    append_table(lines, ["目标", "核心区间", "逐10ns计数(cost:轮)"], histogram_rows)
+    append_table(lines, ["目标", "成本类", "轮", "round中位", "快照轮", "炸弹波", "目标可见", "双pickup完整且>0", "我方pickup>0"], cheap_feature_rows)
+    lines.extend([
+        "T-1 的 90ns 仅 4 轮；`<=120ns` 也只有 180/22605=0.8%，不足以单独识别一条可重复的廉价代码路径。低成本轮相对其他轮更常目标可见（64.4% vs 57.2%）和双pickup完整且>0（15.6% vs 9.6%），但样本小且特征由双方位置共同决定。核心 170-220ns 是多个相邻量化台阶形成的宽峰；平台 10ns 量化本身不能证明源码存在多个分支模式。",
+        "",
+        "稳态 P99/最大分别为 T-1 850/6930ns、Tundra 830/6350ns。所谓窗口免疫只适合描述 P50/P90 中心档位；少量调度尖刺会主导 P99、方差和最大值，追求 P99 跨窗恒定既没有被数据支持，也不是当前先手预算的必要条件。",
+        "",
+        "### 2.4 独立高可见 probeobs 锚点",
         "",
     ])
     probe_timing_rows = []
@@ -957,14 +1137,15 @@ def render_report(corpus: dict[str, list[Game]], probes: dict[str, list[Game]], 
             steady_costs = [cost(game, row, 2) for row in rows_after(game, CUT_PRIMARY)]
             probe_timing_rows.append((team_short(team), game.game_id, fmt_num(pct(all_costs, 50)),
                                       fmt_num(pct(all_costs, 90)), fmt_num(pct(steady_costs, 50)),
-                                      fmt_num(pct(steady_costs, 90)), game.manifest_entry["opponent_uncontested_net"]))
-    append_table(lines, ["目标", "game_id", "全局P50", "全局P90", "稳态P50", "稳态P90", "不争金净分"], probe_timing_rows)
+                                      fmt_num(pct(steady_costs, 90)),
+                                      held(game.rows[-1], 2) - vision(game.rows[-1], 2)))
+    append_table(lines, ["目标", "game_id", "全局P50", "全局P90", "稳态P50", "稳态P90", "目标终局净分"], probe_timing_rows)
     lines.extend([
-        "Tundra `171687` 是指定单局锚点：净分 2537、全局 P50/P90=270/350ns；第二局为 2864、270/360ns。它们使用极慢且不争金的 `probeobs`，应与 CHANGELOG 现役收入中位约 1515 对照理解为**对手不竞争时的上限锚点**，不是可直接相减的同版本 A/B。T-1 两局同类锚点净分 2567/2344。",
+        "Tundra `171687` 是指定单局锚点：目标净分 2537、全局 P50/P90=270/350ns；第二局为 2864、270/360ns。T-1 两局对应为 2567/2344。`probeobs` 不以金币为移动目标，但为跟踪目标持续移动，四局自身仍持金 115-152，且占位可能改变对手路径；因此这些只是低金币目标对局的目标净分，不是严格无竞争的策略上限，也不能与 CHANGELOG 现役收入中位约 1515 直接相减。",
         "",
-        "`src/INFRA.md §3` 明确记录“对手越重，我方读数越高约 10-30ns”的污染方向；轻 probeobs 减少的是目标受到的对手污染，因此历史重对手局的目标 cost **可能**偏高。但本探针 Tundra P50=270 并未低于历史池化 260，说明版本/窗口差异足以盖过该方向，不能拿 10-30ns 机械回扣。",
+        "`src/INFRA.md §3` 明确记录“对手越重，我方读数越高约 10-30ns”的污染方向。四局 `probeobs` 的 P50 约 0.80-0.86ms，远重于目标而非轻对手；按文档方向，probe 窗口中的目标 cost 反而可能被向上污染。故 probe 的 200/220/270ns 只能作为这些重对手窗口的观测值，不能用来给历史成本去污染或恢复对手内禀成本。",
         "",
-        "### 2.4 同窗比较与时间漂移",
+        "### 2.5 同窗比较与时间漂移",
         "",
         "同一回合的目标与我方 cost 共用评测窗口，故差值比跨局绝对数更抗窗口漂移；但我方版本不断变化，不能把差值全归因于目标版本。",
         "",
@@ -1005,7 +1186,7 @@ def render_report(corpus: dict[str, list[Game]], probes: dict[str, list[Game]], 
     lines.extend(["```", ""])
 
     lines.extend([
-        "### 2.5 按我方精确 player1 版本分组",
+        "### 2.6 按我方精确 player1 版本分组",
         "",
         "不把相似名字合并；几乎所有组是单例，所以这些行是描述性同窗记录，不是可重复的版本因果估计。",
         "",
@@ -1024,7 +1205,21 @@ def render_report(corpus: dict[str, list[Game]], probes: dict[str, list[Game]], 
             ],
         )
 
+    repeated_rows = []
+    for team, games in corpus.items():
+        repeated_rows.extend(repeated_version_rows(games, "历史"))
+    for team, games in probes.items():
+        repeated_rows.extend(repeated_version_rows(games, "probe"))
     lines.extend([
+        "### 2.7 同一我方精确版本的重复组",
+        "",
+        "只有重复的精确 player1 版本才能较公平地看共同窗口漂移；混合不同我方实现的早/中/晚 cohort 只能描述语料时间顺序，不能用于证明窗口免疫。",
+        "",
+    ])
+    append_table(lines, ["目标", "样本", "我方精确版本", "game_id", "逐局目标P50", "逐局目标P90", "逐局我方P50"], repeated_rows)
+    lines.extend([
+        "历史重复组只有 T-1/champT1 两局：目标与我方 P50 都同步上移 10ns（190→200、220→230），与共同窗口漂移相容；Tundra 历史语料没有重复精确 player1 版本，无法做同口径复核。相同 `probeobs` 下，Tundra 两局目标 P50 均为270ns，是当前最清晰的窗口免疫范本；T-1 为200→220ns。probe 极重且会交互，因此该结论仍限于中心 P50，不外推 P99 或内禀成本。",
+        "",
         "## 3. 回合特征、相关性与指令预算",
         "",
         "### 3.1 within-game 特征效应",
@@ -1052,6 +1247,8 @@ def render_report(corpus: dict[str, list[Game]], probes: dict[str, list[Game]], 
             ("目标cost ~ 我方pickup", lambda g, i, r: cost(g, r, 2), lambda g, i, r: float(sum(unit_pickups(r, 1)[0]))),
             ("目标cost ~ 目标可见pickup", lambda g, i, r: cost(g, r, 2),
              lambda g, i, r: float(sum(unit_pickups(r, 2)[0])) if unit_pickups(r, 2)[1] else None),
+            ("目标cost ~ 可见敌位局部金币额密度代理", lambda g, i, r: cost(g, r, 2),
+             lambda g, i, r: local_visible_gold_density(r, 2, 2)),
         ]
         for name, x_fn, y_fn in correlations:
             corr, n, eligible = centered_correlation(games, x_fn, y_fn)
@@ -1062,6 +1259,10 @@ def render_report(corpus: dict[str, list[Game]], probes: dict[str, list[Game]], 
         "",
     ])
     append_table(lines, ["目标", "相关", "轮", "局", "局内中心化 Pearson r"], corr_rows)
+    lines.extend([
+        "金币密度代理定义为：仅在目标 start 位置可见时，取我方过滤 `start.grid` 中目标端点切比雪夫半径2内的已知格，计算正金币金额和/已知格数。它不是目标真实输入，且由我方视野选择，只能用于检验可见局部密度是否与目标 cost 线性共变。",
+        "",
+    ])
 
     lines.extend([
         "### 3.2 成本模型与可装指令量",
@@ -1082,7 +1283,7 @@ def render_report(corpus: dict[str, list[Game]], probes: dict[str, list[Game]], 
         ))
     append_table(lines, ["目标", "稳态P50", "P90", "I0上界", "I10等效", "INFRA预算表对照"], budget_rows)
     lines.extend([
-        "**推断边界：** 以历史 P50 200→260 的实测差计，Tundra 比 T-1 约多 300 条 I10 等效空间；以轻探针 200→270 计约 350 条；INFRA 的 200→290 预算档才是 +450。日志不能判断预算用于扫描、路径、记忆还是恒形化。CHANGELOG 的“~750 指令”是历史工程推断，本报告只能给成本包络，不能从 cost 唯一恢复指令数。",
+        "**推断边界：** 以历史 P50 200→260 的实测差计，Tundra 比 T-1 约多 300 条 I10 等效空间；重 `probeobs` 窗口的 200→270 表面差对应约 350 条，但不能当作去污染后的内禀差；INFRA 的 200→290 预算档才是 +450。日志不能判断预算用于扫描、路径、记忆还是恒形化。CHANGELOG 的“~750 指令”是历史工程推断，本报告只能给成本包络，不能从 cost 唯一恢复指令数。",
         "",
         "## 4. 持金曲线、同局差与 pickup 可见性",
         "",
@@ -1108,6 +1309,33 @@ def render_report(corpus: dict[str, list[Game]], probes: dict[str, list[Game]], 
     ])
     append_table(lines, ["目标", "窗口", "完整窗口局", "目标持金变化/轮", "我方", "同局差"], rate_rows)
     append_table(lines, ["目标", "完整局", "目标终局持金", "我方持金", "目标净分", "我方净分", "同局净差中位", "目标净分领先"], final_rows)
+
+    lines.extend([
+        "### 4.1 单轮持金增量与先手变现",
+        "",
+        "单轮增量定义为相邻 `end.players[].gold` 之差；它包含 pickup 与炸弹/踩踏烧损，`>=6` 是净持金暴击代理，不是 pickup 金额。",
+        "",
+    ])
+    increment_rows = []
+    monetization_rows = []
+    for team, games in corpus.items():
+        for summary in held_increment_summary(games):
+            increment_rows.append((
+                team_short(team), summary["side"], int(summary["rounds"]), int(summary["at_least_6"]),
+                fmt_rate(summary["at_least_6"], summary["rounds"]),
+                fmt_rate(summary["positive"], summary["rounds"]), f"{summary['mean']:.3f}",
+            ))
+        monetization = first_mover_monetization(games)
+        monetization_rows.append((
+            team_short(team), int(monetization["games"]), f"{monetization['target_delta']:+.3f}",
+            f"{monetization['relative_delta']:+.3f}", f"{monetization['high_increment_pp']:+.2f}pp",
+        ))
+    append_table(lines, ["目标", "一方", "稳态轮", "Δ持金>=6轮", "占比", "Δ持金>0", "平均Δ持金"], increment_rows)
+    lines.extend([
+        "下表先在每局内比较目标先手轮与后手轮，再跨可配对局取中位。`目标Δ差` 是目标自身 `mean(Δ持金|先)-mean(Δ持金|后)`；`相对Δ差` 对 `(目标Δ-我方Δ)` 做同样比较。先手不是随机分配，结果只描述变现共变，不能作因果效应。",
+        "",
+    ])
+    append_table(lines, ["目标", "同时有先/后手的局", "目标Δ差", "相对Δ差", "Δ>=6占比差"], monetization_rows)
 
     lines.extend([
         "## 5. 视野购买指纹",
@@ -1157,7 +1385,7 @@ def render_report(corpus: dict[str, list[Game]], probes: dict[str, list[Game]], 
                                       pb["regions"][rid], fmt_rate(pb["regions"][rid], pb["endpoints"])))
     append_table(lines, ["高可见probe目标", "start区域", "端点", "占比"], probe_region_rows)
     lines.extend([
-        "历史样本每队约 56.7% 的轮至少看见一名敌人，等价于约 **43.3%（约44%）整轮完全看不见目标**，且单单位端点覆盖更低，空间统计有强近身选择偏倚。probe 的逐局至少一敌可见率为 Tundra 92.8%/94.4%、T-1 85.2%/87.2%，双敌为 49.8%/60.4% 与 31.4%/37.6%；它显著接近无偏，但仍非全信息。故区域/热点机制优先看 probe，历史表只用于对撞上下文。",
+        "历史样本每队约 56.7% 的轮至少看见一名敌人，等价于约 **43.3%（约44%）整轮完全看不见目标**，且单单位端点覆盖更低，空间统计有强近身选择偏倚。probe 的逐局至少一敌可见率为 Tundra 92.8%/94.4%、T-1 85.2%/87.2%，双敌为 49.8%/60.4% 与 31.4%/37.6%；缺失率明显更低，但主动跟踪使采样与潜在行为扰动仍非无偏。区域/热点描述可优先参考 probe，同时必须保留两局样本、剩余缺失和探针交互三项限制。",
         "",
     ])
     visibility_rows = []
@@ -1261,7 +1489,7 @@ def render_report(corpus: dict[str, list[Game]], probes: dict[str, list[Game]], 
     t1_probe_hidden = median(t1_probe_ex["hidden_6_11_by_game"])
     t1_probe_outer = median(t1_probe_ex["outer_6_11_by_game"])
     lines.extend([
-        f"**判定：间歇外区机制方向相容，精确主张未确认。** 历史 T-1 每局 6-11 轮闭合 hidden 段中位 {fmt_num(t1_hidden_count)}、可见外区段 {fmt_num(t1_outer_count)}，说明历史近身视野代理失真；高可见 probe 分别为 {fmt_num(t1_probe_hidden)} 与 {fmt_num(t1_probe_outer)}。其中每局 {fmt_num(t1_probe_outer)} 个 6-11 轮可见外区段与旧称“约5次”同量级，支持间歇外出而非全职巡逻；但仅 2 局、同一次远征可能被短缺失切段，仍有 12.8-14.8% 全不可见轮。hidden/visible 持金变化含烧损，不能复现 4.81 的 pickup 口径，所以“恰5次”和“4.81/轮”均未严格验证。",
+        f"**判定：仅弱相容，精确主张未确认。** 历史 T-1 每局 6-11 轮闭合 hidden 段中位 {fmt_num(t1_hidden_count)}、可见外区段 {fmt_num(t1_outer_count)}，说明历史近身视野代理失真；高可见 probe 分别为 {fmt_num(t1_probe_hidden)} 与 {fmt_num(t1_probe_outer)}。每局 {fmt_num(t1_probe_outer)} 个 6-11 轮可见外区段与旧称“约5次”同量级，但只有 2 局，主动跟踪可能扰动路线，且短缺失可把一次远征切成多段；这只能说与间歇外出相容，不能在全职巡逻等备择中作出可靠判别。hidden/visible 持金变化含烧损，不能复现 4.81 的 pickup 口径，所以“恰5次”和“4.81/轮”均未验证。",
         "",
         "## 8. 机制假说：证据与推断分栏",
         "",
@@ -1269,10 +1497,10 @@ def render_report(corpus: dict[str, list[Game]], probes: dict[str, list[Game]], 
     hypothesis_rows = [
         ("双单位每轮都走完整轻管线", "稳态成本台阶窄；可见动作长度对与双单位均有动作", "与日志相容；看不见源码、隐藏轮和原始k，不能确认同构管线"),
         ("T-1 主要靠恒形/低分支保持约200ns", "成本与多数回合特征的局内效应、跨局P50范围", "若特征效应小则支持；仍可能是查表、布局或平台量化共同结果"),
-        ("Tundra 用更多预算做复杂策略", "历史/探针 I10 等效差约+300/+350；290ns文档档位才是+450", "只确认成本空间，不知道预算用途；分支/.text罚则可能吞掉部分"),
+        ("Tundra 的观测成本包络更高", "历史 I10 等效差约+300；重probe窗口表面差约+350", "只确认观测成本空间，不知道预算用途或复杂度；未知载荷、罚则和对手污染均可贡献"),
         ("中心驻留+偶发外区", "可见端点五区、hidden段、热点端点和持金变化", "位置样本由我方视野选择；只能作为路线候选，不是全局占用率"),
-        ("看到金才走/拾金轮更贵", "完整可见pickup轮的局内cost差", "pickup是动作结果，cost在决策时产生；相关不等于目标扫描导致，且有可见偏差"),
-        ("按快照触发远征或买视野", "r%5、购买模分布、快照轮cost效应", "周期对齐可支持触发器，但不能识别内部阈值和目标区"),
+        ("拾金轮更贵", "完整可见pickup轮局内差：T-1 -5.5ns、Tundra -12.0ns；相关系数接近0", "当前数据不支持正向成本效应；pickup还是动作结果且受可见性选择，不能反推扫描机制"),
+        ("按快照触发远征或买视野", "快照轮局内差仅 T-1 -2.3ns、Tundra +1.9ns；两者购买事件均为0", "cost 与购买数据不支持该触发器；路线触发仍因隐藏位置和内部状态不可辨识"),
         ("利用token-2热点", "可见热点终点及条件pickup", "长外圈段更易不可见；零/低占比也不能否定"),
     ]
     append_table(lines, ["假说", "直接证据", "推断边界"], hypothesis_rows)
@@ -1299,32 +1527,39 @@ def render_report(corpus: dict[str, list[Game]], probes: dict[str, list[Game]], 
     for team, games in probes.items():
         pb = phase_position_behavior(games, "start", 0)
         costs = pooled_costs(games, 2, CUT_PRIMARY)
-        nets = [g.manifest_entry["opponent_uncontested_net"] for g in games]
+        nets = [held(g.rows[-1], 2) - vision(g.rows[-1], 2) for g in games]
         probe_compare_rows.append((
             team_short(team), len(games), fmt_num(pct(costs, 50)), fmt_num(pct(costs, 90)),
             fmt_rate(pb["any_visible"], pb["rounds"]), fmt_rate(pb["regions"][1], pb["endpoints"]),
             fmt_rate(pb["hotspots"], pb["endpoints"]), ",".join(str(x) for x in nets), fmt_num(median(nets)),
         ))
-    lines.extend(["**独立高可见/不争金横比**", ""])
-    append_table(lines, ["目标", "probe局", "稳态P50", "P90", "start可见", "中心端点", "热点端点", "各局不争金净分", "中位"], probe_compare_rows)
+    lines.extend(["**独立高可见/低金币目标 probe 横比**", ""])
+    append_table(lines, ["目标", "probe局", "稳态P50", "P90", "start可见", "中心端点", "热点端点", "各局目标终局净分", "中位"], probe_compare_rows)
     lines.extend([
-        "高可见 probe 将 Tundra 的中心端点确认在九成以上，而 T-1 中心约七成、外区与热点端点明显更多；这是目前最强的空间对手差异证据。T-1 的可见外区段也比 Tundra 多，和间歇远征方向一致。",
+        "在这 2+2 局主动跟踪 probe 中，Tundra 可见中心端点在九成以上，T-1 约七成且可见外区/热点端点更多；这是当前较强的描述性空间差异，但不是未受干预的全局占用率。T-1 可见外区段更多也仅与间歇远征方向弱相容。",
         "",
-        "不同对手的历史日志对应不同我方版本和时间窗口，横比行为与净分是描述性的；延迟因有同局我方基准而更可靠。地图差异尤其影响 Tundra 的 2 局 map2 与 2 局 map3，不能把地图效应当对手策略漂移。",
+        "四个目标净分来自不同 game_id，并非同一随机场景的配对 A/B；T-1 与 Tundra 范围重叠，probe 中位差 245，小于 INFRA 给出的单局收入噪声约 ±300，且 probe 自身仍拾金并占位。因此这些数据不能支持 Tundra 的无竞争能力高于 T-1，也不能称为严格策略上限。",
         "",
-        "## 10. 与 AGENT / CHANGELOG 的矛盾检查",
+        "不同对手的历史日志对应不同我方版本和时间窗口，横比行为与净分是描述性的；同轮 cost 差比跨局绝对 cost 更抗共同窗口漂移，但仍受双方实现、对手污染和平台量化影响。地图差异尤其影响 Tundra 的 2 局 map2 与 2 局 map3，不能把地图效应当对手策略漂移。",
+        "",
+        "## 10. 上游输入被修正",
+        "",
+        "1. **‘probe 是轻负载，可减少目标污染’被原始 cost 推翻。** 四局 `probeobs` P50=0.80-0.86ms，属于极重对手；按 INFRA 方向，目标读数可能向上而不是向下污染。因此 probe 只能作高可见重窗观测，不能作去污染基线。",
+        "2. **‘2+2 probe 可给 T-1/Tundra 无竞争能力排序’被实验设计与噪声推翻。** 四局不配对，probe 自身拾金115-152且会占位；两队分数范围重叠，中位差245小于单局噪声约±300。正确结论是现有样本无法排序。",
+        "",
+        "## 11. 与 AGENT / CHANGELOG 的矛盾检查",
         "",
     ])
     t1_costs = pooled_costs(corpus["Tiuntled-1"], 2, CUT_PRIMARY)
     tu_costs = pooled_costs(corpus["Tundra-wawa"], 2, CUT_PRIMARY)
     t1_final = final_score_summary(corpus["Tiuntled-1"])
     contradiction_rows = [
-        ("AGENT §0.2：T-1 190-240、Tundra 250-330，窗口稳定", "基本确认",
-         f"本语料稳态P50/P90：T-1 {fmt_num(pct(t1_costs,50))}/{fmt_num(pct(t1_costs,90))}，Tundra {fmt_num(pct(tu_costs,50))}/{fmt_num(pct(tu_costs,90))}；另见时序段与同窗差。"),
+        ("AGENT §0.2：T-1 190-240、Tundra 250-330，任何时段稳定", "仅保留 Tundra 为窗口免疫范本；修正 T-1 范围",
+         f"池化稳态P50/P90：T-1 {fmt_num(pct(t1_costs,50))}/{fmt_num(pct(t1_costs,90))}，Tundra {fmt_num(pct(tu_costs,50))}/{fmt_num(pct(tu_costs,90))}。同一 probeobs 重复组中 Tundra P50=270/270，而 T-1=200/220；T-1 历史逐局P50实际为170-340ns。窗口免疫只描述中心P50/P90，不涵盖P99尖刺。"),
         ("AGENT §1：T-1 收入1856-2424", "口径修正/部分相容",
          f"完整局目标净分中位 {fmt_num(t1_final['target_net'])}；范围受对手、地图、烧损和版本窗口影响。本报告不把隐藏pickup补成毛收入。"),
-        ("AGENT/CHANGELOG：T-1 每局5次6-11轮远征，离镜4.81/轮", "机制相容、精确数未复现",
-         f"高可见probe的6-11轮可见外区段/局中位 {fmt_num(t1_probe_outer)}，与约5次同量级；但仅2局且会被缺失切段。持金Δ不是pickup，4.81口径无法复现。"),
+        ("AGENT/CHANGELOG：T-1 每局5次6-11轮远征，离镜4.81/轮", "仅弱相容、精确数未复现",
+         f"高可见probe的6-11轮可见外区段/局中位 {fmt_num(t1_probe_outer)}，与约5次同量级；但仅2局、主动跟踪可扰动路线，且缺失会切段。持金Δ不是pickup，4.81口径无法复现。"),
         ("CHANGELOG：T-1 全双管线~750指令", "相容但不可识别",
          "成本包络可容纳紧凑双管线；实际输入载荷和罚则未知，不能由纳秒唯一反推原始指令数。"),
         ("CHANGELOG 军规0：外圈池~2000-2900、中央~3250", "被仓库后续全信息证据推翻",
@@ -1335,17 +1570,17 @@ def render_report(corpus: dict[str, list[Game]], probes: dict[str, list[Game]], 
     append_table(lines, ["既有说法", "状态", "本报告判据"], contradiction_rows)
 
     lines.extend([
-        "## 11. 可执行 counterplay",
+        "## 12. 可执行 counterplay",
         "",
         "1. **对 T-1 先保 190-200ns 档。** 按 INFRA 10行载荷，190/200ns 分别约 650/700 条 I10 等效指令；新增器官应低频门控或放入可被 P90 隐藏的稀疏轮，同时验轻轮伴生税。",
-        "2. **对 Tundra 分档用预算。** 历史 P50=260 给约 +300 条、轻探针270给约 +350 条；只有接受 INFRA 290ns 档才是 +450。优先加可验证的堆记忆/短程拔点，而非全职外圈巡逻，并用同窗逐轮差确认仍保先手。",
+        "2. **对 Tundra 分档用预算。** 历史 P50=260 相对 T-1 200ns 给约 +300 条 I10 等效空间；重 probe 窗口的 270ns 只能作为受污染观测，不能当作额外预算保证。只有接受 INFRA 290ns 档才是文档中的 +450。优先加可验证的堆记忆/短程拔点，而非全职外圈巡逻，并用同窗逐轮差确认仍保先手。",
         "3. **用在线快照而非地图常量识别外区机会。** token-2 可用于已知图快速层，但陌生图基线应依赖 `gold_remaining/generated/occupants`；这与 AGENT 的换图铁律一致。",
         "4. **热点只做触发式突袭。** 可见位置样本不足以证明对手长期蹲点；更稳妥的是在某臂快照存量上升且 occupants 低时，记忆热点或高额可见堆，短进短出。",
         "5. **针对中心竞争看同轮先后手，不看单局绝对收入。** 目标更快率和持金窗口差应共同评估；若加策略后先手率下降而持金无补偿，立即回滚。",
         "6. **利用零购买指纹。** 历史两目标从未付费扩视野，可把“默认窗外不知局部细节”作为对抗假设，但全局快照仍在；同时不能把“我看见它”误作“它买了视野”。",
         "7. **实验验收。** 新行为至少 3 对同窗，里程碑 6+6；按我方精确版本分组，保存 map 与 game_id，并同时报告 `r>=10/20/30`，防止 warmup 或截尾改变结论。",
         "",
-        "## 12. 不确定性与样本量总表",
+        "## 13. 不确定性与样本量总表",
         "",
     ])
     uncertainty_rows = []
@@ -1369,6 +1604,7 @@ def render_report(corpus: dict[str, list[Game]], probes: dict[str, list[Game]], 
         "- **低可信/条件性**：位置五区、热点驻留、动作码、pickup、远征段。它们受我方视野选择，且不同精确 player1 版本几乎无重复。",
         "- **不可辨识**：隐藏 pickup 总量、无烧损毛收入、对手看到的完整 grid、内部目标/记忆、源码指令数、原始被阻动作、每轮原始 `k/order`。",
         "- **因果限制**：回合特征表已用局内差消除局基线，但 feature 并非随机分配；尤其 pickup 是结果、可见性由双方位置共同决定。",
+        "- **probe 限制**：`probeobs` 主动跟踪、实际拾金且 P50 约 0.80-0.86ms；它提高可见覆盖的同时可能通过占位和对手污染改变目标，四局也不是共享随机场景的配对实验。",
         "- **截尾限制**：截尾局参与其已观察轮的 cost/行为统计，不参与 500 轮终局或缺失窗口；所有曲线逐检查点给出到达样本数。",
         "",
         "---",
