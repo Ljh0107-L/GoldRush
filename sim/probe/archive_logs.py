@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import filecmp
 import json
 import math
 import os
@@ -14,10 +15,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_LOGS_ROOT = ROOT / "logs"
 FROZEN_CHAMPION = {
-    "model_name": "champ76e",
-    "git_commit": "76eef470cb28d1bd52c71afe57b09108c32b8f6d",
+    "model_name": "champff4",
+    "git_commit": "ff462756b388d00ae5ec581e49b0facd00b355cb",
     "source_sha256": "d4526b22f4371e33e17dd3508ef74235e77ffc84ff81966ff0def25e0be013b0",
-    "so_sha256": "a784ae7c524725d1a2920d8eb90f93ea93a2160794cc086105a2d3361d1a9e5c",
+    "so_sha256": "c83aa563d36bae14069ce9664f81bfb8c2469f57f02163abfeabea3f7e9d5005",
+    "build_host": "quant-compiler",
+    "build_cpu": "AMD EPYC 9T25 128-Core Processor; family 26 model 2",
+    "compiler": "g++ (GCC) 14.3.1 20251022 (Red Hat 14.3.1-4)",
+    "native_target": "znver5; avx512fp16 disabled",
     "build_command": "g++ -std=c++17 -O3 -march=native -fPIC -Wall -Wextra -shared -o champ.so src/player.cpp -Isrc",
 }
 PROBE_ARTIFACT = {
@@ -28,7 +33,7 @@ PROBE_ARTIFACT = {
 TEAMS = {
     "Tiuntled-1": {"account": "player163", "model_id": 87478, "role": "opponent"},
     "Tundra-wawa": {"account": "player57", "model_id": 43116, "role": "opponent"},
-    "_selfplay-champ": {"account": "champ76e", "model_id": None, "role": "selfplay_champion"},
+    "_selfplay-champ": {"account": "champff4", "model_id": None, "role": "selfplay_champion"},
 }
 
 
@@ -140,10 +145,15 @@ def build_manifest(logs_root):
     opponents_root = logs_root / "opponents"
     opponents_root.mkdir(parents=True, exist_ok=True)
     entries = []
+    skipped_logs = []
     expected_links = {team: set() for team in TEAMS}
 
     for source in sorted(logs_root.glob("game_*.log")):
-        parsed = parse_log(source)
+        try:
+            parsed = parse_log(source)
+        except (KeyError, TypeError, ValueError, json.JSONDecodeError) as error:
+            skipped_logs.append({"source_path": relative_to_root(source), "reason": str(error)})
+            continue
         team = target_team(parsed["names"])
         if team is None:
             continue
@@ -161,7 +171,11 @@ def build_manifest(logs_root):
                 archive_path.unlink()
                 archive_path.symlink_to(relative_target)
         elif archive_path.exists():
-            raise RuntimeError("refusing to replace non-symlink archive file: %s" % archive_path)
+            if archive_path.is_file() and filecmp.cmp(archive_path, source, shallow=False):
+                archive_path.unlink()
+                archive_path.symlink_to(relative_target)
+            else:
+                raise RuntimeError("refusing to replace distinct archive file: %s" % archive_path)
         else:
             archive_path.symlink_to(relative_target)
 
@@ -179,8 +193,9 @@ def build_manifest(logs_root):
             "target_player_id": target_id,
             "rounds": parsed["rounds"],
             "scores": parsed["scores"],
-            "target_net_vs_probe": parsed["scores"][metadata["account"]]["net_score"],
+            "opponent_net_vs_probe": parsed["scores"][metadata["account"]]["net_score"],
             "target_visibility": parsed["visibility_by_target"][target_id],
+            "probe_visibility": parsed["visibility_by_target"][probe_id],
             "dispatch": {
                 "first_by_player_id": parsed["dispatch_first_by_player_id"],
                 "target_first_rounds": target_first_rounds,
@@ -207,6 +222,7 @@ def build_manifest(logs_root):
             "frozen_champion": FROZEN_CHAMPION,
             "observation_probe": PROBE_ARTIFACT,
         },
+        "skipped_logs": skipped_logs,
         "teams": {
             team: {
                 **metadata,
