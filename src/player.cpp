@@ -12,13 +12,10 @@
 //    0.2 指纹: (bpw ^ 候选墙表) & seen 逐行比对淘汰; 唯一候选 → 锁图直灌全墙表;
 //        map1 角落 5×5 即可区分(round 0 锁, 行为与旧版逐位一致);
 //        map2/3 角落同构 → round 0 买 vp=2, round 1 用 9×9 终判(全图可区分, 实测)
-//    0.3 中央双驻守: 三图共用 (6,8)/(11,8), 除远征段外不再用入镜敌人劫持 u1 锚点
+//    0.3 中央双驻守: 三图共用 (6,8)/(11,8), 快照远征调度已下岗、守卫位点暂留保布局
 //    0.4 三图全不吻合 → 陌生图模式: 懒学习伴终局(稳态只付 visited 门控 ~+5ns), 行军窗自然导向
 // 1. 新局检测(round 回绕) → 重置状态, bpw = 边界哨兵(墙由指纹/学习灌入)
-// 2. %20 冷位点: 炸弹波清 + 快照远征调度(8.9 路线1, v3 形态; 收入中性但结构合规存留)
-//    外区存量>80 且较上次未降(降=有人收割, 绕开)-40×occupants 避人 → u1 车道中线
-//    一趟扫(近端进远端出, 抵A切B抵B归队); 吸干<30/超时40轮归队复锚; <70/>460 禁足。
-//    判决史(CHANGELOG 详): v1扎营/v2往返/v4堆记忆突袭皆判负, 外圈收割精度 1.4 vs T-1 4.81
+// 2. %20 冷位点: 仅清空炸弹波记忆; 已判负快照远征不再置状态
 // 3. 对每个单位(双全管线, 无轮换):
 //    3.1 富度门: 持金≥100 才把炸弹并入阻挡(穷单位踩弹烧 10%×0=0, 弹透明)
 //    3.2 扫描: 5×5 窗口 5 行就地 AVX 载入 → goldm 25位(金) / bombm 15位(弹, 仅±1行)
@@ -241,55 +238,8 @@ void fixAnchor(int u) {                          // 锚点是墙 → 改指最�
 }
 
 __attribute__((noinline, cold))
-void waveTick(const GameInput* in) {             // 波清 + 快照远征调度(骑 %20 位点)
+void waveTick(const GameInput*) {                 // 炸弹每 20 轮整套重采样
     memset(g_s.bombbit, 0, sizeof(g_s.bombbit));
-    // ---- 后手远征器官(8.9 路线1): 外圈存量是后手无关粮(没人抢, 不怕情报过期) ----
-    // 触发: 外区 gold_remaining>80 且较上次未降(降=有人在收割, 绕开) - 40×occupants 避人;
-    // 归队: 吸干(<30)或超时(40轮); 开局<70/终局>460 禁足。快照 5 轮一发, %20 轮必踩到。
-    if (!in->snapshot_valid) return;
-    int rd = in->round;
-    int16_t rem[4] = {0, 0, 0, 0};
-    int occ[4] = {0, 0, 0, 0};
-    for (int i = 0; i < REGION_COUNT; ++i) {
-        const RegionStat& rs = in->snapshot.regions[i];
-        if (rs.id >= 2 && rs.id <= 5) {
-            rem[rs.id - 2] = (int16_t)rs.gold_remaining;
-            occ[rs.id - 2] = rs.occupants;
-        }
-    }
-    if (g_s.exc_reg) {
-        if (rem[g_s.exc_reg - 2] < 30 || rd - g_s.exc_t0 >= 40) {
-            g_s.exc = 0; g_s.exc_reg = 0;
-            g_s.anch_r[1] = g_s.sv_ar; g_s.anch_c[1] = g_s.sv_ac;
-        }
-    } else if (rd >= 70 && rd <= 460 && g_s.map_id != -1) {
-        int best = -1, bs = 0;
-        for (int k = 0; k < 4; ++k) {
-            int s = rem[k] - 40 * occ[k];
-            if (rem[k] > 80 && rem[k] >= g_s.rem_prev[k] && s > bs) { bs = s; best = k; }
-        }
-        if (best >= 0) {
-            static constexpr int8_t LR[4][2][2] = {  // 车道端点[区-2][端][r,c]: 4宽带的
-                {{1, 3}, {1, 13}},                   // 中线, 5×5 视野一趟扫全区
-                {{3, 1}, {13, 1}},
-                {{15, 3}, {15, 13}},
-                {{3, 15}, {13, 15}},
-            };
-            int ur = in->my_units[1].row, uc = in->my_units[1].col;
-            int d0 = (ur > LR[best][0][0] ? ur - LR[best][0][0] : LR[best][0][0] - ur) +
-                     (uc > LR[best][0][1] ? uc - LR[best][0][1] : LR[best][0][1] - uc);
-            int d1 = (ur > LR[best][1][0] ? ur - LR[best][1][0] : LR[best][1][0] - ur) +
-                     (uc > LR[best][1][1] ? uc - LR[best][1][1] : LR[best][1][1] - uc);
-            int aA = d0 <= d1 ? 0 : 1;               // 近端进, 远端出
-            g_s.exc = 1; g_s.exc_reg = (int8_t)(best + 2);
-            g_s.exc_t0 = (int16_t)rd; g_s.exc_wp = 0;
-            g_s.sv_ar = g_s.anch_r[1]; g_s.sv_ac = g_s.anch_c[1];
-            g_s.anch_r[1] = LR[best][aA][0]; g_s.anch_c[1] = LR[best][aA][1];
-            g_s.exc_br = LR[best][aA ^ 1][0]; g_s.exc_bc = LR[best][aA ^ 1][1];
-            fixAnchor(1);                            // 陌生图上车道点可能是墙
-        }
-    }
-    for (int k = 0; k < 4; ++k) g_s.rem_prev[k] = rem[k];
 }
 
 __attribute__((noinline, cold))
