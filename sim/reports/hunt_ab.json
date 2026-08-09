@@ -1,0 +1,444 @@
+{
+  "artifacts": {
+    "baseline": {
+      "path": "/tmp/champ_da210b8.dylib",
+      "sha256": "4af950f6bdfb1febef7c2fa0493f27979b28aa49889cff494910351d2c5072a2"
+    },
+    "no_hunt": {
+      "path": "/tmp/champ_da210b8_nohunt.dylib",
+      "sha256": "ff34962c4ee435c1cec314c129c5a8e2aa264cf461542b547de343797d6c853c"
+    }
+  },
+  "behavior": {
+    "anchor-no-hunt": {
+      "by_unit": [
+        {
+          "d_le_2_rate": 0.6604,
+          "effective_action4_rate": 0.35395,
+          "pickup_per_unit_round": 0.94265,
+          "r1_rate": 0.9621,
+          "unit": 0,
+          "unit_rounds": 20000,
+          "zero_pickup_unit_round_rate": 0.7896
+        },
+        {
+          "d_le_2_rate": 0.20405,
+          "effective_action4_rate": 0.29446666666666665,
+          "pickup_per_unit_round": 1.2462,
+          "r1_rate": 0.81395,
+          "unit": 1,
+          "unit_rounds": 20000,
+          "zero_pickup_unit_round_rate": 0.73575
+        }
+      ],
+      "d_le_2_rate": 0.432225,
+      "effective_action4_rate": 0.3242083333333333,
+      "games": 40,
+      "pickup_per_unit_round": 1.094425,
+      "r1_rate": 0.888025,
+      "unit_rounds": 40000,
+      "zero_pickup_unit_round_rate": 0.762675
+    },
+    "anchor-with-hunt": {
+      "by_unit": [
+        {
+          "d_le_2_rate": 0.6645,
+          "effective_action4_rate": 0.3129,
+          "pickup_per_unit_round": 1.0405,
+          "r1_rate": 0.9616,
+          "unit": 0,
+          "unit_rounds": 20000,
+          "zero_pickup_unit_round_rate": 0.7692
+        },
+        {
+          "d_le_2_rate": 0.36675,
+          "effective_action4_rate": 0.43015,
+          "pickup_per_unit_round": 0.91215,
+          "r1_rate": 0.74405,
+          "unit": 1,
+          "unit_rounds": 20000,
+          "zero_pickup_unit_round_rate": 0.81425
+        }
+      ],
+      "d_le_2_rate": 0.515625,
+      "effective_action4_rate": 0.371525,
+      "games": 40,
+      "pickup_per_unit_round": 0.976325,
+      "r1_rate": 0.852825,
+      "unit_rounds": 40000,
+      "zero_pickup_unit_round_rate": 0.791725
+    }
+  },
+  "design": {
+    "bias": "simulator NPCs over-consume central gold (remaining 27 vs real 39), so returning u1 to center has a conservative local payoff",
+    "dispatch": "fixed; P1 faster in each leg; algorithms swap seats",
+    "games": 40,
+    "map": "map1",
+    "pairs": 20,
+    "patch": "analysis-only /tmp source copy replaces hunt live expression with int live = 0; repository src/player.cpp untouched",
+    "seed_base": 2026083000,
+    "source_commit": "da210b8"
+  },
+  "leg_income_delta": {
+    "max": 949,
+    "mean": 145.175,
+    "median": 189.0,
+    "min": -804,
+    "n": 40,
+    "p10": -666,
+    "p90": 832
+  },
+  "pairs": [
+    {
+      "legs": [
+        {
+          "baseline": 871,
+          "delta": -46,
+          "no_hunt": 825
+        },
+        {
+          "baseline": 462,
+          "delta": 884,
+          "no_hunt": 1346
+        }
+      ],
+      "scenario_digest": "f4f64a2ca4370f8a3f4e9024237008d75ab0af9618fb3ca2c24d1112dc3c548b",
+      "seat_averaged_delta": 419.0,
+      "seed": 2026083000
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1233,
+          "delta": -783,
+          "no_hunt": 450
+        },
+        {
+          "baseline": 503,
+          "delta": 914,
+          "no_hunt": 1417
+        }
+      ],
+      "scenario_digest": "3f2a7efe310391ad6ab220519856556237e6d4c26ed4a59ef9c9d7e3908f10e8",
+      "seat_averaged_delta": 65.5,
+      "seed": 2026083001
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1015,
+          "delta": -295,
+          "no_hunt": 720
+        },
+        {
+          "baseline": 501,
+          "delta": 785,
+          "no_hunt": 1286
+        }
+      ],
+      "scenario_digest": "b17a04a9648f1a07f0ae01ef06a97894da45b8dfb021d40179859123a5a6802b",
+      "seat_averaged_delta": 245.0,
+      "seed": 2026083002
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1092,
+          "delta": -593,
+          "no_hunt": 499
+        },
+        {
+          "baseline": 441,
+          "delta": 766,
+          "no_hunt": 1207
+        }
+      ],
+      "scenario_digest": "ba0691ff3f4968f390b1378624163a164f58ada04e6a0d86e0cafa41592447dd",
+      "seat_averaged_delta": 86.5,
+      "seed": 2026083003
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1029,
+          "delta": -483,
+          "no_hunt": 546
+        },
+        {
+          "baseline": 456,
+          "delta": 770,
+          "no_hunt": 1226
+        }
+      ],
+      "scenario_digest": "65d49760b5f2f6f0f7ea4e77c0d23d199efe1a055e59c4ccb8c2c772a0c98ac8",
+      "seat_averaged_delta": 143.5,
+      "seed": 2026083004
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1016,
+          "delta": -431,
+          "no_hunt": 585
+        },
+        {
+          "baseline": 442,
+          "delta": 750,
+          "no_hunt": 1192
+        }
+      ],
+      "scenario_digest": "febe57a9750b9cd2bb19ac87e3a566e85cc59fc50cdc6eb69b4a45b683a64709",
+      "seat_averaged_delta": 159.5,
+      "seed": 2026083005
+    },
+    {
+      "legs": [
+        {
+          "baseline": 803,
+          "delta": -179,
+          "no_hunt": 624
+        },
+        {
+          "baseline": 467,
+          "delta": 787,
+          "no_hunt": 1254
+        }
+      ],
+      "scenario_digest": "41fa677e4f6373f97e353f8f462fa55d1b885b40dd3db01859a7611594bfabe5",
+      "seat_averaged_delta": 304.0,
+      "seed": 2026083006
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1262,
+          "delta": -619,
+          "no_hunt": 643
+        },
+        {
+          "baseline": 459,
+          "delta": 816,
+          "no_hunt": 1275
+        }
+      ],
+      "scenario_digest": "37e32d3bbf0c994de03de08f9b98c3763995115b314d4af5041b4376ce24d18e",
+      "seat_averaged_delta": 98.5,
+      "seed": 2026083007
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1052,
+          "delta": -234,
+          "no_hunt": 818
+        },
+        {
+          "baseline": 663,
+          "delta": 564,
+          "no_hunt": 1227
+        }
+      ],
+      "scenario_digest": "6ef3458cc45166c1b654e471a9358c60c4c592444ba4d321cdb0e65d86a167d7",
+      "seat_averaged_delta": 165.0,
+      "seed": 2026083008
+    },
+    {
+      "legs": [
+        {
+          "baseline": 990,
+          "delta": -302,
+          "no_hunt": 688
+        },
+        {
+          "baseline": 659,
+          "delta": 683,
+          "no_hunt": 1342
+        }
+      ],
+      "scenario_digest": "7379dad4ceaebff5202a0328babeff81be95242f4b4fdaccf46a28bce5bc42f0",
+      "seat_averaged_delta": 190.5,
+      "seed": 2026083009
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1035,
+          "delta": -254,
+          "no_hunt": 781
+        },
+        {
+          "baseline": 581,
+          "delta": 521,
+          "no_hunt": 1102
+        }
+      ],
+      "scenario_digest": "e1e90d87012f322d06e876a2e49c3a2d3244a4cbd3b3ccb962a93551ca5324cb",
+      "seat_averaged_delta": 133.5,
+      "seed": 2026083010
+    },
+    {
+      "legs": [
+        {
+          "baseline": 885,
+          "delta": -336,
+          "no_hunt": 549
+        },
+        {
+          "baseline": 409,
+          "delta": 809,
+          "no_hunt": 1218
+        }
+      ],
+      "scenario_digest": "f8b540a3584926c858e38db3015bc8b18e7ba9fdaf0be9c61bddfedd4c7189e2",
+      "seat_averaged_delta": 236.5,
+      "seed": 2026083011
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1182,
+          "delta": -443,
+          "no_hunt": 739
+        },
+        {
+          "baseline": 585,
+          "delta": 913,
+          "no_hunt": 1498
+        }
+      ],
+      "scenario_digest": "a2a9835aae11e81ed7e024e58b0e6708ea0f5e051c2657f63820bcd10ddc9157",
+      "seat_averaged_delta": 235.0,
+      "seed": 2026083012
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1318,
+          "delta": -803,
+          "no_hunt": 515
+        },
+        {
+          "baseline": 438,
+          "delta": 745,
+          "no_hunt": 1183
+        }
+      ],
+      "scenario_digest": "6196bfbbdcec3250e5a7a5306730e0f03903981eec22759d84a61b43c7bbe3c4",
+      "seat_averaged_delta": -29.0,
+      "seed": 2026083013
+    },
+    {
+      "legs": [
+        {
+          "baseline": 966,
+          "delta": -492,
+          "no_hunt": 474
+        },
+        {
+          "baseline": 521,
+          "delta": 832,
+          "no_hunt": 1353
+        }
+      ],
+      "scenario_digest": "ddde482057b9a6903a0ef85c5c1cc7d39ba87575aaa0c3b87e1f460d8d837fd1",
+      "seat_averaged_delta": 170.0,
+      "seed": 2026083014
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1218,
+          "delta": -804,
+          "no_hunt": 414
+        },
+        {
+          "baseline": 568,
+          "delta": 573,
+          "no_hunt": 1141
+        }
+      ],
+      "scenario_digest": "3a9625e6d3ddac50c55c2ae1ba29b121bc170eaa4a6cb8ec9f9e429eb150fbf2",
+      "seat_averaged_delta": -115.5,
+      "seed": 2026083015
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1083,
+          "delta": -391,
+          "no_hunt": 692
+        },
+        {
+          "baseline": 344,
+          "delta": 949,
+          "no_hunt": 1293
+        }
+      ],
+      "scenario_digest": "e2535fc93013c896adb4a18adb0ff23ff88315620e4512e0eb3bb2aa9dbf7577",
+      "seat_averaged_delta": 279.0,
+      "seed": 2026083016
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1247,
+          "delta": -532,
+          "no_hunt": 715
+        },
+        {
+          "baseline": 561,
+          "delta": 757,
+          "no_hunt": 1318
+        }
+      ],
+      "scenario_digest": "807d0398258254a5d9cee2021c0dc5e1284e22411ea624ba3b3543b6bf53af1f",
+      "seat_averaged_delta": 112.5,
+      "seed": 2026083017
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1229,
+          "delta": -666,
+          "no_hunt": 563
+        },
+        {
+          "baseline": 510,
+          "delta": 424,
+          "no_hunt": 934
+        }
+      ],
+      "scenario_digest": "1da0012ca086b79c626a5d78882807338d3b843dfd952dc214977946fbfe5662",
+      "seat_averaged_delta": -121.0,
+      "seed": 2026083018
+    },
+    {
+      "legs": [
+        {
+          "baseline": 1071,
+          "delta": -581,
+          "no_hunt": 490
+        },
+        {
+          "baseline": 498,
+          "delta": 832,
+          "no_hunt": 1330
+        }
+      ],
+      "scenario_digest": "be775e4239477c8394dea5f3a122d4fae5a5bef67ce7668d5eb669df7aafa265",
+      "seat_averaged_delta": 125.5,
+      "seed": 2026083019
+    }
+  ],
+  "schema_version": 1,
+  "seat_averaged_income_delta_no_hunt_minus_baseline": {
+    "max": 419.0,
+    "mean": 145.175,
+    "median": 151.5,
+    "min": -121.0,
+    "n": 20,
+    "p10": -115.5,
+    "p90": 279.0
+  },
+  "status": "complete"
+}

@@ -1,0 +1,3417 @@
+{
+  "bias": {
+    "direction": "conservative for B/C central sweeps: it suppresses all central strategies, so a local uplift should understate platform upside",
+    "source": "NPC model is too greedy and too central"
+  },
+  "comparisons": {
+    "hard-minus-stay": {
+      "aggregate": {
+        "baseline_p1_pickup_origin": {
+          "games": 30,
+          "outside_amount": 4900,
+          "outside_amount_share": 0.08669344137577184,
+          "outside_average_amount": 6.186868686868687,
+          "outside_pickup_cell_share": 0.048239736874162505,
+          "outside_pickup_cells": 792,
+          "total_amount": 56521,
+          "total_pickup_cells": 16418
+        },
+        "behavior": {
+          "center-hard-mask": {
+            "all_requested_move_blocked_steps": 7140,
+            "center_d2_occupancy_rate": 0.45238333333333336,
+            "effective_stay_action_rate": 0.41063333333333335,
+            "games": 60,
+            "idle_sweep_unit_rounds": 0,
+            "less_than_three_move_unit_round_rate": 0.56085,
+            "less_than_three_move_unit_rounds": 33651,
+            "mutual_blocked_steps": 15,
+            "region1_occupancy_rate": 0.9931,
+            "rolling_5_round_window_coverage": {
+              "max": 70,
+              "mean": 34.39282594086021,
+              "median": 34.0,
+              "min": 19,
+              "n": 59520,
+              "p10": 23,
+              "p90": 45
+            },
+            "unit_rounds": 60000,
+            "zero_pickup_unit_round_rate": 0.6530333333333334,
+            "zero_pickup_unit_rounds": 39182
+          },
+          "idle-stay": {
+            "all_requested_move_blocked_steps": 7063,
+            "center_d2_occupancy_rate": 0.4441,
+            "effective_stay_action_rate": 0.3930388888888889,
+            "games": 60,
+            "idle_sweep_unit_rounds": 0,
+            "less_than_three_move_unit_round_rate": 0.5432833333333333,
+            "less_than_three_move_unit_rounds": 32597,
+            "mutual_blocked_steps": 25,
+            "region1_occupancy_rate": 0.9700666666666666,
+            "rolling_5_round_window_coverage": {
+              "max": 73,
+              "mean": 35.07016129032258,
+              "median": 35.0,
+              "min": 19,
+              "n": 59520,
+              "p10": 23,
+              "p90": 46
+            },
+            "unit_rounds": 60000,
+            "zero_pickup_unit_round_rate": 0.64225,
+            "zero_pickup_unit_rounds": 38535
+          }
+        },
+        "game_count": 60,
+        "leg_income_delta": {
+          "max": 1124,
+          "mean": -64.96666666666667,
+          "median": -139.0,
+          "min": -1312,
+          "n": 60,
+          "p10": -1215,
+          "p90": 1028
+        },
+        "pair_count": 30,
+        "seat_averaged_income_delta": {
+          "max": 154.5,
+          "mean": -64.96666666666667,
+          "median": -73.5,
+          "min": -326.5,
+          "n": 30,
+          "p10": -216.0,
+          "p90": 110.5
+        }
+      },
+      "by_map": {
+        "map1": {
+          "baseline_p1_pickup_origin": {
+            "games": 15,
+            "outside_amount": 2302,
+            "outside_amount_share": 0.07989171930311655,
+            "outside_average_amount": 6.341597796143251,
+            "outside_pickup_cell_share": 0.04336399474375821,
+            "outside_pickup_cells": 363,
+            "total_amount": 28814,
+            "total_pickup_cells": 8371
+          },
+          "behavior": {
+            "center-hard-mask": {
+              "all_requested_move_blocked_steps": 3666,
+              "center_d2_occupancy_rate": 0.4462333333333333,
+              "effective_stay_action_rate": 0.4058,
+              "games": 30,
+              "idle_sweep_unit_rounds": 0,
+              "less_than_three_move_unit_round_rate": 0.5609333333333333,
+              "less_than_three_move_unit_rounds": 16828,
+              "mutual_blocked_steps": 3,
+              "region1_occupancy_rate": 0.9937,
+              "rolling_5_round_window_coverage": {
+                "max": 67,
+                "mean": 33.32352150537634,
+                "median": 33.0,
+                "min": 19,
+                "n": 29760,
+                "p10": 23,
+                "p90": 43
+              },
+              "unit_rounds": 30000,
+              "zero_pickup_unit_round_rate": 0.6463,
+              "zero_pickup_unit_rounds": 19389
+            },
+            "idle-stay": {
+              "all_requested_move_blocked_steps": 3659,
+              "center_d2_occupancy_rate": 0.43893333333333334,
+              "effective_stay_action_rate": 0.3966222222222222,
+              "games": 30,
+              "idle_sweep_unit_rounds": 0,
+              "less_than_three_move_unit_round_rate": 0.5504666666666667,
+              "less_than_three_move_unit_rounds": 16514,
+              "mutual_blocked_steps": 9,
+              "region1_occupancy_rate": 0.9723,
+              "rolling_5_round_window_coverage": {
+                "max": 67,
+                "mean": 33.77967069892473,
+                "median": 34.0,
+                "min": 19,
+                "n": 29760,
+                "p10": 23,
+                "p90": 44
+              },
+              "unit_rounds": 30000,
+              "zero_pickup_unit_round_rate": 0.6362333333333333,
+              "zero_pickup_unit_rounds": 19087
+            }
+          },
+          "game_count": 30,
+          "leg_income_delta": {
+            "max": 1124,
+            "mean": -67.1,
+            "median": -90.0,
+            "min": -1312,
+            "n": 30,
+            "p10": -1238,
+            "p90": 1080
+          },
+          "pair_count": 15,
+          "seat_averaged_income_delta": {
+            "max": 154.5,
+            "mean": -67.1,
+            "median": -75.0,
+            "min": -326.5,
+            "n": 15,
+            "p10": -216.0,
+            "p90": 124.5
+          }
+        },
+        "map2": {
+          "baseline_p1_pickup_origin": {
+            "games": 15,
+            "outside_amount": 2598,
+            "outside_amount_share": 0.09376691810733749,
+            "outside_average_amount": 6.055944055944056,
+            "outside_pickup_cell_share": 0.05331179321486268,
+            "outside_pickup_cells": 429,
+            "total_amount": 27707,
+            "total_pickup_cells": 8047
+          },
+          "behavior": {
+            "center-hard-mask": {
+              "all_requested_move_blocked_steps": 3474,
+              "center_d2_occupancy_rate": 0.45853333333333335,
+              "effective_stay_action_rate": 0.41546666666666665,
+              "games": 30,
+              "idle_sweep_unit_rounds": 0,
+              "less_than_three_move_unit_round_rate": 0.5607666666666666,
+              "less_than_three_move_unit_rounds": 16823,
+              "mutual_blocked_steps": 12,
+              "region1_occupancy_rate": 0.9925,
+              "rolling_5_round_window_coverage": {
+                "max": 70,
+                "mean": 35.462130376344085,
+                "median": 35.0,
+                "min": 21,
+                "n": 29760,
+                "p10": 22,
+                "p90": 47
+              },
+              "unit_rounds": 30000,
+              "zero_pickup_unit_round_rate": 0.6597666666666666,
+              "zero_pickup_unit_rounds": 19793
+            },
+            "idle-stay": {
+              "all_requested_move_blocked_steps": 3404,
+              "center_d2_occupancy_rate": 0.44926666666666665,
+              "effective_stay_action_rate": 0.38945555555555555,
+              "games": 30,
+              "idle_sweep_unit_rounds": 0,
+              "less_than_three_move_unit_round_rate": 0.5361,
+              "less_than_three_move_unit_rounds": 16083,
+              "mutual_blocked_steps": 16,
+              "region1_occupancy_rate": 0.9678333333333333,
+              "rolling_5_round_window_coverage": {
+                "max": 73,
+                "mean": 36.36065188172043,
+                "median": 36.0,
+                "min": 21,
+                "n": 29760,
+                "p10": 22,
+                "p90": 49
+              },
+              "unit_rounds": 30000,
+              "zero_pickup_unit_round_rate": 0.6482666666666667,
+              "zero_pickup_unit_rounds": 19448
+            }
+          },
+          "game_count": 30,
+          "leg_income_delta": {
+            "max": 1103,
+            "mean": -62.833333333333336,
+            "median": -174.5,
+            "min": -1292,
+            "n": 30,
+            "p10": -1170,
+            "p90": 1021
+          },
+          "pair_count": 15,
+          "seat_averaged_income_delta": {
+            "max": 114.0,
+            "mean": -62.833333333333336,
+            "median": -66.0,
+            "min": -306.5,
+            "n": 15,
+            "p10": -204.5,
+            "p90": 110.5
+          }
+        }
+      }
+    },
+    "loop-minus-stay": {
+      "aggregate": {
+        "baseline_p1_pickup_origin": {
+          "games": 30,
+          "outside_amount": 4347,
+          "outside_amount_share": 0.0773363696205234,
+          "outside_average_amount": 6.281791907514451,
+          "outside_pickup_cell_share": 0.04221056484079541,
+          "outside_pickup_cells": 692,
+          "total_amount": 56209,
+          "total_pickup_cells": 16394
+        },
+        "behavior": {
+          "idle-four-loop": {
+            "all_requested_move_blocked_steps": 8703,
+            "center_d2_occupancy_rate": 0.4808,
+            "effective_stay_action_rate": 0.31967222222222225,
+            "games": 60,
+            "idle_sweep_unit_rounds": 4749,
+            "less_than_three_move_unit_round_rate": 0.479,
+            "less_than_three_move_unit_rounds": 28740,
+            "mutual_blocked_steps": 27,
+            "region1_occupancy_rate": 0.97105,
+            "rolling_5_round_window_coverage": {
+              "max": 71,
+              "mean": 35.98363575268817,
+              "median": 36.0,
+              "min": 19,
+              "n": 59520,
+              "p10": 25,
+              "p90": 47
+            },
+            "unit_rounds": 60000,
+            "zero_pickup_unit_round_rate": 0.64095,
+            "zero_pickup_unit_rounds": 38457
+          },
+          "idle-stay": {
+            "all_requested_move_blocked_steps": 7306,
+            "center_d2_occupancy_rate": 0.4412333333333333,
+            "effective_stay_action_rate": 0.3937555555555556,
+            "games": 60,
+            "idle_sweep_unit_rounds": 0,
+            "less_than_three_move_unit_round_rate": 0.5551833333333334,
+            "less_than_three_move_unit_rounds": 33311,
+            "mutual_blocked_steps": 20,
+            "region1_occupancy_rate": 0.9732666666666666,
+            "rolling_5_round_window_coverage": {
+              "max": 73,
+              "mean": 34.874663978494624,
+              "median": 35.0,
+              "min": 19,
+              "n": 59520,
+              "p10": 23,
+              "p90": 46
+            },
+            "unit_rounds": 60000,
+            "zero_pickup_unit_round_rate": 0.6435833333333333,
+            "zero_pickup_unit_rounds": 38615
+          }
+        },
+        "game_count": 60,
+        "leg_income_delta": {
+          "max": 1280,
+          "mean": -16.483333333333334,
+          "median": 33.5,
+          "min": -1308,
+          "n": 60,
+          "p10": -1189,
+          "p90": 1034
+        },
+        "pair_count": 30,
+        "seat_averaged_income_delta": {
+          "max": 354.5,
+          "mean": -16.483333333333334,
+          "median": -7.75,
+          "min": -225.5,
+          "n": 30,
+          "p10": -167.0,
+          "p90": 109.0
+        }
+      },
+      "by_map": {
+        "map1": {
+          "baseline_p1_pickup_origin": {
+            "games": 15,
+            "outside_amount": 1996,
+            "outside_amount_share": 0.06911357340720221,
+            "outside_average_amount": 6.122699386503068,
+            "outside_pickup_cell_share": 0.03846607669616519,
+            "outside_pickup_cells": 326,
+            "total_amount": 28880,
+            "total_pickup_cells": 8475
+          },
+          "behavior": {
+            "idle-four-loop": {
+              "all_requested_move_blocked_steps": 5085,
+              "center_d2_occupancy_rate": 0.48186666666666667,
+              "effective_stay_action_rate": 0.3283,
+              "games": 30,
+              "idle_sweep_unit_rounds": 2594,
+              "less_than_three_move_unit_round_rate": 0.5088333333333334,
+              "less_than_three_move_unit_rounds": 15265,
+              "mutual_blocked_steps": 2,
+              "region1_occupancy_rate": 0.9748,
+              "rolling_5_round_window_coverage": {
+                "max": 67,
+                "mean": 34.23877688172043,
+                "median": 34.0,
+                "min": 19,
+                "n": 29760,
+                "p10": 24,
+                "p90": 44
+              },
+              "unit_rounds": 30000,
+              "zero_pickup_unit_round_rate": 0.6402,
+              "zero_pickup_unit_rounds": 19206
+            },
+            "idle-stay": {
+              "all_requested_move_blocked_steps": 3662,
+              "center_d2_occupancy_rate": 0.42706666666666665,
+              "effective_stay_action_rate": 0.39635555555555557,
+              "games": 30,
+              "idle_sweep_unit_rounds": 0,
+              "less_than_three_move_unit_round_rate": 0.5544,
+              "less_than_three_move_unit_rounds": 16632,
+              "mutual_blocked_steps": 4,
+              "region1_occupancy_rate": 0.9745666666666667,
+              "rolling_5_round_window_coverage": {
+                "max": 66,
+                "mean": 33.78403897849462,
+                "median": 34.0,
+                "min": 19,
+                "n": 29760,
+                "p10": 23,
+                "p90": 44
+              },
+              "unit_rounds": 30000,
+              "zero_pickup_unit_round_rate": 0.6331333333333333,
+              "zero_pickup_unit_rounds": 18994
+            }
+          },
+          "game_count": 30,
+          "leg_income_delta": {
+            "max": 1128,
+            "mean": -76.6,
+            "median": 54.0,
+            "min": -1308,
+            "n": 30,
+            "p10": -1212,
+            "p90": 1021
+          },
+          "pair_count": 15,
+          "seat_averaged_income_delta": {
+            "max": 131.0,
+            "mean": -76.6,
+            "median": -109.0,
+            "min": -225.5,
+            "n": 15,
+            "p10": -217.5,
+            "p90": 87.0
+          }
+        },
+        "map2": {
+          "baseline_p1_pickup_origin": {
+            "games": 15,
+            "outside_amount": 2351,
+            "outside_amount_share": 0.08602583336382598,
+            "outside_average_amount": 6.423497267759563,
+            "outside_pickup_cell_share": 0.04621795681272888,
+            "outside_pickup_cells": 366,
+            "total_amount": 27329,
+            "total_pickup_cells": 7919
+          },
+          "behavior": {
+            "idle-four-loop": {
+              "all_requested_move_blocked_steps": 3618,
+              "center_d2_occupancy_rate": 0.47973333333333334,
+              "effective_stay_action_rate": 0.31104444444444446,
+              "games": 30,
+              "idle_sweep_unit_rounds": 2155,
+              "less_than_three_move_unit_round_rate": 0.44916666666666666,
+              "less_than_three_move_unit_rounds": 13475,
+              "mutual_blocked_steps": 25,
+              "region1_occupancy_rate": 0.9673,
+              "rolling_5_round_window_coverage": {
+                "max": 71,
+                "mean": 37.72849462365591,
+                "median": 37.0,
+                "min": 20,
+                "n": 29760,
+                "p10": 27,
+                "p90": 49
+              },
+              "unit_rounds": 30000,
+              "zero_pickup_unit_round_rate": 0.6417,
+              "zero_pickup_unit_rounds": 19251
+            },
+            "idle-stay": {
+              "all_requested_move_blocked_steps": 3644,
+              "center_d2_occupancy_rate": 0.4554,
+              "effective_stay_action_rate": 0.39115555555555553,
+              "games": 30,
+              "idle_sweep_unit_rounds": 0,
+              "less_than_three_move_unit_round_rate": 0.5559666666666667,
+              "less_than_three_move_unit_rounds": 16679,
+              "mutual_blocked_steps": 16,
+              "region1_occupancy_rate": 0.9719666666666666,
+              "rolling_5_round_window_coverage": {
+                "max": 73,
+                "mean": 35.96528897849463,
+                "median": 36.0,
+                "min": 22,
+                "n": 29760,
+                "p10": 22,
+                "p90": 48
+              },
+              "unit_rounds": 30000,
+              "zero_pickup_unit_round_rate": 0.6540333333333334,
+              "zero_pickup_unit_rounds": 19621
+            }
+          },
+          "game_count": 30,
+          "leg_income_delta": {
+            "max": 1280,
+            "mean": 43.63333333333333,
+            "median": 33.5,
+            "min": -1215,
+            "n": 30,
+            "p10": -1078,
+            "p90": 1034
+          },
+          "pair_count": 15,
+          "seat_averaged_income_delta": {
+            "max": 354.5,
+            "mean": 43.63333333333333,
+            "median": 32.5,
+            "min": -131.0,
+            "n": 15,
+            "p10": -74.0,
+            "p90": 113.0
+          }
+        }
+      }
+    },
+    "soft-minus-stay": {
+      "aggregate": {
+        "baseline_p1_pickup_origin": {
+          "games": 30,
+          "outside_amount": 4571,
+          "outside_amount_share": 0.0805292272999542,
+          "outside_average_amount": 6.160377358490566,
+          "outside_pickup_cell_share": 0.04500242600679282,
+          "outside_pickup_cells": 742,
+          "total_amount": 56762,
+          "total_pickup_cells": 16488
+        },
+        "behavior": {
+          "center-first-soft-mask": {
+            "all_requested_move_blocked_steps": 7214,
+            "center_d2_occupancy_rate": 0.45071666666666665,
+            "effective_stay_action_rate": 0.3956722222222222,
+            "games": 60,
+            "idle_sweep_unit_rounds": 0,
+            "less_than_three_move_unit_round_rate": 0.5462333333333333,
+            "less_than_three_move_unit_rounds": 32774,
+            "mutual_blocked_steps": 16,
+            "region1_occupancy_rate": 0.98425,
+            "rolling_5_round_window_coverage": {
+              "max": 73,
+              "mean": 34.82115255376344,
+              "median": 35.0,
+              "min": 19,
+              "n": 59520,
+              "p10": 23,
+              "p90": 46
+            },
+            "unit_rounds": 60000,
+            "zero_pickup_unit_round_rate": 0.6438,
+            "zero_pickup_unit_rounds": 38628
+          },
+          "idle-stay": {
+            "all_requested_move_blocked_steps": 7227,
+            "center_d2_occupancy_rate": 0.44011666666666666,
+            "effective_stay_action_rate": 0.39776666666666666,
+            "games": 60,
+            "idle_sweep_unit_rounds": 0,
+            "less_than_three_move_unit_round_rate": 0.5515833333333333,
+            "less_than_three_move_unit_rounds": 33095,
+            "mutual_blocked_steps": 26,
+            "region1_occupancy_rate": 0.9718333333333333,
+            "rolling_5_round_window_coverage": {
+              "max": 70,
+              "mean": 34.84969758064516,
+              "median": 35.0,
+              "min": 15,
+              "n": 59520,
+              "p10": 23,
+              "p90": 46
+            },
+            "unit_rounds": 60000,
+            "zero_pickup_unit_round_rate": 0.6441666666666667,
+            "zero_pickup_unit_rounds": 38650
+          }
+        },
+        "game_count": 60,
+        "leg_income_delta": {
+          "max": 1178,
+          "mean": -49.583333333333336,
+          "median": -9.5,
+          "min": -1379,
+          "n": 60,
+          "p10": -1226,
+          "p90": 1093
+        },
+        "pair_count": 30,
+        "seat_averaged_income_delta": {
+          "max": 238.5,
+          "mean": -49.583333333333336,
+          "median": -57.5,
+          "min": -328.0,
+          "n": 30,
+          "p10": -181.0,
+          "p90": 65.5
+        }
+      },
+      "by_map": {
+        "map1": {
+          "baseline_p1_pickup_origin": {
+            "games": 15,
+            "outside_amount": 2196,
+            "outside_amount_share": 0.07555219156402669,
+            "outside_average_amount": 6.402332361516035,
+            "outside_pickup_cell_share": 0.04056291390728477,
+            "outside_pickup_cells": 343,
+            "total_amount": 29066,
+            "total_pickup_cells": 8456
+          },
+          "behavior": {
+            "center-first-soft-mask": {
+              "all_requested_move_blocked_steps": 3746,
+              "center_d2_occupancy_rate": 0.4439,
+              "effective_stay_action_rate": 0.39792222222222223,
+              "games": 30,
+              "idle_sweep_unit_rounds": 0,
+              "less_than_three_move_unit_round_rate": 0.5537666666666666,
+              "less_than_three_move_unit_rounds": 16613,
+              "mutual_blocked_steps": 4,
+              "region1_occupancy_rate": 0.9869333333333333,
+              "rolling_5_round_window_coverage": {
+                "max": 65,
+                "mean": 33.58440860215054,
+                "median": 34.0,
+                "min": 19,
+                "n": 29760,
+                "p10": 23,
+                "p90": 43
+              },
+              "unit_rounds": 30000,
+              "zero_pickup_unit_round_rate": 0.64,
+              "zero_pickup_unit_rounds": 19200
+            },
+            "idle-stay": {
+              "all_requested_move_blocked_steps": 3751,
+              "center_d2_occupancy_rate": 0.4363666666666667,
+              "effective_stay_action_rate": 0.3979,
+              "games": 30,
+              "idle_sweep_unit_rounds": 0,
+              "less_than_three_move_unit_round_rate": 0.5543666666666667,
+              "less_than_three_move_unit_rounds": 16631,
+              "mutual_blocked_steps": 11,
+              "region1_occupancy_rate": 0.9733,
+              "rolling_5_round_window_coverage": {
+                "max": 66,
+                "mean": 33.74109543010753,
+                "median": 34.0,
+                "min": 15,
+                "n": 29760,
+                "p10": 23,
+                "p90": 44
+              },
+              "unit_rounds": 30000,
+              "zero_pickup_unit_round_rate": 0.6360333333333333,
+              "zero_pickup_unit_rounds": 19081
+            }
+          },
+          "game_count": 30,
+          "leg_income_delta": {
+            "max": 1178,
+            "mean": -56.666666666666664,
+            "median": -0.5,
+            "min": -1379,
+            "n": 30,
+            "p10": -1228,
+            "p90": 1111
+          },
+          "pair_count": 15,
+          "seat_averaged_income_delta": {
+            "max": 65.5,
+            "mean": -56.666666666666664,
+            "median": -47.0,
+            "min": -181.5,
+            "n": 15,
+            "p10": -173.5,
+            "p90": 57.0
+          }
+        },
+        "map2": {
+          "baseline_p1_pickup_origin": {
+            "games": 15,
+            "outside_amount": 2375,
+            "outside_amount_share": 0.08575245522819179,
+            "outside_average_amount": 5.9523809523809526,
+            "outside_pickup_cell_share": 0.04967629482071713,
+            "outside_pickup_cells": 399,
+            "total_amount": 27696,
+            "total_pickup_cells": 8032
+          },
+          "behavior": {
+            "center-first-soft-mask": {
+              "all_requested_move_blocked_steps": 3468,
+              "center_d2_occupancy_rate": 0.45753333333333335,
+              "effective_stay_action_rate": 0.39342222222222223,
+              "games": 30,
+              "idle_sweep_unit_rounds": 0,
+              "less_than_three_move_unit_round_rate": 0.5387,
+              "less_than_three_move_unit_rounds": 16161,
+              "mutual_blocked_steps": 12,
+              "region1_occupancy_rate": 0.9815666666666667,
+              "rolling_5_round_window_coverage": {
+                "max": 73,
+                "mean": 36.05789650537634,
+                "median": 36.0,
+                "min": 19,
+                "n": 29760,
+                "p10": 22,
+                "p90": 48
+              },
+              "unit_rounds": 30000,
+              "zero_pickup_unit_round_rate": 0.6476,
+              "zero_pickup_unit_rounds": 19428
+            },
+            "idle-stay": {
+              "all_requested_move_blocked_steps": 3476,
+              "center_d2_occupancy_rate": 0.4438666666666667,
+              "effective_stay_action_rate": 0.39763333333333334,
+              "games": 30,
+              "idle_sweep_unit_rounds": 0,
+              "less_than_three_move_unit_round_rate": 0.5488,
+              "less_than_three_move_unit_rounds": 16464,
+              "mutual_blocked_steps": 15,
+              "region1_occupancy_rate": 0.9703666666666667,
+              "rolling_5_round_window_coverage": {
+                "max": 70,
+                "mean": 35.9582997311828,
+                "median": 36.0,
+                "min": 21,
+                "n": 29760,
+                "p10": 22,
+                "p90": 48
+              },
+              "unit_rounds": 30000,
+              "zero_pickup_unit_round_rate": 0.6523,
+              "zero_pickup_unit_rounds": 19569
+            }
+          },
+          "game_count": 30,
+          "leg_income_delta": {
+            "max": 1145,
+            "mean": -42.5,
+            "median": -9.5,
+            "min": -1322,
+            "n": 30,
+            "p10": -1226,
+            "p90": 1068
+          },
+          "pair_count": 15,
+          "seat_averaged_income_delta": {
+            "max": 238.5,
+            "mean": -42.5,
+            "median": -70.0,
+            "min": -328.0,
+            "n": 15,
+            "p10": -181.0,
+            "p90": 157.5
+          }
+        }
+      }
+    },
+    "two-minus-stay": {
+      "aggregate": {
+        "baseline_p1_pickup_origin": {
+          "games": 30,
+          "outside_amount": 4358,
+          "outside_amount_share": 0.07655821797484365,
+          "outside_average_amount": 6.288600288600288,
+          "outside_pickup_cell_share": 0.04169675090252708,
+          "outside_pickup_cells": 693,
+          "total_amount": 56924,
+          "total_pickup_cells": 16620
+        },
+        "behavior": {
+          "idle-stay": {
+            "all_requested_move_blocked_steps": 8549,
+            "center_d2_occupancy_rate": 0.4419666666666667,
+            "effective_stay_action_rate": 0.3869666666666667,
+            "games": 60,
+            "idle_sweep_unit_rounds": 0,
+            "less_than_three_move_unit_round_rate": 0.5531166666666667,
+            "less_than_three_move_unit_rounds": 33187,
+            "mutual_blocked_steps": 18,
+            "region1_occupancy_rate": 0.9738333333333333,
+            "rolling_5_round_window_coverage": {
+              "max": 70,
+              "mean": 35.04322916666667,
+              "median": 35.0,
+              "min": 19,
+              "n": 59520,
+              "p10": 23,
+              "p90": 46
+            },
+            "unit_rounds": 60000,
+            "zero_pickup_unit_round_rate": 0.6403333333333333,
+            "zero_pickup_unit_rounds": 38420
+          },
+          "idle-two-point": {
+            "all_requested_move_blocked_steps": 7506,
+            "center_d2_occupancy_rate": 0.51695,
+            "effective_stay_action_rate": 0.27885,
+            "games": 60,
+            "idle_sweep_unit_rounds": 6723,
+            "less_than_three_move_unit_round_rate": 0.42678333333333335,
+            "less_than_three_move_unit_rounds": 25607,
+            "mutual_blocked_steps": 30,
+            "region1_occupancy_rate": 0.9722166666666666,
+            "rolling_5_round_window_coverage": {
+              "max": 72,
+              "mean": 35.80456989247312,
+              "median": 36.0,
+              "min": 19,
+              "n": 59520,
+              "p10": 26,
+              "p90": 47
+            },
+            "unit_rounds": 60000,
+            "zero_pickup_unit_round_rate": 0.6455166666666666,
+            "zero_pickup_unit_rounds": 38731
+          }
+        },
+        "game_count": 60,
+        "leg_income_delta": {
+          "max": 1294,
+          "mean": -14.566666666666666,
+          "median": -133.0,
+          "min": -1201,
+          "n": 60,
+          "p10": -1106,
+          "p90": 1079
+        },
+        "pair_count": 30,
+        "seat_averaged_income_delta": {
+          "max": 173.0,
+          "mean": -14.566666666666666,
+          "median": -11.25,
+          "min": -241.0,
+          "n": 30,
+          "p10": -134.5,
+          "p90": 74.5
+        }
+      },
+      "by_map": {
+        "map1": {
+          "baseline_p1_pickup_origin": {
+            "games": 15,
+            "outside_amount": 1957,
+            "outside_amount_share": 0.0675200110405741,
+            "outside_average_amount": 6.679180887372014,
+            "outside_pickup_cell_share": 0.0345926800472255,
+            "outside_pickup_cells": 293,
+            "total_amount": 28984,
+            "total_pickup_cells": 8470
+          },
+          "behavior": {
+            "idle-stay": {
+              "all_requested_move_blocked_steps": 4418,
+              "center_d2_occupancy_rate": 0.4343,
+              "effective_stay_action_rate": 0.3909,
+              "games": 30,
+              "idle_sweep_unit_rounds": 0,
+              "less_than_three_move_unit_round_rate": 0.5594333333333333,
+              "less_than_three_move_unit_rounds": 16783,
+              "mutual_blocked_steps": 7,
+              "region1_occupancy_rate": 0.9758666666666667,
+              "rolling_5_round_window_coverage": {
+                "max": 67,
+                "mean": 33.84539650537634,
+                "median": 34.0,
+                "min": 19,
+                "n": 29760,
+                "p10": 23,
+                "p90": 44
+              },
+              "unit_rounds": 30000,
+              "zero_pickup_unit_round_rate": 0.6354,
+              "zero_pickup_unit_rounds": 19062
+            },
+            "idle-two-point": {
+              "all_requested_move_blocked_steps": 3814,
+              "center_d2_occupancy_rate": 0.5233,
+              "effective_stay_action_rate": 0.2853777777777778,
+              "games": 30,
+              "idle_sweep_unit_rounds": 3417,
+              "less_than_three_move_unit_round_rate": 0.4382,
+              "less_than_three_move_unit_rounds": 13146,
+              "mutual_blocked_steps": 5,
+              "region1_occupancy_rate": 0.974,
+              "rolling_5_round_window_coverage": {
+                "max": 68,
+                "mean": 34.0033938172043,
+                "median": 34.0,
+                "min": 19,
+                "n": 29760,
+                "p10": 24,
+                "p90": 44
+              },
+              "unit_rounds": 30000,
+              "zero_pickup_unit_round_rate": 0.6457333333333334,
+              "zero_pickup_unit_rounds": 19372
+            }
+          },
+          "game_count": 30,
+          "leg_income_delta": {
+            "max": 1294,
+            "mean": -3.933333333333333,
+            "median": -63.5,
+            "min": -1201,
+            "n": 30,
+            "p10": -1172,
+            "p90": 1095
+          },
+          "pair_count": 15,
+          "seat_averaged_income_delta": {
+            "max": 173.0,
+            "mean": -3.933333333333333,
+            "median": -16.5,
+            "min": -145.5,
+            "n": 15,
+            "p10": -95.0,
+            "p90": 117.0
+          }
+        },
+        "map2": {
+          "baseline_p1_pickup_origin": {
+            "games": 15,
+            "outside_amount": 2401,
+            "outside_amount_share": 0.08593414459556192,
+            "outside_average_amount": 6.0025,
+            "outside_pickup_cell_share": 0.049079754601226995,
+            "outside_pickup_cells": 400,
+            "total_amount": 27940,
+            "total_pickup_cells": 8150
+          },
+          "behavior": {
+            "idle-stay": {
+              "all_requested_move_blocked_steps": 4131,
+              "center_d2_occupancy_rate": 0.44963333333333333,
+              "effective_stay_action_rate": 0.38303333333333334,
+              "games": 30,
+              "idle_sweep_unit_rounds": 0,
+              "less_than_three_move_unit_round_rate": 0.5468,
+              "less_than_three_move_unit_rounds": 16404,
+              "mutual_blocked_steps": 11,
+              "region1_occupancy_rate": 0.9718,
+              "rolling_5_round_window_coverage": {
+                "max": 70,
+                "mean": 36.24106182795699,
+                "median": 36.0,
+                "min": 21,
+                "n": 29760,
+                "p10": 22,
+                "p90": 48
+              },
+              "unit_rounds": 30000,
+              "zero_pickup_unit_round_rate": 0.6452666666666667,
+              "zero_pickup_unit_rounds": 19358
+            },
+            "idle-two-point": {
+              "all_requested_move_blocked_steps": 3692,
+              "center_d2_occupancy_rate": 0.5106,
+              "effective_stay_action_rate": 0.27232222222222224,
+              "games": 30,
+              "idle_sweep_unit_rounds": 3306,
+              "less_than_three_move_unit_round_rate": 0.41536666666666666,
+              "less_than_three_move_unit_rounds": 12461,
+              "mutual_blocked_steps": 25,
+              "region1_occupancy_rate": 0.9704333333333334,
+              "rolling_5_round_window_coverage": {
+                "max": 72,
+                "mean": 37.60574596774194,
+                "median": 37.0,
+                "min": 21,
+                "n": 29760,
+                "p10": 27,
+                "p90": 49
+              },
+              "unit_rounds": 30000,
+              "zero_pickup_unit_round_rate": 0.6453,
+              "zero_pickup_unit_rounds": 19359
+            }
+          },
+          "game_count": 30,
+          "leg_income_delta": {
+            "max": 1104,
+            "mean": -25.2,
+            "median": -133.0,
+            "min": -1171,
+            "n": 30,
+            "p10": -1106,
+            "p90": 1008
+          },
+          "pair_count": 15,
+          "seat_averaged_income_delta": {
+            "max": 121.5,
+            "mean": -25.2,
+            "median": -1.0,
+            "min": -241.0,
+            "n": 15,
+            "p10": -134.5,
+            "p90": 74.5
+          }
+        }
+      }
+    }
+  },
+  "design": {
+    "A": "same local 5x5 harvester; empty window returns to anchor and STAYs",
+    "B": "same harvester; empty window alternates anchor and one inward neighbor with three LUT moves",
+    "C": "same harvester; empty window cycles a four-cell 2x2 loop with three LUT moves",
+    "D": "hard center mask: score only 9x9 center gold; if none, return/idle",
+    "D_prime": "soft center-first mask: prefer center gold; allow outer gold only when no center gold is visible",
+    "anchors": [
+      [
+        6,
+        8
+      ],
+      [
+        11,
+        8
+      ]
+    ],
+    "dispatch": "fixed; two seat-swapped legs per seed",
+    "mutual_block": "requested non-STAY step became effective STAY and requested destination equaled friendly unit's then-current cell",
+    "pairs_per_comparison": 30,
+    "pairs_per_map_per_comparison": 15,
+    "rolling_coverage": "for each unit and each 5-round end-position window, union of radius-2 non-wall cells",
+    "total_pairs": 120,
+    "variants_run": [
+      "hard",
+      "soft",
+      "two",
+      "loop"
+    ]
+  },
+  "pairs": [
+    {
+      "comparison": "hard-minus-stay",
+      "legs": [
+        {
+          "baseline": 1732,
+          "delta": -1238,
+          "variant": 494
+        },
+        {
+          "baseline": 709,
+          "delta": 838,
+          "variant": 1547
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "e4291eae097c98e7c67f4f72196d4316643972e916cb66722d9914fa13546949",
+      "seat_averaged_delta": -200.0,
+      "seed": 2026081900,
+      "variant": "center-hard-mask"
+    },
+    {
+      "comparison": "hard-minus-stay",
+      "legs": [
+        {
+          "baseline": 1730,
+          "delta": -1158,
+          "variant": 572
+        },
+        {
+          "baseline": 533,
+          "delta": 838,
+          "variant": 1371
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "450bbf56d0edf9a8c607b50626ac0e0e5016a2d1a6dae13027bdb19559003f17",
+      "seat_averaged_delta": -160.0,
+      "seed": 2026081901,
+      "variant": "center-hard-mask"
+    },
+    {
+      "comparison": "hard-minus-stay",
+      "legs": [
+        {
+          "baseline": 1677,
+          "delta": -1215,
+          "variant": 462
+        },
+        {
+          "baseline": 547,
+          "delta": 1124,
+          "variant": 1671
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "f6de656ca02a2c9532b26c7915f16b83ef0444c60bab15c78c855c0fd554f9c1",
+      "seat_averaged_delta": -45.5,
+      "seed": 2026081902,
+      "variant": "center-hard-mask"
+    },
+    {
+      "comparison": "hard-minus-stay",
+      "legs": [
+        {
+          "baseline": 1729,
+          "delta": -1266,
+          "variant": 463
+        },
+        {
+          "baseline": 552,
+          "delta": 1116,
+          "variant": 1668
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "af76e512924a63fb52d6c61e52ce3a40cedc3b6d4ba006e01a42ae4c9d8a2447",
+      "seat_averaged_delta": -75.0,
+      "seed": 2026081903,
+      "variant": "center-hard-mask"
+    },
+    {
+      "comparison": "hard-minus-stay",
+      "legs": [
+        {
+          "baseline": 1146,
+          "delta": -712,
+          "variant": 434
+        },
+        {
+          "baseline": 571,
+          "delta": 1021,
+          "variant": 1592
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "9d5fa3aa553df963704a82e631803bc58810e9c678898b2e9243f63986bd9881",
+      "seat_averaged_delta": 154.5,
+      "seed": 2026081904,
+      "variant": "center-hard-mask"
+    },
+    {
+      "comparison": "hard-minus-stay",
+      "legs": [
+        {
+          "baseline": 1468,
+          "delta": -962,
+          "variant": 506
+        },
+        {
+          "baseline": 509,
+          "delta": 999,
+          "variant": 1508
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "f237a05951c3370fcfdf8ff0c44955807f6966c481bacd01755de923fd8a34f1",
+      "seat_averaged_delta": 18.5,
+      "seed": 2026081905,
+      "variant": "center-hard-mask"
+    },
+    {
+      "comparison": "hard-minus-stay",
+      "legs": [
+        {
+          "baseline": 1657,
+          "delta": -1101,
+          "variant": 556
+        },
+        {
+          "baseline": 660,
+          "delta": 947,
+          "variant": 1607
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "d478ec90185ccbb49a14e7ec57e3466db26988b54c5037967c4d8965dc7c590a",
+      "seat_averaged_delta": -77.0,
+      "seed": 2026081906,
+      "variant": "center-hard-mask"
+    },
+    {
+      "comparison": "hard-minus-stay",
+      "legs": [
+        {
+          "baseline": 1593,
+          "delta": -1181,
+          "variant": 412
+        },
+        {
+          "baseline": 488,
+          "delta": 749,
+          "variant": 1237
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "fe20b662ba0ee5bc57a62b4a2ed5346da3175fbf43d95dabfb6e3fd8ad058128",
+      "seat_averaged_delta": -216.0,
+      "seed": 2026081907,
+      "variant": "center-hard-mask"
+    },
+    {
+      "comparison": "hard-minus-stay",
+      "legs": [
+        {
+          "baseline": 1553,
+          "delta": -1112,
+          "variant": 441
+        },
+        {
+          "baseline": 667,
+          "delta": 459,
+          "variant": 1126
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "54f345fb9eb53d6f36490e30e54a873ff0284b0dff4a34c5a9fefebc845dfd29",
+      "seat_averaged_delta": -326.5,
+      "seed": 2026081908,
+      "variant": "center-hard-mask"
+    },
+    {
+      "comparison": "hard-minus-stay",
+      "legs": [
+        {
+          "baseline": 1842,
+          "delta": -1312,
+          "variant": 530
+        },
+        {
+          "baseline": 611,
+          "delta": 937,
+          "variant": 1548
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "39381ff3a204bd9bbf8f8ba148755b229a05adc2714751cb181b93a432a52074",
+      "seat_averaged_delta": -187.5,
+      "seed": 2026081909,
+      "variant": "center-hard-mask"
+    },
+    {
+      "comparison": "hard-minus-stay",
+      "legs": [
+        {
+          "baseline": 1126,
+          "delta": -639,
+          "variant": 487
+        },
+        {
+          "baseline": 566,
+          "delta": 777,
+          "variant": 1343
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "9beb444c65e25ad52ed73895941771b39e12bf1e74c2a74f3deb7603831002c2",
+      "seat_averaged_delta": 69.0,
+      "seed": 2026081910,
+      "variant": "center-hard-mask"
+    },
+    {
+      "comparison": "hard-minus-stay",
+      "legs": [
+        {
+          "baseline": 1662,
+          "delta": -1191,
+          "variant": 471
+        },
+        {
+          "baseline": 587,
+          "delta": 947,
+          "variant": 1534
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "156e40573ed62b795a32b0067b4c1cb68b10a5d636b5c0ad4596e4044766f55d",
+      "seat_averaged_delta": -122.0,
+      "seed": 2026081911,
+      "variant": "center-hard-mask"
+    },
+    {
+      "comparison": "hard-minus-stay",
+      "legs": [
+        {
+          "baseline": 1535,
+          "delta": -1035,
+          "variant": 500
+        },
+        {
+          "baseline": 633,
+          "delta": 891,
+          "variant": 1524
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "e90d367e6c0f24ceef03f906454ff1fb6419196b67a87843deab755113ece3ed",
+      "seat_averaged_delta": -72.0,
+      "seed": 2026081912,
+      "variant": "center-hard-mask"
+    },
+    {
+      "comparison": "hard-minus-stay",
+      "legs": [
+        {
+          "baseline": 1300,
+          "delta": -898,
+          "variant": 402
+        },
+        {
+          "baseline": 304,
+          "delta": 1115,
+          "variant": 1419
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "e16f90f90a290f42350f5443640ca63f0014f02555e971ff8917ab4c2126ceb2",
+      "seat_averaged_delta": 108.5,
+      "seed": 2026081913,
+      "variant": "center-hard-mask"
+    },
+    {
+      "comparison": "hard-minus-stay",
+      "legs": [
+        {
+          "baseline": 1406,
+          "delta": -831,
+          "variant": 575
+        },
+        {
+          "baseline": 527,
+          "delta": 1080,
+          "variant": 1607
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "438a693a26fcbeba5cf160dca31a7c50cd661f60ae8352fa287ad54bfe36e598",
+      "seat_averaged_delta": 124.5,
+      "seed": 2026081914,
+      "variant": "center-hard-mask"
+    },
+    {
+      "comparison": "hard-minus-stay",
+      "legs": [
+        {
+          "baseline": 1403,
+          "delta": -942,
+          "variant": 461
+        },
+        {
+          "baseline": 516,
+          "delta": 813,
+          "variant": 1329
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "6dacdbff50a2475167f639a47635020a033de8452c9dc1f0e801fe0085b6fa24",
+      "seat_averaged_delta": -64.5,
+      "seed": 2026082900,
+      "variant": "center-hard-mask"
+    },
+    {
+      "comparison": "hard-minus-stay",
+      "legs": [
+        {
+          "baseline": 1262,
+          "delta": -718,
+          "variant": 544
+        },
+        {
+          "baseline": 563,
+          "delta": 946,
+          "variant": 1509
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "bd1415a75ae5097075fb4e3f627d611f9883a51ffc888153fac29e572bb1d19c",
+      "seat_averaged_delta": 114.0,
+      "seed": 2026082901,
+      "variant": "center-hard-mask"
+    },
+    {
+      "comparison": "hard-minus-stay",
+      "legs": [
+        {
+          "baseline": 1583,
+          "delta": -978,
+          "variant": 605
+        },
+        {
+          "baseline": 598,
+          "delta": 1069,
+          "variant": 1667
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "dd9955bc7c65f3be97100fc040a41fe2a0f3343cf219c46c6eecf1d00a4c21d8",
+      "seat_averaged_delta": 45.5,
+      "seed": 2026082902,
+      "variant": "center-hard-mask"
+    },
+    {
+      "comparison": "hard-minus-stay",
+      "legs": [
+        {
+          "baseline": 1689,
+          "delta": -1170,
+          "variant": 519
+        },
+        {
+          "baseline": 780,
+          "delta": 915,
+          "variant": 1695
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "82d37c7e65ce0c1967edaa307ac2a4e0c93e4ea9b3214ea32adf6cd357cf1da9",
+      "seat_averaged_delta": -127.5,
+      "seed": 2026082903,
+      "variant": "center-hard-mask"
+    },
+    {
+      "comparison": "hard-minus-stay",
+      "legs": [
+        {
+          "baseline": 1612,
+          "delta": -1264,
+          "variant": 348
+        },
+        {
+          "baseline": 466,
+          "delta": 1021,
+          "variant": 1487
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "1f432b387f3d4a68a6560aa7c357b4c175d1e6f7f8a0a69fa21d0f88376066b3",
+      "seat_averaged_delta": -121.5,
+      "seed": 2026082904,
+      "variant": "center-hard-mask"
+    },
+    {
+      "comparison": "hard-minus-stay",
+      "legs": [
+        {
+          "baseline": 1548,
+          "delta": -1130,
+          "variant": 418
+        },
+        {
+          "baseline": 573,
+          "delta": 721,
+          "variant": 1294
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "7bd1d6b0b5664b8b4d51e7cdf235765c202481bbf634ed39184af9d8e480cf34",
+      "seat_averaged_delta": -204.5,
+      "seed": 2026082905,
+      "variant": "center-hard-mask"
+    },
+    {
+      "comparison": "hard-minus-stay",
+      "legs": [
+        {
+          "baseline": 1359,
+          "delta": -974,
+          "variant": 385
+        },
+        {
+          "baseline": 703,
+          "delta": 361,
+          "variant": 1064
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "3dc3610a5c180adb85d8c4442515f51b6c36b21176ae56d8e81295602cda3008",
+      "seat_averaged_delta": -306.5,
+      "seed": 2026082906,
+      "variant": "center-hard-mask"
+    },
+    {
+      "comparison": "hard-minus-stay",
+      "legs": [
+        {
+          "baseline": 1362,
+          "delta": -847,
+          "variant": 515
+        },
+        {
+          "baseline": 604,
+          "delta": 755,
+          "variant": 1359
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "9b3239de9f35e6d0e339dc7652353a74b2173f38749274fcdf41e6cfae2ffac8",
+      "seat_averaged_delta": -46.0,
+      "seed": 2026082907,
+      "variant": "center-hard-mask"
+    },
+    {
+      "comparison": "hard-minus-stay",
+      "legs": [
+        {
+          "baseline": 1591,
+          "delta": -1074,
+          "variant": 517
+        },
+        {
+          "baseline": 549,
+          "delta": 847,
+          "variant": 1396
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "7f3632345f0ff1e09b0fbb188d238de1a1eaefb2951e460939fd89f046435bce",
+      "seat_averaged_delta": -113.5,
+      "seed": 2026082908,
+      "variant": "center-hard-mask"
+    },
+    {
+      "comparison": "hard-minus-stay",
+      "legs": [
+        {
+          "baseline": 1773,
+          "delta": -1292,
+          "variant": 481
+        },
+        {
+          "baseline": 432,
+          "delta": 1103,
+          "variant": 1535
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "95ba72866740e4b14cd86dfca2b98ced8d5e7c3a3346ae5566c743a5ee9d0536",
+      "seat_averaged_delta": -94.5,
+      "seed": 2026082909,
+      "variant": "center-hard-mask"
+    },
+    {
+      "comparison": "hard-minus-stay",
+      "legs": [
+        {
+          "baseline": 1639,
+          "delta": -1160,
+          "variant": 479
+        },
+        {
+          "baseline": 450,
+          "delta": 1028,
+          "variant": 1478
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "53a04e09bfa5956dac41faf2d6b451eec4bea50b824eb4dfec9e21e1ed2ad333",
+      "seat_averaged_delta": -66.0,
+      "seed": 2026082910,
+      "variant": "center-hard-mask"
+    },
+    {
+      "comparison": "hard-minus-stay",
+      "legs": [
+        {
+          "baseline": 1219,
+          "delta": -710,
+          "variant": 509
+        },
+        {
+          "baseline": 465,
+          "delta": 931,
+          "variant": 1396
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "847bd225669d845cf1f1ee8c834ea7b0b339170d7c9d9d0ef3033ee341c839a9",
+      "seat_averaged_delta": 110.5,
+      "seed": 2026082911,
+      "variant": "center-hard-mask"
+    },
+    {
+      "comparison": "hard-minus-stay",
+      "legs": [
+        {
+          "baseline": 1344,
+          "delta": -967,
+          "variant": 377
+        },
+        {
+          "baseline": 543,
+          "delta": 745,
+          "variant": 1288
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "5c711ac9ac8f4377f0de5a6db8b8fc93cfb3453079ee7abc1a1c00845f3c2ef0",
+      "seat_averaged_delta": -111.0,
+      "seed": 2026082912,
+      "variant": "center-hard-mask"
+    },
+    {
+      "comparison": "hard-minus-stay",
+      "legs": [
+        {
+          "baseline": 1407,
+          "delta": -939,
+          "variant": 468
+        },
+        {
+          "baseline": 422,
+          "delta": 975,
+          "variant": 1397
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "afbe81792d4a9557143b75320e2ca7e6c6e0e07dbe58e99f2291f38f10091d6d",
+      "seat_averaged_delta": 18.0,
+      "seed": 2026082913,
+      "variant": "center-hard-mask"
+    },
+    {
+      "comparison": "hard-minus-stay",
+      "legs": [
+        {
+          "baseline": 1504,
+          "delta": -955,
+          "variant": 549
+        },
+        {
+          "baseline": 515,
+          "delta": 1005,
+          "variant": 1520
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "faec9f5c6dfce0426f8c0b1c56dabd3b697defa77f40f2a40a863e9f35277d92",
+      "seat_averaged_delta": 25.0,
+      "seed": 2026082914,
+      "variant": "center-hard-mask"
+    },
+    {
+      "comparison": "loop-minus-stay",
+      "legs": [
+        {
+          "baseline": 1711,
+          "delta": -1083,
+          "variant": 628
+        },
+        {
+          "baseline": 627,
+          "delta": 958,
+          "variant": 1585
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "e4291eae097c98e7c67f4f72196d4316643972e916cb66722d9914fa13546949",
+      "seat_averaged_delta": -62.5,
+      "seed": 2026081900,
+      "variant": "idle-four-loop"
+    },
+    {
+      "comparison": "loop-minus-stay",
+      "legs": [
+        {
+          "baseline": 1758,
+          "delta": -1308,
+          "variant": 450
+        },
+        {
+          "baseline": 517,
+          "delta": 1021,
+          "variant": 1538
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "450bbf56d0edf9a8c607b50626ac0e0e5016a2d1a6dae13027bdb19559003f17",
+      "seat_averaged_delta": -143.5,
+      "seed": 2026081901,
+      "variant": "idle-four-loop"
+    },
+    {
+      "comparison": "loop-minus-stay",
+      "legs": [
+        {
+          "baseline": 1645,
+          "delta": -1061,
+          "variant": 584
+        },
+        {
+          "baseline": 552,
+          "delta": 1091,
+          "variant": 1643
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "f6de656ca02a2c9532b26c7915f16b83ef0444c60bab15c78c855c0fd554f9c1",
+      "seat_averaged_delta": 15.0,
+      "seed": 2026081902,
+      "variant": "idle-four-loop"
+    },
+    {
+      "comparison": "loop-minus-stay",
+      "legs": [
+        {
+          "baseline": 1753,
+          "delta": -1212,
+          "variant": 541
+        },
+        {
+          "baseline": 633,
+          "delta": 878,
+          "variant": 1511
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "af76e512924a63fb52d6c61e52ce3a40cedc3b6d4ba006e01a42ae4c9d8a2447",
+      "seat_averaged_delta": -167.0,
+      "seed": 2026081903,
+      "variant": "idle-four-loop"
+    },
+    {
+      "comparison": "loop-minus-stay",
+      "legs": [
+        {
+          "baseline": 1617,
+          "delta": -1158,
+          "variant": 459
+        },
+        {
+          "baseline": 606,
+          "delta": 723,
+          "variant": 1329
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "9d5fa3aa553df963704a82e631803bc58810e9c678898b2e9243f63986bd9881",
+      "seat_averaged_delta": -217.5,
+      "seed": 2026081904,
+      "variant": "idle-four-loop"
+    },
+    {
+      "comparison": "loop-minus-stay",
+      "legs": [
+        {
+          "baseline": 1504,
+          "delta": -941,
+          "variant": 563
+        },
+        {
+          "baseline": 468,
+          "delta": 1115,
+          "variant": 1583
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "f237a05951c3370fcfdf8ff0c44955807f6966c481bacd01755de923fd8a34f1",
+      "seat_averaged_delta": 87.0,
+      "seed": 2026081905,
+      "variant": "idle-four-loop"
+    },
+    {
+      "comparison": "loop-minus-stay",
+      "legs": [
+        {
+          "baseline": 1582,
+          "delta": -1033,
+          "variant": 549
+        },
+        {
+          "baseline": 694,
+          "delta": 794,
+          "variant": 1488
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "d478ec90185ccbb49a14e7ec57e3466db26988b54c5037967c4d8965dc7c590a",
+      "seat_averaged_delta": -119.5,
+      "seed": 2026081906,
+      "variant": "idle-four-loop"
+    },
+    {
+      "comparison": "loop-minus-stay",
+      "legs": [
+        {
+          "baseline": 1270,
+          "delta": -615,
+          "variant": 655
+        },
+        {
+          "baseline": 510,
+          "delta": 877,
+          "variant": 1387
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "fe20b662ba0ee5bc57a62b4a2ed5346da3175fbf43d95dabfb6e3fd8ad058128",
+      "seat_averaged_delta": 131.0,
+      "seed": 2026081907,
+      "variant": "idle-four-loop"
+    },
+    {
+      "comparison": "loop-minus-stay",
+      "legs": [
+        {
+          "baseline": 1583,
+          "delta": -1149,
+          "variant": 434
+        },
+        {
+          "baseline": 533,
+          "delta": 902,
+          "variant": 1435
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "54f345fb9eb53d6f36490e30e54a873ff0284b0dff4a34c5a9fefebc845dfd29",
+      "seat_averaged_delta": -123.5,
+      "seed": 2026081908,
+      "variant": "idle-four-loop"
+    },
+    {
+      "comparison": "loop-minus-stay",
+      "legs": [
+        {
+          "baseline": 1822,
+          "delta": -1205,
+          "variant": 617
+        },
+        {
+          "baseline": 661,
+          "delta": 1128,
+          "variant": 1789
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "39381ff3a204bd9bbf8f8ba148755b229a05adc2714751cb181b93a432a52074",
+      "seat_averaged_delta": -38.5,
+      "seed": 2026081909,
+      "variant": "idle-four-loop"
+    },
+    {
+      "comparison": "loop-minus-stay",
+      "legs": [
+        {
+          "baseline": 1506,
+          "delta": -1080,
+          "variant": 426
+        },
+        {
+          "baseline": 394,
+          "delta": 975,
+          "variant": 1369
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "9beb444c65e25ad52ed73895941771b39e12bf1e74c2a74f3deb7603831002c2",
+      "seat_averaged_delta": -52.5,
+      "seed": 2026081910,
+      "variant": "idle-four-loop"
+    },
+    {
+      "comparison": "loop-minus-stay",
+      "legs": [
+        {
+          "baseline": 1688,
+          "delta": -1264,
+          "variant": 424
+        },
+        {
+          "baseline": 673,
+          "delta": 813,
+          "variant": 1486
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "156e40573ed62b795a32b0067b4c1cb68b10a5d636b5c0ad4596e4044766f55d",
+      "seat_averaged_delta": -225.5,
+      "seed": 2026081911,
+      "variant": "idle-four-loop"
+    },
+    {
+      "comparison": "loop-minus-stay",
+      "legs": [
+        {
+          "baseline": 1687,
+          "delta": -1189,
+          "variant": 498
+        },
+        {
+          "baseline": 597,
+          "delta": 896,
+          "variant": 1493
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "e90d367e6c0f24ceef03f906454ff1fb6419196b67a87843deab755113ece3ed",
+      "seat_averaged_delta": -146.5,
+      "seed": 2026081912,
+      "variant": "idle-four-loop"
+    },
+    {
+      "comparison": "loop-minus-stay",
+      "legs": [
+        {
+          "baseline": 1317,
+          "delta": -903,
+          "variant": 414
+        },
+        {
+          "baseline": 372,
+          "delta": 950,
+          "variant": 1322
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "e16f90f90a290f42350f5443640ca63f0014f02555e971ff8917ab4c2126ceb2",
+      "seat_averaged_delta": 23.5,
+      "seed": 2026081913,
+      "variant": "idle-four-loop"
+    },
+    {
+      "comparison": "loop-minus-stay",
+      "legs": [
+        {
+          "baseline": 1652,
+          "delta": -1158,
+          "variant": 494
+        },
+        {
+          "baseline": 532,
+          "delta": 940,
+          "variant": 1472
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "438a693a26fcbeba5cf160dca31a7c50cd661f60ae8352fa287ad54bfe36e598",
+      "seat_averaged_delta": -109.0,
+      "seed": 2026081914,
+      "variant": "idle-four-loop"
+    },
+    {
+      "comparison": "loop-minus-stay",
+      "legs": [
+        {
+          "baseline": 1440,
+          "delta": -981,
+          "variant": 459
+        },
+        {
+          "baseline": 399,
+          "delta": 1034,
+          "variant": 1433
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "6dacdbff50a2475167f639a47635020a033de8452c9dc1f0e801fe0085b6fa24",
+      "seat_averaged_delta": 26.5,
+      "seed": 2026082900,
+      "variant": "idle-four-loop"
+    },
+    {
+      "comparison": "loop-minus-stay",
+      "legs": [
+        {
+          "baseline": 1537,
+          "delta": -987,
+          "variant": 550
+        },
+        {
+          "baseline": 490,
+          "delta": 1004,
+          "variant": 1494
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "bd1415a75ae5097075fb4e3f627d611f9883a51ffc888153fac29e572bb1d19c",
+      "seat_averaged_delta": 8.5,
+      "seed": 2026082901,
+      "variant": "idle-four-loop"
+    },
+    {
+      "comparison": "loop-minus-stay",
+      "legs": [
+        {
+          "baseline": 1864,
+          "delta": -1215,
+          "variant": 649
+        },
+        {
+          "baseline": 452,
+          "delta": 953,
+          "variant": 1405
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "dd9955bc7c65f3be97100fc040a41fe2a0f3343cf219c46c6eecf1d00a4c21d8",
+      "seat_averaged_delta": -131.0,
+      "seed": 2026082902,
+      "variant": "idle-four-loop"
+    },
+    {
+      "comparison": "loop-minus-stay",
+      "legs": [
+        {
+          "baseline": 1690,
+          "delta": -1133,
+          "variant": 557
+        },
+        {
+          "baseline": 618,
+          "delta": 1198,
+          "variant": 1816
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "82d37c7e65ce0c1967edaa307ac2a4e0c93e4ea9b3214ea32adf6cd357cf1da9",
+      "seat_averaged_delta": 32.5,
+      "seed": 2026082903,
+      "variant": "idle-four-loop"
+    },
+    {
+      "comparison": "loop-minus-stay",
+      "legs": [
+        {
+          "baseline": 1427,
+          "delta": -892,
+          "variant": 535
+        },
+        {
+          "baseline": 524,
+          "delta": 1025,
+          "variant": 1549
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "1f432b387f3d4a68a6560aa7c357b4c175d1e6f7f8a0a69fa21d0f88376066b3",
+      "seat_averaged_delta": 66.5,
+      "seed": 2026082904,
+      "variant": "idle-four-loop"
+    },
+    {
+      "comparison": "loop-minus-stay",
+      "legs": [
+        {
+          "baseline": 1415,
+          "delta": -849,
+          "variant": 566
+        },
+        {
+          "baseline": 433,
+          "delta": 1007,
+          "variant": 1440
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "7bd1d6b0b5664b8b4d51e7cdf235765c202481bbf634ed39184af9d8e480cf34",
+      "seat_averaged_delta": 79.0,
+      "seed": 2026082905,
+      "variant": "idle-four-loop"
+    },
+    {
+      "comparison": "loop-minus-stay",
+      "legs": [
+        {
+          "baseline": 1452,
+          "delta": -944,
+          "variant": 508
+        },
+        {
+          "baseline": 534,
+          "delta": 947,
+          "variant": 1481
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "3dc3610a5c180adb85d8c4442515f51b6c36b21176ae56d8e81295602cda3008",
+      "seat_averaged_delta": 1.5,
+      "seed": 2026082906,
+      "variant": "idle-four-loop"
+    },
+    {
+      "comparison": "loop-minus-stay",
+      "legs": [
+        {
+          "baseline": 1395,
+          "delta": -839,
+          "variant": 556
+        },
+        {
+          "baseline": 403,
+          "delta": 966,
+          "variant": 1369
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "9b3239de9f35e6d0e339dc7652353a74b2173f38749274fcdf41e6cfae2ffac8",
+      "seat_averaged_delta": 63.5,
+      "seed": 2026082907,
+      "variant": "idle-four-loop"
+    },
+    {
+      "comparison": "loop-minus-stay",
+      "legs": [
+        {
+          "baseline": 1364,
+          "delta": -849,
+          "variant": 515
+        },
+        {
+          "baseline": 535,
+          "delta": 1075,
+          "variant": 1610
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "7f3632345f0ff1e09b0fbb188d238de1a1eaefb2951e460939fd89f046435bce",
+      "seat_averaged_delta": 113.0,
+      "seed": 2026082908,
+      "variant": "idle-four-loop"
+    },
+    {
+      "comparison": "loop-minus-stay",
+      "legs": [
+        {
+          "baseline": 1290,
+          "delta": -571,
+          "variant": 719
+        },
+        {
+          "baseline": 538,
+          "delta": 1280,
+          "variant": 1818
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "95ba72866740e4b14cd86dfca2b98ced8d5e7c3a3346ae5566c743a5ee9d0536",
+      "seat_averaged_delta": 354.5,
+      "seed": 2026082909,
+      "variant": "idle-four-loop"
+    },
+    {
+      "comparison": "loop-minus-stay",
+      "legs": [
+        {
+          "baseline": 1626,
+          "delta": -1078,
+          "variant": 548
+        },
+        {
+          "baseline": 493,
+          "delta": 946,
+          "variant": 1439
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "53a04e09bfa5956dac41faf2d6b451eec4bea50b824eb4dfec9e21e1ed2ad333",
+      "seat_averaged_delta": -66.0,
+      "seed": 2026082910,
+      "variant": "idle-four-loop"
+    },
+    {
+      "comparison": "loop-minus-stay",
+      "legs": [
+        {
+          "baseline": 1447,
+          "delta": -901,
+          "variant": 546
+        },
+        {
+          "baseline": 456,
+          "delta": 867,
+          "variant": 1323
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "847bd225669d845cf1f1ee8c834ea7b0b339170d7c9d9d0ef3033ee341c839a9",
+      "seat_averaged_delta": -17.0,
+      "seed": 2026082911,
+      "variant": "idle-four-loop"
+    },
+    {
+      "comparison": "loop-minus-stay",
+      "legs": [
+        {
+          "baseline": 1306,
+          "delta": -783,
+          "variant": 523
+        },
+        {
+          "baseline": 415,
+          "delta": 959,
+          "variant": 1374
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "5c711ac9ac8f4377f0de5a6db8b8fc93cfb3453079ee7abc1a1c00845f3c2ef0",
+      "seat_averaged_delta": 88.0,
+      "seed": 2026082912,
+      "variant": "idle-four-loop"
+    },
+    {
+      "comparison": "loop-minus-stay",
+      "legs": [
+        {
+          "baseline": 1298,
+          "delta": -778,
+          "variant": 520
+        },
+        {
+          "baseline": 482,
+          "delta": 996,
+          "variant": 1478
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "afbe81792d4a9557143b75320e2ca7e6c6e0e07dbe58e99f2291f38f10091d6d",
+      "seat_averaged_delta": 109.0,
+      "seed": 2026082913,
+      "variant": "idle-four-loop"
+    },
+    {
+      "comparison": "loop-minus-stay",
+      "legs": [
+        {
+          "baseline": 1391,
+          "delta": -786,
+          "variant": 605
+        },
+        {
+          "baseline": 607,
+          "delta": 638,
+          "variant": 1245
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "faec9f5c6dfce0426f8c0b1c56dabd3b697defa77f40f2a40a863e9f35277d92",
+      "seat_averaged_delta": -74.0,
+      "seed": 2026082914,
+      "variant": "idle-four-loop"
+    },
+    {
+      "comparison": "soft-minus-stay",
+      "legs": [
+        {
+          "baseline": 1691,
+          "delta": -1058,
+          "variant": 633
+        },
+        {
+          "baseline": 579,
+          "delta": 1053,
+          "variant": 1632
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "e4291eae097c98e7c67f4f72196d4316643972e916cb66722d9914fa13546949",
+      "seat_averaged_delta": -2.5,
+      "seed": 2026081900,
+      "variant": "center-first-soft-mask"
+    },
+    {
+      "comparison": "soft-minus-stay",
+      "legs": [
+        {
+          "baseline": 1636,
+          "delta": -1141,
+          "variant": 495
+        },
+        {
+          "baseline": 631,
+          "delta": 834,
+          "variant": 1465
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "450bbf56d0edf9a8c607b50626ac0e0e5016a2d1a6dae13027bdb19559003f17",
+      "seat_averaged_delta": -153.5,
+      "seed": 2026081901,
+      "variant": "center-first-soft-mask"
+    },
+    {
+      "comparison": "soft-minus-stay",
+      "legs": [
+        {
+          "baseline": 1741,
+          "delta": -1213,
+          "variant": 528
+        },
+        {
+          "baseline": 672,
+          "delta": 1178,
+          "variant": 1850
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "f6de656ca02a2c9532b26c7915f16b83ef0444c60bab15c78c855c0fd554f9c1",
+      "seat_averaged_delta": -17.5,
+      "seed": 2026081902,
+      "variant": "center-first-soft-mask"
+    },
+    {
+      "comparison": "soft-minus-stay",
+      "legs": [
+        {
+          "baseline": 1654,
+          "delta": -1004,
+          "variant": 650
+        },
+        {
+          "baseline": 503,
+          "delta": 983,
+          "variant": 1486
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "af76e512924a63fb52d6c61e52ce3a40cedc3b6d4ba006e01a42ae4c9d8a2447",
+      "seat_averaged_delta": -10.5,
+      "seed": 2026081903,
+      "variant": "center-first-soft-mask"
+    },
+    {
+      "comparison": "soft-minus-stay",
+      "legs": [
+        {
+          "baseline": 1427,
+          "delta": -741,
+          "variant": 686
+        },
+        {
+          "baseline": 524,
+          "delta": 748,
+          "variant": 1272
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "9d5fa3aa553df963704a82e631803bc58810e9c678898b2e9243f63986bd9881",
+      "seat_averaged_delta": 3.5,
+      "seed": 2026081904,
+      "variant": "center-first-soft-mask"
+    },
+    {
+      "comparison": "soft-minus-stay",
+      "legs": [
+        {
+          "baseline": 1590,
+          "delta": -1203,
+          "variant": 387
+        },
+        {
+          "baseline": 551,
+          "delta": 931,
+          "variant": 1482
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "f237a05951c3370fcfdf8ff0c44955807f6966c481bacd01755de923fd8a34f1",
+      "seat_averaged_delta": -136.0,
+      "seed": 2026081905,
+      "variant": "center-first-soft-mask"
+    },
+    {
+      "comparison": "soft-minus-stay",
+      "legs": [
+        {
+          "baseline": 1632,
+          "delta": -1130,
+          "variant": 502
+        },
+        {
+          "baseline": 586,
+          "delta": 968,
+          "variant": 1554
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "d478ec90185ccbb49a14e7ec57e3466db26988b54c5037967c4d8965dc7c590a",
+      "seat_averaged_delta": -81.0,
+      "seed": 2026081906,
+      "variant": "center-first-soft-mask"
+    },
+    {
+      "comparison": "soft-minus-stay",
+      "legs": [
+        {
+          "baseline": 1470,
+          "delta": -1087,
+          "variant": 383
+        },
+        {
+          "baseline": 554,
+          "delta": 740,
+          "variant": 1294
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "fe20b662ba0ee5bc57a62b4a2ed5346da3175fbf43d95dabfb6e3fd8ad058128",
+      "seat_averaged_delta": -173.5,
+      "seed": 2026081907,
+      "variant": "center-first-soft-mask"
+    },
+    {
+      "comparison": "soft-minus-stay",
+      "legs": [
+        {
+          "baseline": 1562,
+          "delta": -1040,
+          "variant": 522
+        },
+        {
+          "baseline": 452,
+          "delta": 1111,
+          "variant": 1563
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "54f345fb9eb53d6f36490e30e54a873ff0284b0dff4a34c5a9fefebc845dfd29",
+      "seat_averaged_delta": 35.5,
+      "seed": 2026081908,
+      "variant": "center-first-soft-mask"
+    },
+    {
+      "comparison": "soft-minus-stay",
+      "legs": [
+        {
+          "baseline": 1636,
+          "delta": -1009,
+          "variant": 627
+        },
+        {
+          "baseline": 592,
+          "delta": 1123,
+          "variant": 1715
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "39381ff3a204bd9bbf8f8ba148755b229a05adc2714751cb181b93a432a52074",
+      "seat_averaged_delta": 57.0,
+      "seed": 2026081909,
+      "variant": "center-first-soft-mask"
+    },
+    {
+      "comparison": "soft-minus-stay",
+      "legs": [
+        {
+          "baseline": 1353,
+          "delta": -899,
+          "variant": 454
+        },
+        {
+          "baseline": 549,
+          "delta": 768,
+          "variant": 1317
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "9beb444c65e25ad52ed73895941771b39e12bf1e74c2a74f3deb7603831002c2",
+      "seat_averaged_delta": -65.5,
+      "seed": 2026081910,
+      "variant": "center-first-soft-mask"
+    },
+    {
+      "comparison": "soft-minus-stay",
+      "legs": [
+        {
+          "baseline": 1788,
+          "delta": -1379,
+          "variant": 409
+        },
+        {
+          "baseline": 495,
+          "delta": 1093,
+          "variant": 1588
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "156e40573ed62b795a32b0067b4c1cb68b10a5d636b5c0ad4596e4044766f55d",
+      "seat_averaged_delta": -143.0,
+      "seed": 2026081911,
+      "variant": "center-first-soft-mask"
+    },
+    {
+      "comparison": "soft-minus-stay",
+      "legs": [
+        {
+          "baseline": 1510,
+          "delta": -847,
+          "variant": 663
+        },
+        {
+          "baseline": 604,
+          "delta": 978,
+          "variant": 1582
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "e90d367e6c0f24ceef03f906454ff1fb6419196b67a87843deab755113ece3ed",
+      "seat_averaged_delta": 65.5,
+      "seed": 2026081912,
+      "variant": "center-first-soft-mask"
+    },
+    {
+      "comparison": "soft-minus-stay",
+      "legs": [
+        {
+          "baseline": 1721,
+          "delta": -1285,
+          "variant": 436
+        },
+        {
+          "baseline": 521,
+          "delta": 922,
+          "variant": 1443
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "e16f90f90a290f42350f5443640ca63f0014f02555e971ff8917ab4c2126ceb2",
+      "seat_averaged_delta": -181.5,
+      "seed": 2026081913,
+      "variant": "center-first-soft-mask"
+    },
+    {
+      "comparison": "soft-minus-stay",
+      "legs": [
+        {
+          "baseline": 1754,
+          "delta": -1228,
+          "variant": 526
+        },
+        {
+          "baseline": 461,
+          "delta": 1134,
+          "variant": 1595
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "438a693a26fcbeba5cf160dca31a7c50cd661f60ae8352fa287ad54bfe36e598",
+      "seat_averaged_delta": -47.0,
+      "seed": 2026081914,
+      "variant": "center-first-soft-mask"
+    },
+    {
+      "comparison": "soft-minus-stay",
+      "legs": [
+        {
+          "baseline": 1285,
+          "delta": -838,
+          "variant": 447
+        },
+        {
+          "baseline": 414,
+          "delta": 1068,
+          "variant": 1482
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "6dacdbff50a2475167f639a47635020a033de8452c9dc1f0e801fe0085b6fa24",
+      "seat_averaged_delta": 115.0,
+      "seed": 2026082900,
+      "variant": "center-first-soft-mask"
+    },
+    {
+      "comparison": "soft-minus-stay",
+      "legs": [
+        {
+          "baseline": 1769,
+          "delta": -1284,
+          "variant": 485
+        },
+        {
+          "baseline": 681,
+          "delta": 628,
+          "variant": 1309
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "bd1415a75ae5097075fb4e3f627d611f9883a51ffc888153fac29e572bb1d19c",
+      "seat_averaged_delta": -328.0,
+      "seed": 2026082901,
+      "variant": "center-first-soft-mask"
+    },
+    {
+      "comparison": "soft-minus-stay",
+      "legs": [
+        {
+          "baseline": 1580,
+          "delta": -1100,
+          "variant": 480
+        },
+        {
+          "baseline": 583,
+          "delta": 1082,
+          "variant": 1665
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "dd9955bc7c65f3be97100fc040a41fe2a0f3343cf219c46c6eecf1d00a4c21d8",
+      "seat_averaged_delta": -9.0,
+      "seed": 2026082902,
+      "variant": "center-first-soft-mask"
+    },
+    {
+      "comparison": "soft-minus-stay",
+      "legs": [
+        {
+          "baseline": 1922,
+          "delta": -1322,
+          "variant": 600
+        },
+        {
+          "baseline": 685,
+          "delta": 960,
+          "variant": 1645
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "82d37c7e65ce0c1967edaa307ac2a4e0c93e4ea9b3214ea32adf6cd357cf1da9",
+      "seat_averaged_delta": -181.0,
+      "seed": 2026082903,
+      "variant": "center-first-soft-mask"
+    },
+    {
+      "comparison": "soft-minus-stay",
+      "legs": [
+        {
+          "baseline": 1470,
+          "delta": -1074,
+          "variant": 396
+        },
+        {
+          "baseline": 534,
+          "delta": 922,
+          "variant": 1456
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "1f432b387f3d4a68a6560aa7c357b4c175d1e6f7f8a0a69fa21d0f88376066b3",
+      "seat_averaged_delta": -76.0,
+      "seed": 2026082904,
+      "variant": "center-first-soft-mask"
+    },
+    {
+      "comparison": "soft-minus-stay",
+      "legs": [
+        {
+          "baseline": 1506,
+          "delta": -996,
+          "variant": 510
+        },
+        {
+          "baseline": 581,
+          "delta": 856,
+          "variant": 1437
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "7bd1d6b0b5664b8b4d51e7cdf235765c202481bbf634ed39184af9d8e480cf34",
+      "seat_averaged_delta": -70.0,
+      "seed": 2026082905,
+      "variant": "center-first-soft-mask"
+    },
+    {
+      "comparison": "soft-minus-stay",
+      "legs": [
+        {
+          "baseline": 1195,
+          "delta": -647,
+          "variant": 548
+        },
+        {
+          "baseline": 545,
+          "delta": 962,
+          "variant": 1507
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "3dc3610a5c180adb85d8c4442515f51b6c36b21176ae56d8e81295602cda3008",
+      "seat_averaged_delta": 157.5,
+      "seed": 2026082906,
+      "variant": "center-first-soft-mask"
+    },
+    {
+      "comparison": "soft-minus-stay",
+      "legs": [
+        {
+          "baseline": 1437,
+          "delta": -983,
+          "variant": 454
+        },
+        {
+          "baseline": 534,
+          "delta": 785,
+          "variant": 1319
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "9b3239de9f35e6d0e339dc7652353a74b2173f38749274fcdf41e6cfae2ffac8",
+      "seat_averaged_delta": -99.0,
+      "seed": 2026082907,
+      "variant": "center-first-soft-mask"
+    },
+    {
+      "comparison": "soft-minus-stay",
+      "legs": [
+        {
+          "baseline": 1704,
+          "delta": -1226,
+          "variant": 478
+        },
+        {
+          "baseline": 596,
+          "delta": 905,
+          "variant": 1501
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "7f3632345f0ff1e09b0fbb188d238de1a1eaefb2951e460939fd89f046435bce",
+      "seat_averaged_delta": -160.5,
+      "seed": 2026082908,
+      "variant": "center-first-soft-mask"
+    },
+    {
+      "comparison": "soft-minus-stay",
+      "legs": [
+        {
+          "baseline": 1649,
+          "delta": -1142,
+          "variant": 507
+        },
+        {
+          "baseline": 433,
+          "delta": 1145,
+          "variant": 1578
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "95ba72866740e4b14cd86dfca2b98ced8d5e7c3a3346ae5566c743a5ee9d0536",
+      "seat_averaged_delta": 1.5,
+      "seed": 2026082909,
+      "variant": "center-first-soft-mask"
+    },
+    {
+      "comparison": "soft-minus-stay",
+      "legs": [
+        {
+          "baseline": 1591,
+          "delta": -1104,
+          "variant": 487
+        },
+        {
+          "baseline": 446,
+          "delta": 959,
+          "variant": 1405
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "53a04e09bfa5956dac41faf2d6b451eec4bea50b824eb4dfec9e21e1ed2ad333",
+      "seat_averaged_delta": -72.5,
+      "seed": 2026082910,
+      "variant": "center-first-soft-mask"
+    },
+    {
+      "comparison": "soft-minus-stay",
+      "legs": [
+        {
+          "baseline": 1341,
+          "delta": -820,
+          "variant": 521
+        },
+        {
+          "baseline": 521,
+          "delta": 870,
+          "variant": 1391
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "847bd225669d845cf1f1ee8c834ea7b0b339170d7c9d9d0ef3033ee341c839a9",
+      "seat_averaged_delta": 25.0,
+      "seed": 2026082911,
+      "variant": "center-first-soft-mask"
+    },
+    {
+      "comparison": "soft-minus-stay",
+      "legs": [
+        {
+          "baseline": 1157,
+          "delta": -659,
+          "variant": 498
+        },
+        {
+          "baseline": 387,
+          "delta": 1136,
+          "variant": 1523
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "5c711ac9ac8f4377f0de5a6db8b8fc93cfb3453079ee7abc1a1c00845f3c2ef0",
+      "seat_averaged_delta": 238.5,
+      "seed": 2026082912,
+      "variant": "center-first-soft-mask"
+    },
+    {
+      "comparison": "soft-minus-stay",
+      "legs": [
+        {
+          "baseline": 1429,
+          "delta": -1051,
+          "variant": 378
+        },
+        {
+          "baseline": 433,
+          "delta": 952,
+          "variant": 1385
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "afbe81792d4a9557143b75320e2ca7e6c6e0e07dbe58e99f2291f38f10091d6d",
+      "seat_averaged_delta": -49.5,
+      "seed": 2026082913,
+      "variant": "center-first-soft-mask"
+    },
+    {
+      "comparison": "soft-minus-stay",
+      "legs": [
+        {
+          "baseline": 1498,
+          "delta": -992,
+          "variant": 506
+        },
+        {
+          "baseline": 529,
+          "delta": 733,
+          "variant": 1262
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "faec9f5c6dfce0426f8c0b1c56dabd3b697defa77f40f2a40a863e9f35277d92",
+      "seat_averaged_delta": -129.5,
+      "seed": 2026082914,
+      "variant": "center-first-soft-mask"
+    },
+    {
+      "comparison": "two-minus-stay",
+      "legs": [
+        {
+          "baseline": 1696,
+          "delta": -1201,
+          "variant": 495
+        },
+        {
+          "baseline": 557,
+          "delta": 1022,
+          "variant": 1579
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "e4291eae097c98e7c67f4f72196d4316643972e916cb66722d9914fa13546949",
+      "seat_averaged_delta": -89.5,
+      "seed": 2026081900,
+      "variant": "idle-two-point"
+    },
+    {
+      "comparison": "two-minus-stay",
+      "legs": [
+        {
+          "baseline": 1396,
+          "delta": -768,
+          "variant": 628
+        },
+        {
+          "baseline": 467,
+          "delta": 901,
+          "variant": 1368
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "450bbf56d0edf9a8c607b50626ac0e0e5016a2d1a6dae13027bdb19559003f17",
+      "seat_averaged_delta": 66.5,
+      "seed": 2026081901,
+      "variant": "idle-two-point"
+    },
+    {
+      "comparison": "two-minus-stay",
+      "legs": [
+        {
+          "baseline": 1512,
+          "delta": -947,
+          "variant": 565
+        },
+        {
+          "baseline": 610,
+          "delta": 1079,
+          "variant": 1689
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "f6de656ca02a2c9532b26c7915f16b83ef0444c60bab15c78c855c0fd554f9c1",
+      "seat_averaged_delta": 66.0,
+      "seed": 2026081902,
+      "variant": "idle-two-point"
+    },
+    {
+      "comparison": "two-minus-stay",
+      "legs": [
+        {
+          "baseline": 1457,
+          "delta": -948,
+          "variant": 509
+        },
+        {
+          "baseline": 509,
+          "delta": 1294,
+          "variant": 1803
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "af76e512924a63fb52d6c61e52ce3a40cedc3b6d4ba006e01a42ae4c9d8a2447",
+      "seat_averaged_delta": 173.0,
+      "seed": 2026081903,
+      "variant": "idle-two-point"
+    },
+    {
+      "comparison": "two-minus-stay",
+      "legs": [
+        {
+          "baseline": 1318,
+          "delta": -870,
+          "variant": 448
+        },
+        {
+          "baseline": 478,
+          "delta": 906,
+          "variant": 1384
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "9d5fa3aa553df963704a82e631803bc58810e9c678898b2e9243f63986bd9881",
+      "seat_averaged_delta": 18.0,
+      "seed": 2026081904,
+      "variant": "idle-two-point"
+    },
+    {
+      "comparison": "two-minus-stay",
+      "legs": [
+        {
+          "baseline": 1574,
+          "delta": -1013,
+          "variant": 561
+        },
+        {
+          "baseline": 495,
+          "delta": 1115,
+          "variant": 1610
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "f237a05951c3370fcfdf8ff0c44955807f6966c481bacd01755de923fd8a34f1",
+      "seat_averaged_delta": 51.0,
+      "seed": 2026081905,
+      "variant": "idle-two-point"
+    },
+    {
+      "comparison": "two-minus-stay",
+      "legs": [
+        {
+          "baseline": 1716,
+          "delta": -1172,
+          "variant": 544
+        },
+        {
+          "baseline": 592,
+          "delta": 1009,
+          "variant": 1601
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "d478ec90185ccbb49a14e7ec57e3466db26988b54c5037967c4d8965dc7c590a",
+      "seat_averaged_delta": -81.5,
+      "seed": 2026081906,
+      "variant": "idle-two-point"
+    },
+    {
+      "comparison": "two-minus-stay",
+      "legs": [
+        {
+          "baseline": 1431,
+          "delta": -822,
+          "variant": 609
+        },
+        {
+          "baseline": 560,
+          "delta": 632,
+          "variant": 1192
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "fe20b662ba0ee5bc57a62b4a2ed5346da3175fbf43d95dabfb6e3fd8ad058128",
+      "seat_averaged_delta": -95.0,
+      "seed": 2026081907,
+      "variant": "idle-two-point"
+    },
+    {
+      "comparison": "two-minus-stay",
+      "legs": [
+        {
+          "baseline": 1197,
+          "delta": -759,
+          "variant": 438
+        },
+        {
+          "baseline": 511,
+          "delta": 746,
+          "variant": 1257
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "54f345fb9eb53d6f36490e30e54a873ff0284b0dff4a34c5a9fefebc845dfd29",
+      "seat_averaged_delta": -6.5,
+      "seed": 2026081908,
+      "variant": "idle-two-point"
+    },
+    {
+      "comparison": "two-minus-stay",
+      "legs": [
+        {
+          "baseline": 1620,
+          "delta": -1007,
+          "variant": 613
+        },
+        {
+          "baseline": 556,
+          "delta": 974,
+          "variant": 1530
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "39381ff3a204bd9bbf8f8ba148755b229a05adc2714751cb181b93a432a52074",
+      "seat_averaged_delta": -16.5,
+      "seed": 2026081909,
+      "variant": "idle-two-point"
+    },
+    {
+      "comparison": "two-minus-stay",
+      "legs": [
+        {
+          "baseline": 1353,
+          "delta": -929,
+          "variant": 424
+        },
+        {
+          "baseline": 599,
+          "delta": 638,
+          "variant": 1237
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "9beb444c65e25ad52ed73895941771b39e12bf1e74c2a74f3deb7603831002c2",
+      "seat_averaged_delta": -145.5,
+      "seed": 2026081910,
+      "variant": "idle-two-point"
+    },
+    {
+      "comparison": "two-minus-stay",
+      "legs": [
+        {
+          "baseline": 1476,
+          "delta": -876,
+          "variant": 600
+        },
+        {
+          "baseline": 578,
+          "delta": 1110,
+          "variant": 1688
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "156e40573ed62b795a32b0067b4c1cb68b10a5d636b5c0ad4596e4044766f55d",
+      "seat_averaged_delta": 117.0,
+      "seed": 2026081911,
+      "variant": "idle-two-point"
+    },
+    {
+      "comparison": "two-minus-stay",
+      "legs": [
+        {
+          "baseline": 1563,
+          "delta": -928,
+          "variant": 635
+        },
+        {
+          "baseline": 721,
+          "delta": 851,
+          "variant": 1572
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "e90d367e6c0f24ceef03f906454ff1fb6419196b67a87843deab755113ece3ed",
+      "seat_averaged_delta": -38.5,
+      "seed": 2026081912,
+      "variant": "idle-two-point"
+    },
+    {
+      "comparison": "two-minus-stay",
+      "legs": [
+        {
+          "baseline": 1561,
+          "delta": -1014,
+          "variant": 547
+        },
+        {
+          "baseline": 410,
+          "delta": 958,
+          "variant": 1368
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "e16f90f90a290f42350f5443640ca63f0014f02555e971ff8917ab4c2126ceb2",
+      "seat_averaged_delta": -28.0,
+      "seed": 2026081913,
+      "variant": "idle-two-point"
+    },
+    {
+      "comparison": "two-minus-stay",
+      "legs": [
+        {
+          "baseline": 1729,
+          "delta": -1194,
+          "variant": 535
+        },
+        {
+          "baseline": 514,
+          "delta": 1095,
+          "variant": 1609
+        }
+      ],
+      "map": "map1",
+      "scenario_digest": "438a693a26fcbeba5cf160dca31a7c50cd661f60ae8352fa287ad54bfe36e598",
+      "seat_averaged_delta": -49.5,
+      "seed": 2026081914,
+      "variant": "idle-two-point"
+    },
+    {
+      "comparison": "two-minus-stay",
+      "legs": [
+        {
+          "baseline": 1290,
+          "delta": -657,
+          "variant": 633
+        },
+        {
+          "baseline": 407,
+          "delta": 900,
+          "variant": 1307
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "6dacdbff50a2475167f639a47635020a033de8452c9dc1f0e801fe0085b6fa24",
+      "seat_averaged_delta": 121.5,
+      "seed": 2026082900,
+      "variant": "idle-two-point"
+    },
+    {
+      "comparison": "two-minus-stay",
+      "legs": [
+        {
+          "baseline": 1485,
+          "delta": -1054,
+          "variant": 431
+        },
+        {
+          "baseline": 603,
+          "delta": 953,
+          "variant": 1556
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "bd1415a75ae5097075fb4e3f627d611f9883a51ffc888153fac29e572bb1d19c",
+      "seat_averaged_delta": -50.5,
+      "seed": 2026082901,
+      "variant": "idle-two-point"
+    },
+    {
+      "comparison": "two-minus-stay",
+      "legs": [
+        {
+          "baseline": 1643,
+          "delta": -1063,
+          "variant": 580
+        },
+        {
+          "baseline": 623,
+          "delta": 1086,
+          "variant": 1709
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "dd9955bc7c65f3be97100fc040a41fe2a0f3343cf219c46c6eecf1d00a4c21d8",
+      "seat_averaged_delta": 11.5,
+      "seed": 2026082902,
+      "variant": "idle-two-point"
+    },
+    {
+      "comparison": "two-minus-stay",
+      "legs": [
+        {
+          "baseline": 1649,
+          "delta": -1171,
+          "variant": 478
+        },
+        {
+          "baseline": 739,
+          "delta": 902,
+          "variant": 1641
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "82d37c7e65ce0c1967edaa307ac2a4e0c93e4ea9b3214ea32adf6cd357cf1da9",
+      "seat_averaged_delta": -134.5,
+      "seed": 2026082903,
+      "variant": "idle-two-point"
+    },
+    {
+      "comparison": "two-minus-stay",
+      "legs": [
+        {
+          "baseline": 1480,
+          "delta": -1062,
+          "variant": 418
+        },
+        {
+          "baseline": 507,
+          "delta": 954,
+          "variant": 1461
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "1f432b387f3d4a68a6560aa7c357b4c175d1e6f7f8a0a69fa21d0f88376066b3",
+      "seat_averaged_delta": -54.0,
+      "seed": 2026082904,
+      "variant": "idle-two-point"
+    },
+    {
+      "comparison": "two-minus-stay",
+      "legs": [
+        {
+          "baseline": 1396,
+          "delta": -886,
+          "variant": 510
+        },
+        {
+          "baseline": 586,
+          "delta": 895,
+          "variant": 1481
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "7bd1d6b0b5664b8b4d51e7cdf235765c202481bbf634ed39184af9d8e480cf34",
+      "seat_averaged_delta": 4.5,
+      "seed": 2026082905,
+      "variant": "idle-two-point"
+    },
+    {
+      "comparison": "two-minus-stay",
+      "legs": [
+        {
+          "baseline": 1290,
+          "delta": -838,
+          "variant": 452
+        },
+        {
+          "baseline": 729,
+          "delta": 356,
+          "variant": 1085
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "3dc3610a5c180adb85d8c4442515f51b6c36b21176ae56d8e81295602cda3008",
+      "seat_averaged_delta": -241.0,
+      "seed": 2026082906,
+      "variant": "idle-two-point"
+    },
+    {
+      "comparison": "two-minus-stay",
+      "legs": [
+        {
+          "baseline": 1494,
+          "delta": -986,
+          "variant": 508
+        },
+        {
+          "baseline": 417,
+          "delta": 722,
+          "variant": 1139
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "9b3239de9f35e6d0e339dc7652353a74b2173f38749274fcdf41e6cfae2ffac8",
+      "seat_averaged_delta": -132.0,
+      "seed": 2026082907,
+      "variant": "idle-two-point"
+    },
+    {
+      "comparison": "two-minus-stay",
+      "legs": [
+        {
+          "baseline": 1466,
+          "delta": -859,
+          "variant": 607
+        },
+        {
+          "baseline": 580,
+          "delta": 1008,
+          "variant": 1588
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "7f3632345f0ff1e09b0fbb188d238de1a1eaefb2951e460939fd89f046435bce",
+      "seat_averaged_delta": 74.5,
+      "seed": 2026082908,
+      "variant": "idle-two-point"
+    },
+    {
+      "comparison": "two-minus-stay",
+      "legs": [
+        {
+          "baseline": 1649,
+          "delta": -1110,
+          "variant": 539
+        },
+        {
+          "baseline": 478,
+          "delta": 1044,
+          "variant": 1522
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "95ba72866740e4b14cd86dfca2b98ced8d5e7c3a3346ae5566c743a5ee9d0536",
+      "seat_averaged_delta": -33.0,
+      "seed": 2026082909,
+      "variant": "idle-two-point"
+    },
+    {
+      "comparison": "two-minus-stay",
+      "legs": [
+        {
+          "baseline": 1556,
+          "delta": -1106,
+          "variant": 450
+        },
+        {
+          "baseline": 434,
+          "delta": 1104,
+          "variant": 1538
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "53a04e09bfa5956dac41faf2d6b451eec4bea50b824eb4dfec9e21e1ed2ad333",
+      "seat_averaged_delta": -1.0,
+      "seed": 2026082910,
+      "variant": "idle-two-point"
+    },
+    {
+      "comparison": "two-minus-stay",
+      "legs": [
+        {
+          "baseline": 1562,
+          "delta": -922,
+          "variant": 640
+        },
+        {
+          "baseline": 483,
+          "delta": 946,
+          "variant": 1429
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "847bd225669d845cf1f1ee8c834ea7b0b339170d7c9d9d0ef3033ee341c839a9",
+      "seat_averaged_delta": 12.0,
+      "seed": 2026082911,
+      "variant": "idle-two-point"
+    },
+    {
+      "comparison": "two-minus-stay",
+      "legs": [
+        {
+          "baseline": 1217,
+          "delta": -622,
+          "variant": 595
+        },
+        {
+          "baseline": 572,
+          "delta": 732,
+          "variant": 1304
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "5c711ac9ac8f4377f0de5a6db8b8fc93cfb3453079ee7abc1a1c00845f3c2ef0",
+      "seat_averaged_delta": 55.0,
+      "seed": 2026082912,
+      "variant": "idle-two-point"
+    },
+    {
+      "comparison": "two-minus-stay",
+      "legs": [
+        {
+          "baseline": 1105,
+          "delta": -696,
+          "variant": 409
+        },
+        {
+          "baseline": 492,
+          "delta": 706,
+          "variant": 1198
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "afbe81792d4a9557143b75320e2ca7e6c6e0e07dbe58e99f2291f38f10091d6d",
+      "seat_averaged_delta": 5.0,
+      "seed": 2026082913,
+      "variant": "idle-two-point"
+    },
+    {
+      "comparison": "two-minus-stay",
+      "legs": [
+        {
+          "baseline": 1509,
+          "delta": -981,
+          "variant": 528
+        },
+        {
+          "baseline": 566,
+          "delta": 949,
+          "variant": 1515
+        }
+      ],
+      "map": "map2",
+      "scenario_digest": "faec9f5c6dfce0426f8c0b1c56dabd3b697defa77f40f2a40a863e9f35277d92",
+      "seat_averaged_delta": -16.0,
+      "seed": 2026082914,
+      "variant": "idle-two-point"
+    }
+  ],
+  "schema_version": 1,
+  "status": "complete"
+}

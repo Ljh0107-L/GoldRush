@@ -1,0 +1,726 @@
+{
+  "definition": {
+    "R1": "central Region 1: row and col both in [4,12] inclusive",
+    "d_le_2": "Chebyshev distance from (8,8) <= 2",
+    "denominator": "unit-rounds, both player1 units, no visibility filtering",
+    "phase": "start and end reported separately"
+  },
+  "interpretation_guardrail": {
+    "go_no_go": "Do not infer simulator spatial saturation or platform transfer from the simplified policy's absolute occupancy. Use exact strategy binaries and identical metric semantics.",
+    "prototype_97_percent_is_same_strategy": false,
+    "reason": "97% came from sim/idle_sweep.py's simplified Python anchor policy, not frozen champff4; exact champff4 simulator occupancy is reported separately."
+  },
+  "key_deltas_sim_minus_real": {
+    "end_all_d2_pp": -6.179999999999996,
+    "end_all_r1_pp": -5.799999999999994,
+    "end_steady_r1_pp": -5.8437500000000036,
+    "snapshot_center_generation_share_pp": -1.4750323491878936,
+    "snapshot_other_center_occupants_mean": -0.01111111111111196
+  },
+  "real": {
+    "behavior": {
+      "center_enter_transitions": 301,
+      "center_exit_transitions": 287,
+      "effective_action4_rate": 0.35323333333333334,
+      "less_than_three_move_unit_round_rate": 0.5879,
+      "outside_run_lengths": {
+        "max": 271,
+        "mean": 9.947882736156352,
+        "median": 3,
+        "min": 1,
+        "n": 307,
+        "p10": 1,
+        "p90": 22
+      },
+      "per_game_r1_rate": {
+        "max": 0.843,
+        "mean": 0.6946,
+        "median": 0.6805,
+        "min": 0.585,
+        "n": 10,
+        "p10": 0.585,
+        "p90": 0.839
+      },
+      "pickup_per_positive_unit_round": 5.285372419982052,
+      "positive_pickup_unit_round_rate": 0.3343,
+      "unit_rounds": 10000
+    },
+    "end": {
+      "all": {
+        "any_unit_r1_player_round_rate": 0.9554,
+        "both_units_r1_player_round_rate": 0.4338,
+        "by_unit": [
+          {
+            "d_le_2_rate": 0.5548,
+            "r1_rate": 0.9168,
+            "unit": 0,
+            "unit_rounds": 5000
+          },
+          {
+            "d_le_2_rate": 0.2088,
+            "r1_rate": 0.4724,
+            "unit": 1,
+            "unit_rounds": 5000
+          }
+        ],
+        "d_le_2_rate": 0.3818,
+        "d_le_4_rate": 0.6946,
+        "exact_anchor_rate": 0.0266,
+        "r1_rate": 0.6946,
+        "rounds": 5000,
+        "unit_rounds": 10000,
+        "within_anchor_chebyshev2_rate": 0.3567
+      },
+      "opening_r_lt_20": {
+        "any_unit_r1_player_round_rate": 0.9,
+        "both_units_r1_player_round_rate": 0.825,
+        "by_unit": [
+          {
+            "d_le_2_rate": 0.49,
+            "r1_rate": 0.85,
+            "unit": 0,
+            "unit_rounds": 200
+          },
+          {
+            "d_le_2_rate": 0.52,
+            "r1_rate": 0.875,
+            "unit": 1,
+            "unit_rounds": 200
+          }
+        ],
+        "d_le_2_rate": 0.505,
+        "d_le_4_rate": 0.8625,
+        "exact_anchor_rate": 0.0225,
+        "r1_rate": 0.8625,
+        "rounds": 200,
+        "unit_rounds": 400,
+        "within_anchor_chebyshev2_rate": 0.52
+      },
+      "steady_r_ge_20": {
+        "any_unit_r1_player_round_rate": 0.9577083333333334,
+        "both_units_r1_player_round_rate": 0.4175,
+        "by_unit": [
+          {
+            "d_le_2_rate": 0.5575,
+            "r1_rate": 0.9195833333333333,
+            "unit": 0,
+            "unit_rounds": 4800
+          },
+          {
+            "d_le_2_rate": 0.19583333333333333,
+            "r1_rate": 0.455625,
+            "unit": 1,
+            "unit_rounds": 4800
+          }
+        ],
+        "d_le_2_rate": 0.37666666666666665,
+        "d_le_4_rate": 0.6876041666666667,
+        "exact_anchor_rate": 0.026770833333333334,
+        "r1_rate": 0.6876041666666667,
+        "rounds": 4800,
+        "unit_rounds": 9600,
+        "within_anchor_chebyshev2_rate": 0.34989583333333335
+      },
+      "steady_r_ge_30": {
+        "any_unit_r1_player_round_rate": 0.9572340425531914,
+        "both_units_r1_player_round_rate": 0.41191489361702127,
+        "by_unit": [
+          {
+            "d_le_2_rate": 0.5576595744680851,
+            "r1_rate": 0.9185106382978724,
+            "unit": 0,
+            "unit_rounds": 4700
+          },
+          {
+            "d_le_2_rate": 0.1921276595744681,
+            "r1_rate": 0.45063829787234044,
+            "unit": 1,
+            "unit_rounds": 4700
+          }
+        ],
+        "d_le_2_rate": 0.3748936170212766,
+        "d_le_4_rate": 0.6845744680851064,
+        "exact_anchor_rate": 0.02702127659574468,
+        "r1_rate": 0.6845744680851064,
+        "rounds": 4700,
+        "unit_rounds": 9400,
+        "within_anchor_chebyshev2_rate": 0.34925531914893615
+      }
+    },
+    "games": 10,
+    "names": [
+      {
+        "player1": "champff4",
+        "player2": "probeobs"
+      },
+      {
+        "player1": "champff4",
+        "player2": "probeobs"
+      },
+      {
+        "player1": "champff4",
+        "player2": "probeobs"
+      },
+      {
+        "player1": "champff4",
+        "player2": "probeobs"
+      },
+      {
+        "player1": "champff4",
+        "player2": "probeobs"
+      },
+      {
+        "player1": "champff4",
+        "player2": "probeobs"
+      },
+      {
+        "player1": "champff4",
+        "player2": "probeobs"
+      },
+      {
+        "player1": "champff4",
+        "player2": "probeobs"
+      },
+      {
+        "player1": "champff4",
+        "player2": "probeobs"
+      },
+      {
+        "player1": "champff4",
+        "player2": "probeobs"
+      }
+    ],
+    "position_semantics": "player1 own-unit endpoints; one observation per unit per included round",
+    "snapshot": {
+      "center_generated": {
+        "max": 159,
+        "mean": 50.04242424242424,
+        "median": 49.0,
+        "min": 0,
+        "n": 990,
+        "p10": 26,
+        "p90": 75
+      },
+      "center_generation_share": 0.5067820536426686,
+      "center_occupants": {
+        "max": 11,
+        "mean": 5.951515151515151,
+        "median": 6.0,
+        "min": 1,
+        "n": 990,
+        "p10": 4,
+        "p90": 8
+      },
+      "center_remaining": {
+        "max": 124,
+        "mean": 39.15959595959596,
+        "median": 37.0,
+        "min": 0,
+        "n": 990,
+        "p10": 16,
+        "p90": 64
+      },
+      "other_center_occupants": {
+        "max": 9,
+        "mean": 4.564646464646465,
+        "median": 5.0,
+        "min": 0,
+        "n": 990,
+        "p10": 3,
+        "p90": 7
+      },
+      "outer_generated": {
+        "max": 140,
+        "mean": 48.7030303030303,
+        "median": 0.0,
+        "min": 0,
+        "n": 990,
+        "p10": 0,
+        "p90": 130
+      },
+      "own_center_occupants": {
+        "max": 2,
+        "mean": 1.3868686868686868,
+        "median": 1.0,
+        "min": 0,
+        "n": 990,
+        "p10": 1,
+        "p90": 2
+      },
+      "snapshots": 990
+    },
+    "sources": [
+      "/Users/bytedance/GoldRush/logs/opponents/_selfplay-champ/game_172168.log",
+      "/Users/bytedance/GoldRush/logs/opponents/_selfplay-champ/game_172177.log",
+      "/Users/bytedance/GoldRush/logs/opponents/_selfplay-champ/game_172179.log",
+      "/Users/bytedance/GoldRush/logs/opponents/_selfplay-champ/game_172181.log",
+      "/Users/bytedance/GoldRush/logs/opponents/_selfplay-champ/game_172182.log",
+      "/Users/bytedance/GoldRush/logs/opponents/_selfplay-champ/game_172183.log",
+      "/Users/bytedance/GoldRush/logs/opponents/_selfplay-champ/game_172185.log",
+      "/Users/bytedance/GoldRush/logs/opponents/_selfplay-champ/game_172188.log",
+      "/Users/bytedance/GoldRush/logs/opponents/_selfplay-champ/game_172215.log",
+      "/Users/bytedance/GoldRush/logs/opponents/_selfplay-champ/game_172218.log"
+    ],
+    "start": {
+      "all": {
+        "any_unit_r1_player_round_rate": 0.9534,
+        "both_units_r1_player_round_rate": 0.433,
+        "by_unit": [
+          {
+            "d_le_2_rate": 0.553,
+            "r1_rate": 0.9148,
+            "unit": 0,
+            "unit_rounds": 5000
+          },
+          {
+            "d_le_2_rate": 0.2086,
+            "r1_rate": 0.4716,
+            "unit": 1,
+            "unit_rounds": 5000
+          }
+        ],
+        "d_le_2_rate": 0.3808,
+        "d_le_4_rate": 0.6932,
+        "exact_anchor_rate": 0.0265,
+        "r1_rate": 0.6932,
+        "rounds": 5000,
+        "unit_rounds": 10000,
+        "within_anchor_chebyshev2_rate": 0.3558
+      },
+      "opening_r_lt_20": {
+        "any_unit_r1_player_round_rate": 0.85,
+        "both_units_r1_player_round_rate": 0.785,
+        "by_unit": [
+          {
+            "d_le_2_rate": 0.45,
+            "r1_rate": 0.8,
+            "unit": 0,
+            "unit_rounds": 200
+          },
+          {
+            "d_le_2_rate": 0.495,
+            "r1_rate": 0.835,
+            "unit": 1,
+            "unit_rounds": 200
+          }
+        ],
+        "d_le_2_rate": 0.4725,
+        "d_le_4_rate": 0.8175,
+        "exact_anchor_rate": 0.0225,
+        "r1_rate": 0.8175,
+        "rounds": 200,
+        "unit_rounds": 400,
+        "within_anchor_chebyshev2_rate": 0.495
+      },
+      "steady_r_ge_20": {
+        "any_unit_r1_player_round_rate": 0.9577083333333334,
+        "both_units_r1_player_round_rate": 0.41833333333333333,
+        "by_unit": [
+          {
+            "d_le_2_rate": 0.5572916666666666,
+            "r1_rate": 0.9195833333333333,
+            "unit": 0,
+            "unit_rounds": 4800
+          },
+          {
+            "d_le_2_rate": 0.19666666666666666,
+            "r1_rate": 0.45645833333333335,
+            "unit": 1,
+            "unit_rounds": 4800
+          }
+        ],
+        "d_le_2_rate": 0.37697916666666664,
+        "d_le_4_rate": 0.6880208333333333,
+        "exact_anchor_rate": 0.02666666666666667,
+        "r1_rate": 0.6880208333333333,
+        "rounds": 4800,
+        "unit_rounds": 9600,
+        "within_anchor_chebyshev2_rate": 0.35
+      },
+      "steady_r_ge_30": {
+        "any_unit_r1_player_round_rate": 0.9570212765957447,
+        "both_units_r1_player_round_rate": 0.4123404255319149,
+        "by_unit": [
+          {
+            "d_le_2_rate": 0.556595744680851,
+            "r1_rate": 0.9182978723404255,
+            "unit": 0,
+            "unit_rounds": 4700
+          },
+          {
+            "d_le_2_rate": 0.19234042553191488,
+            "r1_rate": 0.451063829787234,
+            "unit": 1,
+            "unit_rounds": 4700
+          }
+        ],
+        "d_le_2_rate": 0.37446808510638296,
+        "d_le_4_rate": 0.6846808510638298,
+        "exact_anchor_rate": 0.026914893617021277,
+        "r1_rate": 0.6846808510638298,
+        "rounds": 4700,
+        "unit_rounds": 9400,
+        "within_anchor_chebyshev2_rate": 0.34893617021276596
+      }
+    }
+  },
+  "schema_version": 1,
+  "simulated_exact_strategy": {
+    "behavior": {
+      "center_enter_transitions": 305,
+      "center_exit_transitions": 292,
+      "effective_action4_rate": 0.3346,
+      "less_than_three_move_unit_round_rate": 0.6197,
+      "outside_run_lengths": {
+        "max": 347,
+        "mean": 11.647435897435898,
+        "median": 3.0,
+        "min": 1,
+        "n": 312,
+        "p10": 1,
+        "p90": 29
+      },
+      "per_game_r1_rate": {
+        "max": 0.734,
+        "mean": 0.6365999999999999,
+        "median": 0.6315,
+        "min": 0.547,
+        "n": 10,
+        "p10": 0.547,
+        "p90": 0.715
+      },
+      "pickup_per_positive_unit_round": 5.405130293159609,
+      "positive_pickup_unit_round_rate": 0.2456,
+      "unit_rounds": 10000
+    },
+    "end": {
+      "all": {
+        "any_unit_r1_player_round_rate": 0.9622,
+        "both_units_r1_player_round_rate": 0.311,
+        "by_unit": [
+          {
+            "d_le_2_rate": 0.5458,
+            "r1_rate": 0.949,
+            "unit": 0,
+            "unit_rounds": 5000
+          },
+          {
+            "d_le_2_rate": 0.0942,
+            "r1_rate": 0.3242,
+            "unit": 1,
+            "unit_rounds": 5000
+          }
+        ],
+        "d_le_2_rate": 0.32,
+        "d_le_4_rate": 0.6366,
+        "exact_anchor_rate": 0.0125,
+        "r1_rate": 0.6366,
+        "rounds": 5000,
+        "unit_rounds": 10000,
+        "within_anchor_chebyshev2_rate": 0.3732
+      },
+      "opening_r_lt_20": {
+        "any_unit_r1_player_round_rate": 0.9,
+        "both_units_r1_player_round_rate": 0.73,
+        "by_unit": [
+          {
+            "d_le_2_rate": 0.38,
+            "r1_rate": 0.835,
+            "unit": 0,
+            "unit_rounds": 200
+          },
+          {
+            "d_le_2_rate": 0.315,
+            "r1_rate": 0.795,
+            "unit": 1,
+            "unit_rounds": 200
+          }
+        ],
+        "d_le_2_rate": 0.3475,
+        "d_le_4_rate": 0.815,
+        "exact_anchor_rate": 0.02,
+        "r1_rate": 0.815,
+        "rounds": 200,
+        "unit_rounds": 400,
+        "within_anchor_chebyshev2_rate": 0.505
+      },
+      "steady_r_ge_20": {
+        "any_unit_r1_player_round_rate": 0.9647916666666667,
+        "both_units_r1_player_round_rate": 0.29354166666666665,
+        "by_unit": [
+          {
+            "d_le_2_rate": 0.5527083333333334,
+            "r1_rate": 0.95375,
+            "unit": 0,
+            "unit_rounds": 4800
+          },
+          {
+            "d_le_2_rate": 0.085,
+            "r1_rate": 0.3045833333333333,
+            "unit": 1,
+            "unit_rounds": 4800
+          }
+        ],
+        "d_le_2_rate": 0.31885416666666666,
+        "d_le_4_rate": 0.6291666666666667,
+        "exact_anchor_rate": 0.0121875,
+        "r1_rate": 0.6291666666666667,
+        "rounds": 4800,
+        "unit_rounds": 9600,
+        "within_anchor_chebyshev2_rate": 0.36770833333333336
+      },
+      "steady_r_ge_30": {
+        "any_unit_r1_player_round_rate": 0.9640425531914893,
+        "both_units_r1_player_round_rate": 0.28382978723404256,
+        "by_unit": [
+          {
+            "d_le_2_rate": 0.551063829787234,
+            "r1_rate": 0.9527659574468085,
+            "unit": 0,
+            "unit_rounds": 4700
+          },
+          {
+            "d_le_2_rate": 0.07914893617021276,
+            "r1_rate": 0.2951063829787234,
+            "unit": 1,
+            "unit_rounds": 4700
+          }
+        ],
+        "d_le_2_rate": 0.3151063829787234,
+        "d_le_4_rate": 0.6239361702127659,
+        "exact_anchor_rate": 0.012340425531914894,
+        "r1_rate": 0.6239361702127659,
+        "rounds": 4700,
+        "unit_rounds": 9400,
+        "within_anchor_chebyshev2_rate": 0.3677659574468085
+      }
+    },
+    "games": 10,
+    "names": [
+      {
+        "player1": "champff4",
+        "player2": "probeobs"
+      },
+      {
+        "player1": "champff4",
+        "player2": "probeobs"
+      },
+      {
+        "player1": "champff4",
+        "player2": "probeobs"
+      },
+      {
+        "player1": "champff4",
+        "player2": "probeobs"
+      },
+      {
+        "player1": "champff4",
+        "player2": "probeobs"
+      },
+      {
+        "player1": "champff4",
+        "player2": "probeobs"
+      },
+      {
+        "player1": "champff4",
+        "player2": "probeobs"
+      },
+      {
+        "player1": "champff4",
+        "player2": "probeobs"
+      },
+      {
+        "player1": "champff4",
+        "player2": "probeobs"
+      },
+      {
+        "player1": "champff4",
+        "player2": "probeobs"
+      }
+    ],
+    "position_semantics": "player1 own-unit endpoints; one observation per unit per included round",
+    "snapshot": {
+      "center_generated": {
+        "max": 120,
+        "mean": 48.68181818181818,
+        "median": 47.5,
+        "min": 6,
+        "n": 990,
+        "p10": 26,
+        "p90": 72
+      },
+      "center_generation_share": 0.49203173015078966,
+      "center_occupants": {
+        "max": 11,
+        "mean": 5.83030303030303,
+        "median": 6.0,
+        "min": 1,
+        "n": 990,
+        "p10": 3,
+        "p90": 8
+      },
+      "center_remaining": {
+        "max": 148,
+        "mean": 27.026262626262625,
+        "median": 23.0,
+        "min": 0,
+        "n": 990,
+        "p10": 9,
+        "p90": 50
+      },
+      "other_center_occupants": {
+        "max": 9,
+        "mean": 4.553535353535353,
+        "median": 5.0,
+        "min": 0,
+        "n": 990,
+        "p10": 2,
+        "p90": 7
+      },
+      "outer_generated": {
+        "max": 154,
+        "mean": 50.25858585858586,
+        "median": 0.0,
+        "min": 0,
+        "n": 990,
+        "p10": 0,
+        "p90": 130
+      },
+      "own_center_occupants": {
+        "max": 2,
+        "mean": 1.2767676767676768,
+        "median": 1.0,
+        "min": 0,
+        "n": 990,
+        "p10": 1,
+        "p90": 2
+      },
+      "snapshots": 990
+    },
+    "sources": [
+      "generated:seed=2026082900",
+      "generated:seed=2026082901",
+      "generated:seed=2026082902",
+      "generated:seed=2026082903",
+      "generated:seed=2026082904",
+      "generated:seed=2026082905",
+      "generated:seed=2026082906",
+      "generated:seed=2026082907",
+      "generated:seed=2026082908",
+      "generated:seed=2026082909"
+    ],
+    "start": {
+      "all": {
+        "any_unit_r1_player_round_rate": 0.9602,
+        "both_units_r1_player_round_rate": 0.3104,
+        "by_unit": [
+          {
+            "d_le_2_rate": 0.5446,
+            "r1_rate": 0.947,
+            "unit": 0,
+            "unit_rounds": 5000
+          },
+          {
+            "d_le_2_rate": 0.094,
+            "r1_rate": 0.3236,
+            "unit": 1,
+            "unit_rounds": 5000
+          }
+        ],
+        "d_le_2_rate": 0.3193,
+        "d_le_4_rate": 0.6353,
+        "exact_anchor_rate": 0.0125,
+        "r1_rate": 0.6353,
+        "rounds": 5000,
+        "unit_rounds": 10000,
+        "within_anchor_chebyshev2_rate": 0.3725
+      },
+      "opening_r_lt_20": {
+        "any_unit_r1_player_round_rate": 0.85,
+        "both_units_r1_player_round_rate": 0.695,
+        "by_unit": [
+          {
+            "d_le_2_rate": 0.35,
+            "r1_rate": 0.79,
+            "unit": 0,
+            "unit_rounds": 200
+          },
+          {
+            "d_le_2_rate": 0.3,
+            "r1_rate": 0.755,
+            "unit": 1,
+            "unit_rounds": 200
+          }
+        ],
+        "d_le_2_rate": 0.325,
+        "d_le_4_rate": 0.7725,
+        "exact_anchor_rate": 0.0175,
+        "r1_rate": 0.7725,
+        "rounds": 200,
+        "unit_rounds": 400,
+        "within_anchor_chebyshev2_rate": 0.4825
+      },
+      "steady_r_ge_20": {
+        "any_unit_r1_player_round_rate": 0.9647916666666667,
+        "both_units_r1_player_round_rate": 0.294375,
+        "by_unit": [
+          {
+            "d_le_2_rate": 0.5527083333333334,
+            "r1_rate": 0.9535416666666666,
+            "unit": 0,
+            "unit_rounds": 4800
+          },
+          {
+            "d_le_2_rate": 0.08541666666666667,
+            "r1_rate": 0.305625,
+            "unit": 1,
+            "unit_rounds": 4800
+          }
+        ],
+        "d_le_2_rate": 0.3190625,
+        "d_le_4_rate": 0.6295833333333334,
+        "exact_anchor_rate": 0.012291666666666666,
+        "r1_rate": 0.6295833333333334,
+        "rounds": 4800,
+        "unit_rounds": 9600,
+        "within_anchor_chebyshev2_rate": 0.36791666666666667
+      },
+      "steady_r_ge_30": {
+        "any_unit_r1_player_round_rate": 0.9640425531914893,
+        "both_units_r1_player_round_rate": 0.2846808510638298,
+        "by_unit": [
+          {
+            "d_le_2_rate": 0.5512765957446808,
+            "r1_rate": 0.9527659574468085,
+            "unit": 0,
+            "unit_rounds": 4700
+          },
+          {
+            "d_le_2_rate": 0.07957446808510639,
+            "r1_rate": 0.29595744680851066,
+            "unit": 1,
+            "unit_rounds": 4700
+          }
+        ],
+        "d_le_2_rate": 0.31542553191489364,
+        "d_le_4_rate": 0.6243617021276596,
+        "exact_anchor_rate": 0.012340425531914894,
+        "r1_rate": 0.6243617021276596,
+        "rounds": 4700,
+        "unit_rounds": 9400,
+        "within_anchor_chebyshev2_rate": 0.3677659574468085
+      }
+    }
+  },
+  "status": "complete",
+  "strategy_identity": {
+    "note": "Simulator library is the frozen source compiled for host ABI; prefetch-only calls may be shimmed to no-op without changing decisions.",
+    "real_log_player1": "champff4",
+    "sim_asset": {
+      "path": "/tmp/champ_ff462756.dylib",
+      "sha256": "306a6a40fbe7a1bde8e5d534c084ce8d3253db1e1c40b1524813cd504f7a4059"
+    },
+    "source_commit": "ff462756",
+    "source_sha256": "d4526b22f4371e33e17dd3508ef74235e77ffc84ff81966ff0def25e0be013b0"
+  }
+}
