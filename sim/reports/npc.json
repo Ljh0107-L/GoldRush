@@ -1,6 +1,7 @@
 {
   "baseline_definitions": {
     "cross_turn_persistence": "Use the same NPC previous logged final action for all three current slots while legal; causal teacher-forced history, random fallback in round 0 or when blocked.",
+    "gold_distance4_bomb_avoidance": "Selected NPCModel: retain the gold/distance^4 target and shortest-path tie draw; when that selected greedy step enters -3 and a legal non-bomb cardinal alternative exists, choose one in stable action-code order through the injected RNG.",
     "gold_distance4_fitted": "Implemented NPCModel: each slot maximizes reachable gold / BFS_distance^4, samples shortest-path ties, applies 65% pickup to a private board copy, and replans.",
     "gold_seeking_global_highest": "Replan each slot toward the globally highest reachable positive cell; nearest then RNG ties.",
     "highest_local_gold_r3": "Replan each slot toward the highest reachable gold within BFS distance 3; nearest then RNG ties; random move fallback.",
@@ -52,6 +53,46 @@
       "full_three_action_turn_hits": 799,
       "npc_turns": 10500,
       "teacher_forced_predicted_pickup_proxy": 10381
+    },
+    "gold_distance4_bomb_avoidance": {
+      "action_hits": 12341,
+      "action_hits_by_slot_1_to_3": [
+        4794,
+        3963,
+        3584
+      ],
+      "action_slots": 31500,
+      "by_game": {
+        "g0": {
+          "action_accuracy": 0.3832380952380952,
+          "action_hits": 4024,
+          "action_slots": 10500,
+          "full_turn_accuracy": 0.14114285714285715,
+          "full_turn_hits": 494,
+          "npc_turns": 3500
+        },
+        "g1": {
+          "action_accuracy": 0.398,
+          "action_hits": 4179,
+          "action_slots": 10500,
+          "full_turn_accuracy": 0.15228571428571427,
+          "full_turn_hits": 533,
+          "npc_turns": 3500
+        },
+        "g2": {
+          "action_accuracy": 0.3940952380952381,
+          "action_hits": 4138,
+          "action_slots": 10500,
+          "full_turn_accuracy": 0.15171428571428572,
+          "full_turn_hits": 531,
+          "npc_turns": 3500
+        }
+      },
+      "exact_action_accuracy": 0.3917777777777778,
+      "full_three_action_turn_accuracy": 0.1483809523809524,
+      "full_three_action_turn_hits": 1558,
+      "measurement_note": "Fresh actual-dispatch teacher-forced replay; compare with mechanism_improvement.before_after_teacher_forced.independent_replay.",
+      "npc_turns": 10500
     },
     "gold_distance4_fitted": {
       "action_hits": 12192,
@@ -355,7 +396,7 @@
       "teacher_forced_predicted_pickup_proxy": 7650
     }
   },
-  "conclusion": "The private NPC policy is not exactly identifiable from three stochastic logs. The original gold_distance4_fitted runnable approximation and all action/oracle evidence are preserved. Bounded in-sample roaming and hesitation sweeps found no single simple probability meeting every macro target, so no knob was selected and the landed default remains unchanged; see macro_calibration for residuals.",
+  "conclusion": "The private NPC policy remains non-identifiable, but bomb avoidance is an isolated, strongly supported omission: truth avoided all-greedy-bomb sets for a non-bomb action in 347/361 published slots. The landed categorical rule improves fresh exact action hits 12,207->12,341, oracle hits 17,755->18,319, pickups [9051,9272,8631]->[8943,8958,8543], R1 offset +927->+630, and clean-lifetime P90 8->10 while preserving median 3. Macro targets remain unmet. Three-step target inertia worsened oracle coverage and was discarded; no random rate or ID table was added.",
   "corpus": {
     "g0": {
       "bytes": 1751697,
@@ -1076,7 +1117,7 @@
       "4": "stay"
     },
     "actions_per_call": 3,
-    "determinism": "A caller-supplied RNG with choice(sequence) controls every tie/fallback. Without one, random.Random(seed) is private to the model; no global RNG is read.",
+    "determinism": "A caller-supplied RNG with choice(sequence) controls every target/path tie, bomb-avoidance alternative, and fallback. Without one, random.Random(seed) is private to the model; no global RNG is read.",
     "path": "sim/npc.py",
     "public_api": [
       "NPCModel(rng=None, seed=0)",
@@ -1085,7 +1126,7 @@
       "choose_actions(grid, position, rng=None, seed=0, npc_id=None)",
       "legal_actions(grid, position, include_stay=True)"
     ],
-    "selected_policy": "gold_distance4_fitted",
+    "selected_policy": "gold_distance4_bomb_avoidance",
     "standard_library_only": true
   },
   "limitations": [
@@ -1093,12 +1134,12 @@
     "The three logs share one static map layout and are not a representative unseen-map test.",
     "Teacher-forced board reconstruction matches logged NPC pickup exactly on 10443/10500 turns; the remaining 57 turns have 93 total absolute pickup error, consistent with gold hidden by occupancy markers or omitted state.",
     "The selected model never chooses an idle stay while a cardinal route exists, whereas truth contains 1806 stay slots and 215 full-stay turns; adding an unobserved idle mechanism was not justified by available state.",
-    "The fitted model ignores npc_id, players, bombs as hazards, future generation, and other NPC positions because the logs do not isolate stable effects for them.",
+    "The fitted model still ignores npc_id, players, future generation, and other NPC positions. Bombs are now handled only by the isolated categorical avoidance rule; hidden purse conditioning remains unidentified.",
     "Exact action accuracy is sensitive to stochastic tie order and the disclosed RNG seed. Determinism means reproducibility under the same supplied RNG state, not agreement with the private RNG.",
     "Predicted pickup proxies overcount relative to macro truth because they are independent teacher-forced one-turn counterfactuals and do not model competition or action divergence.",
-    "The fitted model treats bombs as ordinary traversable cells, but follow-up oracle analysis finds 347/361 strict all-greedy-bomb opportunities were avoided for a non-bomb move; this is a clear model omission.",
+    "Bombs remain physically traversable, but a selected greedy bomb step is replaced by a legal non-bomb cardinal alternative. This rule is backed by the published 347/361 non-bomb response and is not a tuned penalty.",
     "Gold lifetime is recoverable exactly only as positive-cell episodes. Individual generation cohorts are not identifiable across 304 replenishment deltas, and 40 episodes are right-censored at game end.",
-    "The bounded macro sweep is in-sample on exactly three synthetic seeds/policies. No roaming or hesitation value met pickup, central occupancy, and lifetime targets simultaneously, so the runnable default was deliberately not changed."
+    "The fixed macro validation remains in-sample. Bomb avoidance improves all reported directions but does not meet pickup/R1 targets; target inertia failed its oracle gate, and historical roaming/hesitation sweeps were not revisited."
   ],
   "macro_calibration": {
     "baseline_and_after_table": [
@@ -1108,7 +1149,7 @@
         "clean_lifetime_median": 3,
         "clean_lifetime_p90_nearest_rank": 8,
         "knob_value": null,
-        "label": "before_and_preserved_default",
+        "label": "before",
         "mechanism": "gold/distance^4 greedy model from 8f2fcbe",
         "npc_pickup_per_game_totals": [
           9051,
@@ -1120,21 +1161,21 @@
         "region1_offset": 927
       },
       {
-        "clean_lifetime_count": 3445,
-        "clean_lifetime_mean": 4.194484760522497,
-        "clean_lifetime_median": 3,
-        "clean_lifetime_p90_nearest_rank": 8,
+        "clean_lifetime_count": 3336,
+        "clean_lifetime_mean": 4.852218225419664,
+        "clean_lifetime_median": 3.0,
+        "clean_lifetime_p90_nearest_rank": 10,
         "knob_value": null,
         "label": "after",
-        "mechanism": "none selected; default intentionally unchanged",
+        "mechanism": "rule-based bomb avoidance",
         "npc_pickup_per_game_totals": [
-          9051,
-          9272,
-          8631
+          8943,
+          8958,
+          8543
         ],
         "passed_all_targets": false,
-        "region1_occupancy": 6601,
-        "region1_offset": 927
+        "region1_occupancy": 6304,
+        "region1_offset": 630
       }
     ],
     "candidate_sweeps": {
@@ -1741,19 +1782,18 @@
         "result": "rejected: no p met the required conjunction"
       }
     },
-    "in_sample_warning": "Every candidate was evaluated on exactly npc-synthetic-0/1/2 with the g0 recorded effective player decisions replayed as two callables. These are the validation seeds and policies, not held-out evidence.",
+    "in_sample_warning": "Macro numbers use exactly npc-synthetic-0/1/2 with the g0 recorded effective player decisions. Corpus oracle evidence uses g0-g2; neither is held out.",
     "preserved_evidence": {
       "original_action_calibration": "calibration_results and model_selection are retained unchanged",
       "original_oracle_evidence": "oracle_tie_set_upper_bound and omitted_policy_factor_assessment are retained unchanged"
     },
-    "scope": "Bounded in-sample macro calibration of the runnable gold/distance^4 model; no engine, runner, scenario, dispatch, generation, action-accuracy, or oracle changes.",
+    "scope": "Fixed three-seed macro validation of the evidence-backed bomb rule. Historical random-roam and hesitation sweeps are preserved but were not revisited.",
     "selection": {
-      "best_residual_not_selected": "per-action hesitation p=0.7",
-      "reason": "The bounded simple one-knob sweeps expose incompatible trade-offs. Following the stop rule, no second combined mechanism, policy redesign, or exact-action optimization was attempted, and sim/npc.py remains the 8f2fcbe implementation.",
-      "selected_mechanism": null,
+      "reason": "Selected independently on the 361-case corpus hazard evidence and improved fresh exact/oracle coverage. Macro residuals remain explicit. Target inertia failed the oracle gate; no random or identity knob was added.",
+      "selected_mechanism": "rule_based_bomb_avoidance",
       "selected_value": null
     },
-    "status": "no_single_knob_met_all_targets_default_unchanged",
+    "status": "bomb_avoidance_selected_macro_improved_but_targets_not_met",
     "targets_and_rationale": {
       "clean_lifetime_median_exact": 3,
       "clean_lifetime_p90_inclusive": [
@@ -1770,6 +1810,237 @@
       "region1_absolute_offset_max": 309,
       "region1_rationale": "One third of the landed +927 central-occupancy offset, limiting directional central overcompetition."
     }
+  },
+  "mechanism_improvement": {
+    "before_after_teacher_forced": {
+      "independent_replay": {
+        "after": {
+          "exact_action": {
+            "coverage": 0.3917777777777778,
+            "hits": 12341,
+            "hits_by_slot_1_to_3": [
+              4794,
+              3963,
+              3584
+            ],
+            "slots": 31500
+          },
+          "full_turn": {
+            "coverage": 0.1483809523809524,
+            "hits": 1558,
+            "turns": 10500
+          },
+          "oracle_full_turn": {
+            "coverage": 0.25495238095238093,
+            "hits": 2677,
+            "turns": 10500
+          },
+          "tie_set_oracle": {
+            "coverage": 0.5815555555555556,
+            "hits": 18319,
+            "hits_by_slot_1_to_3": [
+              6133,
+              5998,
+              6188
+            ],
+            "slots": 31500
+          }
+        },
+        "before": {
+          "exact_action": {
+            "coverage": 0.38752380952380955,
+            "hits": 12207,
+            "hits_by_slot_1_to_3": [
+              4704,
+              3926,
+              3577
+            ],
+            "slots": 31500
+          },
+          "full_turn": {
+            "coverage": 0.14142857142857143,
+            "hits": 1485,
+            "turns": 10500
+          },
+          "oracle_full_turn": {
+            "coverage": 0.23114285714285715,
+            "hits": 2427,
+            "turns": 10500
+          },
+          "tie_set_oracle": {
+            "coverage": 0.5636507936507936,
+            "hits": 17755,
+            "hits_by_slot_1_to_3": [
+              5937,
+              5808,
+              6010
+            ],
+            "slots": 31500
+          }
+        },
+        "definition": "Fresh g0-g2 teacher-forced replay in canonical game/round/dispatch order. Both models receive the board and position at actual NPC dispatch; logged actions advance truth. Exact models use independent random.Random(20260809) streams. Oracle sets enumerate all target/path ties and the rule outputs.",
+        "delta": {
+          "exact_action_hits": 134,
+          "exact_action_percentage_points": 0.4253968253968254,
+          "tie_set_oracle_hits": 564,
+          "tie_set_oracle_percentage_points": 1.7904761904761906
+        },
+        "legacy_difference_disclosure": "The preserved historical extractor reports 15 fewer exact hits and 11 fewer baseline oracle hits. The before/after delta above uses one fresh shared harness; historical values are not overwritten."
+      },
+      "published_legacy_baseline_preserved": {
+        "exact_action": {
+          "coverage": 0.38704761904761903,
+          "hits": 12192,
+          "slots": 31500
+        },
+        "greedy_tie_set_oracle": {
+          "coverage": 0.5633015873015873,
+          "hits": 17744,
+          "slots": 31500
+        },
+        "source": "calibration_results.gold_distance4_fitted and oracle_tie_set_upper_bound"
+      }
+    },
+    "bounded_secondary_candidates": {
+      "npc_id_specific_behavior": {
+        "decision": "not promoted to a candidate",
+        "reason": "The preserved per-ID coverage range is state-confounded and supplies no evidence-backed identity rule. A memorized ID table would be arbitrary."
+      },
+      "random_roam_or_hesitation": "Not revisited; preserved historical sweeps already failed and the task explicitly excludes another sweep.",
+      "target_inertia_three_step_turn": {
+        "comparison_to_bomb_avoidance_oracle": {
+          "bomb_avoidance_hits": 18319,
+          "candidate_hits": 16920,
+          "delta_hits": -1399
+        },
+        "decision": "discarded immediately; oracle coverage worsened, so no macro rollout and no implementation change",
+        "definition": "Lock a selected gold target within the three-action NPC turn, replanning only after reaching it; retain bomb avoidance.",
+        "oracle_before_macro_rollout": {
+          "coverage": 0.5371428571428571,
+          "full_turn_hits": 2894,
+          "hits": 16920,
+          "hits_by_slot_1_to_3": [
+            6133,
+            5569,
+            5218
+          ],
+          "slots": 31500
+        }
+      }
+    },
+    "implementation": {
+      "determinism": "The same seed/state produces the same three actions; the extra RNG draw occurs only when the categorical avoidance rule fires.",
+      "fallback_without_reachable_gold_unchanged": true,
+      "no_probability_or_tuned_coefficient": true,
+      "not_a_penalty": true,
+      "rule": "First make the existing greedy target and shortest-path tie draws. If the chosen action enters -3 and at least one physically legal non-bomb cardinal action exists, select among those alternatives with the injected RNG in stable official action-code order.",
+      "stay_is_not_an_avoidance_alternative": true
+    },
+    "macro_validation": {
+      "after": {
+        "clean_positive_cell_lifetime": {
+          "count": 3336,
+          "mean": 4.852218225419664,
+          "median": 3.0,
+          "p90_nearest_rank": 10
+        },
+        "npc_pickup_per_game_totals": [
+          8943,
+          8958,
+          8543
+        ],
+        "npc_pickup_per_round": {
+          "count": 1500,
+          "max": 82,
+          "mean": 17.629333333333335,
+          "median": 15.0,
+          "min": 0,
+          "p90_nearest_rank": 34
+        },
+        "npc_start_occupancy_exposures_r1_to_r5": [
+          6304,
+          1147,
+          923,
+          1092,
+          1034
+        ],
+        "region1_offset_from_truth": 630
+      },
+      "before": {
+        "clean_positive_cell_lifetime": {
+          "count": 3445,
+          "mean": 4.194484760522497,
+          "median": 3,
+          "p90_nearest_rank": 8
+        },
+        "npc_pickup_per_game_totals": [
+          9051,
+          9272,
+          8631
+        ],
+        "npc_start_occupancy_exposures_r1_to_r5": [
+          6601,
+          1127,
+          820,
+          943,
+          1009
+        ],
+        "region1_offset_from_truth": 927
+      },
+      "policy": "g0 recorded effective player decisions replayed as two callables",
+      "result": "Improved but not accepted: every pickup total remains above 7051 and R1 remains materially high; the safest evidence-backed bomb rule is retained independently of macro target failure.",
+      "seeds": [
+        "npc-synthetic-0",
+        "npc-synthetic-1",
+        "npc-synthetic-2"
+      ],
+      "target_checks": {
+        "all_pickup_totals_in_5216_to_7051": false,
+        "clean_lifetime_median_equals_3": true,
+        "clean_lifetime_p90_in_11_to_15": false,
+        "region1_absolute_offset_within_309": false
+      },
+      "truth": {
+        "clean_positive_cell_lifetime": {
+          "count": 3293,
+          "mean": 6.277254782873,
+          "median": 3,
+          "p90_nearest_rank": 13
+        },
+        "npc_pickup_per_game_totals": [
+          5216,
+          7051,
+          6916
+        ],
+        "npc_start_occupancy_exposures_r1_to_r5": [
+          5674,
+          1279,
+          1123,
+          1238,
+          1186
+        ]
+      }
+    },
+    "required_361_case_subset": {
+      "after_cardinal_avoidance_oracle_coverage": 0.9279778393351801,
+      "after_cardinal_avoidance_oracle_hits": 335,
+      "before_oracle_hits": 14,
+      "before_oracle_miss_to_nonbomb": 347,
+      "definition": "Published slots where every original greedy-optimal first action entered a bomb.",
+      "derivation": "All 347 truth misses avoid bombs; 12 are stay. The bounded rule admits legal non-bomb cardinal alternatives, so it covers the remaining 335 without inventing an idle mechanism.",
+      "independent_current_state_replay_check": {
+        "after_hits": 323,
+        "before_hits": 13,
+        "slots": 348,
+        "truth_nonbomb": 335,
+        "truth_stays": 12
+      },
+      "slots": 361,
+      "truth_stays_among_nonbomb_misses": 12
+    },
+    "schema_version": 1,
+    "selected_mechanism": "rule_based_bomb_avoidance",
+    "stop_reason": "The sole oracle-qualified mechanism improved exact/oracle and macro direction but did not meet macro targets. The only bounded secondary candidate worsened oracle coverage; identity lacked a rule-level evidence gate."
   },
   "methodology": {
     "accuracy": "exact_action_accuracy = matching slots / 31500; full_three_action_turn_accuracy = exactly matching triples / 10500.",
@@ -1808,13 +2079,13 @@
     "rng_seed": 20260809
   },
   "model_selection": {
-    "criterion": "Highest pooled exact action accuracy among disclosed runnable candidates.",
-    "fitting_disclosure": "The distance exponent and policy family were chosen after inspecting/evaluating g0-g2. The reported selected score is therefore in-sample. No train/test split, unseen-map score, policy recovery, or causal pickup improvement is claimed.",
-    "selected": "gold_distance4_fitted",
+    "criterion": "Retain the fitted gold/distance^4 core and add only categorical mechanisms with isolated corpus evidence and improved oracle coverage.",
+    "fitting_disclosure": "The gold/distance^4 family remains in-sample. Bomb avoidance is separately justified by the published 361-case hazard subset; fresh before/after scores are also in-sample and are not policy recovery.",
+    "selected": "gold_distance4_bomb_avoidance",
     "selected_counts": {
-      "action_hits": 12192,
+      "action_hits": 12341,
       "action_slots": 31500,
-      "full_turn_hits": 1488,
+      "full_turn_hits": 1558,
       "npc_turns": 10500
     },
     "why_not_exact": "Many co-located NPCs take different triples, RNG state is absent, logs contain only effective actions, and full-log occupancy markers can hide underlying generated gold. Multiple latent policies can induce the same observed action."
@@ -2344,7 +2615,7 @@
       "actual_bomb_entries": 122,
       "all_bomb_oracle_hits": 14,
       "all_bomb_oracle_miss_to_nonbomb": 347,
-      "assessment": "Bomb avoidance is strongly plausible and is a clear omission from npc.py: when every greedy-optimal action entered a bomb, truth avoided the greedy set for a non-bomb move in 347/361 slots. General actor/crowding avoidance is not established; NPC overlap is legal and the logs do not isolate a stable penalty.",
+      "assessment": "Bomb avoidance was the strongest isolated omission and is now implemented as a categorical rule. In the published 361 all-greedy-bomb slots, truth chose a non-bomb miss 347 times; the cardinal-only rule oracle covers 335/361, leaving 12 truth stays outside scope.",
       "oracle_sets_all_bomb": 361,
       "oracle_sets_with_any_bomb": 1244
     },
@@ -2404,7 +2675,7 @@
         "slots": 9180
       }
     },
-    "overall": "The 56.3% oracle-set coverage and 51.9% singleton coverage leave a clear model gap. Random tie state is material but cannot explain the 43.7% outside-set actions. Bomb handling is the strongest isolated omitted factor; identity and inertia are weaker or confounded."
+    "overall": "Bomb handling is now included and improves fresh tie-set oracle coverage from 17,755 to 18,319. Identity remains confounded; three-step target inertia worsened coverage to 16,920 and was discarded."
   },
   "oracle_tie_set_upper_bound": {
     "by_game": {

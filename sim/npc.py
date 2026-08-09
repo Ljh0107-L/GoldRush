@@ -12,11 +12,13 @@ Public API
     Return exactly three actions, using the official action codes
     0=up, 1=down, 2=left, 3=right, 4=stay.  ``grid`` is a rectangular sequence
     of rows; -1 is an obstacle and positive values are gold.  Other values,
-    including full-log occupancy markers -2/-4 and bombs -3, are traversable.
-    ``position`` may be a ``(row, col)`` sequence or an object with ``row`` and
-    ``col`` attributes.  ``npc_id`` is accepted for engine integration but the
-    fitted approximation does not use identity.  Returned moves never cross a
-    boundary or obstacle; a trapped or malformed state returns three stays.
+    including full-log occupancy markers -2/-4 and bombs -3, are traversable,
+    but a selected greedy step into -3 is replaced by a legal non-bomb cardinal
+    move when one exists.  ``position`` may be a ``(row, col)`` sequence or an
+    object with ``row`` and ``col`` attributes.  ``npc_id`` is accepted for
+    engine integration but the fitted approximation does not use identity.
+    Returned moves never cross a boundary or obstacle; a trapped or malformed
+    state returns three stays.
 
 ``NPCModel.__call__`` is an alias for ``actions``.  ``choose_actions`` is a
 convenience one-shot wrapper.
@@ -28,9 +30,11 @@ The official policy is private and was not identifiable exactly from g0-g2.
 This approximation is therefore explicitly *fitted*.  At each of the three
 slots it selects reachable gold maximizing ``gold / distance**4``, takes a
 random shortest-path step, applies the public 65% pickup rule to its private
-planning copy, and replans.  With no reachable gold it samples a legal
-cardinal move uniformly.  RNG is used only for exact ties and fallback roaming.
-Calibration and limitations are recorded in ``sim/reports/npc.json``.
+planning copy, and replans.  If that selected greedy step enters a bomb, the
+model instead samples a legal non-bomb cardinal move when available.  With no
+reachable gold it samples a legal cardinal move uniformly.  RNG is used only
+for exact ties, rule-based bomb avoidance, and fallback roaming.  Calibration
+and limitations are recorded in ``sim/reports/npc.json``.
 """
 
 from __future__ import annotations
@@ -44,6 +48,7 @@ ACTION_DELTAS = ((-1, 0), (1, 0), (0, -1), (0, 1), (0, 0))
 ACTIONS_PER_TURN = 3
 DISTANCE_POWER = 4
 OBSTACLE = -1
+BOMB = -3
 
 Position = Tuple[int, int]
 Actions = Tuple[int, int, int]
@@ -165,7 +170,22 @@ class NPCModel:
 
         if targets:
             target = self.rng.choice(targets)
-            return self.rng.choice(first_actions[target])
+            action = self.rng.choice(first_actions[target])
+            selected = _step(pos, action)
+            if board[selected[0]][selected[1]] == BOMB:
+                # Avoid legal_actions() here: it defensively copies the entire
+                # 17x17 board, while this hot path only needs four neighbours.
+                alternatives = []
+                for alternative in range(4):
+                    nxt = _step(pos, alternative)
+                    if (
+                        _inside(board, nxt)
+                        and board[nxt[0]][nxt[1]] not in (OBSTACLE, BOMB)
+                    ):
+                        alternatives.append(alternative)
+                if alternatives:
+                    action = self.rng.choice(alternatives)
+            return action
 
         cardinal = legal_actions(board, pos, include_stay=False)
         if cardinal == (STAY,):

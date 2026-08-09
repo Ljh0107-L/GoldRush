@@ -935,9 +935,9 @@ class ValidationSuite:
                 "passed": all(target_checks.values()),
                 "targets": NPC_CALIBRATION_TARGETS,
                 "checks": target_checks,
-                "selection": "none; bounded one-knob sweeps did not meet all targets and the landed default was preserved",
+                "selection": "rule-based bomb avoidance retained on corpus evidence; target inertia failed its oracle gate and was not rolled out",
                 "candidate_evidence": str(self.args.npc_report.resolve()),
-                "in_sample_warning": "The sweep used exactly these three synthetic seeds and replay policies; it is not held-out evidence.",
+                "in_sample_warning": "The macro benchmark used exactly these three synthetic seeds and replay policies; it is not held-out evidence.",
             },
             "warning": "Private NPC behavior and fitted generation are not identifiable exactly; deviations are intentionally warnings, not hard failures.",
         }

@@ -30,9 +30,9 @@
             "clean_lifetime_p90_in_range": false,
             "region1_absolute_offset_within_limit": false
           },
-          "in_sample_warning": "The sweep used exactly these three synthetic seeds and replay policies; it is not held-out evidence.",
+          "in_sample_warning": "The macro benchmark used exactly these three synthetic seeds and replay policies; it is not held-out evidence.",
           "passed": false,
-          "selection": "none; bounded one-knob sweeps did not meet all targets and the landed default was preserved",
+          "selection": "rule-based bomb avoidance retained on corpus evidence; target inertia failed its oracle gate and was not rolled out",
           "targets": {
             "clean_lifetime_median_exact": 3,
             "clean_lifetime_p90_inclusive": [
@@ -48,66 +48,66 @@
         },
         "classification": "fitted_warning",
         "comparison_to_truth": {
-          "clean_lifetime_count_delta": 152,
-          "clean_lifetime_mean_delta": -2.0827700223505037,
-          "clean_lifetime_median_delta": 0,
-          "clean_lifetime_p90_delta": -5,
+          "clean_lifetime_count_delta": 43,
+          "clean_lifetime_mean_delta": -1.4250365574533363,
+          "clean_lifetime_median_delta": 0.0,
+          "clean_lifetime_p90_delta": -3,
           "occupancy_delta": [
-            927,
-            -152,
-            -303,
-            -295,
-            -177
+            630,
+            -132,
+            -200,
+            -146,
+            -152
           ],
-          "pickup_mean_delta": 5.1806333333333345,
-          "pickup_median_delta": 6.0,
-          "pickup_p90_delta": 8,
+          "pickup_mean_delta": 4.840633333333335,
+          "pickup_median_delta": 5.0,
+          "pickup_p90_delta": 7,
           "pickup_per_game_delta_against_truth_list_order": [
-            3835,
-            2221,
-            1715
+            3727,
+            1907,
+            1627
           ]
         },
         "synthetic_weak_player_metrics": {
           "clean_positive_cell_lifetime": {
-            "count": 3445,
-            "max": 79,
-            "mean": 4.194484760522497,
-            "median": 3,
+            "count": 3336,
+            "max": 75,
+            "mean": 4.852218225419664,
+            "median": 3.0,
             "min": 1,
-            "p90_nearest_rank": 8
+            "p90_nearest_rank": 10
           },
           "games": 3,
           "npc_pickup_per_game_totals": [
-            9051,
-            9272,
-            8631
+            8943,
+            8958,
+            8543
           ],
           "npc_pickup_per_round": {
             "count": 1500,
-            "max": 77,
-            "mean": 17.969333333333335,
-            "median": 16.0,
+            "max": 82,
+            "mean": 17.629333333333335,
+            "median": 15.0,
             "min": 0,
-            "p90_nearest_rank": 35
+            "p90_nearest_rank": 34
           },
           "npc_start_occupancy_exposures_r1_to_r5": [
-            6601,
-            1127,
-            820,
-            943,
-            1009
+            6304,
+            1147,
+            923,
+            1092,
+            1034
           ],
           "policy": "g0 recorded effective player decisions replayed as two callables",
           "replenished_positive_cell_lifetime": {
-            "count": 149,
-            "max": 45,
-            "mean": 8.651006711409396,
-            "median": 6,
+            "count": 195,
+            "max": 41,
+            "mean": 10.266666666666667,
+            "median": 7,
             "min": 2,
-            "p90_nearest_rank": 17
+            "p90_nearest_rank": 21
           },
-          "right_censored_positive_cells": 27,
+          "right_censored_positive_cells": 38,
           "rounds": 1500,
           "synthetic_seeds": [
             "npc-synthetic-0",
@@ -213,7 +213,7 @@
           ]
         },
         "c_int_size": 4,
-        "elapsed_seconds": 2.2e-05,
+        "elapsed_seconds": 2.1e-05,
         "error": null,
         "expected": {
           "AbiPosition": [
@@ -305,7 +305,7 @@
           460,
           480
         ],
-        "elapsed_seconds": 0.148908,
+        "elapsed_seconds": 0.046691,
         "error": null,
         "expected_bomb_wave_rounds": [
           0,
@@ -335,7 +335,7 @@
           480
         ],
         "illegal_outputs": [],
-        "log_sha256": "76ff90020c1894bf6515a57c68aeaf9ce511cd842a6ad599ba0a9e2b8f4cbf51",
+        "log_sha256": "7a9f6275e3bac954f65e11d5d28bfb56f21961ad470fb034d56c5e1d6ef12fb7",
         "material_balance_failures": [],
         "non_wave_bomb_set_changes": 0,
         "passed": true,
@@ -343,7 +343,7 @@
         "wave_bomb_ineligible_cells": 0
       },
       "generation_residuals_hotspot_and_bomb_eligibility": {
-        "elapsed_seconds": 0.700609,
+        "elapsed_seconds": 0.69282,
         "error": null,
         "passed": true,
         "report": "/Users/bytedance/GoldRush/sim/reports/generation.json",
@@ -373,7 +373,7 @@
         "runtime_unique_bomb_trial_cells": 213
       },
       "map_definitions_and_loading": {
-        "elapsed_seconds": 0.031472,
+        "elapsed_seconds": 0.031915,
         "error": null,
         "maps": {
           "arbitrary_log_line2_loading": {
@@ -413,7 +413,7 @@
         "passed": true
       },
       "mechanical_replay_3x500": {
-        "elapsed_seconds": 1.341196,
+        "elapsed_seconds": 1.293184,
         "error": null,
         "mismatch_examples": [],
         "observed_exact_counts": {
@@ -482,7 +482,7 @@
             "rounds": 24
           }
         },
-        "elapsed_seconds": 14.517976,
+        "elapsed_seconds": 14.485495,
         "error": null,
         "files": [
           "g3.txt",
@@ -498,8 +498,8 @@
           "by_radius": {
             "2": {
               "mismatch_cells": 0,
-              "phase_grids": 207538,
-              "rounds": 103769
+              "phase_grids": 209538,
+              "rounds": 104769
             },
             "4": {
               "mismatch_cells": 0,
@@ -507,10 +507,10 @@
               "rounds": 1731
             }
           },
-          "files": 211,
+          "files": 213,
           "mismatch_cells": 0,
-          "phase_grids": 211000,
-          "rounds": 105500
+          "phase_grids": 213000,
+          "rounds": 106500
         },
         "mismatch_cells": 0,
         "passed": true,
@@ -539,7 +539,7 @@
         }
       },
       "paired_legs_digest_and_seat_swap": {
-        "elapsed_seconds": 8.244354,
+        "elapsed_seconds": 8.547513,
         "error": null,
         "leg_a_b_names": [
           "A",
@@ -555,7 +555,7 @@
       },
       "region_partition_289": {
         "cross_module_disagreements": [],
-        "elapsed_seconds": 0.00024,
+        "elapsed_seconds": 0.000245,
         "error": null,
         "partition_cells": 289,
         "passed": true,
@@ -569,23 +569,23 @@
       },
       "same_seed_identity_and_different_seed_divergence": {
         "different_seed_divergence": true,
-        "different_seed_log_sha256": "f19df148d73484df289d2ade3217ea097f1baa123cff90d0c525a4fb65a7b86b",
-        "elapsed_seconds": 12.278783,
+        "different_seed_log_sha256": "0ced435c40a7fd5b9a144aa5791b952aec2ba8371b2f55c29c2348e9404256ca",
+        "elapsed_seconds": 13.043863,
         "error": null,
         "passed": true,
         "same_seed_byte_identity": true,
-        "same_seed_log_sha256": "76ff90020c1894bf6515a57c68aeaf9ce511cd842a6ad599ba0a9e2b8f4cbf51",
-        "single_game_wall_clock_seconds": 4.123324
+        "same_seed_log_sha256": "7a9f6275e3bac954f65e11d5d28bfb56f21961ad470fb034d56c5e1d6ef12fb7",
+        "single_game_wall_clock_seconds": 4.404817
       },
       "single_game_wall_clock": {
-        "elapsed_seconds": 4e-06,
+        "elapsed_seconds": 7e-06,
         "error": null,
         "note": "Informational benchmark; speed variation is not a fidelity failure.",
         "passed": true,
         "previous_independent_observation_seconds": 4.38,
-        "ratio_to_previous_observation": 0.9414,
+        "ratio_to_previous_observation": 1.0057,
         "rounds": 500,
-        "wall_clock_seconds": 4.123324
+        "wall_clock_seconds": 4.404817
       },
       "snapshots_297x5x6": {
         "absolute_error_by_field": {
@@ -597,7 +597,7 @@
           "occupants": 0
         },
         "comparisons": 8910,
-        "elapsed_seconds": 0.276546,
+        "elapsed_seconds": 0.272853,
         "error": null,
         "exact_by_field": {
           "enter": 1485,
@@ -621,7 +621,7 @@
           "/Users/bytedance/GoldRush/tools/gamelog.py",
           "<temporary-generated-log>"
         ],
-        "elapsed_seconds": 0.079282,
+        "elapsed_seconds": 0.053579,
         "error": null,
         "passed": true,
         "returncode": 0,
