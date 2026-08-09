@@ -1,0 +1,659 @@
+{
+  "fitted_warning": {
+    "checks": {
+      "generation_fit": {
+        "absolute_difference": 0.01192032054005443,
+        "claim": "Sampler hotspot weighting is a descriptive fit, not exact mechanics.",
+        "classification": "fitted_warning",
+        "generated_hotspot_cells": 1735,
+        "generated_outer_cells": 3137,
+        "generated_share": 0.5530761874402296,
+        "seeds": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "truth_share": 0.5411558669001751,
+        "warning": "Deviation is reported and does not affect hard_pass."
+      },
+      "npc_behavior": {
+        "classification": "fitted_warning",
+        "comparison_to_truth": {
+          "clean_lifetime_count_delta": 152,
+          "clean_lifetime_mean_delta": -2.0827700223505037,
+          "clean_lifetime_median_delta": 0,
+          "clean_lifetime_p90_delta": -5,
+          "occupancy_delta": [
+            927,
+            -152,
+            -303,
+            -295,
+            -177
+          ],
+          "pickup_mean_delta": 5.1806333333333345,
+          "pickup_median_delta": 6.0,
+          "pickup_p90_delta": 8,
+          "pickup_per_game_delta_against_truth_list_order": [
+            3835,
+            2221,
+            1715
+          ]
+        },
+        "synthetic_weak_player_metrics": {
+          "clean_positive_cell_lifetime": {
+            "count": 3445,
+            "max": 79,
+            "mean": 4.194484760522497,
+            "median": 3,
+            "min": 1,
+            "p90_nearest_rank": 8
+          },
+          "games": 3,
+          "npc_pickup_per_game_totals": [
+            9051,
+            9272,
+            8631
+          ],
+          "npc_pickup_per_round": {
+            "count": 1500,
+            "max": 77,
+            "mean": 17.969333333333335,
+            "median": 16.0,
+            "min": 0,
+            "p90_nearest_rank": 35
+          },
+          "npc_start_occupancy_exposures_r1_to_r5": [
+            6601,
+            1127,
+            820,
+            943,
+            1009
+          ],
+          "policy": "g0 recorded effective player decisions replayed as two callables",
+          "replenished_positive_cell_lifetime": {
+            "count": 149,
+            "max": 45,
+            "mean": 8.651006711409396,
+            "median": 6,
+            "min": 2,
+            "p90_nearest_rank": 17
+          },
+          "right_censored_positive_cells": 27,
+          "rounds": 1500,
+          "synthetic_seeds": [
+            "npc-synthetic-0",
+            "npc-synthetic-1",
+            "npc-synthetic-2"
+          ]
+        },
+        "truth": {
+          "clean_positive_cell_lifetime": {
+            "count": 3293,
+            "mean": 6.277254782873,
+            "median": 3,
+            "p90_nearest_rank": 13
+          },
+          "infra_strong_player_visible_lifetime": {
+            "median": 2,
+            "p90_nearest_rank": 6
+          },
+          "pickup_per_game_totals": [
+            5216,
+            7051,
+            6916
+          ],
+          "pickup_per_round": {
+            "mean": 12.7887,
+            "median": 10,
+            "p90_nearest_rank": 27
+          },
+          "start_occupancy_exposures_r1_to_r5": [
+            5674,
+            1279,
+            1123,
+            1238,
+            1186
+          ]
+        },
+        "warning": "Private NPC behavior and fitted generation are not identifiable exactly; deviations are intentionally warnings, not hard failures."
+      }
+    },
+    "classification": "non-failing fitted/statistical deviations"
+  },
+  "hard_pass": {
+    "checks": {
+      "abi_size_and_offsets": {
+        "actual": {
+          "AbiPosition": [
+            8,
+            {
+              "col": 4,
+              "row": 0
+            }
+          ],
+          "GameInput": [
+            1444,
+            {
+              "gold_opp": 1184,
+              "grid": 4,
+              "my_units": 1160,
+              "my_units_gold": 1176,
+              "num_visible_npcs": 1204,
+              "round": 0,
+              "snapshot": 1296,
+              "snapshot_valid": 1292,
+              "visible_enemies": 1188,
+              "visible_npcs": 1208
+            }
+          ],
+          "GameOutput": [
+            36,
+            {
+              "actions": 0,
+              "k": 24,
+              "order": 28,
+              "vp": 32
+            }
+          ],
+          "NpcInfo": [
+            12,
+            {
+              "id": 0,
+              "pos": 4
+            }
+          ],
+          "RegionStat": [
+            28,
+            {
+              "enter": 4,
+              "gold_collected": 16,
+              "gold_generated": 12,
+              "gold_remaining": 20,
+              "id": 0,
+              "leave": 8,
+              "occupants": 24
+            }
+          ],
+          "Snapshot": [
+            148,
+            {
+              "regions": 8,
+              "window_begin": 0,
+              "window_end": 4
+            }
+          ]
+        },
+        "c_int_size": 4,
+        "elapsed_seconds": 3.2e-05,
+        "error": null,
+        "expected": {
+          "AbiPosition": [
+            8,
+            {
+              "col": 4,
+              "row": 0
+            }
+          ],
+          "GameInput": [
+            1444,
+            {
+              "gold_opp": 1184,
+              "grid": 4,
+              "my_units": 1160,
+              "my_units_gold": 1176,
+              "num_visible_npcs": 1204,
+              "round": 0,
+              "snapshot": 1296,
+              "snapshot_valid": 1292,
+              "visible_enemies": 1188,
+              "visible_npcs": 1208
+            }
+          ],
+          "GameOutput": [
+            36,
+            {
+              "actions": 0,
+              "k": 24,
+              "order": 28,
+              "vp": 32
+            }
+          ],
+          "NpcInfo": [
+            12,
+            {
+              "id": 0,
+              "pos": 4
+            }
+          ],
+          "RegionStat": [
+            28,
+            {
+              "enter": 4,
+              "gold_collected": 16,
+              "gold_generated": 12,
+              "gold_remaining": 20,
+              "id": 0,
+              "leave": 8,
+              "occupants": 24
+            }
+          ],
+          "Snapshot": [
+            148,
+            {
+              "regions": 8,
+              "window_begin": 0,
+              "window_end": 4
+            }
+          ]
+        },
+        "passed": true
+      },
+      "generated_game_invariants": {
+        "bomb_wave_rounds": [
+          0,
+          20,
+          40,
+          60,
+          80,
+          100,
+          120,
+          140,
+          160,
+          180,
+          200,
+          220,
+          240,
+          260,
+          280,
+          300,
+          320,
+          340,
+          360,
+          380,
+          400,
+          420,
+          440,
+          460,
+          480
+        ],
+        "elapsed_seconds": 0.044489,
+        "error": null,
+        "expected_bomb_wave_rounds": [
+          0,
+          20,
+          40,
+          60,
+          80,
+          100,
+          120,
+          140,
+          160,
+          180,
+          200,
+          220,
+          240,
+          260,
+          280,
+          300,
+          320,
+          340,
+          360,
+          380,
+          400,
+          420,
+          440,
+          460,
+          480
+        ],
+        "illegal_outputs": [],
+        "log_sha256": "76ff90020c1894bf6515a57c68aeaf9ce511cd842a6ad599ba0a9e2b8f4cbf51",
+        "material_balance_failures": [],
+        "non_wave_bomb_set_changes": 0,
+        "passed": true,
+        "rounds": 500,
+        "wave_bomb_ineligible_cells": 0
+      },
+      "generation_residuals_hotspot_and_bomb_eligibility": {
+        "elapsed_seconds": 0.699268,
+        "error": null,
+        "passed": true,
+        "report": "/Users/bytedance/GoldRush/sim/reports/generation.json",
+        "report_residual_and_evidence_assertions": {
+          "all_hotspots_used": true,
+          "bomb_period_20": true,
+          "bomb_waves_75": true,
+          "bombs_on_walls_zero": true,
+          "generation_residuals_all_zero": true,
+          "ground_flow_failures_zero": true,
+          "hotspot_bomb_eligibility_observed": true,
+          "hotspot_observed_618_of_1142": true,
+          "hotspots_declared_traversable_bomb_eligible": true,
+          "negative_generation_deltas_zero": true,
+          "non_wave_bomb_changes_zero": true,
+          "remaining_residuals_all_zero": true,
+          "snapshot_constraints_297x5": true
+        },
+        "runtime_hotspot_trial_cells": 19,
+        "runtime_scenario_eligibility_assertions": {
+          "all_trials_traversable": true,
+          "exactly_25_wave_intents": true,
+          "hotspots_appear_in_unrestricted_bomb_trials": true,
+          "hotspots_are_traversable": true,
+          "no_non_wave_trials": true
+        },
+        "runtime_unique_bomb_trial_cells": 213
+      },
+      "map_definitions_and_loading": {
+        "elapsed_seconds": 0.03001,
+        "error": null,
+        "maps": {
+          "arbitrary_log_line2_loading": {
+            "json_text_and_complete_log_equal": true,
+            "loaded_name_from_complete_log": "g0"
+          },
+          "map1": {
+            "asset_definition_fingerprint": "6289ec69df45ca760a835fc45cfec28a47d78e7d4698ab3980a25c8125981b39",
+            "exact": true,
+            "expected_asset_definition_fingerprint": "6289ec69df45ca760a835fc45cfec28a47d78e7d4698ab3980a25c8125981b39",
+            "hotspots": 20,
+            "limited": false,
+            "open_token_zero": 229,
+            "scenario_canonical_fingerprint": "3e92176b069d45920d185d6dba4c312437094723991aea2abefd9c9e79b342b2",
+            "walls": 40
+          },
+          "map2": {
+            "asset_definition_fingerprint": "923a1d3f3142c90f2a60955a240d237d3a6ed77312b64bf833814ecdcefad455",
+            "exact": true,
+            "expected_asset_definition_fingerprint": "923a1d3f3142c90f2a60955a240d237d3a6ed77312b64bf833814ecdcefad455",
+            "hotspots": 20,
+            "limited": false,
+            "open_token_zero": 245,
+            "scenario_canonical_fingerprint": "a41876b86003c9bb620b502c024c2d6befd8d32580914dc814befa614c52bfa9",
+            "walls": 24
+          },
+          "map3": {
+            "hotspot_metadata": null,
+            "limited": true,
+            "round0_resolved_bombs": 20,
+            "round0_resolved_gold": 1,
+            "runnable_and_limited": true,
+            "scenario_rounds": 500,
+            "walls": 78
+          }
+        },
+        "passed": true
+      },
+      "mechanical_replay_3x500": {
+        "elapsed_seconds": 1.259076,
+        "error": null,
+        "mismatch_examples": [],
+        "observed_exact_counts": {
+          "end_grid_cells": 433500,
+          "end_grids": 1500,
+          "ground_material_balance": 1500,
+          "held_material_balance": 1500,
+          "npc_actions": 10500,
+          "npc_pickup": 10500,
+          "npc_positions": 10500,
+          "player_unit_actions": 6000,
+          "player_unit_gold": 6000,
+          "player_unit_pickup": 6000,
+          "player_unit_positions": 6000,
+          "round_burned": 1500,
+          "rounds": 1500,
+          "trample_arrays": 1500
+        },
+        "passed": true,
+        "per_game": {
+          "g0.txt": {
+            "exact_end_grids": 500,
+            "rounds": 500
+          },
+          "g1.txt": {
+            "exact_end_grids": 500,
+            "rounds": 500
+          },
+          "g2.txt": {
+            "exact_end_grids": 500,
+            "rounds": 500
+          }
+        },
+        "required_exact_counts": {
+          "end_grid_cells": 433500,
+          "end_grids": 1500,
+          "ground_material_balance": 1500,
+          "held_material_balance": 1500,
+          "npc_actions": 10500,
+          "npc_pickup": 10500,
+          "npc_positions": 10500,
+          "player_unit_actions": 6000,
+          "player_unit_gold": 6000,
+          "player_unit_pickup": 6000,
+          "player_unit_positions": 6000,
+          "round_burned": 1500,
+          "rounds": 1500,
+          "trample_arrays": 1500
+        }
+      },
+      "official_filtered_fog_and_visible_arrays": {
+        "by_radius": {
+          "2": {
+            "mismatch_cells": 0,
+            "phase_grids": 6484,
+            "rounds": 3242
+          },
+          "3": {
+            "mismatch_cells": 0,
+            "phase_grids": 1468,
+            "rounds": 734
+          },
+          "4": {
+            "mismatch_cells": 0,
+            "phase_grids": 48,
+            "rounds": 24
+          }
+        },
+        "elapsed_seconds": 13.72198,
+        "error": null,
+        "files": [
+          "g3.txt",
+          "g4.txt",
+          "g5.txt",
+          "g6.txt",
+          "g7.txt",
+          "g8.txt",
+          "g9.txt",
+          "g10.txt"
+        ],
+        "local_filtered_logs": {
+          "by_radius": {
+            "2": {
+              "mismatch_cells": 0,
+              "phase_grids": 201538,
+              "rounds": 100769
+            },
+            "4": {
+              "mismatch_cells": 0,
+              "phase_grids": 3462,
+              "rounds": 1731
+            }
+          },
+          "files": 205,
+          "mismatch_cells": 0,
+          "phase_grids": 205000,
+          "rounds": 102500
+        },
+        "mismatch_cells": 0,
+        "passed": true,
+        "phase_grids": 8000,
+        "rounds": 4000,
+        "visible_array_and_padding_unit_tests": {
+          "filtered_grid_has_no_actor_markers": true,
+          "radius_render_tests": {
+            "2": {
+              "exact": true,
+              "visible_cells": 34
+            },
+            "3": {
+              "exact": true,
+              "visible_cells": 65
+            },
+            "4": {
+              "exact": true,
+              "visible_cells": 105
+            }
+          },
+          "unused_npc_slots_padded": true,
+          "visible_enemy_compaction_and_padding": true,
+          "visible_npc_count": 4,
+          "visible_npc_values_exact": true
+        }
+      },
+      "paired_legs_digest_and_seat_swap": {
+        "elapsed_seconds": 8.373805,
+        "error": null,
+        "leg_a_b_names": [
+          "A",
+          "B"
+        ],
+        "leg_b_a_names": [
+          "B",
+          "A"
+        ],
+        "passed": true,
+        "scenario_digest": "eea958fc2862ac23e44e3928b8c31404d9e53d1036da1d706951a38a36d8e0ac",
+        "seat_swap_exact": true
+      },
+      "region_partition_289": {
+        "cross_module_disagreements": [],
+        "elapsed_seconds": 0.000225,
+        "error": null,
+        "partition_cells": 289,
+        "passed": true,
+        "region_cell_counts_r1_to_r5": [
+          81,
+          52,
+          52,
+          52,
+          52
+        ]
+      },
+      "same_seed_identity_and_different_seed_divergence": {
+        "different_seed_divergence": true,
+        "different_seed_log_sha256": "f19df148d73484df289d2ade3217ea097f1baa123cff90d0c525a4fb65a7b86b",
+        "elapsed_seconds": 12.445318,
+        "error": null,
+        "passed": true,
+        "same_seed_byte_identity": true,
+        "same_seed_log_sha256": "76ff90020c1894bf6515a57c68aeaf9ce511cd842a6ad599ba0a9e2b8f4cbf51",
+        "single_game_wall_clock_seconds": 4.087283
+      },
+      "single_game_wall_clock": {
+        "elapsed_seconds": 6e-06,
+        "error": null,
+        "note": "Informational benchmark; speed variation is not a fidelity failure.",
+        "passed": true,
+        "previous_independent_observation_seconds": 4.38,
+        "ratio_to_previous_observation": 0.9332,
+        "rounds": 500,
+        "wall_clock_seconds": 4.087283
+      },
+      "snapshots_297x5x6": {
+        "absolute_error_by_field": {
+          "enter": 0,
+          "gold_collected": 0,
+          "gold_generated": 0,
+          "gold_remaining": 0,
+          "leave": 0,
+          "occupants": 0
+        },
+        "comparisons": 8910,
+        "elapsed_seconds": 0.263646,
+        "error": null,
+        "exact_by_field": {
+          "enter": 1485,
+          "gold_collected": 1485,
+          "gold_generated": 1485,
+          "gold_remaining": 1485,
+          "leave": 1485,
+          "occupants": 1485
+        },
+        "exact_comparisons": 8910,
+        "fields_per_region": 6,
+        "passed": true,
+        "regions_per_snapshot": 5,
+        "semantics_reused_from": "/Users/bytedance/GoldRush/sim/calibrate_views.py",
+        "snapshots": 297,
+        "window_labels_exact": 297
+      },
+      "unmodified_gamelog_subprocess": {
+        "command": [
+          "/Library/Developer/CommandLineTools/usr/bin/python3",
+          "/Users/bytedance/GoldRush/tools/gamelog.py",
+          "<temporary-generated-log>"
+        ],
+        "elapsed_seconds": 0.056418,
+        "error": null,
+        "passed": true,
+        "returncode": 0,
+        "stderr": "",
+        "stdout_contains_500_rounds": true,
+        "tool_sha256_after": "de35d0ed5815d34de27961823044a91838a5fa41e7be6489f882d663fcaa985f",
+        "tool_sha256_before": "de35d0ed5815d34de27961823044a91838a5fa41e7be6489f882d663fcaa985f",
+        "tool_unmodified": true
+      }
+    },
+    "exit_code_contract": "0 iff all hard deterministic fidelity checks pass; fitted warnings never make exit nonzero",
+    "failures": [],
+    "passed": true
+  },
+  "inputs": {
+    "full_logs": [
+      "/Users/bytedance/GoldRush/logs/gr_data/full/g0.txt",
+      "/Users/bytedance/GoldRush/logs/gr_data/full/g1.txt",
+      "/Users/bytedance/GoldRush/logs/gr_data/full/g2.txt"
+    ],
+    "generation_report": "/Users/bytedance/GoldRush/sim/reports/generation.json",
+    "local_log_dir": "/Users/bytedance/GoldRush/logs",
+    "maps": "/Users/bytedance/GoldRush/sim/maps.json",
+    "mechanics_report": "/Users/bytedance/GoldRush/sim/reports/mechanics.json",
+    "npc_report": "/Users/bytedance/GoldRush/sim/reports/npc.json",
+    "official_filtered_logs": [
+      "/Users/bytedance/GoldRush/logs/gr_data/user/g3.txt",
+      "/Users/bytedance/GoldRush/logs/gr_data/user/g4.txt",
+      "/Users/bytedance/GoldRush/logs/gr_data/user/g5.txt",
+      "/Users/bytedance/GoldRush/logs/gr_data/user/g6.txt",
+      "/Users/bytedance/GoldRush/logs/gr_data/user/g7.txt",
+      "/Users/bytedance/GoldRush/logs/gr_data/user/g8.txt",
+      "/Users/bytedance/GoldRush/logs/gr_data/user/g9.txt",
+      "/Users/bytedance/GoldRush/logs/gr_data/user/g10.txt"
+    ],
+    "visibility_report": "/Users/bytedance/GoldRush/sim/reports/visibility_snapshot.json"
+  },
+  "platform_limited": {
+    "classification": "not attempted on this platform/by scope",
+    "items": [
+      {
+        "available": false,
+        "capability": "official Linux x86_64 strategy .so execution",
+        "classification": "platform_limited",
+        "platform": "Darwin arm64",
+        "reason": "Acceptance explicitly uses built-in/scripted/callable policies on macOS; no .so is loaded."
+      },
+      {
+        "available": false,
+        "capability": "platform submission/network validation",
+        "classification": "platform_limited",
+        "reason": "Deliberately not attempted: suite performs no submissions and no HTTP/network access."
+      }
+    ]
+  },
+  "repository": "/Users/bytedance/GoldRush",
+  "schema_version": 1,
+  "suite": "GoldRush simulator authoritative fidelity validation"
+}

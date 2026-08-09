@@ -1,0 +1,729 @@
+{
+  "full_grid_rendering": {
+    "correct_precedence": {
+      "exact_phase_grids": 3000,
+      "exact_rate": 1.0,
+      "mismatch_cells": 0,
+      "phase_grids": 3000
+    },
+    "marker_alignment": {
+      "-2|player=1|npc=0": 10599,
+      "-4|player=0|npc=1": 17627,
+      "-4|player=1|npc=1": 651
+    },
+    "semantics": {
+      "api_filtered_grid": "pure terrain; entities are separate arrays",
+      "full_replay_grid": "nonzero ground has highest priority; on empty ground draw player=-2, then NPC=-4; NPC overrides a collocated player",
+      "priority_high_to_low": [
+        "nonzero_ground(-1 wall, -3 bomb, positive gold)",
+        "npc(-4)",
+        "player(-2)",
+        "empty(0)"
+      ]
+    },
+    "source": "full logs g0-g2, both start and end grids",
+    "values_observed_at_entity_positions": {
+      "-2": 10599,
+      "-4": 18278,
+      "1": 948,
+      "10": 4,
+      "11": 4,
+      "13": 2,
+      "15": 2,
+      "2": 766,
+      "3": 340,
+      "4": 16,
+      "5": 66,
+      "6": 58,
+      "7": 146,
+      "8": 70,
+      "9": 46
+    },
+    "wrong_player_over_npc_precedence": {
+      "exact_phase_grids": 2391,
+      "exact_rate": 0.797,
+      "mismatch_cells": 651,
+      "phase_grids": 3000,
+      "root_cause": "651 player/NPC collocations are rendered as NPC=-4, not player=-2."
+    }
+  },
+  "inputs": {
+    "full_logs": {
+      "files": 3,
+      "names": [
+        "g0.txt",
+        "g1.txt",
+        "g2.txt"
+      ],
+      "rounds": 1500
+    },
+    "local_filtered_logs": {
+      "delta_from_objective_baseline": 4,
+      "files_discovered": 187,
+      "note": "The analysis is exhaustive over files present at execution time; this workspace contains four more local logs than the stated 183-log baseline.",
+      "objective_baseline_files": 183,
+      "rounds": 93500
+    },
+    "official_filtered_logs": {
+      "files": 8,
+      "names": [
+        "g10.txt",
+        "g3.txt",
+        "g4.txt",
+        "g5.txt",
+        "g6.txt",
+        "g7.txt",
+        "g8.txt",
+        "g9.txt"
+      ],
+      "rounds": 4000
+    }
+  },
+  "map_assets": {
+    "map3_limitation": "Only walls are recoverable from BAKED_W; no log-line-2 bomb-candidate definition is available.",
+    "observed_headers": {
+      "full": {
+        "map1": 3
+      },
+      "local_filtered": {
+        "map1": 142,
+        "map2": 45
+      },
+      "official_filtered": {
+        "map1": 8
+      }
+    },
+    "path": "/Users/bytedance/GoldRush/sim/maps.json",
+    "validation": {
+      "map1": {
+        "computed": {
+          "bomb_candidates": 20,
+          "bomb_candidates_sha256": "be7161597094d3faed3f51ccce0d2096e83a65ca3712077b6b166bf01cf5a7e2",
+          "definition_sha256": "6289ec69df45ca760a835fc45cfec28a47d78e7d4698ab3980a25c8125981b39",
+          "open": 229,
+          "walls": 40,
+          "walls_sha256": "c0aaec277f7737797b2a93b7649636f420bbd52dec677293c033bd8aea63ce69"
+        },
+        "exact": true,
+        "expected": {
+          "bomb_candidates": 20,
+          "bomb_candidates_sha256": "be7161597094d3faed3f51ccce0d2096e83a65ca3712077b6b166bf01cf5a7e2",
+          "definition_sha256": "6289ec69df45ca760a835fc45cfec28a47d78e7d4698ab3980a25c8125981b39",
+          "open": 229,
+          "walls": 40,
+          "walls_sha256": "c0aaec277f7737797b2a93b7649636f420bbd52dec677293c033bd8aea63ce69"
+        },
+        "shape_17x17": true
+      },
+      "map2": {
+        "computed": {
+          "bomb_candidates": 20,
+          "bomb_candidates_sha256": "60f094ffd00cfc682da6e3cf68da6ef8e6c676e315c89a034e0b199b4b843379",
+          "definition_sha256": "923a1d3f3142c90f2a60955a240d237d3a6ed77312b64bf833814ecdcefad455",
+          "open": 245,
+          "walls": 24,
+          "walls_sha256": "1c8ee884315df3ee60f3cfbf5008433b9553cd15463017579f9ae13b79623a97"
+        },
+        "exact": true,
+        "expected": {
+          "bomb_candidates": 20,
+          "bomb_candidates_sha256": "60f094ffd00cfc682da6e3cf68da6ef8e6c676e315c89a034e0b199b4b843379",
+          "definition_sha256": "923a1d3f3142c90f2a60955a240d237d3a6ed77312b64bf833814ecdcefad455",
+          "open": 245,
+          "walls": 24,
+          "walls_sha256": "1c8ee884315df3ee60f3cfbf5008433b9553cd15463017579f9ae13b79623a97"
+        },
+        "shape_17x17": true
+      },
+      "map3": {
+        "computed": {
+          "walls": 78,
+          "walls_sha256": "c5c432003c7a2e4cd3cbc2928a2cd132bed831dc91e126ffc1123af5df2e54ec"
+        },
+        "exact": true,
+        "expected": {
+          "walls": 78,
+          "walls_sha256": "c5c432003c7a2e4cd3cbc2928a2cd132bed831dc91e126ffc1123af5df2e54ec"
+        },
+        "shape_17x17": true
+      }
+    }
+  },
+  "mismatch_summary": {
+    "accepted_semantics": {
+      "full_render_mismatch_cells": 0,
+      "snapshot_field_absolute_error": 0,
+      "visibility_mask_mismatch_cells": 0
+    },
+    "rejected_semantics": {
+      "full_render_player_over_npc_mismatch_cells": 651,
+      "snapshot_alternatives": {
+        "gold_generated_label_aligned_r_minus_5_through_r_minus_1": {
+          "absolute_error": 8981,
+          "region_exact": 1011,
+          "region_exact_rate": 0.6808080808080809,
+          "regions": 1485,
+          "snapshot_exact": 17,
+          "snapshot_exact_rate": 0.05723905723905724,
+          "snapshots": 297
+        },
+        "gold_generated_r_minus_4_through_r_without_initial_bootstrap": {
+          "absolute_error": 182,
+          "region_exact": 1482,
+          "region_exact_rate": 0.997979797979798,
+          "regions": 1485,
+          "snapshot_exact": 294,
+          "snapshot_exact_rate": 0.98989898989899,
+          "snapshots": 297
+        },
+        "gold_remaining_from_end_r_minus_1": {
+          "absolute_error": 6096,
+          "region_exact": 1136,
+          "region_exact_rate": 0.764983164983165,
+          "regions": 1485,
+          "snapshot_exact": 41,
+          "snapshot_exact_rate": 0.13804713804713806,
+          "snapshots": 297
+        },
+        "occupants_players_only": {
+          "absolute_error": 2079,
+          "region_exact": 511,
+          "region_exact_rate": 0.3441077441077441,
+          "regions": 1485,
+          "snapshot_exact": 0,
+          "snapshot_exact_rate": 0.0,
+          "snapshots": 297
+        }
+      }
+    }
+  },
+  "schema_version": 1,
+  "snapshots": {
+    "field_exact_matches": {
+      "enter": {
+        "absolute_error": 0,
+        "region_exact": 1485,
+        "region_exact_rate": 1.0,
+        "regions": 1485,
+        "snapshot_exact": 297,
+        "snapshot_exact_rate": 1.0,
+        "snapshots": 297
+      },
+      "gold_collected": {
+        "absolute_error": 0,
+        "region_exact": 1485,
+        "region_exact_rate": 1.0,
+        "regions": 1485,
+        "snapshot_exact": 297,
+        "snapshot_exact_rate": 1.0,
+        "snapshots": 297
+      },
+      "gold_generated": {
+        "absolute_error": 0,
+        "region_exact": 1485,
+        "region_exact_rate": 1.0,
+        "regions": 1485,
+        "snapshot_exact": 297,
+        "snapshot_exact_rate": 1.0,
+        "snapshots": 297
+      },
+      "gold_remaining": {
+        "absolute_error": 0,
+        "region_exact": 1485,
+        "region_exact_rate": 1.0,
+        "regions": 1485,
+        "snapshot_exact": 297,
+        "snapshot_exact_rate": 1.0,
+        "snapshots": 297
+      },
+      "leave": {
+        "absolute_error": 0,
+        "region_exact": 1485,
+        "region_exact_rate": 1.0,
+        "regions": 1485,
+        "snapshot_exact": 297,
+        "snapshot_exact_rate": 1.0,
+        "snapshots": 297
+      },
+      "occupants": {
+        "absolute_error": 0,
+        "region_exact": 1485,
+        "region_exact_rate": 1.0,
+        "regions": 1485,
+        "snapshot_exact": 297,
+        "snapshot_exact_rate": 1.0,
+        "snapshots": 297
+      }
+    },
+    "gold_accounting_cross_checks": {
+      "negative_gold_deltas_between_previous_end_and_next_start": 0,
+      "per_round_grid_depletion_vs_pickup": {
+        "absolute_error": 0,
+        "exact_rate": 1.0,
+        "exact_rounds": 1500,
+        "rounds": 1500
+      },
+      "snapshot_conservation_exact": 297,
+      "snapshot_conservation_exact_rate": 1.0,
+      "snapshot_conservation_samples": 297
+    },
+    "region_grid": [
+      "22222222222225555",
+      "22222222222225555",
+      "22222222222225555",
+      "22222222222225555",
+      "33331111111115555",
+      "33331111111115555",
+      "33331111111115555",
+      "33331111111115555",
+      "33331111111115555",
+      "33331111111115555",
+      "33331111111115555",
+      "33331111111115555",
+      "33331111111115555",
+      "33334444444444444",
+      "33334444444444444",
+      "33334444444444444",
+      "33334444444444444"
+    ],
+    "regions": {
+      "1": {
+        "cells": 81,
+        "col": [
+          4,
+          12
+        ],
+        "name": "center",
+        "row": [
+          4,
+          12
+        ]
+      },
+      "2": {
+        "cells": 52,
+        "col": [
+          0,
+          12
+        ],
+        "name": "top",
+        "row": [
+          0,
+          3
+        ]
+      },
+      "3": {
+        "cells": 52,
+        "col": [
+          0,
+          3
+        ],
+        "name": "left",
+        "row": [
+          4,
+          16
+        ]
+      },
+      "4": {
+        "cells": 52,
+        "col": [
+          4,
+          16
+        ],
+        "name": "bottom",
+        "row": [
+          13,
+          16
+        ]
+      },
+      "5": {
+        "cells": 52,
+        "col": [
+          13,
+          16
+        ],
+        "name": "right",
+        "row": [
+          0,
+          12
+        ]
+      }
+    },
+    "rejected_alternatives": {
+      "gold_generated_label_aligned_r_minus_5_through_r_minus_1": {
+        "absolute_error": 8981,
+        "region_exact": 1011,
+        "region_exact_rate": 0.6808080808080809,
+        "regions": 1485,
+        "snapshot_exact": 17,
+        "snapshot_exact_rate": 0.05723905723905724,
+        "snapshots": 297
+      },
+      "gold_generated_r_minus_4_through_r_without_initial_bootstrap": {
+        "absolute_error": 182,
+        "region_exact": 1482,
+        "region_exact_rate": 0.997979797979798,
+        "regions": 1485,
+        "snapshot_exact": 294,
+        "snapshot_exact_rate": 0.98989898989899,
+        "snapshots": 297
+      },
+      "gold_remaining_from_end_r_minus_1": {
+        "absolute_error": 6096,
+        "region_exact": 1136,
+        "region_exact_rate": 0.764983164983165,
+        "regions": 1485,
+        "snapshot_exact": 41,
+        "snapshot_exact_rate": 0.13804713804713806,
+        "snapshots": 297
+      },
+      "occupants_players_only": {
+        "absolute_error": 2079,
+        "region_exact": 511,
+        "region_exact_rate": 0.3441077441077441,
+        "regions": 1485,
+        "snapshot_exact": 0,
+        "snapshot_exact_rate": 0.0,
+        "snapshots": 297
+      }
+    },
+    "root_causes": [
+      "The snapshot label excludes r, but gold_generated includes generation at start[r], because remaining is sampled after that generation.",
+      "The first r=5 generated total bootstraps from zero ground and therefore includes starts r=0..5; omitting r=0 fails exactly the first snapshot in each of three logs.",
+      "gold_remaining from end[r-1] misses generation at start[r].",
+      "occupants includes all four player units and all seven NPCs."
+    ],
+    "sample_rounds": "r=5,10,...,495",
+    "sample_state": "start[r], after round-r generation and before any round-r movement",
+    "source": "round-level row.snapshot oracle in g0-g2",
+    "window": {
+      "exact_window_labels": 297,
+      "generated_field": "generation events after the prior sampled state through start[r]: r-4..r; first r=5 bootstrap includes r=0..5 because the prior ground state is zero",
+      "labels": "[r-5,r-1] inclusive",
+      "movement_fields": "enter, leave, and gold_collected aggregate rounds r-5..r-1",
+      "remaining_and_occupants": "sample start[r]",
+      "snapshots": 297,
+      "window_label_exact_rate": 1.0
+    }
+  },
+  "spawn_coordinates": {
+    "full_logs": {
+      "canonical_npcs": {
+        "coordinate": [
+          8,
+          8
+        ],
+        "count": 7
+      },
+      "canonical_players": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          16
+        ],
+        [
+          16,
+          0
+        ],
+        [
+          16,
+          16
+        ]
+      ],
+      "files": 3,
+      "npc_spawn_sets": {
+        "[[8,8],[8,8],[8,8],[8,8],[8,8],[8,8],[8,8]]": 3
+      },
+      "player_spawn_sets": {
+        "[[0,0],[0,16],[16,0],[16,16]]": 3
+      }
+    },
+    "local_filtered_round0_owner": {
+      "files": 187,
+      "owner_ids": {
+        "1": 186,
+        "2": 1
+      },
+      "spawn_pairs": {
+        "[[0,0],[16,16]]": 186,
+        "[[0,16],[16,0]]": 1
+      }
+    },
+    "map_headers": {
+      "map1": 3
+    },
+    "official_filtered_round0_owner": {
+      "files": 8,
+      "owner_ids": {
+        "1": 8
+      },
+      "spawn_pairs": {
+        "[[0,0],[16,16]]": 8
+      }
+    }
+  },
+  "visibility_and_filtered_grid": {
+    "local_filtered": {
+      "files": 187,
+      "filtered_grid_content": {
+        "dynamic_bomb_observations": 378573,
+        "dynamic_bombs_outside_line2_token2": 369939,
+        "entity_marker_cells_minus2_or_minus4": 0,
+        "token2_note": "Line-2 token 2 is retained as map bomb-candidate metadata, not treated as the current-round bomb bitmap; live -3 cells are dynamic and may occur outside token-2 cells.",
+        "visible_static_wall_cell_checks": 1248696,
+        "visible_static_wall_mismatches": 0
+      },
+      "group": "local_game_logs",
+      "map_headers": {
+        "map1": 142,
+        "map2": 45
+      },
+      "owner_ids": {
+        "1": 186,
+        "2": 1
+      },
+      "round0_owner_spawn_pairs": {
+        "[[0,0],[16,16]]": 186,
+        "[[0,16],[16,0]]": 1
+      },
+      "rounds": 93500,
+      "visibility": {
+        "by_radius": {
+          "radius_2": {
+            "actual_visible_cells": 7864576,
+            "exact_phase_grids": 183538,
+            "exact_rate": 1.0,
+            "exact_round_rate": 1.0,
+            "exact_rounds": 91769,
+            "expected_visible_cells": 7864576,
+            "mismatch_cells": 0,
+            "phase_grids": 183538,
+            "rounds": 91769
+          },
+          "radius_4": {
+            "actual_visible_cells": 391062,
+            "exact_phase_grids": 3462,
+            "exact_rate": 1.0,
+            "exact_round_rate": 1.0,
+            "exact_rounds": 1731,
+            "expected_visible_cells": 391062,
+            "mismatch_cells": 0,
+            "phase_grids": 3462,
+            "rounds": 1731
+          }
+        },
+        "edge_clipping": {
+          "radius_2": {
+            "discarded_out_of_bounds_union_cells": 409634,
+            "exact_phase_grids": 39437,
+            "exact_rate": 1.0,
+            "example": {
+              "centers": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  16,
+                  16
+                ]
+              ],
+              "clipped_union_cells": 18,
+              "file": "game_158872.log",
+              "phase": "start",
+              "radius": 2,
+              "round": 0,
+              "unclipped_union_cells": 50
+            },
+            "phase_grids": 39437
+          },
+          "radius_4": {
+            "discarded_out_of_bounds_union_cells": 106458,
+            "exact_phase_grids": 2610,
+            "exact_rate": 1.0,
+            "example": {
+              "centers": [
+                [
+                  0,
+                  2
+                ],
+                [
+                  16,
+                  14
+                ]
+              ],
+              "clipped_union_cells": 70,
+              "file": "game_162570.log",
+              "phase": "start",
+              "radius": 4,
+              "round": 1,
+              "unclipped_union_cells": 162
+            },
+            "phase_grids": 2610
+          }
+        },
+        "formula": "union of both owner-centered Chebyshev squares, inclusive radius, clipped independently to [0,16]^2",
+        "totals": {
+          "exact_phase_grids": 187000,
+          "exact_rate": 1.0,
+          "exact_round_rate": 1.0,
+          "exact_rounds": 93500,
+          "mismatch_cells": 0,
+          "phase_grids": 187000,
+          "rounds": 93500
+        }
+      }
+    },
+    "official_filtered": {
+      "files": 8,
+      "filtered_grid_content": {
+        "dynamic_bomb_observations": 12935,
+        "dynamic_bombs_outside_line2_token2": 12218,
+        "entity_marker_cells_minus2_or_minus4": 0,
+        "token2_note": "Line-2 token 2 is retained as map bomb-candidate metadata, not treated as the current-round bomb bitmap; live -3 cells are dynamic and may occur outside token-2 cells.",
+        "visible_static_wall_cell_checks": 53467,
+        "visible_static_wall_mismatches": 0
+      },
+      "group": "official_filtered_g3_g10",
+      "map_headers": {
+        "map1": 8
+      },
+      "owner_ids": {
+        "1": 8
+      },
+      "round0_owner_spawn_pairs": {
+        "[[0,0],[16,16]]": 8
+      },
+      "rounds": 4000,
+      "visibility": {
+        "by_radius": {
+          "radius_2": {
+            "actual_visible_cells": 262750,
+            "exact_phase_grids": 6484,
+            "exact_rate": 1.0,
+            "exact_round_rate": 1.0,
+            "exact_rounds": 3242,
+            "expected_visible_cells": 262750,
+            "mismatch_cells": 0,
+            "phase_grids": 6484,
+            "rounds": 3242
+          },
+          "radius_3": {
+            "actual_visible_cells": 105402,
+            "exact_phase_grids": 1468,
+            "exact_rate": 1.0,
+            "exact_round_rate": 1.0,
+            "exact_rounds": 734,
+            "expected_visible_cells": 105402,
+            "mismatch_cells": 0,
+            "phase_grids": 1468,
+            "rounds": 734
+          },
+          "radius_4": {
+            "actual_visible_cells": 5372,
+            "exact_phase_grids": 48,
+            "exact_rate": 1.0,
+            "exact_round_rate": 1.0,
+            "exact_rounds": 24,
+            "expected_visible_cells": 5372,
+            "mismatch_cells": 0,
+            "phase_grids": 48,
+            "rounds": 24
+          }
+        },
+        "edge_clipping": {
+          "radius_2": {
+            "discarded_out_of_bounds_union_cells": 52634,
+            "exact_phase_grids": 4461,
+            "exact_rate": 1.0,
+            "example": {
+              "centers": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  16,
+                  16
+                ]
+              ],
+              "clipped_union_cells": 18,
+              "file": "g10.txt",
+              "phase": "start",
+              "radius": 2,
+              "round": 0,
+              "unclipped_union_cells": 50
+            },
+            "phase_grids": 4461
+          },
+          "radius_3": {
+            "discarded_out_of_bounds_union_cells": 33120,
+            "exact_phase_grids": 1267,
+            "exact_rate": 1.0,
+            "example": {
+              "centers": [
+                [
+                  1,
+                  1
+                ],
+                [
+                  16,
+                  15
+                ]
+              ],
+              "clipped_union_cells": 45,
+              "file": "g10.txt",
+              "phase": "start",
+              "radius": 3,
+              "round": 6,
+              "unclipped_union_cells": 98
+            },
+            "phase_grids": 1267
+          },
+          "radius_4": {
+            "discarded_out_of_bounds_union_cells": 369,
+            "exact_phase_grids": 17,
+            "exact_rate": 1.0,
+            "example": {
+              "centers": [
+                [
+                  8,
+                  13
+                ],
+                [
+                  5,
+                  8
+                ]
+              ],
+              "clipped_union_cells": 129,
+              "file": "g3.txt",
+              "phase": "start",
+              "radius": 4,
+              "round": 120,
+              "unclipped_union_cells": 138
+            },
+            "phase_grids": 17
+          }
+        },
+        "formula": "union of both owner-centered Chebyshev squares, inclusive radius, clipped independently to [0,16]^2",
+        "totals": {
+          "exact_phase_grids": 8000,
+          "exact_rate": 1.0,
+          "exact_round_rate": 1.0,
+          "exact_rounds": 4000,
+          "mismatch_cells": 0,
+          "phase_grids": 8000,
+          "rounds": 4000
+        }
+      }
+    },
+    "semantics": [
+      "Use the current phase's two owner positions: start positions for start.grid and end positions for end.grid.",
+      "Visibility is a union, not a sum: overlap cells appear once.",
+      "Clip each Chebyshev square to rows/columns 0..16; there is no wraparound.",
+      "The round's start.vision_r applies to both start and end replay grids."
+    ]
+  }
+}

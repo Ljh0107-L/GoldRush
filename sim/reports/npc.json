@@ -1,0 +1,1993 @@
+{
+  "baseline_definitions": {
+    "cross_turn_persistence": "Use the same NPC previous logged final action for all three current slots while legal; causal teacher-forced history, random fallback in round 0 or when blocked.",
+    "gold_distance4_fitted": "Implemented NPCModel: each slot maximizes reachable gold / BFS_distance^4, samples shortest-path ties, applies 65% pickup to a private board copy, and replans.",
+    "gold_seeking_global_highest": "Replan each slot toward the globally highest reachable positive cell; nearest then RNG ties.",
+    "highest_local_gold_r3": "Replan each slot toward the highest reachable gold within BFS distance 3; nearest then RNG ties; random move fallback.",
+    "nearest_local_gold_r3": "Replan each slot toward the nearest reachable gold within BFS distance 3; higher value then RNG ties; random move fallback.",
+    "uniform_legal_random": "Each slot samples uniformly from all currently legal cardinal moves plus stay.",
+    "uniform_moving_random": "Each slot samples uniformly from legal cardinal moves; stays only if trapped.",
+    "within_turn_persistence": "Sample the first legal cardinal move, then repeat it while legal; resample only when blocked."
+  },
+  "calibration_results": {
+    "cross_turn_persistence": {
+      "action_hits": 9598,
+      "action_hits_by_slot_1_to_3": [
+        3625,
+        3091,
+        2882
+      ],
+      "action_slots": 31500,
+      "by_game": {
+        "g0": {
+          "action_accuracy": 0.296,
+          "action_hits": 3108,
+          "action_slots": 10500,
+          "full_turn_accuracy": 0.070285714286,
+          "full_turn_hits": 246,
+          "npc_turns": 3500,
+          "teacher_forced_predicted_pickup": 2870
+        },
+        "g1": {
+          "action_accuracy": 0.303047619048,
+          "action_hits": 3182,
+          "action_slots": 10500,
+          "full_turn_accuracy": 0.076285714286,
+          "full_turn_hits": 267,
+          "npc_turns": 3500,
+          "teacher_forced_predicted_pickup": 3590
+        },
+        "g2": {
+          "action_accuracy": 0.315047619048,
+          "action_hits": 3308,
+          "action_slots": 10500,
+          "full_turn_accuracy": 0.081714285714,
+          "full_turn_hits": 286,
+          "npc_turns": 3500,
+          "teacher_forced_predicted_pickup": 3921
+        }
+      },
+      "exact_action_accuracy": 0.304698412698,
+      "full_three_action_turn_accuracy": 0.076095238095,
+      "full_three_action_turn_hits": 799,
+      "npc_turns": 10500,
+      "teacher_forced_predicted_pickup_proxy": 10381
+    },
+    "gold_distance4_fitted": {
+      "action_hits": 12192,
+      "action_hits_by_slot_1_to_3": [
+        4692,
+        3927,
+        3573
+      ],
+      "action_slots": 31500,
+      "by_game": {
+        "g0": {
+          "action_accuracy": 0.379619047619,
+          "action_hits": 3986,
+          "action_slots": 10500,
+          "full_turn_accuracy": 0.138285714286,
+          "full_turn_hits": 484,
+          "npc_turns": 3500,
+          "teacher_forced_predicted_pickup": 8783
+        },
+        "g1": {
+          "action_accuracy": 0.395619047619,
+          "action_hits": 4154,
+          "action_slots": 10500,
+          "full_turn_accuracy": 0.146285714286,
+          "full_turn_hits": 512,
+          "npc_turns": 3500,
+          "teacher_forced_predicted_pickup": 11472
+        },
+        "g2": {
+          "action_accuracy": 0.385904761905,
+          "action_hits": 4052,
+          "action_slots": 10500,
+          "full_turn_accuracy": 0.140571428571,
+          "full_turn_hits": 492,
+          "npc_turns": 3500,
+          "teacher_forced_predicted_pickup": 11822
+        }
+      },
+      "exact_action_accuracy": 0.387047619048,
+      "full_three_action_turn_accuracy": 0.141714285714,
+      "full_three_action_turn_hits": 1488,
+      "npc_turns": 10500,
+      "teacher_forced_predicted_pickup_proxy": 32077
+    },
+    "gold_seeking_global_highest": {
+      "action_hits": 10623,
+      "action_hits_by_slot_1_to_3": [
+        3953,
+        3466,
+        3204
+      ],
+      "action_slots": 31500,
+      "by_game": {
+        "g0": {
+          "action_accuracy": 0.327619047619,
+          "action_hits": 3440,
+          "action_slots": 10500,
+          "full_turn_accuracy": 0.095428571429,
+          "full_turn_hits": 334,
+          "npc_turns": 3500,
+          "teacher_forced_predicted_pickup": 4078
+        },
+        "g1": {
+          "action_accuracy": 0.347904761905,
+          "action_hits": 3653,
+          "action_slots": 10500,
+          "full_turn_accuracy": 0.101142857143,
+          "full_turn_hits": 354,
+          "npc_turns": 3500,
+          "teacher_forced_predicted_pickup": 5315
+        },
+        "g2": {
+          "action_accuracy": 0.33619047619,
+          "action_hits": 3530,
+          "action_slots": 10500,
+          "full_turn_accuracy": 0.102285714286,
+          "full_turn_hits": 358,
+          "npc_turns": 3500,
+          "teacher_forced_predicted_pickup": 5444
+        }
+      },
+      "exact_action_accuracy": 0.337238095238,
+      "full_three_action_turn_accuracy": 0.099619047619,
+      "full_three_action_turn_hits": 1046,
+      "npc_turns": 10500,
+      "teacher_forced_predicted_pickup_proxy": 14837
+    },
+    "highest_local_gold_r3": {
+      "action_hits": 11234,
+      "action_hits_by_slot_1_to_3": [
+        4297,
+        3614,
+        3323
+      ],
+      "action_slots": 31500,
+      "by_game": {
+        "g0": {
+          "action_accuracy": 0.341619047619,
+          "action_hits": 3587,
+          "action_slots": 10500,
+          "full_turn_accuracy": 0.11,
+          "full_turn_hits": 385,
+          "npc_turns": 3500,
+          "teacher_forced_predicted_pickup": 9024
+        },
+        "g1": {
+          "action_accuracy": 0.362,
+          "action_hits": 3801,
+          "action_slots": 10500,
+          "full_turn_accuracy": 0.121142857143,
+          "full_turn_hits": 424,
+          "npc_turns": 3500,
+          "teacher_forced_predicted_pickup": 11766
+        },
+        "g2": {
+          "action_accuracy": 0.366285714286,
+          "action_hits": 3846,
+          "action_slots": 10500,
+          "full_turn_accuracy": 0.128857142857,
+          "full_turn_hits": 451,
+          "npc_turns": 3500,
+          "teacher_forced_predicted_pickup": 12113
+        }
+      },
+      "exact_action_accuracy": 0.356634920635,
+      "full_three_action_turn_accuracy": 0.12,
+      "full_three_action_turn_hits": 1260,
+      "npc_turns": 10500,
+      "teacher_forced_predicted_pickup_proxy": 32903
+    },
+    "nearest_local_gold_r3": {
+      "action_hits": 11087,
+      "action_hits_by_slot_1_to_3": [
+        4343,
+        3537,
+        3207
+      ],
+      "action_slots": 31500,
+      "by_game": {
+        "g0": {
+          "action_accuracy": 0.338476190476,
+          "action_hits": 3554,
+          "action_slots": 10500,
+          "full_turn_accuracy": 0.101142857143,
+          "full_turn_hits": 354,
+          "npc_turns": 3500,
+          "teacher_forced_predicted_pickup": 8659
+        },
+        "g1": {
+          "action_accuracy": 0.364476190476,
+          "action_hits": 3827,
+          "action_slots": 10500,
+          "full_turn_accuracy": 0.121142857143,
+          "full_turn_hits": 424,
+          "npc_turns": 3500,
+          "teacher_forced_predicted_pickup": 11391
+        },
+        "g2": {
+          "action_accuracy": 0.352952380952,
+          "action_hits": 3706,
+          "action_slots": 10500,
+          "full_turn_accuracy": 0.112285714286,
+          "full_turn_hits": 393,
+          "npc_turns": 3500,
+          "teacher_forced_predicted_pickup": 11730
+        }
+      },
+      "exact_action_accuracy": 0.351968253968,
+      "full_three_action_turn_accuracy": 0.111523809524,
+      "full_three_action_turn_hits": 1171,
+      "npc_turns": 10500,
+      "teacher_forced_predicted_pickup_proxy": 31780
+    },
+    "uniform_legal_random": {
+      "action_hits": 6737,
+      "action_hits_by_slot_1_to_3": [
+        2562,
+        2147,
+        2028
+      ],
+      "action_slots": 31500,
+      "by_game": {
+        "g0": {
+          "action_accuracy": 0.225333333333,
+          "action_hits": 2366,
+          "action_slots": 10500,
+          "full_turn_accuracy": 0.017428571429,
+          "full_turn_hits": 61,
+          "npc_turns": 3500,
+          "teacher_forced_predicted_pickup": 1790
+        },
+        "g1": {
+          "action_accuracy": 0.202761904762,
+          "action_hits": 2129,
+          "action_slots": 10500,
+          "full_turn_accuracy": 0.012857142857,
+          "full_turn_hits": 45,
+          "npc_turns": 3500,
+          "teacher_forced_predicted_pickup": 2410
+        },
+        "g2": {
+          "action_accuracy": 0.213523809524,
+          "action_hits": 2242,
+          "action_slots": 10500,
+          "full_turn_accuracy": 0.016857142857,
+          "full_turn_hits": 59,
+          "npc_turns": 3500,
+          "teacher_forced_predicted_pickup": 2727
+        }
+      },
+      "exact_action_accuracy": 0.213873015873,
+      "full_three_action_turn_accuracy": 0.015714285714,
+      "full_three_action_turn_hits": 165,
+      "npc_turns": 10500,
+      "teacher_forced_predicted_pickup_proxy": 6927
+    },
+    "uniform_moving_random": {
+      "action_hits": 8498,
+      "action_hits_by_slot_1_to_3": [
+        3250,
+        2631,
+        2617
+      ],
+      "action_slots": 31500,
+      "by_game": {
+        "g0": {
+          "action_accuracy": 0.27180952381,
+          "action_hits": 2854,
+          "action_slots": 10500,
+          "full_turn_accuracy": 0.028285714286,
+          "full_turn_hits": 99,
+          "npc_turns": 3500,
+          "teacher_forced_predicted_pickup": 2054
+        },
+        "g1": {
+          "action_accuracy": 0.267904761905,
+          "action_hits": 2813,
+          "action_slots": 10500,
+          "full_turn_accuracy": 0.026,
+          "full_turn_hits": 91,
+          "npc_turns": 3500,
+          "teacher_forced_predicted_pickup": 2637
+        },
+        "g2": {
+          "action_accuracy": 0.269619047619,
+          "action_hits": 2831,
+          "action_slots": 10500,
+          "full_turn_accuracy": 0.033714285714,
+          "full_turn_hits": 118,
+          "npc_turns": 3500,
+          "teacher_forced_predicted_pickup": 2715
+        }
+      },
+      "exact_action_accuracy": 0.269777777778,
+      "full_three_action_turn_accuracy": 0.029333333333,
+      "full_three_action_turn_hits": 308,
+      "npc_turns": 10500,
+      "teacher_forced_predicted_pickup_proxy": 7406
+    },
+    "within_turn_persistence": {
+      "action_hits": 8956,
+      "action_hits_by_slot_1_to_3": [
+        3293,
+        2902,
+        2761
+      ],
+      "action_slots": 31500,
+      "by_game": {
+        "g0": {
+          "action_accuracy": 0.28019047619,
+          "action_hits": 2942,
+          "action_slots": 10500,
+          "full_turn_accuracy": 0.065714285714,
+          "full_turn_hits": 230,
+          "npc_turns": 3500,
+          "teacher_forced_predicted_pickup": 2172
+        },
+        "g1": {
+          "action_accuracy": 0.286285714286,
+          "action_hits": 3006,
+          "action_slots": 10500,
+          "full_turn_accuracy": 0.068857142857,
+          "full_turn_hits": 241,
+          "npc_turns": 3500,
+          "teacher_forced_predicted_pickup": 2661
+        },
+        "g2": {
+          "action_accuracy": 0.286476190476,
+          "action_hits": 3008,
+          "action_slots": 10500,
+          "full_turn_accuracy": 0.068285714286,
+          "full_turn_hits": 239,
+          "npc_turns": 3500,
+          "teacher_forced_predicted_pickup": 2817
+        }
+      },
+      "exact_action_accuracy": 0.284317460317,
+      "full_three_action_turn_accuracy": 0.067619047619,
+      "full_three_action_turn_hits": 710,
+      "npc_turns": 10500,
+      "teacher_forced_predicted_pickup_proxy": 7650
+    }
+  },
+  "conclusion": "The private NPC policy is not exactly identifiable from three stochastic logs. gold_distance4_fitted is selected as the best simple, runnable approximation among the disclosed candidates by pooled exact action accuracy. This is in-sample calibration, not a held-out or official-policy claim.",
+  "corpus": {
+    "g0": {
+      "bytes": 1751697,
+      "path": "logs/gr_data/full/g0.txt",
+      "rounds": 500,
+      "sha256": "f887a844feceba4a983875211b023b176ea680e4adc996aec54846fcea645b12"
+    },
+    "g1": {
+      "bytes": 1747022,
+      "path": "logs/gr_data/full/g1.txt",
+      "rounds": 500,
+      "sha256": "302afccf349fe85eae283cb85b0daa6c341dd07aae864b8acee31e2fc03b96f8"
+    },
+    "g2": {
+      "bytes": 1746578,
+      "path": "logs/gr_data/full/g2.txt",
+      "rounds": 500,
+      "sha256": "8090d379ad1a4cbc898a41952338c5bedb4b2915c9bff046777094ac2bd4acd1"
+    }
+  },
+  "coverage": {
+    "action_slots": 31500,
+    "all_turns_evaluated": true,
+    "games": 3,
+    "npc_turns": 10500,
+    "rounds": 1500,
+    "sampling_or_exclusions": null
+  },
+  "dispatch_order_distribution": {
+    "by_game": {
+      "g0": {
+        "first_player_counts": {
+          "1": 243,
+          "2": 257
+        },
+        "maximum_permutation_frequency": 3,
+        "npc_rank_counts_rows_npc_columns_rank_1_to_7": {
+          "-1": [
+            68,
+            75,
+            86,
+            67,
+            69,
+            62,
+            73
+          ],
+          "-2": [
+            79,
+            60,
+            73,
+            74,
+            70,
+            72,
+            72
+          ],
+          "-3": [
+            79,
+            59,
+            64,
+            70,
+            80,
+            78,
+            70
+          ],
+          "-4": [
+            89,
+            59,
+            63,
+            84,
+            69,
+            72,
+            64
+          ],
+          "-5": [
+            63,
+            83,
+            74,
+            79,
+            76,
+            57,
+            68
+          ],
+          "-6": [
+            55,
+            82,
+            71,
+            64,
+            76,
+            76,
+            76
+          ],
+          "-7": [
+            67,
+            82,
+            69,
+            62,
+            60,
+            83,
+            77
+          ]
+        },
+        "unique_npc_permutations_of_500": 469
+      },
+      "g1": {
+        "first_player_counts": {
+          "2": 500
+        },
+        "maximum_permutation_frequency": 5,
+        "npc_rank_counts_rows_npc_columns_rank_1_to_7": {
+          "-1": [
+            71,
+            59,
+            63,
+            82,
+            70,
+            91,
+            64
+          ],
+          "-2": [
+            73,
+            77,
+            62,
+            67,
+            87,
+            66,
+            68
+          ],
+          "-3": [
+            65,
+            77,
+            86,
+            78,
+            67,
+            65,
+            62
+          ],
+          "-4": [
+            66,
+            76,
+            73,
+            68,
+            69,
+            71,
+            77
+          ],
+          "-5": [
+            71,
+            80,
+            62,
+            69,
+            71,
+            61,
+            86
+          ],
+          "-6": [
+            64,
+            69,
+            91,
+            55,
+            65,
+            79,
+            77
+          ],
+          "-7": [
+            90,
+            62,
+            63,
+            81,
+            71,
+            67,
+            66
+          ]
+        },
+        "unique_npc_permutations_of_500": 477
+      },
+      "g2": {
+        "first_player_counts": {
+          "2": 500
+        },
+        "maximum_permutation_frequency": 3,
+        "npc_rank_counts_rows_npc_columns_rank_1_to_7": {
+          "-1": [
+            69,
+            78,
+            61,
+            80,
+            82,
+            69,
+            61
+          ],
+          "-2": [
+            60,
+            78,
+            71,
+            70,
+            74,
+            69,
+            78
+          ],
+          "-3": [
+            75,
+            69,
+            69,
+            68,
+            64,
+            75,
+            80
+          ],
+          "-4": [
+            72,
+            68,
+            66,
+            83,
+            66,
+            82,
+            63
+          ],
+          "-5": [
+            79,
+            72,
+            78,
+            52,
+            75,
+            67,
+            77
+          ],
+          "-6": [
+            77,
+            72,
+            71,
+            74,
+            74,
+            59,
+            73
+          ],
+          "-7": [
+            68,
+            63,
+            84,
+            73,
+            65,
+            79,
+            68
+          ]
+        },
+        "unique_npc_permutations_of_500": 472
+      }
+    },
+    "interpretation": "Rank 1..7 is NPC position between the two players in end.dispatch_order. Rows sum to 1500 pooled or 500 per game.",
+    "pooled_npc_rank_counts_rows_npc_columns_rank_1_to_7": {
+      "-1": [
+        208,
+        212,
+        210,
+        229,
+        221,
+        222,
+        198
+      ],
+      "-2": [
+        212,
+        215,
+        206,
+        211,
+        231,
+        207,
+        218
+      ],
+      "-3": [
+        219,
+        205,
+        219,
+        216,
+        211,
+        218,
+        212
+      ],
+      "-4": [
+        227,
+        203,
+        202,
+        235,
+        204,
+        225,
+        204
+      ],
+      "-5": [
+        213,
+        235,
+        214,
+        200,
+        222,
+        185,
+        231
+      ],
+      "-6": [
+        196,
+        223,
+        233,
+        193,
+        215,
+        214,
+        226
+      ],
+      "-7": [
+        225,
+        207,
+        216,
+        216,
+        196,
+        229,
+        211
+      ]
+    }
+  },
+  "excluded_hypotheses": [
+    {
+      "hypothesis": "Uniform legal random including stay",
+      "reason": "Evaluated, but only 6737/31500 exact slots and 165/10500 exact triples."
+    },
+    {
+      "hypothesis": "Uniform random cardinal movement",
+      "reason": "Evaluated, but only 8498/31500 slots; removing stay helps only because observed stay is uncommon."
+    },
+    {
+      "hypothesis": "Pure within-turn directional persistence",
+      "reason": "Observed adjacent repeats are 8228/21000, but the runnable baseline reaches only 8956/31500 slots."
+    },
+    {
+      "hypothesis": "Cross-turn persistence",
+      "reason": "Observed previous-last/current-first repeats are 2523/10479, near a four-direction chance level; baseline is below gold-seeking at 9598/31500."
+    },
+    {
+      "hypothesis": "Always choose globally highest gold",
+      "reason": "Evaluated global-highest baseline reaches 10623/31500, below local and distance-weighted policies."
+    },
+    {
+      "hypothesis": "NPC-id-specific tables or memorized trajectories",
+      "reason": "Rejected as unjustified leakage: only three games are available, IDs show near-uniform dispatch ranks, and an engine approximation should operate on unseen states."
+    },
+    {
+      "hypothesis": "Replay lookup keyed by log state",
+      "reason": "Explicitly excluded as data leakage and not a runnable policy approximation."
+    }
+  ],
+  "gold_positive_cell_episode_lifetime": {
+    "by_game": {
+      "g0": {
+        "completed_all_episodes": {
+          "count": 1213,
+          "max": 124,
+          "mean": 6.459192085738,
+          "median": 3,
+          "min": 1,
+          "p90_nearest_rank": 14
+        },
+        "completed_replenished_episodes": {
+          "count": 72,
+          "max": 116,
+          "mean": 16.180555555556,
+          "median": 8.0,
+          "min": 2,
+          "p90_nearest_rank": 38
+        },
+        "completed_unreplenished_episodes": {
+          "count": 1141,
+          "max": 124,
+          "mean": 5.845749342682,
+          "median": 3,
+          "min": 1,
+          "p90_nearest_rank": 12
+        },
+        "new_positive_cell_episodes": 1225,
+        "positive_delta_cells": 1304,
+        "replenishment_positive_deltas": 79,
+        "right_censored_episode_count": 12
+      },
+      "g1": {
+        "completed_all_episodes": {
+          "count": 1203,
+          "max": 199,
+          "mean": 7.19285120532,
+          "median": 4,
+          "min": 1,
+          "p90_nearest_rank": 15
+        },
+        "completed_replenished_episodes": {
+          "count": 96,
+          "max": 94,
+          "mean": 15.552083333333,
+          "median": 10.0,
+          "min": 2,
+          "p90_nearest_rank": 35
+        },
+        "completed_unreplenished_episodes": {
+          "count": 1107,
+          "max": 199,
+          "mean": 6.46793134598,
+          "median": 3,
+          "min": 1,
+          "p90_nearest_rank": 13
+        },
+        "new_positive_cell_episodes": 1216,
+        "positive_delta_cells": 1326,
+        "replenishment_positive_deltas": 110,
+        "right_censored_episode_count": 13
+      },
+      "g2": {
+        "completed_all_episodes": {
+          "count": 1143,
+          "max": 209,
+          "mean": 7.853893263342,
+          "median": 4,
+          "min": 1,
+          "p90_nearest_rank": 15
+        },
+        "completed_replenished_episodes": {
+          "count": 98,
+          "max": 209,
+          "mean": 21.795918367347,
+          "median": 9.0,
+          "min": 2,
+          "p90_nearest_rank": 78
+        },
+        "completed_unreplenished_episodes": {
+          "count": 1045,
+          "max": 112,
+          "mean": 6.546411483254,
+          "median": 4,
+          "min": 1,
+          "p90_nearest_rank": 14
+        },
+        "new_positive_cell_episodes": 1158,
+        "positive_delta_cells": 1273,
+        "replenishment_positive_deltas": 115,
+        "right_censored_episode_count": 15
+      }
+    },
+    "definition": "An episode starts when a cell changes from non-positive at the previous end to positive at the current start. Lifetime is clear_round-start_round+1, so generation and clearance in one round has lifetime 1. A positive delta on an already-positive cell marks replenishment. Episodes still positive after round 499 are right-censored and excluded from completed-lifetime summaries.",
+    "limitation": "The 3293 completed unreplenished episodes are the cleanest deposit-lifetime sample. The 266 completed replenished episodes measure cell-episode persistence, not lifetime of either merged generation cohort. Censoring makes naive completed-only means downward-biased for the longest-lived episodes.",
+    "pooled_completed_all_episodes": {
+      "count": 3559,
+      "histogram": {
+        "1": 715,
+        "10": 68,
+        "103": 1,
+        "109": 2,
+        "11": 70,
+        "112": 1,
+        "113": 1,
+        "116": 1,
+        "12": 71,
+        "124": 1,
+        "13": 40,
+        "139": 1,
+        "14": 41,
+        "146": 1,
+        "149": 1,
+        "15": 37,
+        "16": 29,
+        "17": 18,
+        "170": 1,
+        "18": 25,
+        "19": 18,
+        "199": 1,
+        "2": 579,
+        "20": 20,
+        "209": 1,
+        "21": 15,
+        "22": 14,
+        "23": 10,
+        "24": 6,
+        "25": 6,
+        "26": 11,
+        "27": 2,
+        "28": 9,
+        "29": 5,
+        "3": 452,
+        "30": 10,
+        "31": 11,
+        "32": 8,
+        "33": 5,
+        "34": 12,
+        "35": 8,
+        "36": 6,
+        "37": 5,
+        "38": 5,
+        "39": 2,
+        "4": 323,
+        "40": 5,
+        "41": 3,
+        "42": 4,
+        "43": 1,
+        "44": 3,
+        "45": 2,
+        "46": 5,
+        "47": 2,
+        "48": 2,
+        "49": 2,
+        "5": 275,
+        "50": 3,
+        "51": 2,
+        "52": 1,
+        "54": 2,
+        "56": 1,
+        "58": 3,
+        "6": 196,
+        "60": 2,
+        "61": 1,
+        "64": 2,
+        "7": 157,
+        "71": 1,
+        "72": 1,
+        "78": 3,
+        "8": 103,
+        "80": 1,
+        "81": 1,
+        "83": 1,
+        "85": 1,
+        "88": 1,
+        "89": 2,
+        "9": 97,
+        "94": 1,
+        "96": 1,
+        "98": 2
+      },
+      "max": 209,
+      "mean": 7.15509974712,
+      "median": 4,
+      "min": 1,
+      "p90_nearest_rank": 15
+    },
+    "pooled_completed_replenished_episodes": {
+      "count": 266,
+      "histogram": {
+        "10": 12,
+        "103": 1,
+        "11": 7,
+        "113": 1,
+        "116": 1,
+        "12": 11,
+        "13": 5,
+        "139": 1,
+        "14": 7,
+        "146": 1,
+        "149": 1,
+        "15": 5,
+        "16": 7,
+        "17": 3,
+        "18": 4,
+        "19": 5,
+        "2": 15,
+        "20": 3,
+        "209": 1,
+        "21": 3,
+        "23": 2,
+        "24": 1,
+        "26": 2,
+        "28": 3,
+        "3": 16,
+        "30": 2,
+        "31": 1,
+        "32": 2,
+        "33": 1,
+        "34": 3,
+        "35": 3,
+        "36": 1,
+        "37": 1,
+        "38": 3,
+        "39": 2,
+        "4": 21,
+        "41": 1,
+        "42": 2,
+        "46": 2,
+        "47": 1,
+        "48": 1,
+        "5": 25,
+        "52": 1,
+        "56": 1,
+        "58": 1,
+        "6": 24,
+        "60": 1,
+        "64": 2,
+        "7": 15,
+        "72": 1,
+        "78": 1,
+        "8": 12,
+        "89": 2,
+        "9": 13,
+        "94": 1,
+        "96": 1
+      },
+      "max": 209,
+      "mean": 18.022556390977,
+      "median": 9.0,
+      "min": 2,
+      "p90_nearest_rank": 39
+    },
+    "pooled_completed_unreplenished_episodes": {
+      "count": 3293,
+      "histogram": {
+        "1": 715,
+        "10": 56,
+        "109": 2,
+        "11": 63,
+        "112": 1,
+        "12": 60,
+        "124": 1,
+        "13": 35,
+        "14": 34,
+        "15": 32,
+        "16": 22,
+        "17": 15,
+        "170": 1,
+        "18": 21,
+        "19": 13,
+        "199": 1,
+        "2": 564,
+        "20": 17,
+        "21": 12,
+        "22": 14,
+        "23": 8,
+        "24": 5,
+        "25": 6,
+        "26": 9,
+        "27": 2,
+        "28": 6,
+        "29": 5,
+        "3": 436,
+        "30": 8,
+        "31": 10,
+        "32": 6,
+        "33": 4,
+        "34": 9,
+        "35": 5,
+        "36": 5,
+        "37": 4,
+        "38": 2,
+        "4": 302,
+        "40": 5,
+        "41": 2,
+        "42": 2,
+        "43": 1,
+        "44": 3,
+        "45": 2,
+        "46": 3,
+        "47": 1,
+        "48": 1,
+        "49": 2,
+        "5": 250,
+        "50": 3,
+        "51": 2,
+        "54": 2,
+        "58": 2,
+        "6": 172,
+        "60": 1,
+        "61": 1,
+        "7": 142,
+        "71": 1,
+        "78": 2,
+        "8": 91,
+        "80": 1,
+        "81": 1,
+        "83": 1,
+        "85": 1,
+        "88": 1,
+        "9": 84,
+        "98": 2
+      },
+      "max": 199,
+      "mean": 6.277254782873,
+      "median": 3,
+      "min": 1,
+      "p90_nearest_rank": 13
+    },
+    "pooled_counts": {
+      "completed_episodes": 3559,
+      "new_positive_cell_episodes": 3599,
+      "positive_delta_cells": 3903,
+      "replenishment_positive_deltas": 304,
+      "right_censored_episodes": 40
+    },
+    "recoverability": "Cell-level positive-gold episodes are exactly observable because positive terrain/gold has render precedence. Individual generated coin cohorts are not separable when generation replenishes an already-positive cell.",
+    "right_censored_age_at_game_end_not_lifetime": {
+      "count": 40,
+      "histogram": {
+        "13": 1,
+        "17": 3,
+        "19": 1,
+        "2": 2,
+        "20": 3,
+        "22": 1,
+        "27": 1,
+        "29": 1,
+        "3": 2,
+        "36": 2,
+        "5": 2,
+        "51": 1,
+        "6": 8,
+        "65": 1,
+        "7": 9,
+        "80": 1,
+        "9": 1
+      },
+      "max": 80,
+      "mean": 15.725,
+      "median": 7.0,
+      "min": 2,
+      "p90_nearest_rank": 36
+    }
+  },
+  "implementation": {
+    "action_codes": {
+      "0": "up",
+      "1": "down",
+      "2": "left",
+      "3": "right",
+      "4": "stay"
+    },
+    "actions_per_call": 3,
+    "determinism": "A caller-supplied RNG with choice(sequence) controls every tie/fallback. Without one, random.Random(seed) is private to the model; no global RNG is read.",
+    "path": "sim/npc.py",
+    "public_api": [
+      "NPCModel(rng=None, seed=0)",
+      "NPCModel.actions(grid, position, npc_id=None) -> tuple[int, int, int]",
+      "NPCModel.__call__(grid, position, npc_id=None)",
+      "choose_actions(grid, position, rng=None, seed=0, npc_id=None)",
+      "legal_actions(grid, position, include_stay=True)"
+    ],
+    "selected_policy": "gold_distance4_fitted",
+    "standard_library_only": true
+  },
+  "limitations": [
+    "Official decision code, RNG algorithm/state, and intended pre-collision actions are unavailable; exact recovery is impossible from these observations alone.",
+    "The three logs share one static map layout and are not a representative unseen-map test.",
+    "Teacher-forced board reconstruction matches logged NPC pickup exactly on 10443/10500 turns; the remaining 57 turns have 93 total absolute pickup error, consistent with gold hidden by occupancy markers or omitted state.",
+    "The selected model never chooses an idle stay while a cardinal route exists, whereas truth contains 1806 stay slots and 215 full-stay turns; adding an unobserved idle mechanism was not justified by available state.",
+    "The fitted model ignores npc_id, players, bombs as hazards, future generation, and other NPC positions because the logs do not isolate stable effects for them.",
+    "Exact action accuracy is sensitive to stochastic tie order and the disclosed RNG seed. Determinism means reproducibility under the same supplied RNG state, not agreement with the private RNG.",
+    "Predicted pickup proxies overcount relative to macro truth because they are independent teacher-forced one-turn counterfactuals and do not model competition or action divergence.",
+    "The fitted model treats bombs as ordinary traversable cells, but follow-up oracle analysis finds 347/361 strict all-greedy-bomb opportunities were avoided for a non-bomb move; this is a clear model omission.",
+    "Gold lifetime is recoverable exactly only as positive-cell episodes. Individual generation cohorts are not identifiable across 304 replenishment deltas, and 40 episodes are right-censored at game end."
+  ],
+  "methodology": {
+    "accuracy": "exact_action_accuracy = matching slots / 31500; full_three_action_turn_accuracy = exactly matching triples / 10500.",
+    "canonical_traversal": "g0, g1, g2; round 0..499; NPCs in end.dispatch_order.",
+    "decision_state": "Teacher-forced replay of earlier actors in end.dispatch_order from start.grid, using logged effective actions and public ceil(65%) pickup. Full-log occupancy markers -2 and -4 are normalized to empty traversable cells; -1 alone is blocked.",
+    "pickup_proxy_warning": "teacher_forced_predicted_pickup_proxy independently applies each prediction to its pre-turn board. It is not a competitive rollout, does not mutate later NPC states, and must not replace logged pickup macro truth.",
+    "prediction": "Each policy receives the reconstructed board immediately before that NPC and the NPC start position, predicts exactly three legal actions, and is compared slot-for-slot with end effective actions. Actual logged actions, not predictions, advance reconstruction for later NPCs.",
+    "reconstruction_check": {
+      "g0": {
+        "absolute_error": 29,
+        "calculated_pickup": 5233,
+        "exact_rate": 0.994,
+        "logged_end_pickup_truth": 5216,
+        "npc_turns": 3500,
+        "pickup_exact_turns": 3479
+      },
+      "g1": {
+        "absolute_error": 35,
+        "calculated_pickup": 7064,
+        "exact_rate": 0.994,
+        "logged_end_pickup_truth": 7051,
+        "npc_turns": 3500,
+        "pickup_exact_turns": 3479
+      },
+      "g2": {
+        "absolute_error": 29,
+        "calculated_pickup": 6941,
+        "exact_rate": 0.995714285714,
+        "logged_end_pickup_truth": 6916,
+        "npc_turns": 3500,
+        "pickup_exact_turns": 3485
+      }
+    },
+    "rng": "random.Random",
+    "rng_reset_independently_for_each_policy": true,
+    "rng_seed": 20260809
+  },
+  "model_selection": {
+    "criterion": "Highest pooled exact action accuracy among disclosed runnable candidates.",
+    "fitting_disclosure": "The distance exponent and policy family were chosen after inspecting/evaluating g0-g2. The reported selected score is therefore in-sample. No train/test split, unseen-map score, policy recovery, or causal pickup improvement is claimed.",
+    "selected": "gold_distance4_fitted",
+    "selected_counts": {
+      "action_hits": 12192,
+      "action_slots": 31500,
+      "full_turn_hits": 1488,
+      "npc_turns": 10500
+    },
+    "why_not_exact": "Many co-located NPCs take different triples, RNG state is absent, logs contain only effective actions, and full-log occupancy markers can hide underlying generated gold. Multiple latent policies can induce the same observed action."
+  },
+  "npc_pickup_per_round_distribution": {
+    "by_game": {
+      "g0": {
+        "histogram": {
+          "0": 43,
+          "1": 33,
+          "10": 16,
+          "11": 12,
+          "12": 13,
+          "13": 15,
+          "14": 12,
+          "15": 12,
+          "16": 12,
+          "17": 17,
+          "18": 14,
+          "19": 5,
+          "2": 32,
+          "20": 8,
+          "21": 13,
+          "22": 7,
+          "23": 3,
+          "24": 6,
+          "25": 4,
+          "26": 5,
+          "27": 4,
+          "28": 7,
+          "29": 7,
+          "3": 27,
+          "30": 1,
+          "31": 1,
+          "32": 2,
+          "33": 2,
+          "34": 6,
+          "35": 1,
+          "36": 3,
+          "37": 1,
+          "4": 29,
+          "40": 1,
+          "41": 1,
+          "48": 1,
+          "5": 23,
+          "6": 32,
+          "7": 23,
+          "8": 20,
+          "9": 26
+        },
+        "max": 48,
+        "mean": 10.432,
+        "median": 8.0,
+        "min": 0,
+        "p90_nearest_rank": 24,
+        "rounds": 500,
+        "total_pickup": 5216,
+        "zero_pickup_rounds": 43
+      },
+      "g1": {
+        "histogram": {
+          "0": 8,
+          "1": 15,
+          "10": 21,
+          "11": 11,
+          "12": 14,
+          "13": 26,
+          "14": 22,
+          "15": 21,
+          "16": 11,
+          "17": 18,
+          "18": 7,
+          "19": 18,
+          "2": 20,
+          "20": 12,
+          "21": 11,
+          "22": 12,
+          "23": 11,
+          "24": 9,
+          "25": 13,
+          "26": 7,
+          "27": 4,
+          "28": 4,
+          "29": 2,
+          "3": 14,
+          "30": 4,
+          "31": 3,
+          "32": 5,
+          "33": 4,
+          "34": 4,
+          "35": 1,
+          "36": 4,
+          "37": 2,
+          "38": 5,
+          "39": 1,
+          "4": 22,
+          "40": 1,
+          "42": 2,
+          "43": 1,
+          "44": 2,
+          "5": 23,
+          "51": 2,
+          "54": 1,
+          "56": 1,
+          "6": 26,
+          "7": 20,
+          "8": 29,
+          "9": 26
+        },
+        "max": 56,
+        "mean": 14.102,
+        "median": 13.0,
+        "min": 0,
+        "p90_nearest_rank": 27,
+        "rounds": 500,
+        "total_pickup": 7051,
+        "zero_pickup_rounds": 8
+      },
+      "g2": {
+        "histogram": {
+          "0": 21,
+          "1": 15,
+          "10": 26,
+          "11": 19,
+          "12": 16,
+          "13": 15,
+          "14": 11,
+          "15": 11,
+          "16": 13,
+          "17": 14,
+          "18": 12,
+          "19": 12,
+          "2": 21,
+          "20": 11,
+          "21": 10,
+          "22": 7,
+          "23": 13,
+          "24": 11,
+          "25": 3,
+          "26": 3,
+          "27": 9,
+          "28": 11,
+          "29": 5,
+          "3": 16,
+          "30": 6,
+          "31": 8,
+          "32": 4,
+          "33": 2,
+          "34": 1,
+          "35": 2,
+          "36": 2,
+          "37": 1,
+          "38": 2,
+          "39": 3,
+          "4": 25,
+          "40": 2,
+          "43": 1,
+          "44": 2,
+          "46": 1,
+          "5": 16,
+          "50": 1,
+          "51": 1,
+          "52": 1,
+          "58": 2,
+          "6": 21,
+          "60": 1,
+          "62": 1,
+          "7": 33,
+          "73": 1,
+          "8": 31,
+          "9": 24
+        },
+        "max": 73,
+        "mean": 13.832,
+        "median": 11.0,
+        "min": 0,
+        "p90_nearest_rank": 28,
+        "rounds": 500,
+        "total_pickup": 6916,
+        "zero_pickup_rounds": 21
+      }
+    },
+    "pooled": {
+      "histogram": {
+        "0": 72,
+        "1": 63,
+        "10": 63,
+        "11": 42,
+        "12": 43,
+        "13": 56,
+        "14": 45,
+        "15": 44,
+        "16": 36,
+        "17": 49,
+        "18": 33,
+        "19": 35,
+        "2": 73,
+        "20": 31,
+        "21": 34,
+        "22": 26,
+        "23": 27,
+        "24": 26,
+        "25": 20,
+        "26": 15,
+        "27": 17,
+        "28": 22,
+        "29": 14,
+        "3": 57,
+        "30": 11,
+        "31": 12,
+        "32": 11,
+        "33": 8,
+        "34": 11,
+        "35": 4,
+        "36": 9,
+        "37": 4,
+        "38": 7,
+        "39": 4,
+        "4": 76,
+        "40": 4,
+        "41": 1,
+        "42": 2,
+        "43": 2,
+        "44": 4,
+        "46": 1,
+        "48": 1,
+        "5": 62,
+        "50": 1,
+        "51": 3,
+        "52": 1,
+        "54": 1,
+        "56": 1,
+        "58": 2,
+        "6": 79,
+        "60": 1,
+        "62": 1,
+        "7": 76,
+        "73": 1,
+        "8": 80,
+        "9": 76
+      },
+      "max": 73,
+      "mean": 12.788666666667,
+      "median": 10.0,
+      "min": 0,
+      "p90_nearest_rank": 27,
+      "rounds": 1500,
+      "total_pickup": 19183,
+      "zero_pickup_rounds": 72
+    },
+    "quantile_definition": "P90 uses nearest rank: sorted_values[ceil(0.90*n)-1]. Median uses the conventional midpoint for even n.",
+    "source": "For each round, sum only end.npcs[].pickup across all seven NPCs."
+  },
+  "npc_start_region_occupancy": {
+    "by_game": {
+      "g0": {
+        "npc_position_exposures": {
+          "1": 1812,
+          "2": 399,
+          "3": 470,
+          "4": 467,
+          "5": 352
+        },
+        "occupancy_count_histogram_by_region": {
+          "1": {
+            "0": 4,
+            "1": 23,
+            "2": 74,
+            "3": 133,
+            "4": 136,
+            "5": 95,
+            "6": 22,
+            "7": 13
+          },
+          "2": {
+            "0": 219,
+            "1": 190,
+            "2": 68,
+            "3": 19,
+            "4": 4
+          },
+          "3": {
+            "0": 187,
+            "1": 183,
+            "2": 105,
+            "3": 23,
+            "4": 2
+          },
+          "4": {
+            "0": 164,
+            "1": 227,
+            "2": 88,
+            "3": 20,
+            "4": 1
+          },
+          "5": {
+            "0": 240,
+            "1": 180,
+            "2": 68,
+            "3": 12
+          }
+        },
+        "start_phases": 500
+      },
+      "g1": {
+        "npc_position_exposures": {
+          "1": 1935,
+          "2": 430,
+          "3": 412,
+          "4": 340,
+          "5": 383
+        },
+        "occupancy_count_histogram_by_region": {
+          "1": {
+            "0": 6,
+            "1": 15,
+            "2": 64,
+            "3": 105,
+            "4": 130,
+            "5": 129,
+            "6": 45,
+            "7": 6
+          },
+          "2": {
+            "0": 207,
+            "1": 188,
+            "2": 77,
+            "3": 24,
+            "4": 4
+          },
+          "3": {
+            "0": 192,
+            "1": 218,
+            "2": 77,
+            "3": 12,
+            "4": 1
+          },
+          "4": {
+            "0": 265,
+            "1": 148,
+            "2": 70,
+            "3": 16,
+            "4": 1
+          },
+          "5": {
+            "0": 232,
+            "1": 178,
+            "2": 70,
+            "3": 15,
+            "4": 5
+          }
+        },
+        "start_phases": 500
+      },
+      "g2": {
+        "npc_position_exposures": {
+          "1": 1927,
+          "2": 450,
+          "3": 241,
+          "4": 431,
+          "5": 451
+        },
+        "occupancy_count_histogram_by_region": {
+          "1": {
+            "0": 2,
+            "1": 11,
+            "2": 59,
+            "3": 137,
+            "4": 140,
+            "5": 88,
+            "6": 54,
+            "7": 9
+          },
+          "2": {
+            "0": 190,
+            "1": 199,
+            "2": 87,
+            "3": 20,
+            "4": 3,
+            "5": 1
+          },
+          "3": {
+            "0": 298,
+            "1": 170,
+            "2": 25,
+            "3": 7
+          },
+          "4": {
+            "0": 209,
+            "1": 176,
+            "2": 91,
+            "3": 23,
+            "4": 1
+          },
+          "5": {
+            "0": 199,
+            "1": 187,
+            "2": 80,
+            "3": 32,
+            "4": 2
+          }
+        },
+        "start_phases": 500
+      }
+    },
+    "coordinate_base": 0,
+    "pooled": {
+      "exposure_shares": {
+        "1": 0.540380952381,
+        "2": 0.12180952381,
+        "3": 0.106952380952,
+        "4": 0.117904761905,
+        "5": 0.112952380952
+      },
+      "npc_position_exposures": {
+        "1": 5674,
+        "2": 1279,
+        "3": 1123,
+        "4": 1238,
+        "5": 1186
+      },
+      "occupancy_count_histogram_by_region": {
+        "1": {
+          "0": 12,
+          "1": 49,
+          "2": 197,
+          "3": 375,
+          "4": 406,
+          "5": 312,
+          "6": 121,
+          "7": 28
+        },
+        "2": {
+          "0": 616,
+          "1": 577,
+          "2": 232,
+          "3": 63,
+          "4": 11,
+          "5": 1
+        },
+        "3": {
+          "0": 677,
+          "1": 571,
+          "2": 207,
+          "3": 42,
+          "4": 3
+        },
+        "4": {
+          "0": 638,
+          "1": 551,
+          "2": 249,
+          "3": 59,
+          "4": 3
+        },
+        "5": {
+          "0": 671,
+          "1": 545,
+          "2": 218,
+          "3": 59,
+          "4": 7
+        }
+      },
+      "start_phases": 1500
+    },
+    "region_definitions": {
+      "1_central": {
+        "cells": 81,
+        "cols": [
+          4,
+          12
+        ],
+        "rows": [
+          4,
+          12
+        ]
+      },
+      "2_top": {
+        "cells": 52,
+        "cols": [
+          0,
+          12
+        ],
+        "rows": [
+          0,
+          3
+        ]
+      },
+      "3_left": {
+        "cells": 52,
+        "cols": [
+          0,
+          3
+        ],
+        "rows": [
+          4,
+          16
+        ]
+      },
+      "4_bottom": {
+        "cells": 52,
+        "cols": [
+          4,
+          16
+        ],
+        "rows": [
+          13,
+          16
+        ]
+      },
+      "5_right": {
+        "cells": 52,
+        "cols": [
+          13,
+          16
+        ],
+        "rows": [
+          0,
+          12
+        ]
+      }
+    },
+    "source": "True start.npcs[].position for every NPC in every round; no reconstruction and no snapshot subsampling."
+  },
+  "omitted_policy_factor_assessment": {
+    "bomb_or_avoidance": {
+      "action_slots": 31500,
+      "actual_bomb_entries": 122,
+      "all_bomb_oracle_hits": 14,
+      "all_bomb_oracle_miss_to_nonbomb": 347,
+      "assessment": "Bomb avoidance is strongly plausible and is a clear omission from npc.py: when every greedy-optimal action entered a bomb, truth avoided the greedy set for a non-bomb move in 347/361 slots. General actor/crowding avoidance is not established; NPC overlap is legal and the logs do not isolate a stable penalty.",
+      "oracle_sets_all_bomb": 361,
+      "oracle_sets_with_any_bomb": 1244
+    },
+    "held_purse": {
+      "assessment": "Plausible but not identifiable. NPC logs expose current-round pickup, not persistent held gold. Because bomb loss depends on held gold, the strong bomb-avoidance signal could be unconditional hazard avoidance or hidden-purse-conditioned behavior; these logs cannot distinguish them."
+    },
+    "identity": {
+      "assessment": "Possible but not established. Oracle coverage ranges from 54.31% to 60.47% across IDs, with NPC -3 highest; trajectories and visited states differ by ID, so this is not causal evidence for an ID-specific policy. Memorized ID tables remain unjustified.",
+      "evidence": {
+        "-1": {
+          "coverage": 0.567111111111,
+          "hits": 2552,
+          "slots": 4500
+        },
+        "-2": {
+          "coverage": 0.543111111111,
+          "hits": 2444,
+          "slots": 4500
+        },
+        "-3": {
+          "coverage": 0.604666666667,
+          "hits": 2721,
+          "slots": 4500
+        },
+        "-4": {
+          "coverage": 0.546888888889,
+          "hits": 2461,
+          "slots": 4500
+        },
+        "-5": {
+          "coverage": 0.579333333333,
+          "hits": 2607,
+          "slots": 4500
+        },
+        "-6": {
+          "coverage": 0.554888888889,
+          "hits": 2497,
+          "slots": 4500
+        },
+        "-7": {
+          "coverage": 0.547111111111,
+          "hits": 2462,
+          "slots": 4500
+        }
+      }
+    },
+    "inertia": {
+      "assessment": "Within-turn inertia is plausible as a weak secondary feature but does not explain the main gap. Oracle misses are not enriched for repeating the previous actual action, and the previously reported pure persistence baselines remain well below gold seeking.",
+      "oracle_hit_slot_2_3_repeat_previous": {
+        "count": 4714,
+        "rate": 0.398815566836,
+        "slots": 11820
+      },
+      "oracle_miss_slot_2_3_repeat_previous": {
+        "count": 3514,
+        "rate": 0.382788671024,
+        "slots": 9180
+      }
+    },
+    "overall": "The 56.3% oracle-set coverage and 51.9% singleton coverage leave a clear model gap. Random tie state is material but cannot explain the 43.7% outside-set actions. Bomb handling is the strongest isolated omitted factor; identity and inertia are weaker or confounded."
+  },
+  "oracle_tie_set_upper_bound": {
+    "by_game": {
+      "g0": {
+        "action_set_hits": 5818,
+        "action_set_size_histogram": {
+          "1": 6709,
+          "2": 3658,
+          "3": 116,
+          "4": 17
+        },
+        "action_slots": 10500,
+        "coverage": 0.554095238095,
+        "coverage_by_slot_1_to_3": [
+          0.564857142857,
+          0.541142857143,
+          0.556285714286
+        ],
+        "full_turn_all_three_in_set": 816,
+        "full_turn_coverage": 0.233142857143,
+        "full_turns": 3500,
+        "hits_by_slot_1_to_3": [
+          1977,
+          1894,
+          1947
+        ]
+      },
+      "g1": {
+        "action_set_hits": 6027,
+        "action_set_size_histogram": {
+          "1": 7245,
+          "2": 3127,
+          "3": 114,
+          "4": 14
+        },
+        "action_slots": 10500,
+        "coverage": 0.574,
+        "coverage_by_slot_1_to_3": [
+          0.569428571429,
+          0.561714285714,
+          0.590857142857
+        ],
+        "full_turn_all_three_in_set": 815,
+        "full_turn_coverage": 0.232857142857,
+        "full_turns": 3500,
+        "hits_by_slot_1_to_3": [
+          1993,
+          1966,
+          2068
+        ]
+      },
+      "g2": {
+        "action_set_hits": 5899,
+        "action_set_size_histogram": {
+          "1": 7103,
+          "2": 3285,
+          "3": 98,
+          "4": 14
+        },
+        "action_slots": 10500,
+        "coverage": 0.56180952381,
+        "coverage_by_slot_1_to_3": [
+          0.558285714286,
+          0.555428571429,
+          0.571714285714
+        ],
+        "full_turn_all_three_in_set": 795,
+        "full_turn_coverage": 0.227142857143,
+        "full_turns": 3500,
+        "hits_by_slot_1_to_3": [
+          1954,
+          1944,
+          2001
+        ]
+      }
+    },
+    "by_npc_id": {
+      "-1": {
+        "coverage": 0.567111111111,
+        "hits": 2552,
+        "slots": 4500
+      },
+      "-2": {
+        "coverage": 0.543111111111,
+        "hits": 2444,
+        "slots": 4500
+      },
+      "-3": {
+        "coverage": 0.604666666667,
+        "hits": 2721,
+        "slots": 4500
+      },
+      "-4": {
+        "coverage": 0.546888888889,
+        "hits": 2461,
+        "slots": 4500
+      },
+      "-5": {
+        "coverage": 0.579333333333,
+        "hits": 2607,
+        "slots": 4500
+      },
+      "-6": {
+        "coverage": 0.554888888889,
+        "hits": 2497,
+        "slots": 4500
+      },
+      "-7": {
+        "coverage": 0.547111111111,
+        "hits": 2462,
+        "slots": 4500
+      }
+    },
+    "comparison_to_runnable_fitted_model": {
+      "hit_gap": 5552,
+      "interpretation": "38.7% is not a deterministic ceiling. Oracle tie selection raises action coverage to 56.3%, but 43.7% of truth remains outside the complete greedy set. Tie randomness explains some runnable loss; singleton-set coverage of only 51.9% proves a substantial omitted-policy/model-state gap.",
+      "oracle_set_coverage": 0.563301587302,
+      "oracle_set_hits": 17744,
+      "percentage_point_gap": 17.625397,
+      "runnable_exact_accuracy": 0.387047619048,
+      "runnable_exact_hits": 12192
+    },
+    "definition": "At each actual NPC action slot, reconstruct the teacher-forced true board and true position, enumerate every target tied for maximal gold/BFS_distance^4, union every first action on every shortest path, and ask whether the logged effective action belongs to that complete set. Between slots the logged action advances state. This is an oracle tie-choice coverage bound, not a runnable score and not a causal rollout.",
+    "pooled": {
+      "action_set_hits": 17744,
+      "action_set_size_histogram": {
+        "1": 21057,
+        "2": 10070,
+        "3": 328,
+        "4": 45
+      },
+      "action_slots": 31500,
+      "coverage": 0.563301587302,
+      "coverage_by_slot_1_to_3": [
+        0.56419047619,
+        0.552761904762,
+        0.572952380952
+      ],
+      "full_turn_all_three_in_set": 2426,
+      "full_turn_coverage": 0.231047619048,
+      "full_turns": 10500,
+      "hits_by_slot_1_to_3": [
+        5924,
+        5804,
+        6016
+      ]
+    },
+    "singleton_sets": {
+      "coverage": 0.518592392079,
+      "hits": 10920,
+      "slots": 21057
+    },
+    "tied_sets_size_2_plus": {
+      "coverage": 0.653452073159,
+      "hits": 6824,
+      "slots": 10443
+    }
+  },
+  "persistence_observations": {
+    "g0": {
+      "cross_turn_previous_last_to_current_first_repeat": {
+        "count": 845,
+        "denominator": 3493,
+        "rate": 0.241912396221
+      },
+      "within_turn_adjacent_repeat": {
+        "count": 2735,
+        "denominator": 7000,
+        "rate": 0.390714285714
+      }
+    },
+    "g1": {
+      "cross_turn_previous_last_to_current_first_repeat": {
+        "count": 825,
+        "denominator": 3493,
+        "rate": 0.236186659032
+      },
+      "within_turn_adjacent_repeat": {
+        "count": 2703,
+        "denominator": 7000,
+        "rate": 0.386142857143
+      }
+    },
+    "g2": {
+      "cross_turn_previous_last_to_current_first_repeat": {
+        "count": 853,
+        "denominator": 3493,
+        "rate": 0.244202691096
+      },
+      "within_turn_adjacent_repeat": {
+        "count": 2790,
+        "denominator": 7000,
+        "rate": 0.398571428571
+      }
+    }
+  },
+  "schema_version": 2,
+  "status": "fitted_approximation_not_official_policy",
+  "truth": {
+    "games": {
+      "g0": {
+        "action_slots": 10500,
+        "actual_action_counts": {
+          "0": 2492,
+          "1": 2494,
+          "2": 2344,
+          "3": 2343,
+          "4": 827
+        },
+        "full_stay_turns": 104,
+        "npc_turns": 3500,
+        "pickup_truth": 5216,
+        "rounds": 500,
+        "unique_observed_action_triples": 120,
+        "zero_pickup_turns": 2372
+      },
+      "g1": {
+        "action_slots": 10500,
+        "actual_action_counts": {
+          "0": 2586,
+          "1": 2580,
+          "2": 2444,
+          "3": 2422,
+          "4": 468
+        },
+        "full_stay_turns": 52,
+        "npc_turns": 3500,
+        "pickup_truth": 7051,
+        "rounds": 500,
+        "unique_observed_action_triples": 119,
+        "zero_pickup_turns": 2070
+      },
+      "g2": {
+        "action_slots": 10500,
+        "actual_action_counts": {
+          "0": 2630,
+          "1": 2629,
+          "2": 2363,
+          "3": 2367,
+          "4": 511
+        },
+        "full_stay_turns": 59,
+        "npc_turns": 3500,
+        "pickup_truth": 6916,
+        "rounds": 500,
+        "unique_observed_action_triples": 116,
+        "zero_pickup_turns": 2117
+      }
+    },
+    "pickup_macro": {
+      "g0": 5216,
+      "g1": 7051,
+      "g2": 6916,
+      "total": 19183
+    },
+    "source": "Only end.npcs[].actions and end.npcs[].pickup are treated as current-round truth. start pickup fields are never used as current truth."
+  }
+}
