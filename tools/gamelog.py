@@ -11,7 +11,10 @@
 
 日志格式(见 AGENT.md §13):
   行1  {"player1":名, "player2":名}
-  行2  17x17 真实地图(字符串): "0"空地 "1"障碍 "2"炸弹刷新位
+  行2  17x17 真实地图(字符串): "0"空地 "1"障碍 "2"外圈金币高频热点
+       注意: "2" 曾被本注释误标为"炸弹刷新位", 已被官方全信息日志推翻(见 sim/README.md §5.2)。
+       实测语义 = 外圈金币生成热点: 20 格承担外圈落点 54%(618/1142), 单格富集约 9.7x;
+       炸弹与它无关, 会落在全部非墙 eligible 格上(token-2 格同样会被炸)。
   行3+ 每行一个回合 {round, start:{...}, end:{players[].cost(ns)/gold/vision_spent,
                      dispatch_order, trample_events, burned, ...}}
 注意: 日志按视角过滤, 对手 units[].position 为 null, 但 cost/gold/vision_spent 可见。
