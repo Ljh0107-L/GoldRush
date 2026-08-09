@@ -12,7 +12,7 @@
 //    0.2 指纹: (bpw ^ 候选墙表) & seen 逐行比对淘汰; 唯一候选 → 锁图直灌全墙表;
 //        map1 角落 5×5 即可区分(round 0 锁, 行为与旧版逐位一致);
 //        map2/3 角落同构 → round 0 买 vp=2, round 1 用 9×9 终判(全图可区分, 实测)
-//    0.3 中央双驻守: 三图共用 (6,8)/(11,8), 锁图后若锚点是墙则改指最近可通行格
+//    0.3 中央双驻守: 三图共用 (6,8)/(11,8), 除远征段外不再用入镜敌人劫持 u1 锚点
 //    0.4 三图全不吻合 → 陌生图模式: 懒学习伴终局(稳态只付 visited 门控 ~+5ns), 行军窗自然导向
 // 1. 新局检测(round 回绕) → 重置状态, bpw = 边界哨兵(墙由指纹/学习灌入)
 // 2. %20 冷位点: 炸弹波清 + 快照远征调度(8.9 路线1, v3 形态; 收入中性但结构合规存留)
@@ -430,22 +430,6 @@ GameOutput decide(const GameInput* in) {
     g_s.last_round = (int16_t)in->round;
     if (in->round % 20 == 0)                     // 炸弹波清 + 远征开拔/归队(骑同一位点)
         waveTick(in);
-
-    {   // 寄生跟随: u1 盯梢入镜敌单位, 先手轮抢吃其精选目标(拒止+搭车其目标选择)
-        int er = in->visible_enemies[0].row;
-        int seen0 = -(int)(er >= 0);
-        g_s.hunt_r = (int8_t)((er & seen0) | (g_s.hunt_r & ~seen0));
-        g_s.hunt_c = (int8_t)((in->visible_enemies[0].col & seen0) | (g_s.hunt_c & ~seen0));
-        g_s.hunt_t = (int16_t)((in->round & seen0) | (g_s.hunt_t & ~seen0));
-        int live = -(int)((unsigned)(in->round - g_s.hunt_t) < 4u) &
-                   -(int)(g_s.map_id >= 0) & ~-(int)(g_s.exc != 0);
-        g_s.anch_r[1] = (int8_t)((g_s.hunt_r & live) | (g_s.anch_r[1] & ~live));
-        g_s.anch_c[1] = (int8_t)((g_s.hunt_c & live) | (g_s.anch_c[1] & ~live));
-        int home = ~live & -(int)(g_s.map_id >= 0) & ~-(int)(g_s.exc != 0) &
-                   -(int)((unsigned)(in->round - g_s.hunt_t) >= 8u);
-        g_s.anch_r[1] = (int8_t)((g_s.bh_r & home) | (g_s.anch_r[1] & ~home));
-        g_s.anch_c[1] = (int8_t)((g_s.bh_c & home) | (g_s.anch_c[1] & ~home));
-    }
 
     {   // 远征抵锚事件 → 冷推进(拔点链/车道切换/归队)。exc 期成段连续, 分支按段预测,
         // 误预测只在段边界 ~10-20 次/局(谱系: v1 B端扎营/v2 回程扫空车道皆判负, 见 CHANGELOG)
