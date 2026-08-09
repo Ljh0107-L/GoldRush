@@ -22,6 +22,30 @@
         "warning": "Deviation is reported and does not affect hard_pass."
       },
       "npc_behavior": {
+        "calibration_attempt": {
+          "candidate_evidence": "/Users/bytedance/GoldRush/sim/reports/npc.json",
+          "checks": {
+            "all_pickup_totals_in_range": false,
+            "clean_lifetime_median_exact": true,
+            "clean_lifetime_p90_in_range": false,
+            "region1_absolute_offset_within_limit": false
+          },
+          "in_sample_warning": "The sweep used exactly these three synthetic seeds and replay policies; it is not held-out evidence.",
+          "passed": false,
+          "selection": "none; bounded one-knob sweeps did not meet all targets and the landed default was preserved",
+          "targets": {
+            "clean_lifetime_median_exact": 3,
+            "clean_lifetime_p90_inclusive": [
+              11,
+              15
+            ],
+            "pickup_per_game_each_inclusive": [
+              5216,
+              7051
+            ],
+            "region1_absolute_offset_max": 309
+          }
+        },
         "classification": "fitted_warning",
         "comparison_to_truth": {
           "clean_lifetime_count_delta": 152,
@@ -189,7 +213,7 @@
           ]
         },
         "c_int_size": 4,
-        "elapsed_seconds": 3.2e-05,
+        "elapsed_seconds": 2.2e-05,
         "error": null,
         "expected": {
           "AbiPosition": [
@@ -281,7 +305,7 @@
           460,
           480
         ],
-        "elapsed_seconds": 0.044489,
+        "elapsed_seconds": 0.148908,
         "error": null,
         "expected_bomb_wave_rounds": [
           0,
@@ -319,7 +343,7 @@
         "wave_bomb_ineligible_cells": 0
       },
       "generation_residuals_hotspot_and_bomb_eligibility": {
-        "elapsed_seconds": 0.699268,
+        "elapsed_seconds": 0.700609,
         "error": null,
         "passed": true,
         "report": "/Users/bytedance/GoldRush/sim/reports/generation.json",
@@ -349,7 +373,7 @@
         "runtime_unique_bomb_trial_cells": 213
       },
       "map_definitions_and_loading": {
-        "elapsed_seconds": 0.03001,
+        "elapsed_seconds": 0.031472,
         "error": null,
         "maps": {
           "arbitrary_log_line2_loading": {
@@ -389,7 +413,7 @@
         "passed": true
       },
       "mechanical_replay_3x500": {
-        "elapsed_seconds": 1.259076,
+        "elapsed_seconds": 1.341196,
         "error": null,
         "mismatch_examples": [],
         "observed_exact_counts": {
@@ -458,7 +482,7 @@
             "rounds": 24
           }
         },
-        "elapsed_seconds": 13.72198,
+        "elapsed_seconds": 14.517976,
         "error": null,
         "files": [
           "g3.txt",
@@ -474,8 +498,8 @@
           "by_radius": {
             "2": {
               "mismatch_cells": 0,
-              "phase_grids": 201538,
-              "rounds": 100769
+              "phase_grids": 207538,
+              "rounds": 103769
             },
             "4": {
               "mismatch_cells": 0,
@@ -483,10 +507,10 @@
               "rounds": 1731
             }
           },
-          "files": 205,
+          "files": 211,
           "mismatch_cells": 0,
-          "phase_grids": 205000,
-          "rounds": 102500
+          "phase_grids": 211000,
+          "rounds": 105500
         },
         "mismatch_cells": 0,
         "passed": true,
@@ -515,7 +539,7 @@
         }
       },
       "paired_legs_digest_and_seat_swap": {
-        "elapsed_seconds": 8.373805,
+        "elapsed_seconds": 8.244354,
         "error": null,
         "leg_a_b_names": [
           "A",
@@ -531,7 +555,7 @@
       },
       "region_partition_289": {
         "cross_module_disagreements": [],
-        "elapsed_seconds": 0.000225,
+        "elapsed_seconds": 0.00024,
         "error": null,
         "partition_cells": 289,
         "passed": true,
@@ -546,22 +570,22 @@
       "same_seed_identity_and_different_seed_divergence": {
         "different_seed_divergence": true,
         "different_seed_log_sha256": "f19df148d73484df289d2ade3217ea097f1baa123cff90d0c525a4fb65a7b86b",
-        "elapsed_seconds": 12.445318,
+        "elapsed_seconds": 12.278783,
         "error": null,
         "passed": true,
         "same_seed_byte_identity": true,
         "same_seed_log_sha256": "76ff90020c1894bf6515a57c68aeaf9ce511cd842a6ad599ba0a9e2b8f4cbf51",
-        "single_game_wall_clock_seconds": 4.087283
+        "single_game_wall_clock_seconds": 4.123324
       },
       "single_game_wall_clock": {
-        "elapsed_seconds": 6e-06,
+        "elapsed_seconds": 4e-06,
         "error": null,
         "note": "Informational benchmark; speed variation is not a fidelity failure.",
         "passed": true,
         "previous_independent_observation_seconds": 4.38,
-        "ratio_to_previous_observation": 0.9332,
+        "ratio_to_previous_observation": 0.9414,
         "rounds": 500,
-        "wall_clock_seconds": 4.087283
+        "wall_clock_seconds": 4.123324
       },
       "snapshots_297x5x6": {
         "absolute_error_by_field": {
@@ -573,7 +597,7 @@
           "occupants": 0
         },
         "comparisons": 8910,
-        "elapsed_seconds": 0.263646,
+        "elapsed_seconds": 0.276546,
         "error": null,
         "exact_by_field": {
           "enter": 1485,
@@ -597,7 +621,7 @@
           "/Users/bytedance/GoldRush/tools/gamelog.py",
           "<temporary-generated-log>"
         ],
-        "elapsed_seconds": 0.056418,
+        "elapsed_seconds": 0.079282,
         "error": null,
         "passed": true,
         "returncode": 0,

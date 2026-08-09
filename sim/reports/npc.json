@@ -355,7 +355,7 @@
       "teacher_forced_predicted_pickup_proxy": 7650
     }
   },
-  "conclusion": "The private NPC policy is not exactly identifiable from three stochastic logs. gold_distance4_fitted is selected as the best simple, runnable approximation among the disclosed candidates by pooled exact action accuracy. This is in-sample calibration, not a held-out or official-policy claim.",
+  "conclusion": "The private NPC policy is not exactly identifiable from three stochastic logs. The original gold_distance4_fitted runnable approximation and all action/oracle evidence are preserved. Bounded in-sample roaming and hesitation sweeps found no single simple probability meeting every macro target, so no knob was selected and the landed default remains unchanged; see macro_calibration for residuals.",
   "corpus": {
     "g0": {
       "bytes": 1751697,
@@ -1097,8 +1097,680 @@
     "Exact action accuracy is sensitive to stochastic tie order and the disclosed RNG seed. Determinism means reproducibility under the same supplied RNG state, not agreement with the private RNG.",
     "Predicted pickup proxies overcount relative to macro truth because they are independent teacher-forced one-turn counterfactuals and do not model competition or action divergence.",
     "The fitted model treats bombs as ordinary traversable cells, but follow-up oracle analysis finds 347/361 strict all-greedy-bomb opportunities were avoided for a non-bomb move; this is a clear model omission.",
-    "Gold lifetime is recoverable exactly only as positive-cell episodes. Individual generation cohorts are not identifiable across 304 replenishment deltas, and 40 episodes are right-censored at game end."
+    "Gold lifetime is recoverable exactly only as positive-cell episodes. Individual generation cohorts are not identifiable across 304 replenishment deltas, and 40 episodes are right-censored at game end.",
+    "The bounded macro sweep is in-sample on exactly three synthetic seeds/policies. No roaming or hesitation value met pickup, central occupancy, and lifetime targets simultaneously, so the runnable default was deliberately not changed."
   ],
+  "macro_calibration": {
+    "baseline_and_after_table": [
+      {
+        "clean_lifetime_count": 3445,
+        "clean_lifetime_mean": 4.194484760522497,
+        "clean_lifetime_median": 3,
+        "clean_lifetime_p90_nearest_rank": 8,
+        "knob_value": null,
+        "label": "before_and_preserved_default",
+        "mechanism": "gold/distance^4 greedy model from 8f2fcbe",
+        "npc_pickup_per_game_totals": [
+          9051,
+          9272,
+          8631
+        ],
+        "passed_all_targets": false,
+        "region1_occupancy": 6601,
+        "region1_offset": 927
+      },
+      {
+        "clean_lifetime_count": 3445,
+        "clean_lifetime_mean": 4.194484760522497,
+        "clean_lifetime_median": 3,
+        "clean_lifetime_p90_nearest_rank": 8,
+        "knob_value": null,
+        "label": "after",
+        "mechanism": "none selected; default intentionally unchanged",
+        "npc_pickup_per_game_totals": [
+          9051,
+          9272,
+          8631
+        ],
+        "passed_all_targets": false,
+        "region1_occupancy": 6601,
+        "region1_offset": 927
+      }
+    ],
+    "candidate_sweeps": {
+      "per_action_hesitation": {
+        "best_residual": {
+          "explanation": "R1 offset +302 passes and game 3 pickup 7014 passes, but games 1/2 remain +244/+284 over 7051 while lifetime median=9 and P90=35 are far outside target.",
+          "p": 0.7
+        },
+        "candidates": [
+          {
+            "clean_positive_cell_lifetime": {
+              "count": 3445,
+              "mean": 4.1945,
+              "median": 3,
+              "p90_nearest_rank": 8
+            },
+            "npc_pickup_per_game_totals": [
+              9051,
+              9272,
+              8631
+            ],
+            "npc_start_occupancy_exposures_r1_to_r5": [
+              6601,
+              1127,
+              820,
+              943,
+              1009
+            ],
+            "passed_all_targets": false,
+            "probability": 0.0,
+            "region1_offset": 927,
+            "target_checks": {
+              "all_pickup_totals_in_range": false,
+              "clean_lifetime_median_equals_3": true,
+              "clean_lifetime_p90_in_11_to_15": false,
+              "region1_absolute_offset_within_309": false
+            }
+          },
+          {
+            "clean_positive_cell_lifetime": {
+              "count": 3327,
+              "mean": 4.869,
+              "median": 3,
+              "p90_nearest_rank": 10
+            },
+            "npc_pickup_per_game_totals": [
+              8907,
+              9241,
+              8608
+            ],
+            "npc_start_occupancy_exposures_r1_to_r5": [
+              6428,
+              1201,
+              847,
+              984,
+              1040
+            ],
+            "passed_all_targets": false,
+            "probability": 0.1,
+            "region1_offset": 754,
+            "target_checks": {
+              "all_pickup_totals_in_range": false,
+              "clean_lifetime_median_equals_3": true,
+              "clean_lifetime_p90_in_11_to_15": false,
+              "region1_absolute_offset_within_309": false
+            }
+          },
+          {
+            "clean_positive_cell_lifetime": {
+              "count": 3286,
+              "mean": 5.3774,
+              "median": 3.0,
+              "p90_nearest_rank": 11
+            },
+            "npc_pickup_per_game_totals": [
+              8800,
+              9061,
+              8488
+            ],
+            "npc_start_occupancy_exposures_r1_to_r5": [
+              6459,
+              1159,
+              842,
+              989,
+              1051
+            ],
+            "passed_all_targets": false,
+            "probability": 0.2,
+            "region1_offset": 785,
+            "target_checks": {
+              "all_pickup_totals_in_range": false,
+              "clean_lifetime_median_equals_3": true,
+              "clean_lifetime_p90_in_11_to_15": true,
+              "region1_absolute_offset_within_309": false
+            }
+          },
+          {
+            "clean_positive_cell_lifetime": {
+              "count": 3150,
+              "mean": 6.1349,
+              "median": 4.0,
+              "p90_nearest_rank": 13
+            },
+            "npc_pickup_per_game_totals": [
+              8740,
+              8844,
+              8356
+            ],
+            "npc_start_occupancy_exposures_r1_to_r5": [
+              6308,
+              1326,
+              811,
+              994,
+              1061
+            ],
+            "passed_all_targets": false,
+            "probability": 0.3,
+            "region1_offset": 634,
+            "target_checks": {
+              "all_pickup_totals_in_range": false,
+              "clean_lifetime_median_equals_3": false,
+              "clean_lifetime_p90_in_11_to_15": true,
+              "region1_absolute_offset_within_309": false
+            }
+          },
+          {
+            "clean_positive_cell_lifetime": {
+              "count": 2989,
+              "mean": 7.4249,
+              "median": 5,
+              "p90_nearest_rank": 16
+            },
+            "npc_pickup_per_game_totals": [
+              8494,
+              8718,
+              8079
+            ],
+            "npc_start_occupancy_exposures_r1_to_r5": [
+              6129,
+              1330,
+              910,
+              961,
+              1170
+            ],
+            "passed_all_targets": false,
+            "probability": 0.4,
+            "region1_offset": 455,
+            "target_checks": {
+              "all_pickup_totals_in_range": false,
+              "clean_lifetime_median_equals_3": false,
+              "clean_lifetime_p90_in_11_to_15": false,
+              "region1_absolute_offset_within_309": false
+            }
+          },
+          {
+            "clean_positive_cell_lifetime": {
+              "count": 2737,
+              "mean": 9.1071,
+              "median": 6,
+              "p90_nearest_rank": 19
+            },
+            "npc_pickup_per_game_totals": [
+              8393,
+              8495,
+              7948
+            ],
+            "npc_start_occupancy_exposures_r1_to_r5": [
+              6119,
+              1263,
+              968,
+              939,
+              1211
+            ],
+            "passed_all_targets": false,
+            "probability": 0.5,
+            "region1_offset": 445,
+            "target_checks": {
+              "all_pickup_totals_in_range": false,
+              "clean_lifetime_median_equals_3": false,
+              "clean_lifetime_p90_in_11_to_15": false,
+              "region1_absolute_offset_within_309": false
+            }
+          },
+          {
+            "clean_positive_cell_lifetime": {
+              "count": 2405,
+              "mean": 11.4308,
+              "median": 7,
+              "p90_nearest_rank": 25
+            },
+            "npc_pickup_per_game_totals": [
+              7895,
+              8134,
+              7661
+            ],
+            "npc_start_occupancy_exposures_r1_to_r5": [
+              6028,
+              1263,
+              894,
+              934,
+              1381
+            ],
+            "passed_all_targets": false,
+            "probability": 0.6,
+            "region1_offset": 354,
+            "target_checks": {
+              "all_pickup_totals_in_range": false,
+              "clean_lifetime_median_equals_3": false,
+              "clean_lifetime_p90_in_11_to_15": false,
+              "region1_absolute_offset_within_309": false
+            }
+          },
+          {
+            "clean_positive_cell_lifetime": {
+              "count": 1954,
+              "mean": 16.0691,
+              "median": 9.0,
+              "p90_nearest_rank": 35
+            },
+            "npc_pickup_per_game_totals": [
+              7295,
+              7335,
+              7014
+            ],
+            "npc_start_occupancy_exposures_r1_to_r5": [
+              5976,
+              1289,
+              1012,
+              827,
+              1396
+            ],
+            "passed_all_targets": false,
+            "probability": 0.7,
+            "region1_offset": 302,
+            "target_checks": {
+              "all_pickup_totals_in_range": false,
+              "clean_lifetime_median_equals_3": false,
+              "clean_lifetime_p90_in_11_to_15": false,
+              "region1_absolute_offset_within_309": true
+            }
+          },
+          {
+            "clean_positive_cell_lifetime": {
+              "count": 1527,
+              "mean": 20.8671,
+              "median": 11,
+              "p90_nearest_rank": 48
+            },
+            "npc_pickup_per_game_totals": [
+              6666,
+              6693,
+              6145
+            ],
+            "npc_start_occupancy_exposures_r1_to_r5": [
+              5813,
+              1494,
+              939,
+              801,
+              1453
+            ],
+            "passed_all_targets": false,
+            "probability": 0.8,
+            "region1_offset": 139,
+            "target_checks": {
+              "all_pickup_totals_in_range": true,
+              "clean_lifetime_median_equals_3": false,
+              "clean_lifetime_p90_in_11_to_15": false,
+              "region1_absolute_offset_within_309": true
+            }
+          }
+        ],
+        "definition": "Before each action, stay in place with probability p; otherwise use the landed greedy action. Staying does not collect gold.",
+        "grid": "p=0.0..0.8 in increments of 0.1",
+        "result": "rejected: no p met the required conjunction"
+      },
+      "per_action_uniform_cardinal_roaming": {
+        "candidates": [
+          {
+            "clean_positive_cell_lifetime": {
+              "count": 3445,
+              "mean": 4.1945,
+              "median": 3,
+              "p90_nearest_rank": 8
+            },
+            "npc_pickup_per_game_totals": [
+              9051,
+              9272,
+              8631
+            ],
+            "npc_start_occupancy_exposures_r1_to_r5": [
+              6601,
+              1127,
+              820,
+              943,
+              1009
+            ],
+            "passed_all_targets": false,
+            "probability": 0.0,
+            "region1_offset": 927,
+            "target_checks": {
+              "all_pickup_totals_in_range": false,
+              "clean_lifetime_median_equals_3": true,
+              "clean_lifetime_p90_in_11_to_15": false,
+              "region1_absolute_offset_within_309": false
+            }
+          },
+          {
+            "clean_positive_cell_lifetime": {
+              "count": 3353,
+              "mean": 4.6084,
+              "median": 3,
+              "p90_nearest_rank": 10
+            },
+            "npc_pickup_per_game_totals": [
+              8971,
+              9153,
+              8609
+            ],
+            "npc_start_occupancy_exposures_r1_to_r5": [
+              6466,
+              1194,
+              841,
+              1003,
+              996
+            ],
+            "passed_all_targets": false,
+            "probability": 0.1,
+            "region1_offset": 792,
+            "target_checks": {
+              "all_pickup_totals_in_range": false,
+              "clean_lifetime_median_equals_3": true,
+              "clean_lifetime_p90_in_11_to_15": false,
+              "region1_absolute_offset_within_309": false
+            }
+          },
+          {
+            "clean_positive_cell_lifetime": {
+              "count": 3323,
+              "mean": 5.1908,
+              "median": 3,
+              "p90_nearest_rank": 11
+            },
+            "npc_pickup_per_game_totals": [
+              8978,
+              9067,
+              8423
+            ],
+            "npc_start_occupancy_exposures_r1_to_r5": [
+              6319,
+              1154,
+              952,
+              996,
+              1079
+            ],
+            "passed_all_targets": false,
+            "probability": 0.2,
+            "region1_offset": 645,
+            "target_checks": {
+              "all_pickup_totals_in_range": false,
+              "clean_lifetime_median_equals_3": true,
+              "clean_lifetime_p90_in_11_to_15": true,
+              "region1_absolute_offset_within_309": false
+            }
+          },
+          {
+            "clean_positive_cell_lifetime": {
+              "count": 3223,
+              "mean": 5.7006,
+              "median": 4,
+              "p90_nearest_rank": 12
+            },
+            "npc_pickup_per_game_totals": [
+              8854,
+              9022,
+              8365
+            ],
+            "npc_start_occupancy_exposures_r1_to_r5": [
+              6131,
+              1218,
+              868,
+              1122,
+              1161
+            ],
+            "passed_all_targets": false,
+            "probability": 0.3,
+            "region1_offset": 457,
+            "target_checks": {
+              "all_pickup_totals_in_range": false,
+              "clean_lifetime_median_equals_3": false,
+              "clean_lifetime_p90_in_11_to_15": true,
+              "region1_absolute_offset_within_309": false
+            }
+          },
+          {
+            "clean_positive_cell_lifetime": {
+              "count": 3116,
+              "mean": 6.6242,
+              "median": 4.0,
+              "p90_nearest_rank": 14
+            },
+            "npc_pickup_per_game_totals": [
+              8754,
+              8903,
+              8301
+            ],
+            "npc_start_occupancy_exposures_r1_to_r5": [
+              5965,
+              1278,
+              933,
+              1118,
+              1206
+            ],
+            "passed_all_targets": false,
+            "probability": 0.4,
+            "region1_offset": 291,
+            "target_checks": {
+              "all_pickup_totals_in_range": false,
+              "clean_lifetime_median_equals_3": false,
+              "clean_lifetime_p90_in_11_to_15": true,
+              "region1_absolute_offset_within_309": true
+            }
+          },
+          {
+            "clean_positive_cell_lifetime": {
+              "count": 2948,
+              "mean": 7.6316,
+              "median": 5.0,
+              "p90_nearest_rank": 17
+            },
+            "npc_pickup_per_game_totals": [
+              8356,
+              8719,
+              8034
+            ],
+            "npc_start_occupancy_exposures_r1_to_r5": [
+              5616,
+              1263,
+              957,
+              1229,
+              1435
+            ],
+            "passed_all_targets": false,
+            "probability": 0.5,
+            "region1_offset": -58,
+            "target_checks": {
+              "all_pickup_totals_in_range": false,
+              "clean_lifetime_median_equals_3": false,
+              "clean_lifetime_p90_in_11_to_15": false,
+              "region1_absolute_offset_within_309": true
+            }
+          },
+          {
+            "clean_positive_cell_lifetime": {
+              "count": 2702,
+              "mean": 9.0944,
+              "median": 6.0,
+              "p90_nearest_rank": 19
+            },
+            "npc_pickup_per_game_totals": [
+              8334,
+              8528,
+              7745
+            ],
+            "npc_start_occupancy_exposures_r1_to_r5": [
+              5256,
+              1441,
+              1056,
+              1355,
+              1392
+            ],
+            "passed_all_targets": false,
+            "probability": 0.6,
+            "region1_offset": -418,
+            "target_checks": {
+              "all_pickup_totals_in_range": false,
+              "clean_lifetime_median_equals_3": false,
+              "clean_lifetime_p90_in_11_to_15": false,
+              "region1_absolute_offset_within_309": false
+            }
+          },
+          {
+            "clean_positive_cell_lifetime": {
+              "count": 2444,
+              "mean": 11.4018,
+              "median": 7.0,
+              "p90_nearest_rank": 25
+            },
+            "npc_pickup_per_game_totals": [
+              8189,
+              8081,
+              7669
+            ],
+            "npc_start_occupancy_exposures_r1_to_r5": [
+              4587,
+              1589,
+              1306,
+              1560,
+              1458
+            ],
+            "passed_all_targets": false,
+            "probability": 0.7,
+            "region1_offset": -1087,
+            "target_checks": {
+              "all_pickup_totals_in_range": false,
+              "clean_lifetime_median_equals_3": false,
+              "clean_lifetime_p90_in_11_to_15": false,
+              "region1_absolute_offset_within_309": false
+            }
+          },
+          {
+            "clean_positive_cell_lifetime": {
+              "count": 2122,
+              "mean": 13.599,
+              "median": 8.0,
+              "p90_nearest_rank": 32
+            },
+            "npc_pickup_per_game_totals": [
+              7461,
+              7395,
+              6899
+            ],
+            "npc_start_occupancy_exposures_r1_to_r5": [
+              4242,
+              1783,
+              1127,
+              1732,
+              1616
+            ],
+            "passed_all_targets": false,
+            "probability": 0.8,
+            "region1_offset": -1432,
+            "target_checks": {
+              "all_pickup_totals_in_range": false,
+              "clean_lifetime_median_equals_3": false,
+              "clean_lifetime_p90_in_11_to_15": false,
+              "region1_absolute_offset_within_309": false
+            }
+          },
+          {
+            "clean_positive_cell_lifetime": {
+              "count": 1791,
+              "mean": 16.7348,
+              "median": 10,
+              "p90_nearest_rank": 37
+            },
+            "npc_pickup_per_game_totals": [
+              7184,
+              6905,
+              6286
+            ],
+            "npc_start_occupancy_exposures_r1_to_r5": [
+              3118,
+              2190,
+              1378,
+              1959,
+              1855
+            ],
+            "passed_all_targets": false,
+            "probability": 0.9,
+            "region1_offset": -2556,
+            "target_checks": {
+              "all_pickup_totals_in_range": false,
+              "clean_lifetime_median_equals_3": false,
+              "clean_lifetime_p90_in_11_to_15": false,
+              "region1_absolute_offset_within_309": false
+            }
+          },
+          {
+            "clean_positive_cell_lifetime": {
+              "count": 1564,
+              "mean": 18.9552,
+              "median": 10.0,
+              "p90_nearest_rank": 45
+            },
+            "npc_pickup_per_game_totals": [
+              6436,
+              6116,
+              4970
+            ],
+            "npc_start_occupancy_exposures_r1_to_r5": [
+              2679,
+              2354,
+              1302,
+              1826,
+              2339
+            ],
+            "passed_all_targets": false,
+            "probability": 1.0,
+            "region1_offset": -2995,
+            "target_checks": {
+              "all_pickup_totals_in_range": false,
+              "clean_lifetime_median_equals_3": false,
+              "clean_lifetime_p90_in_11_to_15": false,
+              "region1_absolute_offset_within_309": false
+            }
+          }
+        ],
+        "definition": "Before each action, roam uniformly among legal cardinal moves with probability p; otherwise use the landed greedy action. Stay is used only if trapped.",
+        "grid": "p=0.0..1.0 in increments of 0.1",
+        "lifetime_preserving_residual": {
+          "explanation": "Median=3 and P90=11 pass, but pickups [8978,9067,8423] all exceed 7051 and R1 offset +645 exceeds +309.",
+          "p": 0.2
+        },
+        "result": "rejected: no p met the required conjunction"
+      }
+    },
+    "in_sample_warning": "Every candidate was evaluated on exactly npc-synthetic-0/1/2 with the g0 recorded effective player decisions replayed as two callables. These are the validation seeds and policies, not held-out evidence.",
+    "preserved_evidence": {
+      "original_action_calibration": "calibration_results and model_selection are retained unchanged",
+      "original_oracle_evidence": "oracle_tie_set_upper_bound and omitted_policy_factor_assessment are retained unchanged"
+    },
+    "scope": "Bounded in-sample macro calibration of the runnable gold/distance^4 model; no engine, runner, scenario, dispatch, generation, action-accuracy, or oracle changes.",
+    "selection": {
+      "best_residual_not_selected": "per-action hesitation p=0.7",
+      "reason": "The bounded simple one-knob sweeps expose incompatible trade-offs. Following the stop rule, no second combined mechanism, policy redesign, or exact-action optimization was attempted, and sim/npc.py remains the 8f2fcbe implementation.",
+      "selected_mechanism": null,
+      "selected_value": null
+    },
+    "status": "no_single_knob_met_all_targets_default_unchanged",
+    "targets_and_rationale": {
+      "clean_lifetime_median_exact": 3,
+      "clean_lifetime_p90_inclusive": [
+        11,
+        15
+      ],
+      "conjunction_required": true,
+      "lifetime_rationale": "Bring the long tail within two rounds of truth P90=13 without moving the already-correct median.",
+      "pickup_per_game_each_inclusive": [
+        5216,
+        7051
+      ],
+      "pickup_rationale": "Every synthetic game must lie inside the observed truth range; exact matching to any one game is neither required nor optimized.",
+      "region1_absolute_offset_max": 309,
+      "region1_rationale": "One third of the landed +927 central-occupancy offset, limiting directional central overcompetition."
+    }
+  },
   "methodology": {
     "accuracy": "exact_action_accuracy = matching slots / 31500; full_three_action_turn_accuracy = exactly matching triples / 10500.",
     "canonical_traversal": "g0, g1, g2; round 0..499; NPCs in end.dispatch_order.",
@@ -1929,7 +2601,7 @@
       }
     }
   },
-  "schema_version": 2,
+  "schema_version": 3,
   "status": "fitted_approximation_not_official_policy",
   "truth": {
     "games": {

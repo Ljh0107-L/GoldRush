@@ -82,6 +82,12 @@ TRUTH_NPC = {
     },
     "infra_strong_player_visible_lifetime": {"median": 2, "p90_nearest_rank": 6},
 }
+NPC_CALIBRATION_TARGETS = {
+    "pickup_per_game_each_inclusive": [5216, 7051],
+    "region1_absolute_offset_max": 309,
+    "clean_lifetime_p90_inclusive": [11, 15],
+    "clean_lifetime_median_exact": 3,
+}
 
 
 def _json_load(path: Path) -> Any:
@@ -906,11 +912,33 @@ class ValidationSuite:
             "clean_lifetime_median_delta": metrics["clean_positive_cell_lifetime"]["median"] - TRUTH_NPC["clean_positive_cell_lifetime"]["median"],
             "clean_lifetime_p90_delta": metrics["clean_positive_cell_lifetime"]["p90_nearest_rank"] - TRUTH_NPC["clean_positive_cell_lifetime"]["p90_nearest_rank"],
         }
+        pickup_low, pickup_high = NPC_CALIBRATION_TARGETS["pickup_per_game_each_inclusive"]
+        lifetime_low, lifetime_high = NPC_CALIBRATION_TARGETS["clean_lifetime_p90_inclusive"]
+        target_checks = {
+            "all_pickup_totals_in_range": all(
+                pickup_low <= value <= pickup_high for value in per_game_pickup
+            ),
+            "region1_absolute_offset_within_limit": abs(comparisons["occupancy_delta"][0])
+            <= NPC_CALIBRATION_TARGETS["region1_absolute_offset_max"],
+            "clean_lifetime_p90_in_range": lifetime_low
+            <= metrics["clean_positive_cell_lifetime"]["p90_nearest_rank"]
+            <= lifetime_high,
+            "clean_lifetime_median_exact": metrics["clean_positive_cell_lifetime"]["median"]
+            == NPC_CALIBRATION_TARGETS["clean_lifetime_median_exact"],
+        }
         self.fitted["npc_behavior"] = {
             "classification": "fitted_warning",
             "truth": TRUTH_NPC,
             "synthetic_weak_player_metrics": metrics,
             "comparison_to_truth": comparisons,
+            "calibration_attempt": {
+                "passed": all(target_checks.values()),
+                "targets": NPC_CALIBRATION_TARGETS,
+                "checks": target_checks,
+                "selection": "none; bounded one-knob sweeps did not meet all targets and the landed default was preserved",
+                "candidate_evidence": str(self.args.npc_report.resolve()),
+                "in_sample_warning": "The sweep used exactly these three synthetic seeds and replay policies; it is not held-out evidence.",
+            },
             "warning": "Private NPC behavior and fitted generation are not identifiable exactly; deviations are intentionally warnings, not hard failures.",
         }
 
