@@ -13,9 +13,22 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_LOGS_ROOT = ROOT / "logs"
+FROZEN_CHAMPION = {
+    "model_name": "champ76e",
+    "git_commit": "76eef470cb28d1bd52c71afe57b09108c32b8f6d",
+    "source_sha256": "d4526b22f4371e33e17dd3508ef74235e77ffc84ff81966ff0def25e0be013b0",
+    "so_sha256": "a784ae7c524725d1a2920d8eb90f93ea93a2160794cc086105a2d3361d1a9e5c",
+    "build_command": "g++ -std=c++17 -O3 -march=native -fPIC -Wall -Wextra -shared -o champ.so src/player.cpp -Isrc",
+}
+PROBE_ARTIFACT = {
+    "model_name": "probeobs",
+    "git_commit": "6213661",
+    "source_sha256": "c3d02a2b5a2ddfad1f884c98318d376511270cb34cddb08d4949b9c61720f2fd",
+}
 TEAMS = {
-    "Tiuntled-1": {"account": "player163", "model_id": 87478},
-    "Tundra-wawa": {"account": "player57", "model_id": 43116},
+    "Tiuntled-1": {"account": "player163", "model_id": 87478, "role": "opponent"},
+    "Tundra-wawa": {"account": "player57", "model_id": 43116, "role": "opponent"},
+    "_selfplay-champ": {"account": "champ76e", "model_id": None, "role": "selfplay_champion"},
 }
 
 
@@ -79,11 +92,16 @@ def parse_log(path):
     names = {1: header["player1"], 2: header["player2"]}
     last_players = {int(player["id"]): player for player in completed[-1]["end"]["players"]}
     costs = {1: [], 2: []}
+    dispatch_first = {1: 0, 2: 0}
     for row in completed:
-        for player in row["end"].get("players", []):
+        end = row["end"]
+        for player in end.get("players", []):
             player_id = int(player["id"])
             if player_id in costs and "cost" in player:
                 costs[player_id].append(int(player["cost"]))
+        order = end.get("dispatch_order") or []
+        if order and int(order[0]) in dispatch_first:
+            dispatch_first[int(order[0])] += 1
     return {
         "header": header,
         "names": names,
@@ -92,6 +110,7 @@ def parse_log(path):
             names[player_id]: score_record(last_players[player_id], costs[player_id])
             for player_id in (1, 2)
         },
+        "dispatch_first_by_player_id": dispatch_first,
         "visibility_by_target": {
             player_id: {
                 phase: _phase_visibility(records, player_id, phase)
@@ -129,8 +148,8 @@ def build_manifest(logs_root):
         if team is None:
             continue
         metadata = TEAMS[team]
-        opponent_id = 1 if parsed["names"][1] == metadata["account"] else 2
-        our_id = 3 - opponent_id
+        target_id = 1 if parsed["names"][1] == metadata["account"] else 2
+        probe_id = 3 - target_id
         game_id = source.stem.removeprefix("game_")
         team_dir = opponents_root / team
         team_dir.mkdir(parents=True, exist_ok=True)
@@ -146,20 +165,27 @@ def build_manifest(logs_root):
         else:
             archive_path.symlink_to(relative_target)
 
+        target_first_rounds = parsed["dispatch_first_by_player_id"][target_id]
         entries.append({
             "game_id": int(game_id) if game_id.isdigit() else game_id,
             "team": team,
-            "opponent": {
+            "target": {
                 "account": metadata["account"],
                 "model_id": metadata["model_id"],
+                "role": metadata["role"],
             },
-            "our_version": parsed["names"][our_id],
-            "our_player_id": our_id,
-            "opponent_player_id": opponent_id,
+            "probe_version": parsed["names"][probe_id],
+            "probe_player_id": probe_id,
+            "target_player_id": target_id,
             "rounds": parsed["rounds"],
             "scores": parsed["scores"],
-            "opponent_uncontested_net": parsed["scores"][metadata["account"]]["net_score"],
-            "opponent_visibility": parsed["visibility_by_target"][opponent_id],
+            "target_net_vs_probe": parsed["scores"][metadata["account"]]["net_score"],
+            "target_visibility": parsed["visibility_by_target"][target_id],
+            "dispatch": {
+                "first_by_player_id": parsed["dispatch_first_by_player_id"],
+                "target_first_rounds": target_first_rounds,
+                "target_first_rate": target_first_rounds / parsed["rounds"],
+            },
             "path": relative_to_root(archive_path),
             "source_path": relative_to_root(source),
         })
@@ -173,9 +199,14 @@ def build_manifest(logs_root):
 
     entries.sort(key=lambda entry: (entry["team"], int(entry["game_id"])))
     manifest = {
-        "schema_version": 1,
+        "schema_version": 2,
         "generated_at_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
         "logs_root": relative_to_root(logs_root),
+        "percentile_method": "nearest_rank",
+        "artifacts": {
+            "frozen_champion": FROZEN_CHAMPION,
+            "observation_probe": PROBE_ARTIFACT,
+        },
         "teams": {
             team: {
                 **metadata,
