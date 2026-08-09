@@ -1181,10 +1181,11 @@ def render_report(corpus: dict[str, list[Game]], probes: dict[str, list[Game]], 
                                 fmt_rate(b["regions"][rid], b["endpoints"]),
                                 fmt_rate(b["unit_regions"][0][rid], sum(b["unit_regions"][0].values())),
                                 fmt_rate(b["unit_regions"][1][rid], sum(b["unit_regions"][1].values()))))
-            pickup_region_rows.append((team_short(team), f"R{rid} {REGION_NAMES[rid]}", slots,
-                                       fmt_rate(sum(1 for _ in []) , 1) if False else
-                                       (f"{b['region_pickup_sum'][rid] / slots:.2f}" if slots else "NA"),
-                                       b["region_pickup_sum"][rid]))
+            pickup_region_rows.append((
+                team_short(team), f"R{rid} {REGION_NAMES[rid]}", slots,
+                f"{b['region_pickup_sum'][rid] / slots:.2f}" if slots else "NA",
+                b["region_pickup_sum"][rid],
+            ))
     append_table(lines, ["目标", "稳态轮", "至少一单位可见", "两单位可见", "可见端点", "端点d<=2", "端点d<=4", "端点在热点", "pickup完整轮", "完整轮pickup>0"], visibility_rows)
     append_table(lines, ["目标", "区域", "可见端点", "占比", "unit0占比", "unit1占比"], region_rows)
     lines.extend([
