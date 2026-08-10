@@ -524,6 +524,8 @@ class BudgetStrategy:
         self.replan_blind = 0
         self.lut_widen_used = 0
         self.lut_widen_refused = 0
+        self.lut_tail_gate_tested = 0
+        self.lut_tail_gate_rejected = 0
         self.blind_override_rounds = 0
         self.replica_match = 0
         self.replica_total = 0
@@ -654,12 +656,16 @@ class BudgetStrategy:
                 xrow = SLUT_WIDE[budget][1][dr0 + 3][dc0 + 3]
                 xcol = SLUT_WIDE[budget][2][dr0 + 3][dc0 + 3]
                 rich = gold[producer] >= 100
-                usable = (
-                    info["d"] != 0 and bool(info["gate_ok"])
-                    and tuple(wide[:3]) == tuple(head)
-                    and all(self.build.passable(srow + xrow[t], scol + xcol[t], rich)
-                            for t in range(3, budget))
-                )
+                head_ok = (info["d"] != 0 and bool(info["gate_ok"])
+                           and tuple(wide[:3]) == tuple(head))
+                tail_ok = all(
+                    self.build.passable(srow + xrow[t], scol + xcol[t], rich)
+                    for t in range(3, budget))
+                if head_ok:
+                    self.lut_tail_gate_tested += 1
+                    if not tail_ok:
+                        self.lut_tail_gate_rejected += 1
+                usable = head_ok and tail_ok
                 if usable:
                     tail = tuple(wide[3:budget])
                     self.lut_widen_used += 1
@@ -1596,10 +1602,26 @@ def _extra_arm(name: str) -> ArmSpec:
                    blind_tail=tail, trigger=trigger)
 
 
+def _install_field(model: str) -> None:
+    """Reuse the hot-field line's in-process central-field calibration.
+
+    ``sim/scenario.py::_make_central`` places central gold **uniformly** over region 1,
+    so the stock board has no gradient inside the central 9x9 -- exactly where the
+    measured gradient lives (ring1->ring5 steepness 3.35x measured, 1.22x uniform,
+    2.51x under the calibrated separable law).  ``sim/analyze_hotfield_table.install_field``
+    monkeypatches only the permutation's law, in this process only, and never writes
+    ``sim/scenario.py``.  A candidate whose whole premise is *where in the centre to
+    stand* must be judged on a board that has a centre.
+    """
+    from sim.analyze_hotfield_table import install_field   # noqa: PLC0415
+    install_field(model)
+
+
 def ab(map_name: str, base_so: Path, seeds: Sequence[str], *,
        arms: Sequence[str], opponent: str = "self",
-       steady_from: int = STEADY_FROM) -> Mapping[str, Any]:
+       steady_from: int = STEADY_FROM, field: str = "uniform") -> Mapping[str, Any]:
     """Same-seed paired closed-loop A/B of every arm, both order conditions."""
+    _install_field(field)
     rows = load_map(map_name).rows
     walls = frozenset(
         r * GRID + c for r, line in enumerate(rows)
@@ -1679,7 +1701,9 @@ def ab(map_name: str, base_so: Path, seeds: Sequence[str], *,
             records.append(row)
 
     out: dict[str, Any] = {
-        "map": map_name, "opponent": opponent, "seeds": [str(s) for s in seeds],
+        "map": map_name, "opponent": opponent, "field": field,
+        "seeds": [str(s) for s in seeds],
+        "base_log_sha": [row["base_sha"] for row in records],
         "arms": [spec.name for spec in specs],
         "arm_specs": {
             spec.name: {
@@ -1945,19 +1969,21 @@ def _align_pickups(result: Any) -> list[int]:
     so no false match is possible.  The caller cross-checks every per-unit total
     against the engine's own ``UnitState.pickup``.
     """
-    amounts: list[int] = []
+    amounts: list[tuple[int, int, int]] = []
     pointer = 0
     picks = result.pickups
     for event in result.movements:
-        amount = 0
+        amount = before = remaining = 0
         if event.moved and pointer < len(picks):
             candidate = picks[pointer]
             if (candidate.actor_id == event.actor_id
                     and candidate.unit_index == event.unit_index
                     and candidate.position.cell == event.destination.cell):
                 amount = int(candidate.amount)
+                before = int(candidate.before)
+                remaining = int(candidate.remaining)
                 pointer += 1
-        amounts.append(amount)
+        amounts.append((amount, before, remaining))
     if pointer != len(picks):
         raise AssertionError(
             "pickup alignment failed: consumed %d of %d" % (pointer, len(picks)))
@@ -1968,8 +1994,9 @@ def run_attributed(p1: Any, p2: Any, *, map_name: str, seed: str,
                    costs: Sequence[int], player1_name: str | None = None,
                    player2_name: str | None = None) -> Mapping[str, Any]:
     """``run_game`` with per-action-slot pickup attribution for seat 1."""
+    import sim.runner as _runner                                     # noqa: PLC0415
     from sim.engine import GameEngine, GameMap                        # noqa: PLC0415
-    from sim.scenario import ScenarioGenerator                        # noqa: PLC0415
+    ScenarioGenerator = _runner.ScenarioGenerator                     # honours install_field
     from sim.runner import (                                          # noqa: PLC0415
         ROUND_COUNT, _dispatch_costs, _fixed_cost_pair, _json_bytes, _npc_order,
         _npc_policy, _open_strategy, _spawn_state, _summary, round_log_record,
@@ -2014,7 +2041,7 @@ def run_attributed(p1: Any, p2: Any, *, map_name: str, seed: str,
             assigned[0] = k
             # seat 1's movements, in the engine's own (order, 1 - order) sequence
             mine = [
-                (event, amount) for event, amount in zip(result.movements, amounts)
+                (event, trio) for event, trio in zip(result.movements, amounts)
                 if event.actor_id == 1
             ]
             if len(mine) != 6:
@@ -2023,7 +2050,7 @@ def run_attributed(p1: Any, p2: Any, *, map_name: str, seed: str,
             cursor = 0
             for unit in (order, 1 - order):
                 for index in range(assigned[unit]):
-                    event, amount = mine[cursor]
+                    event, (amount, before, remaining) = mine[cursor]
                     if int(event.unit_index) != unit:
                         raise AssertionError("slot/unit mismatch in attribution")
                     slots[unit].append({
@@ -2034,6 +2061,8 @@ def run_attributed(p1: Any, p2: Any, *, map_name: str, seed: str,
                         "cell": list(event.destination.cell),
                         "from": list(event.origin.cell),
                         "amount": amount,
+                        "before": before,
+                        "remaining": remaining,
                     })
                     cursor += 1
             engine_pickup = {
@@ -2086,6 +2115,14 @@ def _fold_attribution(rounds: Sequence[Mapping[str, Any]], *,
     # unit already entered this round is still worth 65% of its residue.  This
     # separates "the extra steps reach NEW ground" from "the extra steps
     # re-harvest the pile the first three steps already stood on".
+    # ---- residue census (check 1: the mechanism variable, not the outcome) ----
+    # ``before`` is the cell value on entry, ``remaining`` = floor(0.35 before) is
+    # what the 65% rule leaves behind, i.e. the milkable pool this round.
+    residue = {
+        "head_entries": 0, "head_before": 0, "head_left": 0,
+        "tail_entries": 0, "tail_before": 0, "tail_left": 0,
+        "base_entries": 0, "base_before": 0, "base_left": 0,
+    }
     revisit = {
         "head_pickup_new": 0, "head_pickup_revisit": 0,
         "tail_pickup_new": 0, "tail_pickup_revisit": 0,
@@ -2116,6 +2153,9 @@ def _fold_attribution(rounds: Sequence[Mapping[str, Any]], *,
                     tag = "revisit" if cell in seen else "new"
                     revisit["base_pickup_%s" % tag] += slot["amount"]
                     revisit["base_moves_%s" % tag] += 1
+                    residue["base_entries"] += 1
+                    residue["base_before"] += int(slot.get("before", 0))
+                    residue["base_left"] += int(slot.get("remaining", 0))
                     seen.add(cell)
             continue
         realloc_rounds += 1
@@ -2145,6 +2185,9 @@ def _fold_attribution(rounds: Sequence[Mapping[str, Any]], *,
             cell = tuple(slot["cell"])
             tag = "revisit" if cell in seen else "new"
             revisit["%s_pickup_%s" % (phase, tag)] += slot["amount"]
+            residue["%s_entries" % phase] += 1
+            residue["%s_before" % phase] += int(slot.get("before", 0))
+            residue["%s_left" % phase] += int(slot.get("remaining", 0))
             if phase == "tail":
                 revisit["tail_moves_%s" % tag] += 1
             seen.add(cell)
@@ -2161,6 +2204,7 @@ def _fold_attribution(rounds: Sequence[Mapping[str, Any]], *,
         "donor_pickup": donor_pickup,
         "donor_slots": donor_slots,
         "revisit": revisit,
+        "residue": residue,
         "nonrealloc_pickup_by_slot_index": {
             str(i): baseline_by_index[i] for i in range(3)},
         "nonrealloc_slots_by_index": {str(i): baseline_slots[i] for i in range(3)},
@@ -2389,6 +2433,12 @@ def stepattr(map_name: str, base_so: Path, seeds: Sequence[str], *,
                 "donor_planned_moves": _merge_hist([
                     row[name]["donor_planned_moves"] for row in subset]),
                 "total_pickup": summary(pull("attribution.total_pickup")),
+                "residue": {
+                    field: summary(pull("attribution.residue.%s" % field))
+                    for field in ("head_entries", "head_before", "head_left",
+                                  "tail_entries", "tail_before", "tail_left",
+                                  "base_entries", "base_before", "base_left")
+                },
                 "revisit": {
                     field: summary(pull("attribution.revisit.%s" % field))
                     for field in ("head_pickup_new", "head_pickup_revisit",
@@ -2425,6 +2475,10 @@ def stepattr(map_name: str, base_so: Path, seeds: Sequence[str], *,
                 for row in subset]) for i in range(3)}
         cell["base_total_pickup"] = summary(
             [row["base_attribution"]["total_pickup"] for row in subset])
+        cell["base_residue"] = {
+            field: summary([row["base_attribution"]["residue"][field] for row in subset])
+            for field in ("base_entries", "base_before", "base_left")
+        }
         cell["base_revisit"] = {
             field: summary([row["base_attribution"]["revisit"][field] for row in subset])
             for field in ("base_pickup_new", "base_pickup_revisit",
@@ -2525,6 +2579,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         if name in ("ab", "stepattr"):
             item.add_argument("--arms", default=",".join(s.name for s in ARM_TABLE))
             item.add_argument("--opponent", default="self", choices=("self", "probeobs"))
+            item.add_argument("--field", default="uniform",
+                              choices=("uniform", "centripetal"))
         if name == "assemble":
             item.add_argument("--artifacts", type=Path, default=Path("/tmp/gr_step"))
     args = parser.parse_args(argv)
@@ -2551,7 +2607,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         payload = ab(
             args.map, args.base, _seeds(args.seeds),
             arms=tuple(a for a in args.arms.split(",") if a),
-            opponent=args.opponent,
+            opponent=args.opponent, field=args.field,
         )
 
     text = json.dumps(payload, indent=1, sort_keys=True, default=str)
