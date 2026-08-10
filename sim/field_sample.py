@@ -288,6 +288,7 @@ def per_game_mechanics(game_id: int, our_model: str) -> dict:
     prev: dict[int, list[int]] = {}
     delta = {our_pid: [], 3 - our_pid: []}
     firsts = []
+    cost = {our_pid: [], 3 - our_pid: []}   # per-round latency, for P5 (opponent speed)
     for line in lines[2:]:
         if not line.strip():
             continue
@@ -300,6 +301,8 @@ def per_game_mechanics(game_id: int, our_model: str) -> dict:
             firsts.append(1 if int(order[0]) == our_pid else 0)
         for entry in rec["end"]["players"]:
             pid = int(entry["id"])
+            if int(rec["round"]) >= 4 and pid in cost:
+                cost[pid].append(int(entry.get("cost") or 0))   # end-phase only: start is stale
             cur = [int(u["gold"]) for u in entry["units"]]
             if pid in prev and len(prev[pid]) == len(cur):
                 delta[pid].extend(n - w for n, w in zip(cur, prev[pid]))
@@ -313,7 +316,10 @@ def per_game_mechanics(game_id: int, our_model: str) -> dict:
         mean = statistics.fmean(values)
         return {"unit_rounds": len(values), "hit": hit, "yield_per_hit": yld,
                 "mean": mean, "gross": hit * yld, "burn": hit * yld - mean}
+    def p50(v):
+        return sorted(v)[len(v) // 2] if v else None
     return {"f": statistics.fmean(firsts) if firsts else None,
+            "our_p50_ns": p50(cost[our_pid]), "their_p50_ns": p50(cost[3 - our_pid]),
             "ours": split(delta[our_pid]), "theirs": split(delta[3 - our_pid])}
 
 
@@ -420,6 +426,31 @@ def cmd_estimate(_args: argparse.Namespace) -> int:
                   % (dg, dg * 1000, db, db * 1000))
             print("   -> %s" % ("HOLDS (burn dominates)" if db > dg
                                 else "FALSIFIED (gross dominates)"))
+        # P5: stratum win rate should track opponent SLOWNESS (their P50) and our f
+        def corr(xs, ys):
+            if len(xs) < 3:
+                return float("nan")
+            mx, my = statistics.fmean(xs), statistics.fmean(ys)
+            num = sum((a - mx) * (b - my) for a, b in zip(xs, ys))
+            dx = sum((a - mx) ** 2 for a in xs) ** 0.5
+            dy = sum((b - my) ** 2 for b in ys) ** 0.5
+            return num / (dx * dy) if dx and dy else float("nan")
+        sp, fv, wr = [], [], []
+        for name in order:
+            sub = [d for d in withmech if d["stratum"] == name
+                   and d["mechanics"].get("their_p50_ns")]
+            if not sub:
+                continue
+            sp.append(statistics.fmean(d["mechanics"]["their_p50_ns"] for d in sub))
+            fv.append(statistics.fmean(d["mechanics"]["f"] or 0 for d in sub))
+            wr.append(statistics.fmean(d["is_win"] for d in sub))
+        if len(wr) >= 3:
+            r_speed, r_f = corr(sp, wr), corr(fv, wr)
+            print("P5 win rate tracks opponent slowness / our f: r(their_P50)=%.3f  r(f)=%.3f"
+                  % (r_speed, r_f))
+            print("   -> %s" % ("HOLDS" if (r_speed > 0 or r_f > 0)
+                                else "FALSIFIED (no positive relation)"))
+            print("   P2 vs P4 vs P5 are competing; compare r(opponent burn) above with these.")
         fs = [d["mechanics"]["f"] for d in withmech if d["mechanics"].get("f") is not None]
         if fs:
             print("observed f: median %.3f  min %.3f  max %.3f  (f<0.95 in %d/%d games)"
