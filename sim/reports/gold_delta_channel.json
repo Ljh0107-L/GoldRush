@@ -1,0 +1,263 @@
+{
+  "battlefields": {
+    "T-1 map1": {
+      "factor_split": {
+        "hit_ratio": 1.268997668997669,
+        "hit_share_of_log_gap": 1.4714522676132344,
+        "mean_ratio": 1.1757420456972025,
+        "yield_ratio": 0.9521488037062243,
+        "yield_share_of_log_gap": -0.3028666370362696
+      },
+      "family": "t1f1",
+      "games": 6,
+      "implied_score_delta_from_channel": -274.8830995323981,
+      "observed_mean_score_delta": -274.3333333333333,
+      "ours": {
+        "ge6": 0.1295925183700735,
+        "ge8": 0.06813627254509018,
+        "hit": 0.35821643286573146,
+        "mean": 1.5641282565130261,
+        "n": 5988,
+        "negative": 0.004843019372077488,
+        "sd": 3.4562906908735904,
+        "se": 0.04466520851483013,
+        "yield_per_hit": 4.631235431235432
+      },
+      "reconciliation_residual": -0.5497661990647771,
+      "reference_score_delta": -274.3,
+      "theirs": {
+        "ge6": 0.13510354041416164,
+        "ge8": 0.0686372745490982,
+        "hit": 0.4545758183032732,
+        "mean": 1.8390113560454242,
+        "n": 5988,
+        "negative": 0.004676018704074816,
+        "sd": 4.6399116566587875,
+        "se": 0.05996099291714213,
+        "yield_per_hit": 4.409625275532696
+      }
+    },
+    "T-1 map2": {
+      "factor_split": {
+        "hit_ratio": 1.1226556639159788,
+        "hit_share_of_log_gap": 2.1964332411464316,
+        "mean_ratio": 1.054086956521739,
+        "yield_ratio": 0.9761735866627173,
+        "yield_share_of_log_gap": -0.4578049725458696
+      },
+      "family": "t1f2",
+      "games": 6,
+      "implied_score_delta_from_channel": -103.87441549766186,
+      "observed_mean_score_delta": -106.66666666666667,
+      "ours": {
+        "ge6": 0.1623246492985972,
+        "ge8": 0.08316633266533066,
+        "hit": 0.4452237808951236,
+        "mean": 1.920507682030728,
+        "n": 5988,
+        "negative": 0.00584502338009352,
+        "sd": 4.563018673148221,
+        "se": 0.058967314592892506,
+        "yield_per_hit": 4.701050262565642
+      },
+      "reconciliation_residual": 2.792251169004814,
+      "reference_score_delta": -106.7,
+      "theirs": {
+        "ge6": 0.15664662658650635,
+        "ge8": 0.0823313293253173,
+        "hit": 0.4998329993319973,
+        "mean": 2.02438209752839,
+        "n": 5988,
+        "negative": 0.005177020708082832,
+        "sd": 5.717157755683101,
+        "se": 0.07388210833771659,
+        "yield_per_hit": 4.589041095890411
+      }
+    },
+    "T-1 map3": {
+      "factor_split": {
+        "hit_ratio": 1.1349605168700647,
+        "hit_share_of_log_gap": 1.251750678534149,
+        "mean_ratio": 1.106427818756586,
+        "yield_ratio": 0.9697647971931189,
+        "yield_share_of_log_gap": -0.30356666613448524
+      },
+      "family": "t1f3",
+      "games": 6,
+      "implied_score_delta_from_channel": -101.20240480961928,
+      "observed_mean_score_delta": -104.0,
+      "ours": {
+        "ge6": 0.08767535070140281,
+        "ge8": 0.04392117568470274,
+        "hit": 0.2326319305277221,
+        "mean": 0.9509018036072144,
+        "n": 5988,
+        "negative": 0.009352037408149633,
+        "sd": 2.8895243753590845,
+        "se": 0.037340958928855916,
+        "yield_per_hit": 4.564967695620962
+      },
+      "reconciliation_residual": 2.7975951903807186,
+      "reference_score_delta": -104.0,
+      "theirs": {
+        "ge6": 0.072812291249165,
+        "ge8": 0.035404141616566465,
+        "hit": 0.26402805611222446,
+        "mean": 1.0521042084168337,
+        "n": 5988,
+        "negative": 0.006179024716098864,
+        "sd": 3.852286440709606,
+        "se": 0.04978261162681827,
+        "yield_per_hit": 4.426944971537002
+      }
+    },
+    "Tundra map1": {
+      "factor_split": {
+        "hit_ratio": 1.39741816505302,
+        "hit_share_of_log_gap": 2.6102015225656645,
+        "mean_ratio": 1.1367796962762637,
+        "yield_ratio": 0.8096061994612804,
+        "yield_share_of_log_gap": -1.6474902512551166
+      },
+      "family": "frTu1",
+      "games": 6,
+      "implied_score_delta_from_channel": -219.60587842351376,
+      "observed_mean_score_delta": -219.16666666666666,
+      "ours": {
+        "ge6": 0.14044756179024717,
+        "ge8": 0.06880427521710086,
+        "hit": 0.3622244488977956,
+        "mean": 1.6055444221776887,
+        "n": 5988,
+        "negative": 0.005511022044088177,
+        "sd": 3.556513512179538,
+        "se": 0.04596037538936268,
+        "yield_per_hit": 4.731212540341171
+      },
+      "reconciliation_residual": -0.4392117568471008,
+      "reference_score_delta": -219.2,
+      "theirs": {
+        "ge6": 0.13393453573814296,
+        "ge8": 0.059953239812959254,
+        "hit": 0.5061790247160989,
+        "mean": 1.8251503006012024,
+        "n": 5988,
+        "negative": 0.0026720106880427524,
+        "sd": 3.9731841316211867,
+        "se": 0.05134495723269738,
+        "yield_per_hit": 3.8304190036291654
+      }
+    },
+    "Tundra map2": {
+      "factor_split": {
+        "hit_ratio": 1.2318456883509834,
+        "hit_share_of_log_gap": -7.302382353471385,
+        "mean_ratio": 0.971849629368161,
+        "yield_ratio": 0.8352596660769002,
+        "yield_share_of_log_gap": 6.304245814496768
+      },
+      "family": "frTu2",
+      "games": 6,
+      "implied_score_delta_from_channel": 53.27321309285238,
+      "observed_mean_score_delta": 50.166666666666664,
+      "ours": {
+        "ge6": 0.16382765531062124,
+        "ge8": 0.08199732798931196,
+        "hit": 0.4415497661990648,
+        "mean": 1.8924515698062792,
+        "n": 5988,
+        "negative": 0.006346025384101536,
+        "sd": 4.5667979697487855,
+        "se": 0.059016153966024325,
+        "yield_per_hit": 4.709531013615734
+      },
+      "reconciliation_residual": 3.106546426185716,
+      "reference_score_delta": 50.2,
+      "theirs": {
+        "ge6": 0.1492985971943888,
+        "ge8": 0.07114228456913828,
+        "hit": 0.5439211756847028,
+        "mean": 1.8391783567134268,
+        "n": 5988,
+        "negative": 0.006680026720106881,
+        "sd": 5.571739770940658,
+        "se": 0.07200289006840895,
+        "yield_per_hit": 3.933681301811483
+      }
+    },
+    "Tundra map3": {
+      "factor_split": {
+        "hit_ratio": 0.8095881161377448,
+        "hit_share_of_log_gap": 0.7452150525653575,
+        "mean_ratio": 0.7531823441891221,
+        "yield_ratio": 0.8662342774135661,
+        "yield_share_of_log_gap": 0.5066182070460131
+      },
+      "family": "frTu3",
+      "games": 6,
+      "implied_score_delta_from_channel": 249.3319973279894,
+      "observed_mean_score_delta": 245.83333333333334,
+      "ours": {
+        "ge6": 0.09602538410153641,
+        "ge8": 0.04208416833667335,
+        "hit": 0.24732798931195724,
+        "mean": 1.010187040748163,
+        "n": 5988,
+        "negative": 0.009352037408149633,
+        "sd": 2.9753280517088383,
+        "se": 0.038449789012396166,
+        "yield_per_hit": 4.595543551654288
+      },
+      "reconciliation_residual": 3.498663994656056,
+      "reference_score_delta": 245.8,
+      "theirs": {
+        "ge6": 0.04876419505678023,
+        "ge8": 0.022879091516366065,
+        "hit": 0.20023380093520374,
+        "mean": 0.7608550434201736,
+        "n": 5988,
+        "negative": 0.0035070140280561123,
+        "sd": 2.700751969909377,
+        "se": 0.03490147695081485,
+        "yield_per_hit": 3.980817347789825
+      }
+    }
+  },
+  "channel": {
+    "completeness": "per-unit gold is present in 100% of unit-observations, including rounds where the unit is invisible",
+    "field": "end.players[].units[].gold, differenced round over round",
+    "forfeit_handling": "rows lacking start/end break the difference chain",
+    "multi_cell_floor": "a unit-round gain above 7 cannot come from one ordinary cell of value <= 10"
+  },
+  "pooled": {
+    "factor_split": {
+      "hit_ratio": 1.1828292526804287,
+      "hit_share_of_log_gap": 3.866426229767737,
+      "mean_ratio": 1.044384277845206,
+      "yield_ratio": 0.8973915191096237,
+      "yield_share_of_log_gap": -2.492960131731865
+    },
+    "ours": {
+      "ge6": 0.12998218659541305,
+      "ge8": 0.06468492540636829,
+      "hit": 0.3478623914495658,
+      "mean": 1.4906201291471832,
+      "n": 35928,
+      "negative": 0.0068748608327766645,
+      "sd": 3.7494187819629228,
+      "se": 0.01978096295136418,
+      "yield_per_hit": 4.66842694831173
+    },
+    "theirs": {
+      "ge6": 0.11609329770652416,
+      "ge8": 0.05672456023157426,
+      "hit": 0.4114618125139167,
+      "mean": 1.5567802271209086,
+      "n": 35928,
+      "negative": 0.004815185927410376,
+      "sd": 4.555225705672905,
+      "se": 0.024032191696613883,
+      "yield_per_hit": 4.189406750997768
+    }
+  }
+}
