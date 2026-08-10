@@ -43,5 +43,29 @@
       "id": 278135,
       "updated_at": "2026-08-10T08:20:18.000Z"
     }
+  },
+  {
+    "captured_at_utc": "2026-08-10T15:42:17.452130+00:00",
+    "external_games": 853,
+    "external_wins": 259,
+    "frozen_lineage_games": 36,
+    "frozen_lineage_opponents": {
+      "Tiuntled-1": 18,
+      "Tundra-wawa": 18
+    },
+    "game_counts": {
+      "active": 690,
+      "passive": 163,
+      "self": 832
+    },
+    "ladder_below_visible_cap": false,
+    "ladder_rank": 66,
+    "note": "pre-reset clean reading: ~7h of zero self-initiated games, 24h window should now be dominated by passive challenges vs fd47ea6",
+    "platform_p90_ns": 290,
+    "platform_win_rate": "0.3401",
+    "public_model": {
+      "id": 278135,
+      "updated_at": "2026-08-10T08:20:18.000Z"
+    }
   }
 ]
