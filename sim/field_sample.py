@@ -367,6 +367,20 @@ def wilson(wins: int, n: int, z: float = 1.96) -> tuple[float, float]:
     return (max(0.0, centre - half), min(1.0, centre + half))
 
 
+def crit_r(n: int) -> float:
+    """Smallest |r| that is significant at two-tailed p<0.05 for n points.
+
+    Needed because these predictions are adjudicated over STRATA, so n is 4 or 5,
+    not 96. At n=4 even r=0.94 is not significant. Without this gate a test of the
+    form "r > 0" holds half the time under the null, which manufactures
+    confirmations: a synthetic run with burn deliberately held CONSTANT across
+    strata still reported P2 as HOLDS at r=0.003.
+    """
+    t = {3: 12.706, 4: 4.303, 5: 3.182, 6: 2.776, 7: 2.571, 8: 2.447}.get(n, 2.0)
+    df = max(1, n - 2)
+    return t / (t * t + df) ** 0.5
+
+
 def cmd_estimate(_args: argparse.Namespace) -> int:
     roster = load_roster()
     if not RESULTS.exists():
@@ -421,8 +435,20 @@ def cmd_estimate(_args: argparse.Namespace) -> int:
             vx = sum((a - mx) ** 2 for a in xs) ** 0.5
             vy = sum((b - my) ** 2 for b in ys) ** 0.5
             r = cov / (vx * vy) if vx and vy else float("nan")
-            print("P2 stratum win rate correlates POSITIVELY with opponent burn: r = %.3f" % r)
-            print("   -> %s" % ("HOLDS" if r > 0 else "FALSIFIED (sign wrong or null)"))
+            rc = crit_r(len(xs))
+            spread = (max(xs) - min(xs)) if xs else 0.0
+            print("P2 stratum win rate correlates POSITIVELY with opponent burn: r = %.3f"
+                  " (n=%d strata, |r| must exceed %.3f for p<0.05)" % (r, len(xs), rc))
+            if spread < 1e-9:
+                verdict = ("INCONCLUSIVE (opponent burn is constant across strata, so there is"
+                           " no variation to correlate against)")
+            elif r > rc:
+                verdict = "HOLDS (positive and significant)"
+            elif r < -rc:
+                verdict = "FALSIFIED (significant in the WRONG direction)"
+            else:
+                verdict = "INCONCLUSIVE (|r| below the n=%d significance floor)" % len(xs)
+            print("   -> %s" % verdict)
         wins = [d for d in withmech if d["is_win"]]
         if wins:
             dg = statistics.fmean(d["mechanics"]["ours"]["gross"]
@@ -432,8 +458,16 @@ def cmd_estimate(_args: argparse.Namespace) -> int:
             print("P3 in games we WIN, burn edge beats gross edge: "
                   "d_gross=%+.4f (%+.0f gold)  d_burn=%+.4f (%+.0f gold)"
                   % (dg, dg * 1000, db, db * 1000))
-            print("   -> %s" % ("HOLDS (burn dominates)" if db > dg
-                                else "FALSIFIED (gross dominates)"))
+            if db <= 0 and dg <= 0:
+                p3 = ("FALSIFIED (neither edge is in our favour in games we win; comparing two"
+                      " negative edges cannot show burn 'dominating')")
+            elif db > dg and db > 0:
+                p3 = "HOLDS (burn edge positive and larger than the gross edge)"
+            elif dg > 0 and dg >= db:
+                p3 = "FALSIFIED (gross edge dominates)"
+            else:
+                p3 = "INCONCLUSIVE (mixed signs; state the split rather than a winner)"
+            print("   -> %s" % p3)
         # P5: stratum win rate should track opponent SLOWNESS (their P50) and our f
         def corr(xs, ys):
             if len(xs) < 3:
@@ -454,10 +488,16 @@ def cmd_estimate(_args: argparse.Namespace) -> int:
             wr.append(statistics.fmean(d["is_win"] for d in sub))
         if len(wr) >= 3:
             r_speed, r_f = corr(sp, wr), corr(fv, wr)
+            rc5 = crit_r(len(wr))
             print("P5 win rate tracks opponent slowness / our f: r(their_P50)=%.3f  r(f)=%.3f"
-                  % (r_speed, r_f))
-            print("   -> %s" % ("HOLDS" if (r_speed > 0 or r_f > 0)
-                                else "FALSIFIED (no positive relation)"))
+                  " (n=%d strata, floor %.3f)" % (r_speed, r_f, len(wr), rc5))
+            if r_speed > rc5 or r_f > rc5:
+                p5 = "HOLDS (at least one relation positive and significant)"
+            elif r_speed < -rc5 or r_f < -rc5:
+                p5 = "FALSIFIED (significant in the WRONG direction)"
+            else:
+                p5 = "INCONCLUSIVE (both below the n=%d significance floor)" % len(wr)
+            print("   -> %s" % p5)
             print("   P2 vs P4 vs P5 are competing; compare r(opponent burn) above with these.")
         fs = [d["mechanics"]["f"] for d in withmech if d["mechanics"].get("f") is not None]
         if fs:
@@ -466,6 +506,71 @@ def cmd_estimate(_args: argparse.Namespace) -> int:
                      sum(1 for x in fs if x < 0.95), len(fs)))
             print("  reminder: first mover does NOT auto-convert (AGENT.md:57); f~1 is")
             print("  necessary, not sufficient -- several older 230-260ns builds still lost.")
+
+        # ---- game-level adjudication of P2/P5 (the statistically sound version) ----
+        # Added BEFORE any real game existed, for a reason the synthetic dry run made
+        # unmissable: adjudicated over 4 strata, r=0.943 is still "not significant"
+        # (floor 0.950), so the stratum-level forms of P2 and P5 are close to
+        # unfalsifiable no matter what the world does. Correlating per GAME uses
+        # n=90 instead of n=4 and drops the floor from 0.950 to about 0.21. The
+        # stratum-level lines above are kept for continuity with the pre-registration;
+        # where the two disagree, the game-level verdict is the one with the power.
+        strat_games = [d for d in withmech if d["kind"] == "stratified"
+                       and d["mechanics"].get("their_p50_ns")]
+        if len(strat_games) >= 10:
+            wins = [float(d["is_win"]) for d in strat_games]
+            speeds = [float(d["mechanics"]["their_p50_ns"]) for d in strat_games]
+            fvals = [float(d["mechanics"]["f"]) for d in strat_games
+                     if d["mechanics"].get("f") is not None]
+            burns = [float(d["mechanics"]["theirs"].get("burn", 0.0)) for d in strat_games
+                     if d["mechanics"].get("theirs")]
+            floor = crit_r(len(strat_games))
+            print()
+            print("--- P2/P5 at the GAME level (n=%d, significance floor %.3f) ---"
+                  % (len(strat_games), floor))
+            for label, xs in (("opponent burn  (P2)", burns),
+                              ("opponent P50   (P5)", speeds),
+                              ("our f          (P5)", fvals)):
+                if len(xs) != len(wins) or (max(xs) - min(xs)) < 1e-9:
+                    print("  %s: no usable variation" % label)
+                    continue
+                rr = corr(xs, wins)
+                tag = ("positive, significant" if rr > floor else
+                       "NEGATIVE, significant" if rr < -floor else
+                       "not significant")
+                print("  %s vs win: r = %+.3f  (%s)" % (label, rr, tag))
+
+        # ---- middle link of the scarcity causal chain (no extra quota, one more column) ----
+        # The other line's hypothesis is that our income is scarcity-sensitive and moving
+        # second is merely one way the board gets thin. That chain needs three links:
+        #   faster opponent -> we move second more -> board is thinner for us -> we lose.
+        # This block supplies the MIDDLE link, binned by opponent speed, so the chain has
+        # data at both ends and in between rather than being inferred across two reports.
+        binned = [d for d in withmech
+                  if d["mechanics"].get("their_p50_ns") and d["mechanics"].get("f") is not None]
+        if len(binned) >= 8:
+            binned.sort(key=lambda d: d["mechanics"]["their_p50_ns"])
+            q = max(1, len(binned) // 4)
+            groups = [binned[i:i + q] for i in range(0, len(binned), q)][:4]
+            print()
+            print("--- our second-mover share by opponent speed (chain middle link) ---")
+            print("%-16s %4s %10s %14s %9s %10s" % (
+                "their P50 range", "n", "their P50", "our 2nd-mover", "win rate", "our mean"))
+            for g in groups:
+                lo = g[0]["mechanics"]["their_p50_ns"]
+                hi = g[-1]["mechanics"]["their_p50_ns"]
+                second = statistics.fmean(1.0 - d["mechanics"]["f"] for d in g)
+                wrate = statistics.fmean(d["is_win"] for d in g)
+                omean = statistics.fmean(d["mechanics"]["ours"].get("mean", 0) for d in g
+                                         if d["mechanics"].get("ours"))
+                print("%-16s %4d %10.0f %14.3f %9.3f %10.4f"
+                      % ("%.0f-%.0f" % (lo, hi), len(g),
+                         statistics.median([d["mechanics"]["their_p50_ns"] for d in g]),
+                         second, wrate, omean))
+            print("  read: if the fastest-opponent bin shows BOTH a higher second-mover share")
+            print("  AND a lower win rate, the middle link holds. If our second-mover share is")
+            print("  flat across bins, then opponent speed is NOT reaching us through action")
+            print("  order, and the scarcity chain must be carried by something else.")
 
     bench = [d for d in done if d["kind"] == "purposive"]
     if bench:
