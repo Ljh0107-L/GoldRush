@@ -1,0 +1,417 @@
+{
+ "construct": "fd47ea6 (player_current.so)",
+ "entries": [
+  {
+   "map_id": 1,
+   "model_id": 67453,
+   "model_name": "player6",
+   "slot_age_h_at_freeze": 15.6,
+   "slot_updated_at": "2026-08-10T01:11:01.000Z",
+   "team": "566",
+   "user_id": 6
+  },
+  {
+   "map_id": 2,
+   "model_id": 338303,
+   "model_name": "player7",
+   "slot_age_h_at_freeze": 0.12,
+   "slot_updated_at": "2026-08-10T16:40:04.000Z",
+   "team": ".gitignore",
+   "user_id": 7
+  },
+  {
+   "map_id": 3,
+   "model_id": 359358,
+   "model_name": "player34",
+   "slot_age_h_at_freeze": 14.09,
+   "slot_updated_at": "2026-08-10T02:42:07.000Z",
+   "team": "IKUN",
+   "user_id": 34
+  },
+  {
+   "map_id": 1,
+   "model_id": 1182,
+   "model_name": "player43",
+   "slot_age_h_at_freeze": 1.08,
+   "slot_updated_at": "2026-08-10T15:42:29.000Z",
+   "team": "MUGA",
+   "user_id": 43
+  },
+  {
+   "map_id": 2,
+   "model_id": 51256,
+   "model_name": "player47",
+   "slot_age_h_at_freeze": 1.82,
+   "slot_updated_at": "2026-08-10T14:58:06.000Z",
+   "team": "rikka",
+   "user_id": 47
+  },
+  {
+   "map_id": 3,
+   "model_id": 80961,
+   "model_name": "player48",
+   "slot_age_h_at_freeze": 10.35,
+   "slot_updated_at": "2026-08-10T06:26:28.000Z",
+   "team": "rocket dogs",
+   "user_id": 48
+  },
+  {
+   "map_id": 1,
+   "model_id": 17550,
+   "model_name": "player51",
+   "slot_age_h_at_freeze": 7.46,
+   "slot_updated_at": "2026-08-10T09:19:54.000Z",
+   "team": "star-dlut",
+   "user_id": 51
+  },
+  {
+   "map_id": 2,
+   "model_id": 43116,
+   "model_name": "player57",
+   "slot_age_h_at_freeze": 3.92,
+   "slot_updated_at": "2026-08-10T12:52:18.000Z",
+   "team": "Tundra-wawa",
+   "user_id": 57
+  },
+  {
+   "map_id": 3,
+   "model_id": 327730,
+   "model_name": "player79",
+   "slot_age_h_at_freeze": 0.2,
+   "slot_updated_at": "2026-08-10T16:35:01.000Z",
+   "team": "封单超大",
+   "user_id": 79
+  },
+  {
+   "map_id": 1,
+   "model_id": 146230,
+   "model_name": "player95",
+   "slot_age_h_at_freeze": 0.15,
+   "slot_updated_at": "2026-08-10T16:38:28.000Z",
+   "team": "三倍做多",
+   "user_id": 95
+  },
+  {
+   "map_id": 2,
+   "model_id": 344081,
+   "model_name": "player96",
+   "slot_age_h_at_freeze": 5.45,
+   "slot_updated_at": "2026-08-10T11:20:24.000Z",
+   "team": "什么",
+   "user_id": 96
+  },
+  {
+   "map_id": 3,
+   "model_id": 269659,
+   "model_name": "player105",
+   "slot_age_h_at_freeze": 0.17,
+   "slot_updated_at": "2026-08-10T16:37:18.000Z",
+   "team": "银色子弹",
+   "user_id": 105
+  },
+  {
+   "map_id": 1,
+   "model_id": 15644,
+   "model_name": "player132",
+   "slot_age_h_at_freeze": 0.07,
+   "slot_updated_at": "2026-08-10T16:43:07.000Z",
+   "team": "GoldMiner",
+   "user_id": 132
+  },
+  {
+   "map_id": 2,
+   "model_id": 42311,
+   "model_name": "player138",
+   "slot_age_h_at_freeze": 5.82,
+   "slot_updated_at": "2026-08-10T10:57:52.000Z",
+   "team": "兜兜是大头鸟",
+   "user_id": 138
+  },
+  {
+   "map_id": 3,
+   "model_id": 45033,
+   "model_name": "player142",
+   "slot_age_h_at_freeze": 0.59,
+   "slot_updated_at": "2026-08-10T16:11:36.000Z",
+   "team": "gary318",
+   "user_id": 142
+  },
+  {
+   "map_id": 1,
+   "model_id": 71315,
+   "model_name": "player143",
+   "slot_age_h_at_freeze": 10.43,
+   "slot_updated_at": "2026-08-10T06:21:19.000Z",
+   "team": "黄金收割机",
+   "user_id": 143
+  },
+  {
+   "map_id": 2,
+   "model_id": 72594,
+   "model_name": "player148",
+   "slot_age_h_at_freeze": 2.6,
+   "slot_updated_at": "2026-08-10T14:11:03.000Z",
+   "team": "数学分析",
+   "user_id": 148
+  },
+  {
+   "map_id": 3,
+   "model_id": 104077,
+   "model_name": "player159",
+   "slot_age_h_at_freeze": 3.47,
+   "slot_updated_at": "2026-08-10T13:19:12.000Z",
+   "team": "炼金术师",
+   "user_id": 159
+  },
+  {
+   "map_id": 1,
+   "model_id": 87478,
+   "model_name": "player163",
+   "slot_age_h_at_freeze": 0.59,
+   "slot_updated_at": "2026-08-10T16:12:10.000Z",
+   "team": "Tiuntled-1",
+   "user_id": 163
+  },
+  {
+   "map_id": 2,
+   "model_id": 280036,
+   "model_name": "player164",
+   "slot_age_h_at_freeze": 4.56,
+   "slot_updated_at": "2026-08-10T12:13:44.000Z",
+   "team": "兄弟量化",
+   "user_id": 164
+  },
+  {
+   "map_id": 3,
+   "model_id": 380139,
+   "model_name": "player180",
+   "slot_age_h_at_freeze": 1.65,
+   "slot_updated_at": "2026-08-10T15:08:17.000Z",
+   "team": "Gold Digger",
+   "user_id": 180
+  },
+  {
+   "map_id": 1,
+   "model_id": 161565,
+   "model_name": "player182",
+   "slot_age_h_at_freeze": 22.67,
+   "slot_updated_at": "2026-08-09T18:07:02.000Z",
+   "team": "量衡量化",
+   "user_id": 182
+  },
+  {
+   "map_id": 2,
+   "model_id": 261787,
+   "model_name": "player184",
+   "slot_age_h_at_freeze": 8.7,
+   "slot_updated_at": "2026-08-10T08:05:25.000Z",
+   "team": "库珀队",
+   "user_id": 184
+  },
+  {
+   "map_id": 3,
+   "model_id": 249711,
+   "model_name": "player185",
+   "slot_age_h_at_freeze": 4.96,
+   "slot_updated_at": "2026-08-10T11:49:29.000Z",
+   "team": "neck队",
+   "user_id": 185
+  },
+  {
+   "map_id": 1,
+   "model_id": 199610,
+   "model_name": "player186",
+   "slot_age_h_at_freeze": 1.17,
+   "slot_updated_at": "2026-08-10T15:36:49.000Z",
+   "team": "若叶睦的狗2.0",
+   "user_id": 186
+  },
+  {
+   "map_id": 2,
+   "model_id": 369705,
+   "model_name": "player195",
+   "slot_age_h_at_freeze": 1.44,
+   "slot_updated_at": "2026-08-10T15:21:03.000Z",
+   "team": "邱叔叔与赵叔叔vamos队",
+   "user_id": 195
+  },
+  {
+   "map_id": 3,
+   "model_id": 222865,
+   "model_name": "player199",
+   "slot_age_h_at_freeze": 0.32,
+   "slot_updated_at": "2026-08-10T16:28:05.000Z",
+   "team": "你是凑企鹅",
+   "user_id": 199
+  },
+  {
+   "map_id": 1,
+   "model_id": 233186,
+   "model_name": "player201",
+   "slot_age_h_at_freeze": 6.28,
+   "slot_updated_at": "2026-08-10T10:30:23.000Z",
+   "team": "向资本做局",
+   "user_id": 201
+  },
+  {
+   "map_id": 2,
+   "model_id": 384332,
+   "model_name": "player202",
+   "slot_age_h_at_freeze": 0.12,
+   "slot_updated_at": "2026-08-10T16:39:50.000Z",
+   "team": "D12",
+   "user_id": 202
+  },
+  {
+   "map_id": 3,
+   "model_id": 258323,
+   "model_name": "player204",
+   "slot_age_h_at_freeze": 3.76,
+   "slot_updated_at": "2026-08-10T13:01:56.000Z",
+   "team": "ZZK",
+   "user_id": 204
+  },
+  {
+   "map_id": 1,
+   "model_id": 301103,
+   "model_name": "player209",
+   "slot_age_h_at_freeze": 23.28,
+   "slot_updated_at": "2026-08-09T17:30:33.000Z",
+   "team": "激昂狂人",
+   "user_id": 209
+  },
+  {
+   "map_id": 2,
+   "model_id": 254384,
+   "model_name": "player213",
+   "slot_age_h_at_freeze": 16.42,
+   "slot_updated_at": "2026-08-10T00:22:03.000Z",
+   "team": "Zzz",
+   "user_id": 213
+  },
+  {
+   "map_id": 3,
+   "model_id": 297600,
+   "model_name": "player216",
+   "slot_age_h_at_freeze": 22.13,
+   "slot_updated_at": "2026-08-09T18:39:42.000Z",
+   "team": "icu小队",
+   "user_id": 216
+  },
+  {
+   "map_id": 1,
+   "model_id": 370688,
+   "model_name": "player225",
+   "slot_age_h_at_freeze": 7.68,
+   "slot_updated_at": "2026-08-10T09:06:25.000Z",
+   "team": "hhh",
+   "user_id": 225
+  },
+  {
+   "map_id": 2,
+   "model_id": 324761,
+   "model_name": "player226",
+   "slot_age_h_at_freeze": 5.58,
+   "slot_updated_at": "2026-08-10T11:12:18.000Z",
+   "team": "s.l.y",
+   "user_id": 226
+  },
+  {
+   "map_id": 3,
+   "model_id": 287154,
+   "model_name": "player229",
+   "slot_age_h_at_freeze": 14.16,
+   "slot_updated_at": "2026-08-10T02:37:46.000Z",
+   "team": "DW量化",
+   "user_id": 229
+  },
+  {
+   "map_id": 1,
+   "model_id": 339766,
+   "model_name": "player234",
+   "slot_age_h_at_freeze": 10.06,
+   "slot_updated_at": "2026-08-10T06:43:35.000Z",
+   "team": "使题来袭╭(╯ε╰)╮ AC力场全开",
+   "user_id": 234
+  },
+  {
+   "map_id": 2,
+   "model_id": 331665,
+   "model_name": "player239",
+   "slot_age_h_at_freeze": 8.82,
+   "slot_updated_at": "2026-08-10T07:58:01.000Z",
+   "team": "剑川路之狼",
+   "user_id": 239
+  },
+  {
+   "map_id": 3,
+   "model_id": 376395,
+   "model_name": "player242",
+   "slot_age_h_at_freeze": 4.13,
+   "slot_updated_at": "2026-08-10T12:39:19.000Z",
+   "team": "ss小队v2",
+   "user_id": 242
+  },
+  {
+   "map_id": 1,
+   "model_id": 372705,
+   "model_name": "player251",
+   "slot_age_h_at_freeze": 6.5,
+   "slot_updated_at": "2026-08-10T10:17:05.000Z",
+   "team": "丹佛掘金",
+   "user_id": 251
+  },
+  {
+   "map_id": 2,
+   "model_id": 373308,
+   "model_name": "player261",
+   "slot_age_h_at_freeze": 3.29,
+   "slot_updated_at": "2026-08-10T13:29:39.000Z",
+   "team": "小透明",
+   "user_id": 261
+  },
+  {
+   "map_id": 3,
+   "model_id": 376908,
+   "model_name": "player274",
+   "slot_age_h_at_freeze": 0.28,
+   "slot_updated_at": "2026-08-10T16:30:15.000Z",
+   "team": "27 bluff",
+   "user_id": 274
+  }
+ ],
+ "estimator": "per-OPPONENT mean of P(win) (round-robin functional). CI by Jeffreys per cell and bootstrap over teams. Textbook binomial variance is FORBIDDEN: it assigns exactly zero variance to cells at p=1, which is the error that made a previous 69.5%% lower bound look like it cleared the threshold.",
+ "filters": [
+  "is_contest(): drop games where the opponent finished on a NEGATIVE net score - a broken slot is not a defeat; print the count and the list"
+ ],
+ "frozen_at_utc": "2026-08-10T16:47:17.505345+00:00",
+ "map_counts": {
+  "1": 14,
+  "2": 14,
+  "3": 14
+ },
+ "n_teams": 42,
+ "prereg_bias_direction": {
+  "claim": "fresh-slot teams are STRONGER than stale-slot teams on the ladder, so this sample is the stronger half of the field and the estimate is CONSERVATIVE (biased DOWN).",
+  "consequence": "if the lower bound still clears the threshold, the conclusion is hard; if it fails, part of the failure is attributable to facing the stronger half.",
+  "measured_before_the_run": {
+   "difference": 0.076,
+   "fresh_mean_ladder_win_rate": 0.527,
+   "fresh_n": 35,
+   "se": 0.042,
+   "sigma": 1.79,
+   "stale_mean_ladder_win_rate": 0.451,
+   "stale_n": 49
+  }
+ },
+ "prereg_falsification": {
+  "above": "Jeffreys/bootstrap 95%% lower bound > threshold at read time => 'likely to qualify'",
+  "below": "95%% upper bound < threshold => 'likely not to qualify'",
+  "undecided": "otherwise => STILL UNDECIDED, and in that case write explicitly that the bias-avoiding design has been exhausted and our position is not决-able before the qualifier. That is a terminal conclusion, not a failure."
+ },
+ "purpose": "constructively remove the staleness bias instead of correcting for it: challenge only opponents whose PUBLIC slot was refreshed within 24h, so slot ~= current code and the active condition approximates the qualifier",
+ "reanalysis_rule": "the roster is NOT redrawn if release is delayed. Instead each game records the team's slot age AT SUBMISSION, so the analysis can condition on actual freshness; teams that age past 24h before play are reported, not silently replaced.",
+ "selection_rule": "get_model_list_4 updated_at within 24h of freeze; exclude user_id 2/3/4 (organiser test accounts) and 220 (ourselves); one game per team; map = (index mod 3)+1 over ascending user_id",
+ "submission_rule": "STRICTLY SERIAL - one game at a time, wait for completion before the next. Concurrent submission was measured to inflate our own P50 by 4.1x and P90 by 4.7x, and this batch is also the clean latency read.",
+ "threshold_note": "rank 16's 24h rolling win rate; NOT a constant (observed 0.6756 / 0.6731 / 0.6780 within forty minutes). Record value AND read time at analysis."
+}
