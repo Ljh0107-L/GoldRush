@@ -27,6 +27,11 @@ Each generated map targets one specific assumption in the construct:
 
 Invariants every generated map must satisfy, or generation fails loudly:
   * both player spawns (0,0) and (16,16) are traversable
+  * both OPPONENT spawns (0,16) and (16,0) are traversable -- the engine refuses
+    a scenario in which any unit starts on a wall, so walling these two cells
+    yields terrain that dies at setup with ``player occupies a wall`` rather
+    than a usable audit case.  (Added 8.10; output-identical for the nine maps
+    already in ``sim/maps_unknown.json``, none of which walls either cell.)
   * the NPC spawn (8,8) is traversable
   * all traversable cells form a single connected component (4-neighbour)
   * the terrain differs from map1/map2/map3
@@ -44,6 +49,7 @@ if str(ROOT) not in sys.path:
 
 N = 17
 SPAWNS = ((0, 0), (16, 16))
+OPP_SPAWNS = ((0, 16), (16, 0))
 NPC_SPAWN = (8, 8)
 ANCHORS = ((6, 8), (11, 8))
 
@@ -78,8 +84,12 @@ def connected(rows: list[str]) -> bool:
 
 
 def protect(grid: list[list[str]]) -> None:
-    """Keep the cells the engine requires traversable open."""
-    for r, c in (*SPAWNS, NPC_SPAWN):
+    """Keep the cells the engine requires traversable open.
+
+    All four corners matter, not just ours: the engine seats the opponent at
+    (0,16)/(16,0) and rejects the scenario if any unit spawns on a wall.
+    """
+    for r, c in (*SPAWNS, *OPP_SPAWNS, NPC_SPAWN):
         grid[r][c] = "0"
 
 
@@ -207,7 +217,7 @@ def main() -> int:
         if len(rows) != N or any(len(r) != N for r in rows):
             failures.append("%s: not 17x17" % name)
             continue
-        for r, c in (*SPAWNS, NPC_SPAWN):
+        for r, c in (*SPAWNS, *OPP_SPAWNS, NPC_SPAWN):
             if rows[r][c] == "1":
                 failures.append("%s: required cell (%d,%d) is a wall" % (name, r, c))
         if not connected(rows):

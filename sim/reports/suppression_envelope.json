@@ -1,0 +1,5874 @@
+{
+  "baseline_scoring_rounds": {
+    "opponent_scoring_unit_rounds_per_game": 228.0,
+    "our_scoring_unit_rounds_per_game": 234.75
+  },
+  "dryrun": {
+    "A_no_tie_lattice": {
+      "expected": 0,
+      "unit_positions_checked": 289,
+      "value_ties_found": 0,
+      "verdict": "PASS reports nothing"
+    },
+    "B_all_gold_positive_control": {
+      "expected": 225,
+      "pick_histogram": {
+        "7": 225
+      },
+      "unit_positions_checked": 225,
+      "value_ties_found": 225,
+      "verdict": "PASS detects the planted tie and picks rm[0]=7"
+    },
+    "C_random_enemy_independent_of_gold": {
+      "fired": 660,
+      "mean_cheb_gain_random_relabel": -0.036593947923997186,
+      "mean_cheb_gain_rule": 0.7255453905700211,
+      "note": "the rule DOES move cells here by construction (it refines an arbitrary order), so the zero-signal claim under test is about VALUE: a random enemy is still approached, which is why the envelope must be priced by a measured suppression slope and not by the firing rate alone",
+      "trials_with_ring_tie": 1421
+    },
+    "D_slope_on_distance_independent_income": {
+      "n_far": 13370,
+      "n_near": 4457,
+      "se": 0.08048141027460187,
+      "sigma": 0.3085105407718077,
+      "slope": 0.024829363405895144,
+      "verdict": "PASS reports nothing (|sigma| < 2)"
+    },
+    "E_slope_on_planted_minus_one": {
+      "n_far": 13470,
+      "n_near": 4393,
+      "se": 0.08001338368235895,
+      "sigma": -12.457330346959962,
+      "slope": -0.9967531527092013,
+      "verdict": "PASS recovers the planted -1.0"
+    }
+  },
+  "envelopes": {
+    "self_play_enemy_field": {
+      "ring": {
+        "firings_per_game": 13.875,
+        "margin_per_game_after_85pct_discount": -3.332783379945243,
+        "margin_per_game_raw": -0.024111421857176296,
+        "note": "the 85% stock/flow discount is applied to the suppression CREDIT only. Our own collection loss is not discounted: it is a realised amount difference on the cell we walk to, not a re-harvest of our own stock.",
+        "opponent_gold_removed_per_game_raw": 3.8925552448094902,
+        "opponent_scoring_rounds_removed_per_game_raw": 0.2646997796772627,
+        "our_gold_delta_per_game": -3.9166666666666665,
+        "our_scoring_round_delta_note": "exactly zero by construction: both the live cell and the alternative are `grid > 2` candidates, so a pickup still happens -- the COUNT caliber is blind to this candidate's cost, which lands entirely in the gold caliber",
+        "our_scoring_round_delta_per_game": 0.0
+      },
+      "ringamt": {
+        "firings_per_game": 2.125,
+        "margin_per_game_after_85pct_discount": 0.08968891535000342,
+        "margin_per_game_raw": 0.5979261023333561,
+        "note": "the 85% stock/flow discount is applied to the suppression CREDIT only. Our own collection loss is not discounted: it is a realised amount difference on the cell we walk to, not a re-harvest of our own stock.",
+        "opponent_gold_removed_per_game_raw": 0.5979261023333561,
+        "opponent_scoring_rounds_removed_per_game_raw": 0.042497262819557034,
+        "our_gold_delta_per_game": 0.0,
+        "our_scoring_round_delta_note": "exactly zero by construction: both the live cell and the alternative are `grid > 2` candidates, so a pickup still happens -- the COUNT caliber is blind to this candidate's cost, which lands entirely in the gold caliber",
+        "our_scoring_round_delta_per_game": 0.0
+      },
+      "value": {
+        "firings_per_game": 43.583333333333336,
+        "margin_per_game_after_85pct_discount": -18.065511866566546,
+        "margin_per_game_raw": -7.575634665999193,
+        "note": "the 85% stock/flow discount is applied to the suppression CREDIT only. Our own collection loss is not discounted: it is a realised amount difference on the cell we walk to, not a re-harvest of our own stock.",
+        "opponent_gold_removed_per_game_raw": 12.341032000667475,
+        "opponent_scoring_rounds_removed_per_game_raw": 0.871522055246199,
+        "our_gold_delta_per_game": -19.916666666666668,
+        "our_scoring_round_delta_note": "exactly zero by construction: both the live cell and the alternative are `grid > 2` candidates, so a pickup still happens -- the COUNT caliber is blind to this candidate's cost, which lands entirely in the gold caliber",
+        "our_scoring_round_delta_per_game": 0.0
+      }
+    },
+    "t1_calibrated_enemy_field": {
+      "ring": {
+        "firings_per_game": 8.583333333333334,
+        "margin_per_game_after_85pct_discount": -3.4627906419435877,
+        "margin_per_game_raw": -0.6547153907350278,
+        "note": "the 85% stock/flow discount is applied to the suppression CREDIT only. Our own collection loss is not discounted: it is a realised amount difference on the cell we walk to, not a re-harvest of our own stock.",
+        "opponent_gold_removed_per_game_raw": 3.3036179425983057,
+        "opponent_scoring_rounds_removed_per_game_raw": 0.3074911141543402,
+        "our_gold_delta_per_game": -3.9583333333333335,
+        "our_scoring_round_delta_note": "exactly zero by construction: both the live cell and the alternative are `grid > 2` candidates, so a pickup still happens -- the COUNT caliber is blind to this candidate's cost, which lands entirely in the gold caliber",
+        "our_scoring_round_delta_per_game": 0.0
+      },
+      "ringamt": {
+        "firings_per_game": 0.875,
+        "margin_per_game_after_85pct_discount": 0.059567447721118646,
+        "margin_per_game_raw": 0.3971163181407909,
+        "note": "the 85% stock/flow discount is applied to the suppression CREDIT only. Our own collection loss is not discounted: it is a realised amount difference on the cell we walk to, not a re-harvest of our own stock.",
+        "opponent_gold_removed_per_game_raw": 0.3971163181407909,
+        "opponent_scoring_rounds_removed_per_game_raw": 0.0401055261911805,
+        "our_gold_delta_per_game": 0.0,
+        "our_scoring_round_delta_note": "exactly zero by construction: both the live cell and the alternative are `grid > 2` candidates, so a pickup still happens -- the COUNT caliber is blind to this candidate's cost, which lands entirely in the gold caliber",
+        "our_scoring_round_delta_per_game": 0.0
+      },
+      "value": {
+        "firings_per_game": 34.291666666666664,
+        "margin_per_game_after_85pct_discount": -8.372087492220597,
+        "margin_per_game_raw": 1.5610833851960226,
+        "note": "the 85% stock/flow discount is applied to the suppression CREDIT only. Our own collection loss is not discounted: it is a realised amount difference on the cell we walk to, not a re-harvest of our own stock.",
+        "opponent_gold_removed_per_game_raw": 11.686083385196023,
+        "opponent_scoring_rounds_removed_per_game_raw": 1.058534252593433,
+        "our_gold_delta_per_game": -10.125,
+        "our_scoring_round_delta_note": "exactly zero by construction: both the live cell and the alternative are `grid > 2` candidates, so a pickup still happens -- the COUNT caliber is blind to this candidate's cost, which lands entirely in the gold caliber",
+        "our_scoring_round_delta_per_game": 0.0
+      }
+    }
+  },
+  "envelopes_per_map": {
+    "map1": {
+      "ring": {
+        "firings_per_game": 12.625,
+        "margin_per_game_after_85pct_discount": -18.720590163784447,
+        "margin_per_game_raw": -15.720601091896306,
+        "note": "the 85% stock/flow discount is applied to the suppression CREDIT only. Our own collection loss is not discounted: it is a realised amount difference on the cell we walk to, not a re-harvest of our own stock.",
+        "opponent_gold_removed_per_game_raw": 3.5293989081036945,
+        "opponent_scoring_rounds_removed_per_game_raw": 0.2845583449477717,
+        "our_gold_delta_per_game": -19.25,
+        "our_scoring_round_delta_note": "exactly zero by construction: both the live cell and the alternative are `grid > 2` candidates, so a pickup still happens -- the COUNT caliber is blind to this candidate's cost, which lands entirely in the gold caliber",
+        "our_scoring_round_delta_per_game": 0.0
+      },
+      "ringamt": {
+        "firings_per_game": 1.875,
+        "margin_per_game_after_85pct_discount": 0.09673463161695009,
+        "margin_per_game_raw": 0.6448975441130005,
+        "note": "the 85% stock/flow discount is applied to the suppression CREDIT only. Our own collection loss is not discounted: it is a realised amount difference on the cell we walk to, not a re-harvest of our own stock.",
+        "opponent_gold_removed_per_game_raw": 0.6448975441130005,
+        "opponent_scoring_rounds_removed_per_game_raw": 0.050959928368663865,
+        "our_gold_delta_per_game": 0.0,
+        "our_scoring_round_delta_note": "exactly zero by construction: both the live cell and the alternative are `grid > 2` candidates, so a pickup still happens -- the COUNT caliber is blind to this candidate's cost, which lands entirely in the gold caliber",
+        "our_scoring_round_delta_per_game": 0.0
+      },
+      "value": {
+        "firings_per_game": 36.0,
+        "margin_per_game_after_85pct_discount": -36.01815202763568,
+        "margin_per_game_raw": -28.32934685090452,
+        "note": "the 85% stock/flow discount is applied to the suppression CREDIT only. Our own collection loss is not discounted: it is a realised amount difference on the cell we walk to, not a re-harvest of our own stock.",
+        "opponent_gold_removed_per_game_raw": 9.04565314909548,
+        "opponent_scoring_rounds_removed_per_game_raw": 0.6305661723823637,
+        "our_gold_delta_per_game": -37.375,
+        "our_scoring_round_delta_note": "exactly zero by construction: both the live cell and the alternative are `grid > 2` candidates, so a pickup still happens -- the COUNT caliber is blind to this candidate's cost, which lands entirely in the gold caliber",
+        "our_scoring_round_delta_per_game": 0.0
+      }
+    },
+    "map2": {
+      "ring": {
+        "firings_per_game": 12.0,
+        "margin_per_game_after_85pct_discount": 6.000992410111383,
+        "margin_per_game_raw": 8.839949400742555,
+        "note": "the 85% stock/flow discount is applied to the suppression CREDIT only. Our own collection loss is not discounted: it is a realised amount difference on the cell we walk to, not a re-harvest of our own stock.",
+        "opponent_gold_removed_per_game_raw": 3.3399494007425545,
+        "opponent_scoring_rounds_removed_per_game_raw": 0.24112792632664037,
+        "our_gold_delta_per_game": 5.5,
+        "our_scoring_round_delta_note": "exactly zero by construction: both the live cell and the alternative are `grid > 2` candidates, so a pickup still happens -- the COUNT caliber is blind to this candidate's cost, which lands entirely in the gold caliber",
+        "our_scoring_round_delta_per_game": 0.0
+      },
+      "ringamt": {
+        "firings_per_game": 2.375,
+        "margin_per_game_after_85pct_discount": 0.09434931565294562,
+        "margin_per_game_raw": 0.6289954376863041,
+        "note": "the 85% stock/flow discount is applied to the suppression CREDIT only. Our own collection loss is not discounted: it is a realised amount difference on the cell we walk to, not a re-harvest of our own stock.",
+        "opponent_gold_removed_per_game_raw": 0.6289954376863041,
+        "opponent_scoring_rounds_removed_per_game_raw": 0.05188085729888921,
+        "our_gold_delta_per_game": 0.0,
+        "our_scoring_round_delta_note": "exactly zero by construction: both the live cell and the alternative are `grid > 2` candidates, so a pickup still happens -- the COUNT caliber is blind to this candidate's cost, which lands entirely in the gold caliber",
+        "our_scoring_round_delta_per_game": 0.0
+      },
+      "value": {
+        "firings_per_game": 36.375,
+        "margin_per_game_after_85pct_discount": 0.6407097969637283,
+        "margin_per_game_raw": 9.93806531309152,
+        "note": "the 85% stock/flow discount is applied to the suppression CREDIT only. Our own collection loss is not discounted: it is a realised amount difference on the cell we walk to, not a re-harvest of our own stock.",
+        "opponent_gold_removed_per_game_raw": 10.93806531309152,
+        "opponent_scoring_rounds_removed_per_game_raw": 0.8783828258972266,
+        "our_gold_delta_per_game": -1.0,
+        "our_scoring_round_delta_note": "exactly zero by construction: both the live cell and the alternative are `grid > 2` candidates, so a pickup still happens -- the COUNT caliber is blind to this candidate's cost, which lands entirely in the gold caliber",
+        "our_scoring_round_delta_per_game": 0.0
+      }
+    },
+    "map3": {
+      "ring": {
+        "firings_per_game": 17.0,
+        "margin_per_game_after_85pct_discount": 2.7212476138373334,
+        "margin_per_game_raw": 6.8083174255822225,
+        "note": "the 85% stock/flow discount is applied to the suppression CREDIT only. Our own collection loss is not discounted: it is a realised amount difference on the cell we walk to, not a re-harvest of our own stock.",
+        "opponent_gold_removed_per_game_raw": 4.8083174255822225,
+        "opponent_scoring_rounds_removed_per_game_raw": 0.26841306775737606,
+        "our_gold_delta_per_game": 2.0,
+        "our_scoring_round_delta_note": "exactly zero by construction: both the live cell and the alternative are `grid > 2` candidates, so a pickup still happens -- the COUNT caliber is blind to this candidate's cost, which lands entirely in the gold caliber",
+        "our_scoring_round_delta_per_game": 0.0
+      },
+      "ringamt": {
+        "firings_per_game": 2.125,
+        "margin_per_game_after_85pct_discount": 0.07798279878011452,
+        "margin_per_game_raw": 0.5198853252007634,
+        "note": "the 85% stock/flow discount is applied to the suppression CREDIT only. Our own collection loss is not discounted: it is a realised amount difference on the cell we walk to, not a re-harvest of our own stock.",
+        "opponent_gold_removed_per_game_raw": 0.5198853252007634,
+        "opponent_scoring_rounds_removed_per_game_raw": 0.024651002791118024,
+        "our_gold_delta_per_game": 0.0,
+        "our_scoring_round_delta_note": "exactly zero by construction: both the live cell and the alternative are `grid > 2` candidates, so a pickup still happens -- the COUNT caliber is blind to this candidate's cost, which lands entirely in the gold caliber",
+        "our_scoring_round_delta_per_game": 0.0
+      },
+      "value": {
+        "firings_per_game": 58.375,
+        "margin_per_game_after_85pct_discount": -18.819093369027687,
+        "margin_per_game_raw": -4.335622460184577,
+        "note": "the 85% stock/flow discount is applied to the suppression CREDIT only. Our own collection loss is not discounted: it is a realised amount difference on the cell we walk to, not a re-harvest of our own stock.",
+        "opponent_gold_removed_per_game_raw": 17.039377539815423,
+        "opponent_scoring_rounds_removed_per_game_raw": 1.1056171674590072,
+        "our_gold_delta_per_game": -21.375,
+        "our_scoring_round_delta_note": "exactly zero by construction: both the live cell and the alternative are `grid > 2` candidates, so a pickup still happens -- the COUNT caliber is blind to this candidate's cost, which lands entirely in the gold caliber",
+        "our_scoring_round_delta_per_game": 0.0
+      }
+    }
+  },
+  "envelopes_per_map_t1field": {
+    "map1": {
+      "ring": {
+        "firings_per_game": 8.875,
+        "margin_per_game_after_85pct_discount": -7.722597937792453,
+        "margin_per_game_raw": -5.4423195852830215,
+        "note": "the 85% stock/flow discount is applied to the suppression CREDIT only. Our own collection loss is not discounted: it is a realised amount difference on the cell we walk to, not a re-harvest of our own stock.",
+        "opponent_gold_removed_per_game_raw": 2.6826804147169785,
+        "opponent_scoring_rounds_removed_per_game_raw": 0.2354970627023519,
+        "our_gold_delta_per_game": -8.125,
+        "our_scoring_round_delta_note": "exactly zero by construction: both the live cell and the alternative are `grid > 2` candidates, so a pickup still happens -- the COUNT caliber is blind to this candidate's cost, which lands entirely in the gold caliber",
+        "our_scoring_round_delta_per_game": 0.0
+      },
+      "ringamt": {
+        "firings_per_game": 0.75,
+        "margin_per_game_after_85pct_discount": 0.07921274445741697,
+        "margin_per_game_raw": 0.5280849630494464,
+        "note": "the 85% stock/flow discount is applied to the suppression CREDIT only. Our own collection loss is not discounted: it is a realised amount difference on the cell we walk to, not a re-harvest of our own stock.",
+        "opponent_gold_removed_per_game_raw": 0.5280849630494464,
+        "opponent_scoring_rounds_removed_per_game_raw": 0.05283018036051122,
+        "our_gold_delta_per_game": 0.0,
+        "our_scoring_round_delta_note": "exactly zero by construction: both the live cell and the alternative are `grid > 2` candidates, so a pickup still happens -- the COUNT caliber is blind to this candidate's cost, which lands entirely in the gold caliber",
+        "our_scoring_round_delta_per_game": 0.0
+      },
+      "value": {
+        "firings_per_game": 31.875,
+        "margin_per_game_after_85pct_discount": -15.099985939893859,
+        "margin_per_game_raw": -7.16657293262573,
+        "note": "the 85% stock/flow discount is applied to the suppression CREDIT only. Our own collection loss is not discounted: it is a realised amount difference on the cell we walk to, not a re-harvest of our own stock.",
+        "opponent_gold_removed_per_game_raw": 9.33342706737427,
+        "opponent_scoring_rounds_removed_per_game_raw": 0.8757637588830806,
+        "our_gold_delta_per_game": -16.5,
+        "our_scoring_round_delta_note": "exactly zero by construction: both the live cell and the alternative are `grid > 2` candidates, so a pickup still happens -- the COUNT caliber is blind to this candidate's cost, which lands entirely in the gold caliber",
+        "our_scoring_round_delta_per_game": 0.0
+      }
+    },
+    "map2": {
+      "ring": {
+        "firings_per_game": 6.25,
+        "margin_per_game_after_85pct_discount": 6.1615699446075975,
+        "margin_per_game_raw": 8.49379963071732,
+        "note": "the 85% stock/flow discount is applied to the suppression CREDIT only. Our own collection loss is not discounted: it is a realised amount difference on the cell we walk to, not a re-harvest of our own stock.",
+        "opponent_gold_removed_per_game_raw": 2.7437996307173194,
+        "opponent_scoring_rounds_removed_per_game_raw": 0.2806489775155258,
+        "our_gold_delta_per_game": 5.75,
+        "our_scoring_round_delta_note": "exactly zero by construction: both the live cell and the alternative are `grid > 2` candidates, so a pickup still happens -- the COUNT caliber is blind to this candidate's cost, which lands entirely in the gold caliber",
+        "our_scoring_round_delta_per_game": 0.0
+      },
+      "ringamt": {
+        "firings_per_game": 0.75,
+        "margin_per_game_after_85pct_discount": 0.034300741738115204,
+        "margin_per_game_raw": 0.22867161158743465,
+        "note": "the 85% stock/flow discount is applied to the suppression CREDIT only. Our own collection loss is not discounted: it is a realised amount difference on the cell we walk to, not a re-harvest of our own stock.",
+        "opponent_gold_removed_per_game_raw": 0.22867161158743465,
+        "opponent_scoring_rounds_removed_per_game_raw": 0.027647727775788847,
+        "our_gold_delta_per_game": 0.0,
+        "our_scoring_round_delta_note": "exactly zero by construction: both the live cell and the alternative are `grid > 2` candidates, so a pickup still happens -- the COUNT caliber is blind to this candidate's cost, which lands entirely in the gold caliber",
+        "our_scoring_round_delta_per_game": 0.0
+      },
+      "value": {
+        "firings_per_game": 27.375,
+        "margin_per_game_after_85pct_discount": 3.210506860536556,
+        "margin_per_game_raw": 11.486712403577037,
+        "note": "the 85% stock/flow discount is applied to the suppression CREDIT only. Our own collection loss is not discounted: it is a realised amount difference on the cell we walk to, not a re-harvest of our own stock.",
+        "opponent_gold_removed_per_game_raw": 9.736712403577037,
+        "opponent_scoring_rounds_removed_per_game_raw": 0.9747235712497844,
+        "our_gold_delta_per_game": 1.75,
+        "our_scoring_round_delta_note": "exactly zero by construction: both the live cell and the alternative are `grid > 2` candidates, so a pickup still happens -- the COUNT caliber is blind to this candidate's cost, which lands entirely in the gold caliber",
+        "our_scoring_round_delta_per_game": 0.0
+      }
+    },
+    "map3": {
+      "ring": {
+        "firings_per_game": 10.625,
+        "margin_per_game_after_85pct_discount": -8.827343932645906,
+        "margin_per_game_raw": -5.015626217639381,
+        "note": "the 85% stock/flow discount is applied to the suppression CREDIT only. Our own collection loss is not discounted: it is a realised amount difference on the cell we walk to, not a re-harvest of our own stock.",
+        "opponent_gold_removed_per_game_raw": 4.484373782360619,
+        "opponent_scoring_rounds_removed_per_game_raw": 0.4063273022451429,
+        "our_gold_delta_per_game": -9.5,
+        "our_scoring_round_delta_note": "exactly zero by construction: both the live cell and the alternative are `grid > 2` candidates, so a pickup still happens -- the COUNT caliber is blind to this candidate's cost, which lands entirely in the gold caliber",
+        "our_scoring_round_delta_per_game": 0.0
+      },
+      "ringamt": {
+        "firings_per_game": 1.125,
+        "margin_per_game_after_85pct_discount": 0.06518885696782373,
+        "margin_per_game_raw": 0.4345923797854915,
+        "note": "the 85% stock/flow discount is applied to the suppression CREDIT only. Our own collection loss is not discounted: it is a realised amount difference on the cell we walk to, not a re-harvest of our own stock.",
+        "opponent_gold_removed_per_game_raw": 0.4345923797854915,
+        "opponent_scoring_rounds_removed_per_game_raw": 0.039838670437241416,
+        "our_gold_delta_per_game": 0.0,
+        "our_scoring_round_delta_note": "exactly zero by construction: both the live cell and the alternative are `grid > 2` candidates, so a pickup still happens -- the COUNT caliber is blind to this candidate's cost, which lands entirely in the gold caliber",
+        "our_scoring_round_delta_per_game": 0.0
+      },
+      "value": {
+        "firings_per_game": 43.625,
+        "margin_per_game_after_85pct_discount": -13.226783397304484,
+        "margin_per_game_raw": 0.3631106846367693,
+        "note": "the 85% stock/flow discount is applied to the suppression CREDIT only. Our own collection loss is not discounted: it is a realised amount difference on the cell we walk to, not a re-harvest of our own stock.",
+        "opponent_gold_removed_per_game_raw": 15.98811068463677,
+        "opponent_scoring_rounds_removed_per_game_raw": 1.3251154276474335,
+        "our_gold_delta_per_game": -15.625,
+        "our_scoring_round_delta_note": "exactly zero by construction: both the live cell and the alternative are `grid > 2` candidates, so a pickup still happens -- the COUNT caliber is blind to this candidate's cost, which lands entirely in the gold caliber",
+        "our_scoring_round_delta_per_game": 0.0
+      }
+    }
+  },
+  "gate": {
+    "after_discount_margin_ring_form_t1_field": -3.4627906419435877,
+    "pre_registered_gates": {
+      "<100": "do not build",
+      ">=300": "worth building",
+      "between": "report with composition"
+    },
+    "verdict": "do not build, judge negative"
+  },
+  "icount": {
+    "caveat": "the standalone leaf pays argument loads the inline form does not; the inline delta is the number to believe.  Neither includes the tie-break comparison logic itself -- this is the SENSOR READ only, as asked.",
+    "codegen_noise_floor_instructions": 7,
+    "codegen_noise_note": "spread across the three no-sensor control arms; any inline delta smaller than this is indistinguishable from free",
+    "host": {
+      "compiler": "Apple clang version 21.0.0 (clang-2100.1.1.101)",
+      "uname": "Darwin 25.5.0 arm64"
+    },
+    "inline_arms": {
+      "base": {
+        "delta_vs_base": 0,
+        "so_sha256": "742ad9814138b431c4e7c0ad3df0c128ca5b4f385b82b0deac16bd36ac8ef535",
+        "static_instructions_moveDecision": 647
+      },
+      "inline_nearest": {
+        "delta_vs_base": 28,
+        "marginal_per_unit": 12.5,
+        "marginal_sensor_instructions_both_units": 25,
+        "so_sha256": "473b34fcc718a041eecd890388d5b2e6ac6722b320b5e041f4f6ec3f1e0e9fa1",
+        "static_instructions_moveDecision": 675
+      },
+      "inline_sink_control_gold": {
+        "delta_vs_base": 3,
+        "marginal_per_unit": 0.0,
+        "marginal_sensor_instructions_both_units": 0,
+        "so_sha256": "d97a01bcb310aa27a080e21aa4a4c84c08c0210069a4c55c8dc895e399dee1ca",
+        "static_instructions_moveDecision": 650
+      },
+      "inline_sink_control_round": {
+        "delta_vs_base": -4,
+        "marginal_per_unit": -3.5,
+        "marginal_sensor_instructions_both_units": -7,
+        "so_sha256": "7fe4b1fe425dbed9a2310c0fef34e07daea96bdea81cf115eb905ad5369328a5",
+        "static_instructions_moveDecision": 643
+      },
+      "inline_sink_only": {
+        "delta_vs_base": 3,
+        "marginal_per_unit": 0.0,
+        "marginal_sensor_instructions_both_units": 0,
+        "so_sha256": "ab739ed923549399b4536585beac72741f83e2fc442d98021054348ab8558227",
+        "static_instructions_moveDecision": 650
+      },
+      "inline_slot0": {
+        "delta_vs_base": -3,
+        "marginal_per_unit": -3.0,
+        "marginal_sensor_instructions_both_units": -6,
+        "so_sha256": "298f9b8426513d07d2082742272ed8aa19cbe1ecb18bd5ac0e83e03b562989cb",
+        "static_instructions_moveDecision": 644
+      }
+    },
+    "no_layout_tax": "priced per instruction only.  .rodata growth carries no layout tax (448 dummy bytes did not move the entry) and entry alignment is separately controllable via the 96-byte pad at src/player.cpp:582",
+    "pricing": {
+      "INLINE inline_nearest": {
+        "gold_at_19_per_ns": -69.065,
+        "gold_at_7_instr_per_19": -67.85714285714286,
+        "instructions_x86_64": 25,
+        "ns_at_0.1454_per_instr": 3.6350000000000002,
+        "over_25_instruction_cap": false
+      },
+      "INLINE inline_sink_control_gold": {
+        "gold_at_19_per_ns": -0.0,
+        "gold_at_7_instr_per_19": -0.0,
+        "instructions_x86_64": 0,
+        "ns_at_0.1454_per_instr": 0.0,
+        "over_25_instruction_cap": false
+      },
+      "INLINE inline_sink_control_round": {
+        "gold_at_19_per_ns": 19.3382,
+        "gold_at_7_instr_per_19": 19.0,
+        "instructions_x86_64": -7,
+        "ns_at_0.1454_per_instr": -1.0178,
+        "over_25_instruction_cap": false
+      },
+      "INLINE inline_sink_only": {
+        "gold_at_19_per_ns": -0.0,
+        "gold_at_7_instr_per_19": -0.0,
+        "instructions_x86_64": 0,
+        "ns_at_0.1454_per_instr": 0.0,
+        "over_25_instruction_cap": false
+      },
+      "INLINE inline_slot0": {
+        "gold_at_19_per_ns": 16.5756,
+        "gold_at_7_instr_per_19": 16.285714285714285,
+        "instructions_x86_64": -6,
+        "ns_at_0.1454_per_instr": -0.8724000000000001,
+        "over_25_instruction_cap": false
+      },
+      "hoisted_pair": {
+        "gold_at_19_per_ns": -5.5252,
+        "gold_at_7_instr_per_19": -5.428571428571429,
+        "instructions_x86_64": 2,
+        "ns_at_0.1454_per_instr": 0.2908,
+        "over_25_instruction_cap": false
+      },
+      "nearest_dxdy": {
+        "gold_at_19_per_ns": -146.4178,
+        "gold_at_7_instr_per_19": -143.85714285714286,
+        "instructions_x86_64": 53,
+        "ns_at_0.1454_per_instr": 7.7062,
+        "over_25_instruction_cap": true
+      },
+      "nearest_dxdy_lean": {
+        "gold_at_19_per_ns": -107.7414,
+        "gold_at_7_instr_per_19": -105.85714285714286,
+        "instructions_x86_64": 39,
+        "ns_at_0.1454_per_instr": 5.6706,
+        "over_25_instruction_cap": true
+      },
+      "slot0_only": {
+        "gold_at_19_per_ns": -22.1008,
+        "gold_at_7_instr_per_19": -21.714285714285715,
+        "instructions_x86_64": 8,
+        "ns_at_0.1454_per_instr": 1.1632,
+        "over_25_instruction_cap": false
+      }
+    },
+    "pricing_model": {
+      "gold_per_ns_vs_T1": -19.0,
+      "ns_per_instruction": 0.1454,
+      "source": "flip rate 9.274% against T-1 x full loss 1840 gold if a round flips"
+    },
+    "protocol": "two independent measurements.  (1) each sensor form compiled standalone at -O3 and counted from `objdump -d`, `retq`/padding excluded; (2) the same form spliced into the frozen construct's own per-unit loop behind a `volatile` sink and the static instruction count of `_moveDecision` differenced against a sink-only arm, which gives the MARGINAL inline cost for both units.  x86-64 is the platform ISA and is the count that prices; arm64 is a cross-check on this host.",
+    "standalone_variants": {
+      "hoisted_pair": {
+        "arm64": {
+          "arch": "arm64",
+          "disassembly": [
+            "x8, x0, #0x4a4",
+            "q0, [x8]",
+            "q0, [x1]",
+            "ret"
+          ],
+          "mnemonics": [
+            "x8,",
+            "q0,",
+            "q0,",
+            "ret"
+          ],
+          "payload_instructions": 3,
+          "total_instructions": 4
+        },
+        "x86_64": {
+          "arch": "x86_64",
+          "disassembly": [
+            "0x4a4(%rdi), %xmm0",
+            "%xmm0, (%rsi)",
+            "retq"
+          ],
+          "mnemonics": [
+            "0x4a4(%rdi),",
+            "%xmm0,",
+            "retq"
+          ],
+          "payload_instructions": 2,
+          "total_instructions": 3
+        }
+      },
+      "nearest_dxdy": {
+        "arm64": {
+          "arch": "arm64",
+          "disassembly": [
+            "x8, x0, w1, sxtw #3",
+            "w9, [x8, #0x488]",
+            "w8, [x8, #0x48c]",
+            "w10, [x0, #0x4a4]",
+            "w11, [x0, #0x4a8]",
+            "w12, [x0, #0x4ac]",
+            "w13, [x0, #0x4b0]",
+            "w14, w10, w9",
+            "w11, w11, w8",
+            "w9, w12, w9",
+            "w8, w13, w8",
+            "w13, w14, mi",
+            "w11, #0x0",
+            "w15, w11, mi",
+            "w9, #0x0",
+            "w16, w9, mi",
+            "w8, #0x0",
+            "w17, w8, mi",
+            "w13, w15",
+            "w13, w13, w15, hi",
+            "w10, w10, #31",
+            "w13, w13, w10",
+            "w16, w17",
+            "w15, w16, w17, hi",
+            "w12, w12, #31",
+            "w15, w15, w12",
+            "w12, #0x1",
+            "w12, gt",
+            "w10, #0x0",
+            "w15, w13, #0x8, ge",
+            "w10, lt",
+            "w12, w10",
+            "w9, w9, w14, ne",
+            "w8, w8, w11, ne",
+            "w9, w8, [x2]",
+            "ret"
+          ],
+          "mnemonics": [
+            "x8,",
+            "w9,",
+            "w8,",
+            "w10,",
+            "w11,",
+            "w12,",
+            "w13,",
+            "w14,",
+            "w11,",
+            "w9,",
+            "w8,",
+            "w13,",
+            "w11,",
+            "w15,",
+            "w9,",
+            "w16,",
+            "w8,",
+            "w17,",
+            "w13,",
+            "w13,",
+            "w10,",
+            "w13,",
+            "w16,",
+            "w15,",
+            "w12,",
+            "w15,",
+            "w12,",
+            "w12,",
+            "w10,",
+            "w15,",
+            "w10,",
+            "w12,",
+            "w9,",
+            "w8,",
+            "w9,",
+            "ret"
+          ],
+          "payload_instructions": 35,
+          "total_instructions": 36
+        },
+        "x86_64": {
+          "arch": "x86_64",
+          "disassembly": [
+            "%rbp",
+            "%r15",
+            "%r14",
+            "%rbx",
+            "%esi, %rax",
+            "0x488(%rdi,%rax,8), %r11d",
+            "0x48c(%rdi,%rax,8), %r8d",
+            "0x4a4(%rdi), %esi",
+            "0x4a8(%rdi), %ebx",
+            "0x4ac(%rdi), %r10d",
+            "0x4b0(%rdi), %ebp",
+            "%esi, %ecx",
+            "%r11d, %ecx",
+            "%ebx, %eax",
+            "%r8d, %eax",
+            "%r10d, %r9d",
+            "%r11d, %r9d",
+            "%ebp, %edi",
+            "%r8d, %edi",
+            "%r11d, %r14d",
+            "%esi, %r14d",
+            "%ecx, %r14d",
+            "%r8d, %r15d",
+            "%ebx, %r15d",
+            "%eax, %r15d",
+            "%r10d, %r11d",
+            "%r9d, %r11d",
+            "%ebp, %r8d",
+            "%edi, %r8d",
+            "%r15d, %r14d",
+            "%r14d, %r15d",
+            "$0x1f, %esi",
+            "%esi, %r15d",
+            "%r8d, %r11d",
+            "%r11d, %r8d",
+            "$0x1f, %r10d",
+            "%r10d, %r8d",
+            "%r10d, %r10d",
+            "%r10b",
+            "%r15d, %r8d",
+            "%r8b",
+            "%esi, %esi",
+            "%sil",
+            "%r8b, %sil",
+            "%sil, %r10b",
+            "%ecx, %r9d",
+            "%r9d, (%rdx)",
+            "%eax, %edi",
+            "%edi, 0x4(%rdx)",
+            "%rbx",
+            "%r14",
+            "%r15",
+            "%rbp",
+            "retq"
+          ],
+          "mnemonics": [
+            "%rbp",
+            "%r15",
+            "%r14",
+            "%rbx",
+            "%esi,",
+            "0x488(%rdi,%rax,8),",
+            "0x48c(%rdi,%rax,8),",
+            "0x4a4(%rdi),",
+            "0x4a8(%rdi),",
+            "0x4ac(%rdi),",
+            "0x4b0(%rdi),",
+            "%esi,",
+            "%r11d,",
+            "%ebx,",
+            "%r8d,",
+            "%r10d,",
+            "%r11d,",
+            "%ebp,",
+            "%r8d,",
+            "%r11d,",
+            "%esi,",
+            "%ecx,",
+            "%r8d,",
+            "%ebx,",
+            "%eax,",
+            "%r10d,",
+            "%r9d,",
+            "%ebp,",
+            "%edi,",
+            "%r15d,",
+            "%r14d,",
+            "$0x1f,",
+            "%esi,",
+            "%r8d,",
+            "%r11d,",
+            "$0x1f,",
+            "%r10d,",
+            "%r10d,",
+            "%r10b",
+            "%r15d,",
+            "%r8b",
+            "%esi,",
+            "%sil",
+            "%r8b,",
+            "%sil,",
+            "%ecx,",
+            "%r9d,",
+            "%eax,",
+            "%edi,",
+            "%rbx",
+            "%r14",
+            "%r15",
+            "%rbp",
+            "retq"
+          ],
+          "payload_instructions": 53,
+          "total_instructions": 54
+        }
+      },
+      "nearest_dxdy_lean": {
+        "arm64": {
+          "arch": "arm64",
+          "disassembly": [
+            "x8, x0, w1, sxtw #3",
+            "w9, [x8, #0x488]",
+            "w8, [x8, #0x48c]",
+            "w10, [x0, #0x4a4]",
+            "w11, [x0, #0x4a8]",
+            "w12, [x0, #0x4ac]",
+            "w13, w12, w9",
+            "w14, [x0, #0x4b0]",
+            "w14, w14, w8",
+            "w15, #0x63              ; =99",
+            "w16, w14, mi",
+            "w13, #0x0",
+            "w17, w13, mi",
+            "w17, w16",
+            "w16, w17, w16, hi",
+            "w12, #0x80000000",
+            "w12, w15, w16, ne",
+            "w9, w10, w9",
+            "w10, w9, mi",
+            "w8, w11, w8",
+            "w11, w8, mi",
+            "w10, w11",
+            "w10, w10, w11, hi",
+            "w12, w10",
+            "w9, w13, w9, lo",
+            "w8, w14, w8, lo",
+            "w9, w8, [x2]",
+            "ret"
+          ],
+          "mnemonics": [
+            "x8,",
+            "w9,",
+            "w8,",
+            "w10,",
+            "w11,",
+            "w12,",
+            "w13,",
+            "w14,",
+            "w14,",
+            "w15,",
+            "w16,",
+            "w13,",
+            "w17,",
+            "w17,",
+            "w16,",
+            "w12,",
+            "w12,",
+            "w9,",
+            "w10,",
+            "w8,",
+            "w11,",
+            "w10,",
+            "w10,",
+            "w12,",
+            "w9,",
+            "w8,",
+            "w9,",
+            "ret"
+          ],
+          "payload_instructions": 27,
+          "total_instructions": 28
+        },
+        "x86_64": {
+          "arch": "x86_64",
+          "disassembly": [
+            "%esi, %rax",
+            "0x488(%rdi,%rax,8), %ecx",
+            "0x48c(%rdi,%rax,8), %eax",
+            "0x4a4(%rdi), %r10d",
+            "0x4a8(%rdi), %r9d",
+            "0x4ac(%rdi), %r11d",
+            "%r11d, %r8d",
+            "%ecx, %r8d",
+            "0x4b0(%rdi), %esi",
+            "%eax, %esi",
+            "%r11d, %r11d",
+            "0x55 <_probe+0x55>",
+            "%esi, %r11d",
+            "%r11d",
+            "%esi, %r11d",
+            "%r8d, %edi",
+            "%edi",
+            "%r8d, %edi",
+            "%r11d, %edi",
+            "%r11d, %edi",
+            "0x5a <_probe+0x5a>",
+            "$0x63, %edi",
+            "%r10d, %r11d",
+            "%ecx, %r11d",
+            "%r10d, %ecx",
+            "%ecx, %r11d",
+            "%ecx",
+            "%r9d, %r10d",
+            "%eax, %r10d",
+            "%r9d, %eax",
+            "%eax, %r10d",
+            "%eax",
+            "%r10d, %r11d",
+            "%r11d, %r10d",
+            "%r10d, %edi",
+            "%r8d, %ecx",
+            "%ecx, (%rdx)",
+            "%esi, %eax",
+            "%eax, 0x4(%rdx)",
+            "retq"
+          ],
+          "mnemonics": [
+            "%esi,",
+            "0x488(%rdi,%rax,8),",
+            "0x48c(%rdi,%rax,8),",
+            "0x4a4(%rdi),",
+            "0x4a8(%rdi),",
+            "0x4ac(%rdi),",
+            "%r11d,",
+            "%ecx,",
+            "0x4b0(%rdi),",
+            "%eax,",
+            "%r11d,",
+            "0x55",
+            "%esi,",
+            "%r11d",
+            "%esi,",
+            "%r8d,",
+            "%edi",
+            "%r8d,",
+            "%r11d,",
+            "%r11d,",
+            "0x5a",
+            "$0x63,",
+            "%r10d,",
+            "%ecx,",
+            "%r10d,",
+            "%ecx,",
+            "%ecx",
+            "%r9d,",
+            "%eax,",
+            "%r9d,",
+            "%eax,",
+            "%eax",
+            "%r10d,",
+            "%r11d,",
+            "%r10d,",
+            "%r8d,",
+            "%ecx,",
+            "%esi,",
+            "%eax,",
+            "retq"
+          ],
+          "payload_instructions": 39,
+          "total_instructions": 40
+        }
+      },
+      "slot0_only": {
+        "arm64": {
+          "arch": "arm64",
+          "disassembly": [
+            "x8, x0, w1, sxtw #3",
+            "w9, [x8, #0x488]",
+            "w8, [x8, #0x48c]",
+            "w10, [x0, #0x4a4]",
+            "w9, w10, w9",
+            "w9, [x2]",
+            "w9, [x0, #0x4a8]",
+            "w8, w9, w8",
+            "w8, [x2, #0x4]",
+            "ret"
+          ],
+          "mnemonics": [
+            "x8,",
+            "w9,",
+            "w8,",
+            "w10,",
+            "w9,",
+            "w9,",
+            "w9,",
+            "w8,",
+            "w8,",
+            "ret"
+          ],
+          "payload_instructions": 9,
+          "total_instructions": 10
+        },
+        "x86_64": {
+          "arch": "x86_64",
+          "disassembly": [
+            "%esi, %rax",
+            "0x48c(%rdi,%rax,8), %ecx",
+            "0x4a4(%rdi), %esi",
+            "0x488(%rdi,%rax,8), %esi",
+            "%esi, (%rdx)",
+            "0x4a8(%rdi), %eax",
+            "%ecx, %eax",
+            "%eax, 0x4(%rdx)",
+            "retq"
+          ],
+          "mnemonics": [
+            "%esi,",
+            "0x48c(%rdi,%rax,8),",
+            "0x4a4(%rdi),",
+            "0x488(%rdi,%rax,8),",
+            "%esi,",
+            "0x4a8(%rdi),",
+            "%ecx,",
+            "%eax,",
+            "retq"
+          ],
+          "payload_instructions": 8,
+          "total_instructions": 9
+        }
+      }
+    }
+  },
+  "income_curve_gold_per_unit_round": {
+    "0": 2.299610894941634,
+    "1": 2.299610894941634,
+    "2": 2.3917525773195876,
+    "3": 2.611111111111111,
+    "4": 3.3239766081871345,
+    "5": 3.3239766081871345,
+    "6": 3.3239766081871345,
+    "7": 3.3239766081871345,
+    "8": 3.3239766081871345
+  },
+  "most_generous_upper_bound": {
+    "after_85pct_discount_one_round": 6.6967908503424605,
+    "after_85pct_discount_two_round": 13.393581700684921,
+    "credit_per_firing_used_gold": 1.0243657132455004,
+    "firings_per_game_used": 43.583333333333336,
+    "latency_cost_ignored": true,
+    "our_collection_loss_ignored": true,
+    "raw_one_round": 44.6452723356164,
+    "raw_two_round_persistence": 89.2905446712328,
+    "source_of_credit": "income(d=4) - income(d=1) from the probe curve, the largest transition the measurement supports",
+    "verdict_note": "even this construction does not reach the 100-gold gate, which is what makes the negative robust rather than marginal",
+    "with_displacement_stratified_slope": 39.529111815963255
+  },
+  "scoring_rate_curve": {
+    "0": 0.5486381322957199,
+    "1": 0.5486381322957199,
+    "2": 0.5498281786941581,
+    "3": 0.5436507936507936,
+    "4": 0.656140350877193,
+    "5": 0.656140350877193,
+    "6": 0.656140350877193,
+    "7": 0.656140350877193,
+    "8": 0.656140350877193
+  },
+  "sensor_cost": {
+    "codegen_noise_floor": 7,
+    "gold_at_19_per_ns": -69.065,
+    "gold_if_absorbed_by_the_42_instruction_credit": 0.0,
+    "marginal_inline_instructions_both_units": 25
+  },
+  "slope": {
+    "endogenous_ordinary_our_p50_gt_260ns": {
+      "bias_ratio_visible_over_full": 0.7875022273156373,
+      "by_distance": {
+        "1": {
+          "mean": 1.2762304921968788,
+          "n": 8330,
+          "scoring_rate": 0.28847539015606244
+        },
+        "2": {
+          "mean": 2.3262387761888927,
+          "n": 6014,
+          "scoring_rate": 0.5350848021283672
+        },
+        "3": {
+          "mean": 3.015151515151515,
+          "n": 264,
+          "scoring_rate": 0.5984848484848485
+        },
+        "4": {
+          "mean": 2.8865248226950353,
+          "n": 141,
+          "scoring_rate": 0.5390070921985816
+        }
+      },
+      "channel": "per-unit `gold` differencing (100% recorded); negative deltas clipped to 0 because a drop is a bomb burn, not income",
+      "displacement_stratified": {
+        "0": {
+          "mean_far": null,
+          "mean_near": 0.0,
+          "n_far": 0,
+          "n_near": 3252,
+          "se": null,
+          "slope": null
+        },
+        "1": {
+          "mean_far": 8.75,
+          "mean_near": 0.8096330275229358,
+          "n_far": 8,
+          "n_near": 1744,
+          "se": 2.0337606244731776,
+          "slope": -7.940366972477064
+        },
+        "2": {
+          "mean_far": 2.8537313432835822,
+          "mean_near": 2.7129455909943716,
+          "n_far": 335,
+          "n_near": 2132,
+          "se": 0.24392690069904063,
+          "slope": -0.14078575228921064
+        }
+      },
+      "displacement_stratified_pooled_slope": -0.3227001830807641,
+      "far_d_ge_3": {
+        "mean": 2.9703703703703703,
+        "n": 405,
+        "scoring_rate": 0.5777777777777777
+      },
+      "full_channel_mean_per_unit_round": 2.2233567160301377,
+      "games_used": [
+        "162570",
+        "162574",
+        "162578",
+        "162632",
+        "162660",
+        "162704",
+        "162707",
+        "162737",
+        "162745",
+        "163406",
+        "166647",
+        "166785",
+        "167131",
+        "169520",
+        "169521",
+        "169629",
+        "169630",
+        "169646",
+        "169730",
+        "169732",
+        "169760",
+        "169761",
+        "170147",
+        "170493",
+        "170567",
+        "170986",
+        "171022",
+        "171223",
+        "171272",
+        "171710",
+        "171792",
+        "171807",
+        "171881",
+        "171975",
+        "172006",
+        "172674",
+        "172812",
+        "174199",
+        "175095",
+        "175402",
+        "175405",
+        "175839",
+        "175858"
+      ],
+      "near_d_le_1": {
+        "mean": 1.2762304921968788,
+        "n": 8330,
+        "scoring_rate": 0.28847539015606244
+      },
+      "per_game": [
+        {
+          "game": "162570",
+          "hidden_income_per_unit_round": null,
+          "observed_income_per_unit_round": 0.8052083333333333,
+          "position_coverage": 1.0,
+          "position_visible_rounds": 960,
+          "target_rounds": 960
+        },
+        {
+          "game": "162574",
+          "hidden_income_per_unit_round": 3.0161870503597124,
+          "observed_income_per_unit_round": 1.381188118811881,
+          "position_coverage": 0.42083333333333334,
+          "position_visible_rounds": 404,
+          "target_rounds": 960
+        },
+        {
+          "game": "162578",
+          "hidden_income_per_unit_round": 6.857142857142857,
+          "observed_income_per_unit_round": 0.5084566596194503,
+          "position_coverage": 0.9854166666666667,
+          "position_visible_rounds": 946,
+          "target_rounds": 960
+        },
+        {
+          "game": "162632",
+          "hidden_income_per_unit_round": 3.2531645569620253,
+          "observed_income_per_unit_round": 0.8491271820448878,
+          "position_coverage": 0.8354166666666667,
+          "position_visible_rounds": 802,
+          "target_rounds": 960
+        },
+        {
+          "game": "162660",
+          "hidden_income_per_unit_round": 2.1267605633802815,
+          "observed_income_per_unit_round": 0.6794150731158605,
+          "position_coverage": 0.9260416666666667,
+          "position_visible_rounds": 889,
+          "target_rounds": 960
+        },
+        {
+          "game": "162704",
+          "hidden_income_per_unit_round": 2.689149560117302,
+          "observed_income_per_unit_round": 2.3633093525179856,
+          "position_coverage": 0.28958333333333336,
+          "position_visible_rounds": 278,
+          "target_rounds": 960
+        },
+        {
+          "game": "162707",
+          "hidden_income_per_unit_round": 2.731117824773414,
+          "observed_income_per_unit_round": 2.4798657718120807,
+          "position_coverage": 0.3104166666666667,
+          "position_visible_rounds": 298,
+          "target_rounds": 960
+        },
+        {
+          "game": "162737",
+          "hidden_income_per_unit_round": 2.664383561643836,
+          "observed_income_per_unit_round": 1.8,
+          "position_coverage": 0.23958333333333334,
+          "position_visible_rounds": 230,
+          "target_rounds": 960
+        },
+        {
+          "game": "162745",
+          "hidden_income_per_unit_round": 2.4251851851851853,
+          "observed_income_per_unit_round": 2.4350877192982456,
+          "position_coverage": 0.296875,
+          "position_visible_rounds": 285,
+          "target_rounds": 960
+        },
+        {
+          "game": "163406",
+          "hidden_income_per_unit_round": 2.1734375,
+          "observed_income_per_unit_round": 1.809375,
+          "position_coverage": 0.3333333333333333,
+          "position_visible_rounds": 320,
+          "target_rounds": 960
+        },
+        {
+          "game": "166647",
+          "hidden_income_per_unit_round": 2.502958579881657,
+          "observed_income_per_unit_round": 2.130281690140845,
+          "position_coverage": 0.29583333333333334,
+          "position_visible_rounds": 284,
+          "target_rounds": 960
+        },
+        {
+          "game": "166785",
+          "hidden_income_per_unit_round": 2.4394160583941606,
+          "observed_income_per_unit_round": 2.1163636363636362,
+          "position_coverage": 0.2864583333333333,
+          "position_visible_rounds": 275,
+          "target_rounds": 960
+        },
+        {
+          "game": "167131",
+          "hidden_income_per_unit_round": 2.306474820143885,
+          "observed_income_per_unit_round": 2.1735849056603773,
+          "position_coverage": 0.2760416666666667,
+          "position_visible_rounds": 265,
+          "target_rounds": 960
+        },
+        {
+          "game": "169520",
+          "hidden_income_per_unit_round": 2.3453757225433525,
+          "observed_income_per_unit_round": 2.3656716417910446,
+          "position_coverage": 0.2791666666666667,
+          "position_visible_rounds": 268,
+          "target_rounds": 960
+        },
+        {
+          "game": "169521",
+          "hidden_income_per_unit_round": 2.2810902896081773,
+          "observed_income_per_unit_round": 2.0938337801608577,
+          "position_coverage": 0.3885416666666667,
+          "position_visible_rounds": 373,
+          "target_rounds": 960
+        },
+        {
+          "game": "169629",
+          "hidden_income_per_unit_round": 2.802521008403361,
+          "observed_income_per_unit_round": 1.91869918699187,
+          "position_coverage": 0.25625,
+          "position_visible_rounds": 246,
+          "target_rounds": 960
+        },
+        {
+          "game": "169630",
+          "hidden_income_per_unit_round": 2.420647149460709,
+          "observed_income_per_unit_round": 1.684887459807074,
+          "position_coverage": 0.32395833333333335,
+          "position_visible_rounds": 311,
+          "target_rounds": 960
+        },
+        {
+          "game": "169646",
+          "hidden_income_per_unit_round": 2.4132581100141044,
+          "observed_income_per_unit_round": 2.103585657370518,
+          "position_coverage": 0.26145833333333335,
+          "position_visible_rounds": 251,
+          "target_rounds": 960
+        },
+        {
+          "game": "169730",
+          "hidden_income_per_unit_round": 2.5977917981072554,
+          "observed_income_per_unit_round": 1.7331288343558282,
+          "position_coverage": 0.33958333333333335,
+          "position_visible_rounds": 326,
+          "target_rounds": 960
+        },
+        {
+          "game": "169732",
+          "hidden_income_per_unit_round": 2.4234234234234235,
+          "observed_income_per_unit_round": 2.2551020408163267,
+          "position_coverage": 0.30625,
+          "position_visible_rounds": 294,
+          "target_rounds": 960
+        },
+        {
+          "game": "169760",
+          "hidden_income_per_unit_round": 2.7456828885400313,
+          "observed_income_per_unit_round": 2.4520123839009287,
+          "position_coverage": 0.33645833333333336,
+          "position_visible_rounds": 323,
+          "target_rounds": 960
+        },
+        {
+          "game": "169761",
+          "hidden_income_per_unit_round": 2.635239567233385,
+          "observed_income_per_unit_round": 2.1661341853035143,
+          "position_coverage": 0.3260416666666667,
+          "position_visible_rounds": 313,
+          "target_rounds": 960
+        },
+        {
+          "game": "170147",
+          "hidden_income_per_unit_round": 2.5336463223787167,
+          "observed_income_per_unit_round": 2.367601246105919,
+          "position_coverage": 0.334375,
+          "position_visible_rounds": 321,
+          "target_rounds": 960
+        },
+        {
+          "game": "170493",
+          "hidden_income_per_unit_round": 2.6509298998569384,
+          "observed_income_per_unit_round": 2.4406130268199235,
+          "position_coverage": 0.271875,
+          "position_visible_rounds": 261,
+          "target_rounds": 960
+        },
+        {
+          "game": "170567",
+          "hidden_income_per_unit_round": 2.8688524590163933,
+          "observed_income_per_unit_round": 2.80327868852459,
+          "position_coverage": 0.3333333333333333,
+          "position_visible_rounds": 122,
+          "target_rounds": 366
+        },
+        {
+          "game": "170986",
+          "hidden_income_per_unit_round": 2.077310924369748,
+          "observed_income_per_unit_round": 2.539906103286385,
+          "position_coverage": 0.2636138613861386,
+          "position_visible_rounds": 213,
+          "target_rounds": 808
+        },
+        {
+          "game": "171022",
+          "hidden_income_per_unit_round": 3.204081632653061,
+          "observed_income_per_unit_round": 2.347826086956522,
+          "position_coverage": 0.3194444444444444,
+          "position_visible_rounds": 23,
+          "target_rounds": 72
+        },
+        {
+          "game": "171223",
+          "hidden_income_per_unit_round": 2.136842105263158,
+          "observed_income_per_unit_round": 1.28,
+          "position_coverage": 0.20833333333333334,
+          "position_visible_rounds": 25,
+          "target_rounds": 120
+        },
+        {
+          "game": "171272",
+          "hidden_income_per_unit_round": 2.190582959641256,
+          "observed_income_per_unit_round": 2.9646464646464645,
+          "position_coverage": 0.30745341614906835,
+          "position_visible_rounds": 198,
+          "target_rounds": 644
+        },
+        {
+          "game": "171710",
+          "hidden_income_per_unit_round": 2.5821812596006146,
+          "observed_income_per_unit_round": 1.941747572815534,
+          "position_coverage": 0.321875,
+          "position_visible_rounds": 309,
+          "target_rounds": 960
+        },
+        {
+          "game": "171792",
+          "hidden_income_per_unit_round": 2.57741935483871,
+          "observed_income_per_unit_round": 2.302941176470588,
+          "position_coverage": 0.3541666666666667,
+          "position_visible_rounds": 340,
+          "target_rounds": 960
+        },
+        {
+          "game": "171807",
+          "hidden_income_per_unit_round": 2.540133779264214,
+          "observed_income_per_unit_round": 2.1022099447513813,
+          "position_coverage": 0.3770833333333333,
+          "position_visible_rounds": 362,
+          "target_rounds": 960
+        },
+        {
+          "game": "171881",
+          "hidden_income_per_unit_round": 2.8623548922056385,
+          "observed_income_per_unit_round": 2.179271708683473,
+          "position_coverage": 0.371875,
+          "position_visible_rounds": 357,
+          "target_rounds": 960
+        },
+        {
+          "game": "171975",
+          "hidden_income_per_unit_round": 2.3446519524617995,
+          "observed_income_per_unit_round": 2.0161725067385445,
+          "position_coverage": 0.38645833333333335,
+          "position_visible_rounds": 371,
+          "target_rounds": 960
+        },
+        {
+          "game": "172006",
+          "hidden_income_per_unit_round": 2.6191198786039456,
+          "observed_income_per_unit_round": 2.2757475083056478,
+          "position_coverage": 0.31354166666666666,
+          "position_visible_rounds": 301,
+          "target_rounds": 960
+        },
+        {
+          "game": "172674",
+          "hidden_income_per_unit_round": 2.5809061488673137,
+          "observed_income_per_unit_round": 1.956140350877193,
+          "position_coverage": 0.35625,
+          "position_visible_rounds": 342,
+          "target_rounds": 960
+        },
+        {
+          "game": "172812",
+          "hidden_income_per_unit_round": 2.5142857142857142,
+          "observed_income_per_unit_round": 2.111864406779661,
+          "position_coverage": 0.3072916666666667,
+          "position_visible_rounds": 295,
+          "target_rounds": 960
+        },
+        {
+          "game": "174199",
+          "hidden_income_per_unit_round": 2.3485804416403786,
+          "observed_income_per_unit_round": 2.049079754601227,
+          "position_coverage": 0.33958333333333335,
+          "position_visible_rounds": 326,
+          "target_rounds": 960
+        },
+        {
+          "game": "175095",
+          "hidden_income_per_unit_round": 2.4763358778625952,
+          "observed_income_per_unit_round": 1.9278688524590164,
+          "position_coverage": 0.3177083333333333,
+          "position_visible_rounds": 305,
+          "target_rounds": 960
+        },
+        {
+          "game": "175402",
+          "hidden_income_per_unit_round": 2.2363945578231292,
+          "observed_income_per_unit_round": 1.478494623655914,
+          "position_coverage": 0.3875,
+          "position_visible_rounds": 372,
+          "target_rounds": 960
+        },
+        {
+          "game": "175405",
+          "hidden_income_per_unit_round": 2.1801242236024843,
+          "observed_income_per_unit_round": 1.9651898734177216,
+          "position_coverage": 0.32916666666666666,
+          "position_visible_rounds": 316,
+          "target_rounds": 960
+        },
+        {
+          "game": "175839",
+          "hidden_income_per_unit_round": 2.513245033112583,
+          "observed_income_per_unit_round": 1.9887640449438202,
+          "position_coverage": 0.37083333333333335,
+          "position_visible_rounds": 356,
+          "target_rounds": 960
+        },
+        {
+          "game": "175858",
+          "hidden_income_per_unit_round": 2.6731634182908546,
+          "observed_income_per_unit_round": 1.7372013651877134,
+          "position_coverage": 0.30520833333333336,
+          "position_visible_rounds": 293,
+          "target_rounds": 960
+        }
+      ],
+      "position_coverage": 0.38319043907508443,
+      "scoring_rate_slope_near_minus_far": -0.2893023876217153,
+      "scoring_rate_slope_se": 0.025039727238863912,
+      "slope_near_minus_far": -1.6941398781734915,
+      "slope_se": 0.2131474425514263,
+      "target": "player163",
+      "visible_subset_mean_per_unit_round": 1.7508983659909145,
+      "window": "steady rounds r >= 20"
+    },
+    "endogenous_ordinary_our_p50_le_260ns": {
+      "bias_ratio_visible_over_full": 0.7707733865102295,
+      "by_distance": {
+        "1": {
+          "mean": 1.1107824559781856,
+          "n": 21637,
+          "scoring_rate": 0.27984471044969267
+        },
+        "2": {
+          "mean": 1.9791718170580963,
+          "n": 16180,
+          "scoring_rate": 0.47639060568603214
+        }
+      },
+      "channel": "per-unit `gold` differencing (100% recorded); negative deltas clipped to 0 because a drop is a bomb burn, not income",
+      "displacement_stratified": {
+        "0": {
+          "mean_far": null,
+          "mean_near": 0.0,
+          "n_far": 0,
+          "n_near": 6676,
+          "se": null,
+          "slope": null
+        },
+        "1": {
+          "mean_far": null,
+          "mean_near": 0.6108920187793427,
+          "n_far": 0,
+          "n_near": 5325,
+          "se": null,
+          "slope": null
+        },
+        "2": {
+          "mean_far": null,
+          "mean_near": 2.1485760781122862,
+          "n_far": 0,
+          "n_near": 6145,
+          "se": null,
+          "slope": null
+        }
+      },
+      "displacement_stratified_pooled_slope": null,
+      "far_d_ge_3": {
+        "mean": null,
+        "n": 0,
+        "scoring_rate": null
+      },
+      "full_channel_mean_per_unit_round": 1.9231628787878787,
+      "games_used": [
+        "158872",
+        "158925",
+        "158964",
+        "159175",
+        "162699",
+        "165557",
+        "166474",
+        "166572",
+        "166607",
+        "166617",
+        "166631",
+        "167490",
+        "168446",
+        "168951",
+        "169276",
+        "169366",
+        "169367",
+        "169404",
+        "169405",
+        "169410",
+        "169411",
+        "171744",
+        "171855",
+        "171905",
+        "171906",
+        "171927",
+        "171947",
+        "171966",
+        "172115",
+        "172371",
+        "172441",
+        "172497",
+        "173441",
+        "173465",
+        "173466",
+        "174197",
+        "174198",
+        "174200",
+        "174201",
+        "174202",
+        "174203",
+        "174204",
+        "174205",
+        "175094",
+        "175096",
+        "175157",
+        "175158",
+        "175159",
+        "175160",
+        "175162",
+        "175163",
+        "175407",
+        "175473",
+        "175488",
+        "175490",
+        "175506",
+        "175528",
+        "175565",
+        "175697",
+        "175710",
+        "175711",
+        "175713",
+        "175800",
+        "175806",
+        "175843",
+        "175845",
+        "175846",
+        "175847",
+        "175848",
+        "175849",
+        "175850",
+        "175851",
+        "175861",
+        "175863",
+        "175967",
+        "175969",
+        "175970",
+        "175971",
+        "175973",
+        "175974",
+        "176022",
+        "176031",
+        "176055",
+        "176063",
+        "176068",
+        "176074",
+        "176120",
+        "176130",
+        "176133",
+        "176146",
+        "176148",
+        "176151",
+        "176387",
+        "176389",
+        "176390",
+        "176391",
+        "176392",
+        "176394",
+        "176395",
+        "176396",
+        "176397",
+        "176399",
+        "176400",
+        "176401",
+        "179593",
+        "179594",
+        "179595",
+        "179596",
+        "179597",
+        "179598"
+      ],
+      "near_d_le_1": {
+        "mean": 1.1107824559781856,
+        "n": 21637,
+        "scoring_rate": 0.27984471044969267
+      },
+      "per_game": [
+        {
+          "game": "158872",
+          "hidden_income_per_unit_round": 2.288557213930348,
+          "observed_income_per_unit_round": 1.7282913165266107,
+          "position_coverage": 0.371875,
+          "position_visible_rounds": 357,
+          "target_rounds": 960
+        },
+        {
+          "game": "158925",
+          "hidden_income_per_unit_round": 2.5984615384615384,
+          "observed_income_per_unit_round": 2.129032258064516,
+          "position_coverage": 0.3229166666666667,
+          "position_visible_rounds": 310,
+          "target_rounds": 960
+        },
+        {
+          "game": "158964",
+          "hidden_income_per_unit_round": 2.9166666666666665,
+          "observed_income_per_unit_round": 2.113095238095238,
+          "position_coverage": 0.35,
+          "position_visible_rounds": 336,
+          "target_rounds": 960
+        },
+        {
+          "game": "159175",
+          "hidden_income_per_unit_round": 3.6222222222222222,
+          "observed_income_per_unit_round": 0.048087431693989074,
+          "position_coverage": 0.953125,
+          "position_visible_rounds": 915,
+          "target_rounds": 960
+        },
+        {
+          "game": "162699",
+          "hidden_income_per_unit_round": 2.8106796116504853,
+          "observed_income_per_unit_round": 2.0955882352941178,
+          "position_coverage": 0.14166666666666666,
+          "position_visible_rounds": 136,
+          "target_rounds": 960
+        },
+        {
+          "game": "165557",
+          "hidden_income_per_unit_round": 2.7056962025316458,
+          "observed_income_per_unit_round": 1.6280487804878048,
+          "position_coverage": 0.3416666666666667,
+          "position_visible_rounds": 328,
+          "target_rounds": 960
+        },
+        {
+          "game": "166474",
+          "hidden_income_per_unit_round": 2.2955271565495208,
+          "observed_income_per_unit_round": 1.81437125748503,
+          "position_coverage": 0.34791666666666665,
+          "position_visible_rounds": 334,
+          "target_rounds": 960
+        },
+        {
+          "game": "166572",
+          "hidden_income_per_unit_round": 2.6518424396442186,
+          "observed_income_per_unit_round": 1.9826589595375723,
+          "position_coverage": 0.18020833333333333,
+          "position_visible_rounds": 173,
+          "target_rounds": 960
+        },
+        {
+          "game": "166607",
+          "hidden_income_per_unit_round": 2.719665271966527,
+          "observed_income_per_unit_round": 1.2674897119341564,
+          "position_coverage": 0.253125,
+          "position_visible_rounds": 243,
+          "target_rounds": 960
+        },
+        {
+          "game": "166617",
+          "hidden_income_per_unit_round": 2.413589364844904,
+          "observed_income_per_unit_round": 1.784452296819788,
+          "position_coverage": 0.2947916666666667,
+          "position_visible_rounds": 283,
+          "target_rounds": 960
+        },
+        {
+          "game": "166631",
+          "hidden_income_per_unit_round": 2.383601756954612,
+          "observed_income_per_unit_round": 1.7906137184115523,
+          "position_coverage": 0.28854166666666664,
+          "position_visible_rounds": 277,
+          "target_rounds": 960
+        },
+        {
+          "game": "167490",
+          "hidden_income_per_unit_round": 2.4802919708029196,
+          "observed_income_per_unit_round": 1.989090909090909,
+          "position_coverage": 0.2864583333333333,
+          "position_visible_rounds": 275,
+          "target_rounds": 960
+        },
+        {
+          "game": "168446",
+          "hidden_income_per_unit_round": 2.6218708827404478,
+          "observed_income_per_unit_round": 2.2388059701492535,
+          "position_coverage": 0.209375,
+          "position_visible_rounds": 201,
+          "target_rounds": 960
+        },
+        {
+          "game": "168951",
+          "hidden_income_per_unit_round": 2.330014224751067,
+          "observed_income_per_unit_round": 2.1089494163424125,
+          "position_coverage": 0.2677083333333333,
+          "position_visible_rounds": 257,
+          "target_rounds": 960
+        },
+        {
+          "game": "169276",
+          "hidden_income_per_unit_round": 2.3167202572347265,
+          "observed_income_per_unit_round": 1.5769230769230769,
+          "position_coverage": 0.35208333333333336,
+          "position_visible_rounds": 338,
+          "target_rounds": 960
+        },
+        {
+          "game": "169366",
+          "hidden_income_per_unit_round": 2.497584541062802,
+          "observed_income_per_unit_round": 1.7286135693215339,
+          "position_coverage": 0.353125,
+          "position_visible_rounds": 339,
+          "target_rounds": 960
+        },
+        {
+          "game": "169367",
+          "hidden_income_per_unit_round": 2.3155339805825244,
+          "observed_income_per_unit_round": 1.7309941520467835,
+          "position_coverage": 0.35625,
+          "position_visible_rounds": 342,
+          "target_rounds": 960
+        },
+        {
+          "game": "169404",
+          "hidden_income_per_unit_round": 2.4703125,
+          "observed_income_per_unit_round": 1.940625,
+          "position_coverage": 0.3333333333333333,
+          "position_visible_rounds": 320,
+          "target_rounds": 960
+        },
+        {
+          "game": "169405",
+          "hidden_income_per_unit_round": 2.0254110612855007,
+          "observed_income_per_unit_round": 1.6082474226804124,
+          "position_coverage": 0.303125,
+          "position_visible_rounds": 291,
+          "target_rounds": 960
+        },
+        {
+          "game": "169410",
+          "hidden_income_per_unit_round": 2.3478915662650603,
+          "observed_income_per_unit_round": 1.7804054054054055,
+          "position_coverage": 0.30833333333333335,
+          "position_visible_rounds": 296,
+          "target_rounds": 960
+        },
+        {
+          "game": "169411",
+          "hidden_income_per_unit_round": 2.528735632183908,
+          "observed_income_per_unit_round": 1.621212121212121,
+          "position_coverage": 0.275,
+          "position_visible_rounds": 264,
+          "target_rounds": 960
+        },
+        {
+          "game": "171744",
+          "hidden_income_per_unit_round": 2.4134453781512604,
+          "observed_income_per_unit_round": 1.558904109589041,
+          "position_coverage": 0.3802083333333333,
+          "position_visible_rounds": 365,
+          "target_rounds": 960
+        },
+        {
+          "game": "171855",
+          "hidden_income_per_unit_round": 2.4879227053140096,
+          "observed_income_per_unit_round": 2.0530973451327434,
+          "position_coverage": 0.353125,
+          "position_visible_rounds": 339,
+          "target_rounds": 960
+        },
+        {
+          "game": "171905",
+          "hidden_income_per_unit_round": 2.357142857142857,
+          "observed_income_per_unit_round": 1.8636363636363635,
+          "position_coverage": 0.34375,
+          "position_visible_rounds": 330,
+          "target_rounds": 960
+        },
+        {
+          "game": "171906",
+          "hidden_income_per_unit_round": 2.3960843373493974,
+          "observed_income_per_unit_round": 1.912162162162162,
+          "position_coverage": 0.30833333333333335,
+          "position_visible_rounds": 296,
+          "target_rounds": 960
+        },
+        {
+          "game": "171927",
+          "hidden_income_per_unit_round": 2.5355987055016183,
+          "observed_income_per_unit_round": 1.9619883040935673,
+          "position_coverage": 0.35625,
+          "position_visible_rounds": 342,
+          "target_rounds": 960
+        },
+        {
+          "game": "171947",
+          "hidden_income_per_unit_round": 2.546456692913386,
+          "observed_income_per_unit_round": 2.0492307692307694,
+          "position_coverage": 0.3385416666666667,
+          "position_visible_rounds": 325,
+          "target_rounds": 960
+        },
+        {
+          "game": "171966",
+          "hidden_income_per_unit_round": 2.2158385093167703,
+          "observed_income_per_unit_round": 2.1487341772151898,
+          "position_coverage": 0.32916666666666666,
+          "position_visible_rounds": 316,
+          "target_rounds": 960
+        },
+        {
+          "game": "172115",
+          "hidden_income_per_unit_round": 2.2516129032258063,
+          "observed_income_per_unit_round": 1.3088235294117647,
+          "position_coverage": 0.3541666666666667,
+          "position_visible_rounds": 340,
+          "target_rounds": 960
+        },
+        {
+          "game": "172371",
+          "hidden_income_per_unit_round": 2.5923076923076924,
+          "observed_income_per_unit_round": 1.9903225806451612,
+          "position_coverage": 0.3229166666666667,
+          "position_visible_rounds": 310,
+          "target_rounds": 960
+        },
+        {
+          "game": "172441",
+          "hidden_income_per_unit_round": 2.484375,
+          "observed_income_per_unit_round": 2.0625,
+          "position_coverage": 0.4,
+          "position_visible_rounds": 384,
+          "target_rounds": 960
+        },
+        {
+          "game": "172497",
+          "hidden_income_per_unit_round": 2.5429017160686427,
+          "observed_income_per_unit_round": 1.2601880877742946,
+          "position_coverage": 0.33229166666666665,
+          "position_visible_rounds": 319,
+          "target_rounds": 960
+        },
+        {
+          "game": "173441",
+          "hidden_income_per_unit_round": 2.2783018867924527,
+          "observed_income_per_unit_round": 2.058641975308642,
+          "position_coverage": 0.3375,
+          "position_visible_rounds": 324,
+          "target_rounds": 960
+        },
+        {
+          "game": "173465",
+          "hidden_income_per_unit_round": 2.8185975609756095,
+          "observed_income_per_unit_round": 2.351973684210526,
+          "position_coverage": 0.31666666666666665,
+          "position_visible_rounds": 304,
+          "target_rounds": 960
+        },
+        {
+          "game": "173466",
+          "hidden_income_per_unit_round": 1.5911504424778762,
+          "observed_income_per_unit_round": 0.9291139240506329,
+          "position_coverage": 0.4114583333333333,
+          "position_visible_rounds": 395,
+          "target_rounds": 960
+        },
+        {
+          "game": "174197",
+          "hidden_income_per_unit_round": 2.5162454873646207,
+          "observed_income_per_unit_round": 1.7192118226600985,
+          "position_coverage": 0.42291666666666666,
+          "position_visible_rounds": 406,
+          "target_rounds": 960
+        },
+        {
+          "game": "174198",
+          "hidden_income_per_unit_round": 2.4525790349417638,
+          "observed_income_per_unit_round": 1.9387186629526463,
+          "position_coverage": 0.37395833333333334,
+          "position_visible_rounds": 359,
+          "target_rounds": 960
+        },
+        {
+          "game": "174200",
+          "hidden_income_per_unit_round": 2.4929356357927785,
+          "observed_income_per_unit_round": 2.3405572755417956,
+          "position_coverage": 0.33645833333333336,
+          "position_visible_rounds": 323,
+          "target_rounds": 960
+        },
+        {
+          "game": "174201",
+          "hidden_income_per_unit_round": 2.5903790087463556,
+          "observed_income_per_unit_round": 2.1934306569343067,
+          "position_coverage": 0.28541666666666665,
+          "position_visible_rounds": 274,
+          "target_rounds": 960
+        },
+        {
+          "game": "174202",
+          "hidden_income_per_unit_round": 2.7691056910569105,
+          "observed_income_per_unit_round": 2.5014492753623188,
+          "position_coverage": 0.359375,
+          "position_visible_rounds": 345,
+          "target_rounds": 960
+        },
+        {
+          "game": "174203",
+          "hidden_income_per_unit_round": 1.5557522123893806,
+          "observed_income_per_unit_round": 0.9721518987341772,
+          "position_coverage": 0.4114583333333333,
+          "position_visible_rounds": 395,
+          "target_rounds": 960
+        },
+        {
+          "game": "174204",
+          "hidden_income_per_unit_round": 1.7110016420361247,
+          "observed_income_per_unit_round": 1.131054131054131,
+          "position_coverage": 0.365625,
+          "position_visible_rounds": 351,
+          "target_rounds": 960
+        },
+        {
+          "game": "174205",
+          "hidden_income_per_unit_round": 1.2708688245315163,
+          "observed_income_per_unit_round": 0.9544235924932976,
+          "position_coverage": 0.3885416666666667,
+          "position_visible_rounds": 373,
+          "target_rounds": 960
+        },
+        {
+          "game": "175094",
+          "hidden_income_per_unit_round": 2.0778625954198473,
+          "observed_income_per_unit_round": 1.8754098360655738,
+          "position_coverage": 0.3177083333333333,
+          "position_visible_rounds": 305,
+          "target_rounds": 960
+        },
+        {
+          "game": "175096",
+          "hidden_income_per_unit_round": 2.5733532934131738,
+          "observed_income_per_unit_round": 1.9589041095890412,
+          "position_coverage": 0.30416666666666664,
+          "position_visible_rounds": 292,
+          "target_rounds": 960
+        },
+        {
+          "game": "175157",
+          "hidden_income_per_unit_round": 2.8637083993660855,
+          "observed_income_per_unit_round": 2.2613981762917934,
+          "position_coverage": 0.34270833333333334,
+          "position_visible_rounds": 329,
+          "target_rounds": 960
+        },
+        {
+          "game": "175158",
+          "hidden_income_per_unit_round": 2.4528,
+          "observed_income_per_unit_round": 2.1880597014925374,
+          "position_coverage": 0.3489583333333333,
+          "position_visible_rounds": 335,
+          "target_rounds": 960
+        },
+        {
+          "game": "175159",
+          "hidden_income_per_unit_round": 2.530326594090202,
+          "observed_income_per_unit_round": 2.302839116719243,
+          "position_coverage": 0.3302083333333333,
+          "position_visible_rounds": 317,
+          "target_rounds": 960
+        },
+        {
+          "game": "175160",
+          "hidden_income_per_unit_round": 1.4227642276422765,
+          "observed_income_per_unit_round": 1.153623188405797,
+          "position_coverage": 0.359375,
+          "position_visible_rounds": 345,
+          "target_rounds": 960
+        },
+        {
+          "game": "175162",
+          "hidden_income_per_unit_round": 1.6286701208981003,
+          "observed_income_per_unit_round": 0.7742782152230971,
+          "position_coverage": 0.396875,
+          "position_visible_rounds": 381,
+          "target_rounds": 960
+        },
+        {
+          "game": "175163",
+          "hidden_income_per_unit_round": 1.3272425249169435,
+          "observed_income_per_unit_round": 0.8463687150837989,
+          "position_coverage": 0.3729166666666667,
+          "position_visible_rounds": 358,
+          "target_rounds": 960
+        },
+        {
+          "game": "175407",
+          "hidden_income_per_unit_round": 2.7110332749562174,
+          "observed_income_per_unit_round": 1.0848329048843188,
+          "position_coverage": 0.40520833333333334,
+          "position_visible_rounds": 389,
+          "target_rounds": 960
+        },
+        {
+          "game": "175473",
+          "hidden_income_per_unit_round": 1.4341216216216217,
+          "observed_income_per_unit_round": 1.078804347826087,
+          "position_coverage": 0.38333333333333336,
+          "position_visible_rounds": 368,
+          "target_rounds": 960
+        },
+        {
+          "game": "175488",
+          "hidden_income_per_unit_round": 1.6028880866425992,
+          "observed_income_per_unit_round": 0.7389162561576355,
+          "position_coverage": 0.42291666666666666,
+          "position_visible_rounds": 406,
+          "target_rounds": 960
+        },
+        {
+          "game": "175490",
+          "hidden_income_per_unit_round": 1.3618677042801557,
+          "observed_income_per_unit_round": 0.7376681614349776,
+          "position_coverage": 0.46458333333333335,
+          "position_visible_rounds": 446,
+          "target_rounds": 960
+        },
+        {
+          "game": "175506",
+          "hidden_income_per_unit_round": 1.7488151658767772,
+          "observed_income_per_unit_round": 0.7400611620795107,
+          "position_coverage": 0.340625,
+          "position_visible_rounds": 327,
+          "target_rounds": 960
+        },
+        {
+          "game": "175528",
+          "hidden_income_per_unit_round": 1.5254515599343186,
+          "observed_income_per_unit_round": 0.6495726495726496,
+          "position_coverage": 0.365625,
+          "position_visible_rounds": 351,
+          "target_rounds": 960
+        },
+        {
+          "game": "175565",
+          "hidden_income_per_unit_round": 1.4323873121869783,
+          "observed_income_per_unit_round": 0.8199445983379502,
+          "position_coverage": 0.37604166666666666,
+          "position_visible_rounds": 361,
+          "target_rounds": 960
+        },
+        {
+          "game": "175697",
+          "hidden_income_per_unit_round": 2.6303630363036303,
+          "observed_income_per_unit_round": 2.725988700564972,
+          "position_coverage": 0.36875,
+          "position_visible_rounds": 354,
+          "target_rounds": 960
+        },
+        {
+          "game": "175710",
+          "hidden_income_per_unit_round": 2.1961102106969204,
+          "observed_income_per_unit_round": 1.9300291545189505,
+          "position_coverage": 0.3572916666666667,
+          "position_visible_rounds": 343,
+          "target_rounds": 960
+        },
+        {
+          "game": "175711",
+          "hidden_income_per_unit_round": 2.2170283806343907,
+          "observed_income_per_unit_round": 1.889196675900277,
+          "position_coverage": 0.37604166666666666,
+          "position_visible_rounds": 361,
+          "target_rounds": 960
+        },
+        {
+          "game": "175713",
+          "hidden_income_per_unit_round": 2.4442748091603055,
+          "observed_income_per_unit_round": 2.1901639344262294,
+          "position_coverage": 0.3177083333333333,
+          "position_visible_rounds": 305,
+          "target_rounds": 960
+        },
+        {
+          "game": "175800",
+          "hidden_income_per_unit_round": 2.5410094637223977,
+          "observed_income_per_unit_round": 2.0950920245398774,
+          "position_coverage": 0.33958333333333335,
+          "position_visible_rounds": 326,
+          "target_rounds": 960
+        },
+        {
+          "game": "175806",
+          "hidden_income_per_unit_round": 2.359060402684564,
+          "observed_income_per_unit_round": 1.7582417582417582,
+          "position_coverage": 0.37916666666666665,
+          "position_visible_rounds": 364,
+          "target_rounds": 960
+        },
+        {
+          "game": "175843",
+          "hidden_income_per_unit_round": 2.7015625,
+          "observed_income_per_unit_round": 1.646875,
+          "position_coverage": 0.3333333333333333,
+          "position_visible_rounds": 320,
+          "target_rounds": 960
+        },
+        {
+          "game": "175845",
+          "hidden_income_per_unit_round": 2.5707317073170732,
+          "observed_income_per_unit_round": 1.6985507246376812,
+          "position_coverage": 0.359375,
+          "position_visible_rounds": 345,
+          "target_rounds": 960
+        },
+        {
+          "game": "175846",
+          "hidden_income_per_unit_round": 2.287781350482315,
+          "observed_income_per_unit_round": 1.5739644970414202,
+          "position_coverage": 0.35208333333333336,
+          "position_visible_rounds": 338,
+          "target_rounds": 960
+        },
+        {
+          "game": "175847",
+          "hidden_income_per_unit_round": 2.2671875,
+          "observed_income_per_unit_round": 1.6875,
+          "position_coverage": 0.3333333333333333,
+          "position_visible_rounds": 320,
+          "target_rounds": 960
+        },
+        {
+          "game": "175848",
+          "hidden_income_per_unit_round": 2.0045045045045047,
+          "observed_income_per_unit_round": 1.7074829931972788,
+          "position_coverage": 0.30625,
+          "position_visible_rounds": 294,
+          "target_rounds": 960
+        },
+        {
+          "game": "175849",
+          "hidden_income_per_unit_round": 1.0661016949152542,
+          "observed_income_per_unit_round": 0.5405405405405406,
+          "position_coverage": 0.3854166666666667,
+          "position_visible_rounds": 370,
+          "target_rounds": 960
+        },
+        {
+          "game": "175850",
+          "hidden_income_per_unit_round": 1.635048231511254,
+          "observed_income_per_unit_round": 0.6597633136094675,
+          "position_coverage": 0.35208333333333336,
+          "position_visible_rounds": 338,
+          "target_rounds": 960
+        },
+        {
+          "game": "175851",
+          "hidden_income_per_unit_round": 1.4507692307692308,
+          "observed_income_per_unit_round": 0.8548387096774194,
+          "position_coverage": 0.3229166666666667,
+          "position_visible_rounds": 310,
+          "target_rounds": 960
+        },
+        {
+          "game": "175861",
+          "hidden_income_per_unit_round": 2.111292962356792,
+          "observed_income_per_unit_round": 1.656160458452722,
+          "position_coverage": 0.36354166666666665,
+          "position_visible_rounds": 349,
+          "target_rounds": 960
+        },
+        {
+          "game": "175863",
+          "hidden_income_per_unit_round": 2.4158730158730157,
+          "observed_income_per_unit_round": 1.4666666666666666,
+          "position_coverage": 0.34375,
+          "position_visible_rounds": 330,
+          "target_rounds": 960
+        },
+        {
+          "game": "175967",
+          "hidden_income_per_unit_round": 1.6212361331220286,
+          "observed_income_per_unit_round": 0.7112462006079028,
+          "position_coverage": 0.34270833333333334,
+          "position_visible_rounds": 329,
+          "target_rounds": 960
+        },
+        {
+          "game": "175969",
+          "hidden_income_per_unit_round": 1.2944444444444445,
+          "observed_income_per_unit_round": 0.85,
+          "position_coverage": 0.4375,
+          "position_visible_rounds": 420,
+          "target_rounds": 960
+        },
+        {
+          "game": "175970",
+          "hidden_income_per_unit_round": 1.2652027027027026,
+          "observed_income_per_unit_round": 1.0733695652173914,
+          "position_coverage": 0.38333333333333336,
+          "position_visible_rounds": 368,
+          "target_rounds": 960
+        },
+        {
+          "game": "175971",
+          "hidden_income_per_unit_round": 1.3981818181818182,
+          "observed_income_per_unit_round": 0.8609756097560975,
+          "position_coverage": 0.4270833333333333,
+          "position_visible_rounds": 410,
+          "target_rounds": 960
+        },
+        {
+          "game": "175973",
+          "hidden_income_per_unit_round": 1.4669117647058822,
+          "observed_income_per_unit_round": 0.5649038461538461,
+          "position_coverage": 0.43333333333333335,
+          "position_visible_rounds": 416,
+          "target_rounds": 960
+        },
+        {
+          "game": "175974",
+          "hidden_income_per_unit_round": 1.2367149758454106,
+          "observed_income_per_unit_round": 0.8967551622418879,
+          "position_coverage": 0.353125,
+          "position_visible_rounds": 339,
+          "target_rounds": 960
+        },
+        {
+          "game": "176022",
+          "hidden_income_per_unit_round": 2.739967897271268,
+          "observed_income_per_unit_round": 1.7537091988130564,
+          "position_coverage": 0.35104166666666664,
+          "position_visible_rounds": 337,
+          "target_rounds": 960
+        },
+        {
+          "game": "176031",
+          "hidden_income_per_unit_round": 2.560530679933665,
+          "observed_income_per_unit_round": 2.008403361344538,
+          "position_coverage": 0.371875,
+          "position_visible_rounds": 357,
+          "target_rounds": 960
+        },
+        {
+          "game": "176055",
+          "hidden_income_per_unit_round": 2.7111111111111112,
+          "observed_income_per_unit_round": 2.0533333333333332,
+          "position_coverage": 0.390625,
+          "position_visible_rounds": 375,
+          "target_rounds": 960
+        },
+        {
+          "game": "176063",
+          "hidden_income_per_unit_round": 2.505942275042445,
+          "observed_income_per_unit_round": 1.8706199460916442,
+          "position_coverage": 0.38645833333333335,
+          "position_visible_rounds": 371,
+          "target_rounds": 960
+        },
+        {
+          "game": "176068",
+          "hidden_income_per_unit_round": 2.381188118811881,
+          "observed_income_per_unit_round": 1.7994350282485876,
+          "position_coverage": 0.36875,
+          "position_visible_rounds": 354,
+          "target_rounds": 960
+        },
+        {
+          "game": "176074",
+          "hidden_income_per_unit_round": 2.574750830564784,
+          "observed_income_per_unit_round": 1.9748603351955307,
+          "position_coverage": 0.3729166666666667,
+          "position_visible_rounds": 358,
+          "target_rounds": 960
+        },
+        {
+          "game": "176120",
+          "hidden_income_per_unit_round": 2.5224806201550387,
+          "observed_income_per_unit_round": 1.7396825396825397,
+          "position_coverage": 0.328125,
+          "position_visible_rounds": 315,
+          "target_rounds": 960
+        },
+        {
+          "game": "176130",
+          "hidden_income_per_unit_round": 2.1253968253968254,
+          "observed_income_per_unit_round": 1.0787878787878789,
+          "position_coverage": 0.34375,
+          "position_visible_rounds": 330,
+          "target_rounds": 960
+        },
+        {
+          "game": "176133",
+          "hidden_income_per_unit_round": 2.548494983277592,
+          "observed_income_per_unit_round": 1.6243093922651934,
+          "position_coverage": 0.3770833333333333,
+          "position_visible_rounds": 362,
+          "target_rounds": 960
+        },
+        {
+          "game": "176146",
+          "hidden_income_per_unit_round": 2.2414355628058726,
+          "observed_income_per_unit_round": 1.4322766570605188,
+          "position_coverage": 0.3614583333333333,
+          "position_visible_rounds": 347,
+          "target_rounds": 960
+        },
+        {
+          "game": "176148",
+          "hidden_income_per_unit_round": 2.2658227848101267,
+          "observed_income_per_unit_round": 1.8018292682926829,
+          "position_coverage": 0.3416666666666667,
+          "position_visible_rounds": 328,
+          "target_rounds": 960
+        },
+        {
+          "game": "176151",
+          "hidden_income_per_unit_round": 2.29,
+          "observed_income_per_unit_round": 1.4416666666666667,
+          "position_coverage": 0.375,
+          "position_visible_rounds": 360,
+          "target_rounds": 960
+        },
+        {
+          "game": "176387",
+          "hidden_income_per_unit_round": 1.7195767195767195,
+          "observed_income_per_unit_round": 0.9618320610687023,
+          "position_coverage": 0.409375,
+          "position_visible_rounds": 393,
+          "target_rounds": 960
+        },
+        {
+          "game": "176389",
+          "hidden_income_per_unit_round": 1.457236842105263,
+          "observed_income_per_unit_round": 0.8125,
+          "position_coverage": 0.36666666666666664,
+          "position_visible_rounds": 352,
+          "target_rounds": 960
+        },
+        {
+          "game": "176390",
+          "hidden_income_per_unit_round": 1.0538599640933572,
+          "observed_income_per_unit_round": 0.6029776674937966,
+          "position_coverage": 0.4197916666666667,
+          "position_visible_rounds": 403,
+          "target_rounds": 960
+        },
+        {
+          "game": "176391",
+          "hidden_income_per_unit_round": 1.4073426573426573,
+          "observed_income_per_unit_round": 0.6417525773195877,
+          "position_coverage": 0.4041666666666667,
+          "position_visible_rounds": 388,
+          "target_rounds": 960
+        },
+        {
+          "game": "176392",
+          "hidden_income_per_unit_round": 1.4088495575221238,
+          "observed_income_per_unit_round": 1.0354430379746835,
+          "position_coverage": 0.4114583333333333,
+          "position_visible_rounds": 395,
+          "target_rounds": 960
+        },
+        {
+          "game": "176394",
+          "hidden_income_per_unit_round": 1.2564102564102564,
+          "observed_income_per_unit_round": 0.6213333333333333,
+          "position_coverage": 0.390625,
+          "position_visible_rounds": 375,
+          "target_rounds": 960
+        },
+        {
+          "game": "176395",
+          "hidden_income_per_unit_round": 2.9449838187702264,
+          "observed_income_per_unit_round": 1.935672514619883,
+          "position_coverage": 0.35625,
+          "position_visible_rounds": 342,
+          "target_rounds": 960
+        },
+        {
+          "game": "176396",
+          "hidden_income_per_unit_round": 2.4614121510673237,
+          "observed_income_per_unit_round": 2.245014245014245,
+          "position_coverage": 0.365625,
+          "position_visible_rounds": 351,
+          "target_rounds": 960
+        },
+        {
+          "game": "176397",
+          "hidden_income_per_unit_round": 2.217527386541471,
+          "observed_income_per_unit_round": 1.9003115264797508,
+          "position_coverage": 0.334375,
+          "position_visible_rounds": 321,
+          "target_rounds": 960
+        },
+        {
+          "game": "176399",
+          "hidden_income_per_unit_round": 2.1920415224913494,
+          "observed_income_per_unit_round": 2.175392670157068,
+          "position_coverage": 0.39791666666666664,
+          "position_visible_rounds": 382,
+          "target_rounds": 960
+        },
+        {
+          "game": "176400",
+          "hidden_income_per_unit_round": 2.381026438569207,
+          "observed_income_per_unit_round": 1.8454258675078865,
+          "position_coverage": 0.3302083333333333,
+          "position_visible_rounds": 317,
+          "target_rounds": 960
+        },
+        {
+          "game": "176401",
+          "hidden_income_per_unit_round": 2.659504132231405,
+          "observed_income_per_unit_round": 2.445070422535211,
+          "position_coverage": 0.3697916666666667,
+          "position_visible_rounds": 355,
+          "target_rounds": 960
+        },
+        {
+          "game": "179593",
+          "hidden_income_per_unit_round": 1.4688581314878892,
+          "observed_income_per_unit_round": 0.8979057591623036,
+          "position_coverage": 0.39791666666666664,
+          "position_visible_rounds": 382,
+          "target_rounds": 960
+        },
+        {
+          "game": "179594",
+          "hidden_income_per_unit_round": 1.473257698541329,
+          "observed_income_per_unit_round": 1.0699708454810495,
+          "position_coverage": 0.3572916666666667,
+          "position_visible_rounds": 343,
+          "target_rounds": 960
+        },
+        {
+          "game": "179595",
+          "hidden_income_per_unit_round": 1.6079734219269104,
+          "observed_income_per_unit_round": 0.8379888268156425,
+          "position_coverage": 0.3729166666666667,
+          "position_visible_rounds": 358,
+          "target_rounds": 960
+        },
+        {
+          "game": "179596",
+          "hidden_income_per_unit_round": 1.587248322147651,
+          "observed_income_per_unit_round": 0.8021978021978022,
+          "position_coverage": 0.37916666666666665,
+          "position_visible_rounds": 364,
+          "target_rounds": 960
+        },
+        {
+          "game": "179597",
+          "hidden_income_per_unit_round": 1.851170568561873,
+          "observed_income_per_unit_round": 0.8812154696132597,
+          "position_coverage": 0.3770833333333333,
+          "position_visible_rounds": 362,
+          "target_rounds": 960
+        },
+        {
+          "game": "179598",
+          "hidden_income_per_unit_round": 1.2380952380952381,
+          "observed_income_per_unit_round": 0.8062678062678063,
+          "position_coverage": 0.365625,
+          "position_visible_rounds": 351,
+          "target_rounds": 960
+        }
+      ],
+      "position_coverage": 0.3581155303030303,
+      "scoring_rate_slope_near_minus_far": null,
+      "scoring_rate_slope_se": null,
+      "slope_near_minus_far": null,
+      "slope_se": null,
+      "target": "player163",
+      "visible_subset_mean_per_unit_round": 1.4823227648940953,
+      "window": "steady rounds r >= 20"
+    },
+    "ordinary_corpus_our_latency": {
+      "games_gt_260ns": 43,
+      "games_le_260ns": 110,
+      "n_games": 153,
+      "note": "no archived T-1 game is provably the frozen construct; the <=260ns bucket is the closest available proxy and is a mixture of many experimental constructs, so it is reported as a contaminated read",
+      "our_p50_ns_hist": {
+        "10410": 1,
+        "10600": 1,
+        "10640": 1,
+        "150": 1,
+        "160": 1,
+        "180": 4,
+        "190": 19,
+        "195": 1,
+        "200": 15,
+        "210": 19,
+        "220": 9,
+        "230": 12,
+        "240": 12,
+        "250": 15,
+        "260": 2,
+        "265": 1,
+        "270": 2,
+        "280": 4,
+        "290": 8,
+        "300": 3,
+        "305": 1,
+        "310": 2,
+        "320": 1,
+        "330": 1,
+        "340": 1,
+        "360": 1,
+        "370": 1,
+        "420": 1,
+        "440": 3,
+        "455": 1,
+        "460": 1,
+        "470": 1,
+        "490": 2,
+        "505": 1,
+        "520": 1,
+        "6955": 1,
+        "9930": 1,
+        "9990": 1
+      }
+    },
+    "probe_exogenous_errata5": {
+      "bias_ratio_visible_over_full": 0.9755279044945393,
+      "by_distance": {
+        "1": {
+          "mean": 2.299610894941634,
+          "n": 514,
+          "scoring_rate": 0.5486381322957199
+        },
+        "2": {
+          "mean": 2.3917525773195876,
+          "n": 873,
+          "scoring_rate": 0.5498281786941581
+        },
+        "3": {
+          "mean": 2.611111111111111,
+          "n": 756,
+          "scoring_rate": 0.5436507936507936
+        },
+        "4": {
+          "mean": 3.3239766081871345,
+          "n": 855,
+          "scoring_rate": 0.656140350877193
+        }
+      },
+      "channel": "per-unit `gold` differencing (100% recorded); negative deltas clipped to 0 because a drop is a bomb burn, not income",
+      "displacement_stratified": {
+        "0": {
+          "mean_far": 0.0,
+          "mean_near": null,
+          "n_far": 45,
+          "n_near": 0,
+          "se": null,
+          "slope": null
+        },
+        "1": {
+          "mean_far": 2.908256880733945,
+          "mean_near": 1.2352941176470589,
+          "n_far": 109,
+          "n_near": 34,
+          "se": 0.7269320604354482,
+          "slope": -1.6729627630868862
+        },
+        "2": {
+          "mean_far": 3.228467815049864,
+          "mean_near": 2.3788546255506606,
+          "n_far": 1103,
+          "n_near": 454,
+          "se": 0.1996271087935476,
+          "slope": -0.8496131894992032
+        }
+      },
+      "displacement_stratified_pooled_slope": -0.9069777089704761,
+      "far_d_ge_3": {
+        "mean": 2.989447548106766,
+        "n": 1611,
+        "scoring_rate": 0.6033519553072626
+      },
+      "full_channel_mean_per_unit_round": 2.7647916666666665,
+      "games_used": [
+        "172219",
+        "171747",
+        "172186",
+        "171719",
+        "172187"
+      ],
+      "near_d_le_1": {
+        "mean": 2.299610894941634,
+        "n": 514,
+        "scoring_rate": 0.5486381322957199
+      },
+      "per_game": [
+        {
+          "game": "172219",
+          "hidden_income_per_unit_round": 3.0980392156862746,
+          "observed_income_per_unit_round": 2.68348623853211,
+          "position_coverage": 0.68125,
+          "position_visible_rounds": 654,
+          "target_rounds": 960
+        },
+        {
+          "game": "171747",
+          "hidden_income_per_unit_round": 2.594900849858357,
+          "observed_income_per_unit_round": 2.444810543657331,
+          "position_coverage": 0.6322916666666667,
+          "position_visible_rounds": 607,
+          "target_rounds": 960
+        },
+        {
+          "game": "172186",
+          "hidden_income_per_unit_round": 3.259259259259259,
+          "observed_income_per_unit_round": 2.8538587848932675,
+          "position_coverage": 0.634375,
+          "position_visible_rounds": 609,
+          "target_rounds": 960
+        },
+        {
+          "game": "171719",
+          "hidden_income_per_unit_round": 2.515,
+          "observed_income_per_unit_round": 3.0125,
+          "position_coverage": 0.5833333333333334,
+          "position_visible_rounds": 560,
+          "target_rounds": 960
+        },
+        {
+          "game": "172187",
+          "hidden_income_per_unit_round": 2.9872448979591835,
+          "observed_income_per_unit_round": 2.5035211267605635,
+          "position_coverage": 0.5916666666666667,
+          "position_visible_rounds": 568,
+          "target_rounds": 960
+        }
+      ],
+      "position_coverage": 0.6245833333333334,
+      "scoring_rate_slope_near_minus_far": -0.054713823011542706,
+      "scoring_rate_slope_se": 0.025106404358924826,
+      "slope_near_minus_far": -0.6898366531651319,
+      "slope_se": 0.1775083885307468,
+      "target": "player163",
+      "visible_subset_mean_per_unit_round": 2.697131420947298,
+      "window": "steady rounds r >= 20"
+    },
+    "probe_exogenous_opponents_md2": {
+      "bias_ratio_visible_over_full": 1.0243607714000313,
+      "by_distance": {
+        "1": {
+          "mean": 2.5294117647058822,
+          "n": 204,
+          "scoring_rate": 0.553921568627451
+        },
+        "2": {
+          "mean": 2.369047619047619,
+          "n": 336,
+          "scoring_rate": 0.5595238095238095
+        },
+        "3": {
+          "mean": 2.3645484949832776,
+          "n": 299,
+          "scoring_rate": 0.5117056856187291
+        },
+        "4": {
+          "mean": 3.5121951219512195,
+          "n": 328,
+          "scoring_rate": 0.6524390243902439
+        }
+      },
+      "channel": "per-unit `gold` differencing (100% recorded); negative deltas clipped to 0 because a drop is a bomb burn, not income",
+      "displacement_stratified": {
+        "0": {
+          "mean_far": 0.0,
+          "mean_near": null,
+          "n_far": 27,
+          "n_near": 0,
+          "se": null,
+          "slope": null
+        },
+        "1": {
+          "mean_far": 3.2127659574468086,
+          "mean_near": 0.75,
+          "n_far": 47,
+          "n_near": 16,
+          "se": 1.2703958620066453,
+          "slope": -2.4627659574468086
+        },
+        "2": {
+          "mean_far": 3.31566265060241,
+          "mean_near": 2.6627906976744184,
+          "n_far": 415,
+          "n_near": 172,
+          "se": 0.3388035990965976,
+          "slope": -0.6528719529279914
+        }
+      },
+      "displacement_stratified_pooled_slope": -0.8069054852274653,
+      "far_d_ge_3": {
+        "mean": 2.9649122807017543,
+        "n": 627,
+        "scoring_rate": 0.5853269537480064
+      },
+      "full_channel_mean_per_unit_round": 2.652604166666667,
+      "games_used": [
+        "171719",
+        "171747"
+      ],
+      "near_d_le_1": {
+        "mean": 2.5294117647058822,
+        "n": 204,
+        "scoring_rate": 0.553921568627451
+      },
+      "per_game": [
+        {
+          "game": "171719",
+          "hidden_income_per_unit_round": 2.515,
+          "observed_income_per_unit_round": 3.0125,
+          "position_coverage": 0.5833333333333334,
+          "position_visible_rounds": 560,
+          "target_rounds": 960
+        },
+        {
+          "game": "171747",
+          "hidden_income_per_unit_round": 2.594900849858357,
+          "observed_income_per_unit_round": 2.444810543657331,
+          "position_coverage": 0.6322916666666667,
+          "position_visible_rounds": 607,
+          "target_rounds": 960
+        }
+      ],
+      "position_coverage": 0.6078125,
+      "scoring_rate_slope_near_minus_far": -0.03140538512055535,
+      "scoring_rate_slope_se": 0.03997936604633831,
+      "slope_near_minus_far": -0.43550051599587203,
+      "slope_se": 0.2969850385478777,
+      "target": "player163",
+      "visible_subset_mean_per_unit_round": 2.717223650385604,
+      "window": "steady rounds r >= 20"
+    },
+    "t1_flip_lambda_at_our_204ns": {
+      "full_loss_if_a_round_flips_gold": 1840.0000000000002,
+      "lambda_by_delta_ns": {
+        "1": 0.0,
+        "10": 0.10216938679562093,
+        "15": 0.10216938679562093,
+        "2": 0.0,
+        "20": 0.1833837060917456,
+        "3": 0.0,
+        "30": 0.24506682785949357,
+        "5": 0.0,
+        "6": 0.10216938679562093,
+        "9": 0.10216938679562093
+      },
+      "note": "their cost is quantised to 10 ns, so lambda is a step function of delta; the pre-registered price of -19 gold/ns is an average slope, not the local marginal one",
+      "their_p50": 200,
+      "their_steady_cost_rounds": 74445
+    }
+  },
+  "ties": {
+    "by_map": {
+      "map1": {
+        "candidate_count_hist": {
+          "0": 4266,
+          "1": 2537,
+          "2": 815,
+          "3": 207,
+          "4": 34,
+          "5": 10,
+          "6": 3
+        },
+        "definitions": {
+          "ring": {
+            "amount_delta_total": -154,
+            "discordance_among_ties_with_a_visible_enemy": {
+              "hi": 0.4271848594493629,
+              "k": 101,
+              "lo": 0.3136745490424381,
+              "n": 274,
+              "p": 0.3686131386861314
+            },
+            "distance_pair_hist": {
+              "1->0": 1,
+              "2->1": 26,
+              "3->0": 1,
+              "3->1": 9,
+              "3->2": 23,
+              "4->0": 1,
+              "4->1": 4,
+              "4->2": 1,
+              "4->3": 12,
+              "5->2": 1,
+              "5->3": 1,
+              "5->4": 5,
+              "6->3": 1,
+              "6->4": 1,
+              "6->5": 4,
+              "7->3": 1,
+              "7->4": 3,
+              "8->6": 3,
+              "8->8": 3
+            },
+            "firing_rate_of_all_unit_rounds": {
+              "hi": 0.015564734593294941,
+              "k": 101,
+              "lo": 0.010571070698871799,
+              "n": 7872,
+              "p": 0.012830284552845529
+            },
+            "gains": {
+              "mean_amount_delta": -1.5247524752475248,
+              "mean_centre_ring_delta": -0.9900990099009901,
+              "mean_cheb_gain": 1.4554455445544554,
+              "mean_target_ring_delta": 0.0,
+              "n_fired": 101,
+              "newly_within_1": 41,
+              "newly_within_2": 40
+            },
+            "tie_and_enemy_visible_rate": {
+              "hi": 0.0390881538260667,
+              "k": 274,
+              "lo": 0.030979465203897983,
+              "n": 7872,
+              "p": 0.03480691056910569
+            },
+            "tie_rate_of_all_unit_rounds": {
+              "hi": 0.04337161408661942,
+              "k": 306,
+              "lo": 0.03482212077923853,
+              "n": 7872,
+              "p": 0.038871951219512195
+            },
+            "tie_rate_of_unit_rounds_with_a_target": {
+              "hi": 0.09440174734396704,
+              "k": 306,
+              "lo": 0.07619894686827895,
+              "n": 3606,
+              "p": 0.08485856905158069
+            }
+          },
+          "ringamt": {
+            "amount_delta_total": 0,
+            "discordance_among_ties_with_a_visible_enemy": {
+              "hi": 0.5410093866333052,
+              "k": 15,
+              "lo": 0.24891373375022405,
+              "n": 39,
+              "p": 0.38461538461538464
+            },
+            "distance_pair_hist": {
+              "2->1": 2,
+              "3->0": 1,
+              "3->1": 1,
+              "3->2": 4,
+              "4->1": 2,
+              "4->3": 1,
+              "5->4": 2,
+              "7->3": 1,
+              "8->6": 1
+            },
+            "firing_rate_of_all_unit_rounds": {
+              "hi": 0.0031417410714955837,
+              "k": 15,
+              "lo": 0.0011551279117080115,
+              "n": 7872,
+              "p": 0.0019054878048780487
+            },
+            "gains": {
+              "mean_amount_delta": 0.0,
+              "mean_centre_ring_delta": -2.533333333333333,
+              "mean_cheb_gain": 1.7333333333333334,
+              "mean_target_ring_delta": 0.0,
+              "n_fired": 15,
+              "newly_within_1": 6,
+              "newly_within_2": 8
+            },
+            "tie_and_enemy_visible_rate": {
+              "hi": 0.006765054592884601,
+              "k": 39,
+              "lo": 0.0036264012672389415,
+              "n": 7872,
+              "p": 0.004954268292682927
+            },
+            "tie_rate_of_all_unit_rounds": {
+              "hi": 0.007203496998363423,
+              "k": 42,
+              "lo": 0.003949782221375113,
+              "n": 7872,
+              "p": 0.005335365853658537
+            },
+            "tie_rate_of_unit_rounds_with_a_target": {
+              "hi": 0.01570534304289443,
+              "k": 42,
+              "lo": 0.008628539727823816,
+              "n": 3606,
+              "p": 0.011647254575707155
+            }
+          },
+          "value": {
+            "amount_delta_total": -299,
+            "discordance_among_ties_with_a_visible_enemy": {
+              "hi": 0.3247788859600898,
+              "k": 288,
+              "lo": 0.26759636911338097,
+              "n": 975,
+              "p": 0.2953846153846154
+            },
+            "distance_pair_hist": {
+              "1->0": 2,
+              "2->0": 2,
+              "2->1": 70,
+              "3->0": 4,
+              "3->1": 37,
+              "3->2": 55,
+              "4->0": 1,
+              "4->1": 6,
+              "4->2": 12,
+              "4->3": 16,
+              "5->2": 2,
+              "5->3": 7,
+              "5->4": 18,
+              "6->3": 3,
+              "6->4": 7,
+              "6->5": 12,
+              "7->3": 3,
+              "7->4": 3,
+              "7->5": 4,
+              "7->6": 8,
+              "8->5": 1,
+              "8->6": 7,
+              "8->7": 3,
+              "8->8": 5
+            },
+            "firing_rate_of_all_unit_rounds": {
+              "hi": 0.040963846203392995,
+              "k": 288,
+              "lo": 0.03265894850477499,
+              "n": 7872,
+              "p": 0.036585365853658534
+            },
+            "gains": {
+              "mean_amount_delta": -1.0381944444444444,
+              "mean_centre_ring_delta": -0.9027777777777778,
+              "mean_cheb_gain": 1.46875,
+              "mean_target_ring_delta": 0.6319444444444444,
+              "n_fired": 288,
+              "newly_within_1": 120,
+              "newly_within_2": 117
+            },
+            "tie_and_enemy_visible_rate": {
+              "hi": 0.13131771862011893,
+              "k": 975,
+              "lo": 0.11676262543988256,
+              "n": 7872,
+              "p": 0.12385670731707317
+            },
+            "tie_rate_of_all_unit_rounds": {
+              "hi": 0.14354326818896826,
+              "k": 1069,
+              "lo": 0.1284075411389697,
+              "n": 7872,
+              "p": 0.13579776422764228
+            },
+            "tie_rate_of_unit_rounds_with_a_target": {
+              "hi": 0.311566525324855,
+              "k": 1069,
+              "lo": 0.2817674155915035,
+              "n": 3606,
+              "p": 0.2964503605102607
+            }
+          }
+        },
+        "has_target_rate": {
+          "hi": 0.469103410698399,
+          "k": 3606,
+          "lo": 0.44709601974395174,
+          "n": 7872,
+          "p": 0.4580792682926829
+        },
+        "mean_unit_centre_ring": 3.5158790650406506,
+        "min_ring_hist": {
+          "0": 83,
+          "1": 864,
+          "2": 1282,
+          "3": 990,
+          "4": 387
+        },
+        "steady_rounds": 3936,
+        "steady_unit_rounds": 7872,
+        "teammate_degenerate_form": {
+          "baseline_mean_unit_centre_ring": 3.5158790650406506,
+          "firing_rate_of_all_unit_rounds": {
+            "hi": 0.022181166732527867,
+            "k": 149,
+            "lo": 0.016143812313478764,
+            "n": 7872,
+            "p": 0.018927845528455285
+          },
+          "mean_amount_delta": -0.5167785234899329,
+          "mean_centre_ring_delta_of_target": 1.74496644295302,
+          "warning": "a positive mean_centre_ring_delta is `fold_tour` being rebuilt (-81.4 +- 18.5, -4.39 sigma); value is in where you stand"
+        },
+        "tie_ring_rate_of_rounds": {
+          "hi": 0.08199594562330807,
+          "k": 289,
+          "lo": 0.06568549408784917,
+          "n": 3936,
+          "p": 0.07342479674796748
+        },
+        "tie_value_rate_of_rounds": {
+          "hi": 0.2593733996768865,
+          "k": 967,
+          "lo": 0.23248432584477416,
+          "n": 3936,
+          "p": 0.24568089430894308
+        },
+        "visible_enemy_rate_unit_rounds": {
+          "hi": 0.9367784073790755,
+          "k": 7332,
+          "lo": 0.925605635705097,
+          "n": 7872,
+          "p": 0.9314024390243902
+        }
+      },
+      "map2": {
+        "candidate_count_hist": {
+          "0": 4423,
+          "1": 2453,
+          "2": 772,
+          "3": 191,
+          "4": 31,
+          "5": 2
+        },
+        "definitions": {
+          "ring": {
+            "amount_delta_total": 44,
+            "discordance_among_ties_with_a_visible_enemy": {
+              "hi": 0.45418206694273794,
+              "k": 96,
+              "lo": 0.33283091619009914,
+              "n": 245,
+              "p": 0.39183673469387753
+            },
+            "distance_pair_hist": {
+              "2->1": 25,
+              "3->1": 17,
+              "3->2": 18,
+              "4->1": 1,
+              "4->2": 5,
+              "4->3": 6,
+              "5->2": 1,
+              "5->3": 1,
+              "5->4": 3,
+              "6->3": 2,
+              "6->4": 3,
+              "6->5": 6,
+              "7->3": 3,
+              "7->4": 3,
+              "8->4": 1,
+              "8->7": 1
+            },
+            "firing_rate_of_all_unit_rounds": {
+              "hi": 0.014868674626720356,
+              "k": 96,
+              "lo": 0.009997425066088061,
+              "n": 7872,
+              "p": 0.012195121951219513
+            },
+            "gains": {
+              "mean_amount_delta": 0.4583333333333333,
+              "mean_centre_ring_delta": -0.7083333333333334,
+              "mean_cheb_gain": 1.5416666666666667,
+              "mean_target_ring_delta": 0.0,
+              "n_fired": 96,
+              "newly_within_1": 43,
+              "newly_within_2": 42
+            },
+            "tie_and_enemy_visible_rate": {
+              "hi": 0.035193556211791134,
+              "k": 245,
+              "lo": 0.0275097703418953,
+              "n": 7872,
+              "p": 0.031122967479674798
+            },
+            "tie_rate_of_all_unit_rounds": {
+              "hi": 0.03653801377681461,
+              "k": 255,
+              "lo": 0.02870472397558846,
+              "n": 7872,
+              "p": 0.03239329268292683
+            },
+            "tie_rate_of_unit_rounds_with_a_target": {
+              "hi": 0.0831491426147854,
+              "k": 255,
+              "lo": 0.06566784333735218,
+              "n": 3449,
+              "p": 0.0739344737605103
+            }
+          },
+          "ringamt": {
+            "amount_delta_total": 0,
+            "discordance_among_ties_with_a_visible_enemy": {
+              "hi": 0.6380063722467645,
+              "k": 19,
+              "lo": 0.3386517522402942,
+              "n": 39,
+              "p": 0.48717948717948717
+            },
+            "distance_pair_hist": {
+              "2->1": 5,
+              "3->1": 2,
+              "3->2": 5,
+              "4->3": 2,
+              "6->3": 1,
+              "6->5": 3,
+              "7->3": 1
+            },
+            "firing_rate_of_all_unit_rounds": {
+              "hi": 0.0037668610582938227,
+              "k": 19,
+              "lo": 0.0015457724043964314,
+              "n": 7872,
+              "p": 0.002413617886178862
+            },
+            "gains": {
+              "mean_amount_delta": 0.0,
+              "mean_centre_ring_delta": -0.21052631578947367,
+              "mean_cheb_gain": 1.368421052631579,
+              "mean_target_ring_delta": 0.0,
+              "n_fired": 19,
+              "newly_within_1": 7,
+              "newly_within_2": 7
+            },
+            "tie_and_enemy_visible_rate": {
+              "hi": 0.006765054592884601,
+              "k": 39,
+              "lo": 0.0036264012672389415,
+              "n": 7872,
+              "p": 0.004954268292682927
+            },
+            "tie_rate_of_all_unit_rounds": {
+              "hi": 0.007057583154450492,
+              "k": 41,
+              "lo": 0.0038417549454163773,
+              "n": 7872,
+              "p": 0.005208333333333333
+            },
+            "tie_rate_of_unit_rounds_with_a_target": {
+              "hi": 0.016086114427795478,
+              "k": 41,
+              "lo": 0.008774991969226358,
+              "n": 3449,
+              "p": 0.01188750362423891
+            }
+          },
+          "value": {
+            "amount_delta_total": -8,
+            "discordance_among_ties_with_a_visible_enemy": {
+              "hi": 0.3398540856144217,
+              "k": 291,
+              "lo": 0.28084492412782286,
+              "n": 940,
+              "p": 0.30957446808510636
+            },
+            "distance_pair_hist": {
+              "1->0": 2,
+              "2->0": 2,
+              "2->1": 71,
+              "3->0": 4,
+              "3->1": 44,
+              "3->2": 52,
+              "4->1": 5,
+              "4->2": 18,
+              "4->3": 19,
+              "5->2": 2,
+              "5->3": 12,
+              "5->4": 13,
+              "6->3": 8,
+              "6->4": 9,
+              "6->5": 10,
+              "7->3": 4,
+              "7->4": 7,
+              "7->6": 4,
+              "8->4": 1,
+              "8->6": 3,
+              "8->7": 1
+            },
+            "firing_rate_of_all_unit_rounds": {
+              "hi": 0.04136543217116561,
+              "k": 291,
+              "lo": 0.03301918589661738,
+              "n": 7872,
+              "p": 0.036966463414634144
+            },
+            "gains": {
+              "mean_amount_delta": -0.027491408934707903,
+              "mean_centre_ring_delta": -1.0618556701030928,
+              "mean_cheb_gain": 1.5326460481099657,
+              "mean_target_ring_delta": 0.8144329896907216,
+              "n_fired": 291,
+              "newly_within_1": 126,
+              "newly_within_2": 125
+            },
+            "tie_and_enemy_visible_rate": {
+              "hi": 0.12676016948307028,
+              "k": 940,
+              "lo": 0.11243223538142294,
+              "n": 7872,
+              "p": 0.11941056910569106
+            },
+            "tie_rate_of_all_unit_rounds": {
+              "hi": 0.1340507752510046,
+              "k": 996,
+              "lo": 0.11936233232630186,
+              "n": 7872,
+              "p": 0.12652439024390244
+            },
+            "tie_rate_of_unit_rounds_with_a_target": {
+              "hi": 0.3041324596990269,
+              "k": 996,
+              "lo": 0.27389624003974966,
+              "n": 3449,
+              "p": 0.2887793563351696
+            }
+          }
+        },
+        "has_target_rate": {
+          "hi": 0.4491230835800244,
+          "k": 3449,
+          "lo": 0.42720759104247497,
+          "n": 7872,
+          "p": 0.438135162601626
+        },
+        "mean_unit_centre_ring": 3.301321138211382,
+        "min_ring_hist": {
+          "0": 67,
+          "1": 826,
+          "2": 1166,
+          "3": 984,
+          "4": 406
+        },
+        "steady_rounds": 3936,
+        "steady_unit_rounds": 7872,
+        "teammate_degenerate_form": {
+          "baseline_mean_unit_centre_ring": 3.301321138211382,
+          "firing_rate_of_all_unit_rounds": {
+            "hi": 0.018196555504559935,
+            "k": 120,
+            "lo": 0.012764131065168428,
+            "n": 7872,
+            "p": 0.01524390243902439
+          },
+          "mean_amount_delta": 1.1583333333333334,
+          "mean_centre_ring_delta_of_target": 1.8666666666666667,
+          "warning": "a positive mean_centre_ring_delta is `fold_tour` being rebuilt (-81.4 +- 18.5, -4.39 sigma); value is in where you stand"
+        },
+        "tie_ring_rate_of_rounds": {
+          "hi": 0.07237306094377946,
+          "k": 253,
+          "lo": 0.05703353173319179,
+          "n": 3936,
+          "p": 0.06427845528455285
+        },
+        "tie_value_rate_of_rounds": {
+          "hi": 0.2410036843835033,
+          "k": 896,
+          "lo": 0.21481198170962382,
+          "n": 3936,
+          "p": 0.22764227642276422
+        },
+        "visible_enemy_rate_unit_rounds": {
+          "hi": 0.9569724241466504,
+          "k": 7498,
+          "lo": 0.9475658448362185,
+          "n": 7872,
+          "p": 0.952489837398374
+        }
+      },
+      "map3": {
+        "candidate_count_hist": {
+          "0": 3552,
+          "1": 2688,
+          "2": 1211,
+          "3": 346,
+          "4": 61,
+          "5": 14
+        },
+        "definitions": {
+          "ring": {
+            "amount_delta_total": 16,
+            "discordance_among_ties_with_a_visible_enemy": {
+              "hi": 0.4103972952960401,
+              "k": 136,
+              "lo": 0.31389742747801763,
+              "n": 377,
+              "p": 0.36074270557029176
+            },
+            "distance_pair_hist": {
+              "1->0": 1,
+              "2->1": 45,
+              "3->1": 30,
+              "3->2": 24,
+              "4->1": 7,
+              "4->2": 6,
+              "4->3": 5,
+              "5->1": 1,
+              "5->2": 1,
+              "5->3": 1,
+              "5->4": 5,
+              "6->4": 2,
+              "6->5": 2,
+              "7->3": 1,
+              "7->4": 1,
+              "8->5": 1,
+              "8->7": 1,
+              "8->8": 2
+            },
+            "firing_rate_of_all_unit_rounds": {
+              "hi": 0.020399166424213792,
+              "k": 136,
+              "lo": 0.014624578063461199,
+              "n": 7872,
+              "p": 0.017276422764227643
+            },
+            "gains": {
+              "mean_amount_delta": 0.11764705882352941,
+              "mean_centre_ring_delta": -1.1911764705882353,
+              "mean_cheb_gain": 1.4926470588235294,
+              "mean_target_ring_delta": 0.0,
+              "n_fired": 136,
+              "newly_within_1": 83,
+              "newly_within_2": 69
+            },
+            "tie_and_enemy_visible_rate": {
+              "hi": 0.05283289987334902,
+              "k": 377,
+              "lo": 0.0433906545033971,
+              "n": 7872,
+              "p": 0.047891260162601625
+            },
+            "tie_rate_of_all_unit_rounds": {
+              "hi": 0.057213870132547515,
+              "k": 410,
+              "lo": 0.047389741199963545,
+              "n": 7872,
+              "p": 0.052083333333333336
+            },
+            "tie_rate_of_unit_rounds_with_a_target": {
+              "hi": 0.10401065945479328,
+              "k": 410,
+              "lo": 0.08652395350820095,
+              "n": 4320,
+              "p": 0.09490740740740741
+            }
+          },
+          "ringamt": {
+            "amount_delta_total": 0,
+            "discordance_among_ties_with_a_visible_enemy": {
+              "hi": 0.513999036896231,
+              "k": 17,
+              "lo": 0.24523754507101056,
+              "n": 46,
+              "p": 0.3695652173913043
+            },
+            "distance_pair_hist": {
+              "2->1": 8,
+              "3->1": 4,
+              "3->2": 1,
+              "4->1": 1,
+              "4->2": 1,
+              "8->5": 1,
+              "8->8": 1
+            },
+            "firing_rate_of_all_unit_rounds": {
+              "hi": 0.0034559480107277524,
+              "k": 17,
+              "lo": 0.001348803212219173,
+              "n": 7872,
+              "p": 0.0021595528455284553
+            },
+            "gains": {
+              "mean_amount_delta": 0.0,
+              "mean_centre_ring_delta": -1.411764705882353,
+              "mean_cheb_gain": 1.5294117647058822,
+              "mean_target_ring_delta": 0.0,
+              "n_fired": 17,
+              "newly_within_1": 13,
+              "newly_within_2": 7
+            },
+            "tie_and_enemy_visible_rate": {
+              "hi": 0.007784997194792257,
+              "k": 46,
+              "lo": 0.0043840465044329355,
+              "n": 7872,
+              "p": 0.005843495934959349
+            },
+            "tie_rate_of_all_unit_rounds": {
+              "hi": 0.008219048301059325,
+              "k": 49,
+              "lo": 0.004711818757780863,
+              "n": 7872,
+              "p": 0.006224593495934959
+            },
+            "tie_rate_of_unit_rounds_with_a_target": {
+              "hi": 0.014962852236154124,
+              "k": 49,
+              "lo": 0.008590615172349185,
+              "n": 4320,
+              "p": 0.011342592592592593
+            }
+          },
+          "value": {
+            "amount_delta_total": -171,
+            "discordance_among_ties_with_a_visible_enemy": {
+              "hi": 0.33325983790369595,
+              "k": 467,
+              "lo": 0.2866606788005486,
+              "n": 1509,
+              "p": 0.30947647448641485
+            },
+            "distance_pair_hist": {
+              "1->0": 2,
+              "2->0": 3,
+              "2->1": 202,
+              "3->0": 2,
+              "3->1": 76,
+              "3->2": 72,
+              "4->1": 17,
+              "4->2": 33,
+              "4->3": 16,
+              "5->1": 4,
+              "5->2": 7,
+              "5->3": 7,
+              "5->4": 5,
+              "6->3": 1,
+              "6->4": 4,
+              "6->5": 4,
+              "7->3": 2,
+              "7->4": 2,
+              "7->6": 4,
+              "8->5": 1,
+              "8->6": 1,
+              "8->8": 2
+            },
+            "firing_rate_of_all_unit_rounds": {
+              "hi": 0.06476072946058219,
+              "k": 467,
+              "lo": 0.05431752570461375,
+              "n": 7872,
+              "p": 0.05932418699186992
+            },
+            "gains": {
+              "mean_amount_delta": -0.36616702355460384,
+              "mean_centre_ring_delta": -0.9164882226980728,
+              "mean_cheb_gain": 1.436830835117773,
+              "mean_target_ring_delta": 0.8693790149892934,
+              "n_fired": 467,
+              "newly_within_1": 304,
+              "newly_within_2": 211
+            },
+            "tie_and_enemy_visible_rate": {
+              "hi": 0.20053716046067938,
+              "k": 1509,
+              "lo": 0.1831477416107909,
+              "n": 7872,
+              "p": 0.1916920731707317
+            },
+            "tie_rate_of_all_unit_rounds": {
+              "hi": 0.2164139332200652,
+              "k": 1632,
+              "lo": 0.19850572659561982,
+              "n": 7872,
+              "p": 0.2073170731707317
+            },
+            "tie_rate_of_unit_rounds_with_a_target": {
+              "hi": 0.3923379812350437,
+              "k": 1632,
+              "lo": 0.36343474770464823,
+              "n": 4320,
+              "p": 0.37777777777777777
+            }
+          }
+        },
+        "has_target_rate": {
+          "hi": 0.5597465989503374,
+          "k": 4320,
+          "lo": 0.5377667910803818,
+          "n": 7872,
+          "p": 0.5487804878048781
+        },
+        "mean_unit_centre_ring": 2.316946138211382,
+        "min_ring_hist": {
+          "0": 50,
+          "1": 1210,
+          "2": 1576,
+          "3": 1104,
+          "4": 380
+        },
+        "steady_rounds": 3936,
+        "steady_unit_rounds": 7872,
+        "teammate_degenerate_form": {
+          "baseline_mean_unit_centre_ring": 2.316946138211382,
+          "firing_rate_of_all_unit_rounds": {
+            "hi": 0.021085299957999556,
+            "k": 141,
+            "lo": 0.015208150129033761,
+            "n": 7872,
+            "p": 0.017911585365853657
+          },
+          "mean_amount_delta": 0.5035460992907801,
+          "mean_centre_ring_delta_of_target": 1.24822695035461,
+          "warning": "a positive mean_centre_ring_delta is `fold_tour` being rebuilt (-81.4 +- 18.5, -4.39 sigma); value is in where you stand"
+        },
+        "tie_ring_rate_of_rounds": {
+          "hi": 0.1056391995135201,
+          "k": 378,
+          "lo": 0.08722172314326371,
+          "n": 3936,
+          "p": 0.09603658536585366
+        },
+        "tie_value_rate_of_rounds": {
+          "hi": 0.3238156276902303,
+          "k": 1217,
+          "lo": 0.2949507577910556,
+          "n": 3936,
+          "p": 0.3091971544715447
+        },
+        "visible_enemy_rate_unit_rounds": {
+          "hi": 0.9311521522667381,
+          "k": 7286,
+          "lo": 0.9195505993033377,
+          "n": 7872,
+          "p": 0.9255589430894309
+        }
+      }
+    },
+    "by_map_t1field": {
+      "map1": {
+        "candidate_count_hist": {
+          "0": 4266,
+          "1": 2537,
+          "2": 815,
+          "3": 207,
+          "4": 34,
+          "5": 10,
+          "6": 3
+        },
+        "definitions": {
+          "ring": {
+            "amount_delta_total": -65,
+            "discordance_among_ties_with_a_visible_enemy": {
+              "hi": 0.41376060725808805,
+              "k": 71,
+              "lo": 0.28457515261701993,
+              "n": 205,
+              "p": 0.3463414634146341
+            },
+            "distance_pair_hist": {
+              "1->0": 5,
+              "2->0": 1,
+              "2->1": 13,
+              "3->1": 8,
+              "3->2": 10,
+              "4->0": 2,
+              "4->1": 2,
+              "4->2": 1,
+              "4->3": 6,
+              "5->1": 1,
+              "5->2": 4,
+              "5->4": 8,
+              "6->3": 2,
+              "6->4": 2,
+              "6->5": 1,
+              "7->5": 1,
+              "7->6": 2,
+              "8->7": 2
+            },
+            "firing_rate_of_all_unit_rounds": {
+              "hi": 0.011360418356526403,
+              "k": 71,
+              "lo": 0.007157153339490403,
+              "n": 7872,
+              "p": 0.009019308943089431
+            },
+            "gains": {
+              "mean_amount_delta": -0.9154929577464789,
+              "mean_centre_ring_delta": -0.7605633802816901,
+              "mean_cheb_gain": 1.5492957746478873,
+              "mean_target_ring_delta": 0.0,
+              "n_fired": 71,
+              "newly_within_1": 27,
+              "newly_within_2": 28
+            },
+            "tie_and_enemy_visible_rate": {
+              "hi": 0.029797687431723292,
+              "k": 205,
+              "lo": 0.022747994327096552,
+              "n": 7872,
+              "p": 0.026041666666666668
+            },
+            "tie_rate_of_all_unit_rounds": {
+              "hi": 0.04337161408661942,
+              "k": 306,
+              "lo": 0.03482212077923853,
+              "n": 7872,
+              "p": 0.038871951219512195
+            },
+            "tie_rate_of_unit_rounds_with_a_target": {
+              "hi": 0.09440174734396704,
+              "k": 306,
+              "lo": 0.07619894686827895,
+              "n": 3606,
+              "p": 0.08485856905158069
+            }
+          },
+          "ringamt": {
+            "amount_delta_total": 0,
+            "discordance_among_ties_with_a_visible_enemy": {
+              "hi": 0.4205155423848758,
+              "k": 6,
+              "lo": 0.11033849341513308,
+              "n": 26,
+              "p": 0.23076923076923078
+            },
+            "distance_pair_hist": {
+              "3->1": 2,
+              "4->2": 1,
+              "5->1": 1,
+              "5->2": 1,
+              "6->3": 1
+            },
+            "firing_rate_of_all_unit_rounds": {
+              "hi": 0.0016620327056616545,
+              "k": 6,
+              "lo": 0.00034936619869696116,
+              "n": 7872,
+              "p": 0.0007621951219512195
+            },
+            "gains": {
+              "mean_amount_delta": 0.0,
+              "mean_centre_ring_delta": -2.0,
+              "mean_cheb_gain": 2.6666666666666665,
+              "mean_target_ring_delta": 0.0,
+              "n_fired": 6,
+              "newly_within_1": 3,
+              "newly_within_2": 5
+            },
+            "tie_and_enemy_visible_rate": {
+              "hi": 0.004835204340411647,
+              "k": 26,
+              "lo": 0.0022550169613802587,
+              "n": 7872,
+              "p": 0.0033028455284552847
+            },
+            "tie_rate_of_all_unit_rounds": {
+              "hi": 0.007203496998363423,
+              "k": 42,
+              "lo": 0.003949782221375113,
+              "n": 7872,
+              "p": 0.005335365853658537
+            },
+            "tie_rate_of_unit_rounds_with_a_target": {
+              "hi": 0.01570534304289443,
+              "k": 42,
+              "lo": 0.008628539727823816,
+              "n": 3606,
+              "p": 0.011647254575707155
+            }
+          },
+          "value": {
+            "amount_delta_total": -132,
+            "discordance_among_ties_with_a_visible_enemy": {
+              "hi": 0.39190276072287006,
+              "k": 255,
+              "lo": 0.3219231137687936,
+              "n": 716,
+              "p": 0.35614525139664804
+            },
+            "distance_pair_hist": {
+              "1->0": 10,
+              "2->0": 11,
+              "2->1": 38,
+              "3->0": 5,
+              "3->1": 34,
+              "3->2": 24,
+              "4->0": 2,
+              "4->1": 3,
+              "4->2": 10,
+              "4->3": 24,
+              "5->1": 2,
+              "5->2": 5,
+              "5->3": 8,
+              "5->4": 18,
+              "6->2": 1,
+              "6->3": 9,
+              "6->4": 14,
+              "6->5": 10,
+              "7->3": 2,
+              "7->4": 2,
+              "7->5": 6,
+              "7->6": 5,
+              "8->5": 2,
+              "8->6": 3,
+              "8->7": 6,
+              "8->8": 1
+            },
+            "firing_rate_of_all_unit_rounds": {
+              "hi": 0.03653801377681461,
+              "k": 255,
+              "lo": 0.02870472397558846,
+              "n": 7872,
+              "p": 0.03239329268292683
+            },
+            "gains": {
+              "mean_amount_delta": -0.5176470588235295,
+              "mean_centre_ring_delta": -0.8313725490196079,
+              "mean_cheb_gain": 1.6392156862745098,
+              "mean_target_ring_delta": 0.9098039215686274,
+              "n_fired": 255,
+              "newly_within_1": 95,
+              "newly_within_2": 86
+            },
+            "tie_and_enemy_visible_rate": {
+              "hi": 0.09750840516411195,
+              "k": 716,
+              "lo": 0.08480118884912842,
+              "n": 7872,
+              "p": 0.09095528455284553
+            },
+            "tie_rate_of_all_unit_rounds": {
+              "hi": 0.14354326818896826,
+              "k": 1069,
+              "lo": 0.1284075411389697,
+              "n": 7872,
+              "p": 0.13579776422764228
+            },
+            "tie_rate_of_unit_rounds_with_a_target": {
+              "hi": 0.311566525324855,
+              "k": 1069,
+              "lo": 0.2817674155915035,
+              "n": 3606,
+              "p": 0.2964503605102607
+            }
+          }
+        },
+        "has_target_rate": {
+          "hi": 0.469103410698399,
+          "k": 3606,
+          "lo": 0.44709601974395174,
+          "n": 7872,
+          "p": 0.4580792682926829
+        },
+        "mean_unit_centre_ring": 3.5158790650406506,
+        "min_ring_hist": {
+          "0": 83,
+          "1": 864,
+          "2": 1282,
+          "3": 990,
+          "4": 387
+        },
+        "steady_rounds": 3936,
+        "steady_unit_rounds": 7872,
+        "teammate_degenerate_form": {
+          "baseline_mean_unit_centre_ring": 3.5158790650406506,
+          "firing_rate_of_all_unit_rounds": {
+            "hi": 0.022181166732527867,
+            "k": 149,
+            "lo": 0.016143812313478764,
+            "n": 7872,
+            "p": 0.018927845528455285
+          },
+          "mean_amount_delta": -0.5167785234899329,
+          "mean_centre_ring_delta_of_target": 1.74496644295302,
+          "warning": "a positive mean_centre_ring_delta is `fold_tour` being rebuilt (-81.4 +- 18.5, -4.39 sigma); value is in where you stand"
+        },
+        "tie_ring_rate_of_rounds": {
+          "hi": 0.08199594562330807,
+          "k": 289,
+          "lo": 0.06568549408784917,
+          "n": 3936,
+          "p": 0.07342479674796748
+        },
+        "tie_value_rate_of_rounds": {
+          "hi": 0.2593733996768865,
+          "k": 967,
+          "lo": 0.23248432584477416,
+          "n": 3936,
+          "p": 0.24568089430894308
+        },
+        "visible_enemy_rate_unit_rounds": {
+          "hi": 0.66540306341361,
+          "k": 5156,
+          "lo": 0.6444051028298207,
+          "n": 7872,
+          "p": 0.654979674796748
+        }
+      },
+      "map2": {
+        "candidate_count_hist": {
+          "0": 4423,
+          "1": 2453,
+          "2": 772,
+          "3": 191,
+          "4": 31,
+          "5": 2
+        },
+        "definitions": {
+          "ring": {
+            "amount_delta_total": 46,
+            "discordance_among_ties_with_a_visible_enemy": {
+              "hi": 0.36859116026156513,
+              "k": 50,
+              "lo": 0.2321990642216255,
+              "n": 169,
+              "p": 0.2958579881656805
+            },
+            "distance_pair_hist": {
+              "1->0": 1,
+              "2->0": 3,
+              "2->1": 5,
+              "3->1": 8,
+              "3->2": 5,
+              "4->0": 1,
+              "4->1": 4,
+              "4->2": 3,
+              "4->3": 3,
+              "5->2": 1,
+              "5->3": 2,
+              "5->4": 1,
+              "6->2": 1,
+              "6->3": 5,
+              "6->4": 3,
+              "6->5": 1,
+              "7->3": 1,
+              "7->5": 1,
+              "8->7": 1
+            },
+            "firing_rate_of_all_unit_rounds": {
+              "hi": 0.008363368823047458,
+              "k": 50,
+              "lo": 0.0048214393556643914,
+              "n": 7872,
+              "p": 0.0063516260162601625
+            },
+            "gains": {
+              "mean_amount_delta": 0.92,
+              "mean_centre_ring_delta": -1.36,
+              "mean_cheb_gain": 1.98,
+              "mean_target_ring_delta": 0.0,
+              "n_fired": 50,
+              "newly_within_1": 21,
+              "newly_within_2": 23
+            },
+            "tie_and_enemy_visible_rate": {
+              "hi": 0.024911414767818496,
+              "k": 169,
+              "lo": 0.018492386675621426,
+              "n": 7872,
+              "p": 0.02146849593495935
+            },
+            "tie_rate_of_all_unit_rounds": {
+              "hi": 0.03653801377681461,
+              "k": 255,
+              "lo": 0.02870472397558846,
+              "n": 7872,
+              "p": 0.03239329268292683
+            },
+            "tie_rate_of_unit_rounds_with_a_target": {
+              "hi": 0.0831491426147854,
+              "k": 255,
+              "lo": 0.06566784333735218,
+              "n": 3449,
+              "p": 0.0739344737605103
+            }
+          },
+          "ringamt": {
+            "amount_delta_total": 0,
+            "discordance_among_ties_with_a_visible_enemy": {
+              "hi": 0.4489944416883343,
+              "k": 6,
+              "lo": 0.11999366158732966,
+              "n": 24,
+              "p": 0.25
+            },
+            "distance_pair_hist": {
+              "2->1": 1,
+              "4->1": 1,
+              "6->4": 1,
+              "6->5": 1,
+              "7->3": 1,
+              "8->7": 1
+            },
+            "firing_rate_of_all_unit_rounds": {
+              "hi": 0.0016620327056616545,
+              "k": 6,
+              "lo": 0.00034936619869696116,
+              "n": 7872,
+              "p": 0.0007621951219512195
+            },
+            "gains": {
+              "mean_amount_delta": 0.0,
+              "mean_centre_ring_delta": -1.0,
+              "mean_cheb_gain": 2.0,
+              "mean_target_ring_delta": 0.0,
+              "n_fired": 6,
+              "newly_within_1": 2,
+              "newly_within_2": 1
+            },
+            "tie_and_enemy_visible_rate": {
+              "hi": 0.004532647725013224,
+              "k": 24,
+              "lo": 0.002049691337035353,
+              "n": 7872,
+              "p": 0.003048780487804878
+            },
+            "tie_rate_of_all_unit_rounds": {
+              "hi": 0.007057583154450492,
+              "k": 41,
+              "lo": 0.0038417549454163773,
+              "n": 7872,
+              "p": 0.005208333333333333
+            },
+            "tie_rate_of_unit_rounds_with_a_target": {
+              "hi": 0.016086114427795478,
+              "k": 41,
+              "lo": 0.008774991969226358,
+              "n": 3449,
+              "p": 0.01188750362423891
+            }
+          },
+          "value": {
+            "amount_delta_total": 14,
+            "discordance_among_ties_with_a_visible_enemy": {
+              "hi": 0.3675429822878727,
+              "k": 219,
+              "lo": 0.29604059753854667,
+              "n": 662,
+              "p": 0.33081570996978854
+            },
+            "distance_pair_hist": {
+              "1->0": 9,
+              "2->0": 8,
+              "2->1": 36,
+              "3->0": 4,
+              "3->1": 21,
+              "3->2": 22,
+              "4->0": 3,
+              "4->1": 10,
+              "4->2": 16,
+              "4->3": 13,
+              "5->1": 1,
+              "5->2": 4,
+              "5->3": 11,
+              "5->4": 12,
+              "6->2": 2,
+              "6->3": 11,
+              "6->4": 8,
+              "6->5": 6,
+              "7->3": 2,
+              "7->4": 5,
+              "7->5": 6,
+              "7->6": 3,
+              "8->4": 1,
+              "8->5": 1,
+              "8->6": 2,
+              "8->7": 1,
+              "8->8": 1
+            },
+            "firing_rate_of_all_unit_rounds": {
+              "hi": 0.03168977841254249,
+              "k": 219,
+              "lo": 0.024411079024480652,
+              "n": 7872,
+              "p": 0.027820121951219513
+            },
+            "gains": {
+              "mean_amount_delta": 0.0639269406392694,
+              "mean_centre_ring_delta": -1.0091324200913243,
+              "mean_cheb_gain": 1.7808219178082192,
+              "mean_target_ring_delta": 0.9634703196347032,
+              "n_fired": 219,
+              "newly_within_1": 83,
+              "newly_within_2": 83
+            },
+            "tie_and_enemy_visible_rate": {
+              "hi": 0.09043104667932556,
+              "k": 662,
+              "lo": 0.07816572686084494,
+              "n": 7872,
+              "p": 0.08409552845528455
+            },
+            "tie_rate_of_all_unit_rounds": {
+              "hi": 0.1340507752510046,
+              "k": 996,
+              "lo": 0.11936233232630186,
+              "n": 7872,
+              "p": 0.12652439024390244
+            },
+            "tie_rate_of_unit_rounds_with_a_target": {
+              "hi": 0.3041324596990269,
+              "k": 996,
+              "lo": 0.27389624003974966,
+              "n": 3449,
+              "p": 0.2887793563351696
+            }
+          }
+        },
+        "has_target_rate": {
+          "hi": 0.4491230835800244,
+          "k": 3449,
+          "lo": 0.42720759104247497,
+          "n": 7872,
+          "p": 0.438135162601626
+        },
+        "mean_unit_centre_ring": 3.301321138211382,
+        "min_ring_hist": {
+          "0": 67,
+          "1": 826,
+          "2": 1166,
+          "3": 984,
+          "4": 406
+        },
+        "steady_rounds": 3936,
+        "steady_unit_rounds": 7872,
+        "teammate_degenerate_form": {
+          "baseline_mean_unit_centre_ring": 3.301321138211382,
+          "firing_rate_of_all_unit_rounds": {
+            "hi": 0.018196555504559935,
+            "k": 120,
+            "lo": 0.012764131065168428,
+            "n": 7872,
+            "p": 0.01524390243902439
+          },
+          "mean_amount_delta": 1.1583333333333334,
+          "mean_centre_ring_delta_of_target": 1.8666666666666667,
+          "warning": "a positive mean_centre_ring_delta is `fold_tour` being rebuilt (-81.4 +- 18.5, -4.39 sigma); value is in where you stand"
+        },
+        "tie_ring_rate_of_rounds": {
+          "hi": 0.07237306094377946,
+          "k": 253,
+          "lo": 0.05703353173319179,
+          "n": 3936,
+          "p": 0.06427845528455285
+        },
+        "tie_value_rate_of_rounds": {
+          "hi": 0.2410036843835033,
+          "k": 896,
+          "lo": 0.21481198170962382,
+          "n": 3936,
+          "p": 0.22764227642276422
+        },
+        "visible_enemy_rate_unit_rounds": {
+          "hi": 0.680523796440517,
+          "k": 5276,
+          "lo": 0.6597573041875132,
+          "n": 7872,
+          "p": 0.6702235772357723
+        }
+      },
+      "map3": {
+        "candidate_count_hist": {
+          "0": 3552,
+          "1": 2688,
+          "2": 1211,
+          "3": 346,
+          "4": 61,
+          "5": 14
+        },
+        "definitions": {
+          "ring": {
+            "amount_delta_total": -76,
+            "discordance_among_ties_with_a_visible_enemy": {
+              "hi": 0.391829624188194,
+              "k": 85,
+              "lo": 0.27719932765706345,
+              "n": 256,
+              "p": 0.33203125
+            },
+            "distance_pair_hist": {
+              "1->0": 2,
+              "2->0": 1,
+              "2->1": 19,
+              "3->0": 4,
+              "3->1": 6,
+              "3->2": 17,
+              "4->1": 10,
+              "4->2": 5,
+              "4->3": 8,
+              "5->2": 4,
+              "5->3": 2,
+              "5->4": 1,
+              "6->3": 1,
+              "6->5": 1,
+              "7->3": 1,
+              "7->5": 1,
+              "7->6": 1,
+              "8->4": 1
+            },
+            "firing_rate_of_all_unit_rounds": {
+              "hi": 0.013331302816349967,
+              "k": 85,
+              "lo": 0.00874144455787014,
+              "n": 7872,
+              "p": 0.010797764227642276
+            },
+            "gains": {
+              "mean_amount_delta": -0.8941176470588236,
+              "mean_centre_ring_delta": -0.6588235294117647,
+              "mean_cheb_gain": 1.6941176470588235,
+              "mean_target_ring_delta": 0.0,
+              "n_fired": 85,
+              "newly_within_1": 40,
+              "newly_within_2": 46
+            },
+            "tie_and_enemy_visible_rate": {
+              "hi": 0.03667237018707311,
+              "k": 256,
+              "lo": 0.02882430868520163,
+              "n": 7872,
+              "p": 0.032520325203252036
+            },
+            "tie_rate_of_all_unit_rounds": {
+              "hi": 0.057213870132547515,
+              "k": 410,
+              "lo": 0.047389741199963545,
+              "n": 7872,
+              "p": 0.052083333333333336
+            },
+            "tie_rate_of_unit_rounds_with_a_target": {
+              "hi": 0.10401065945479328,
+              "k": 410,
+              "lo": 0.08652395350820095,
+              "n": 4320,
+              "p": 0.09490740740740741
+            }
+          },
+          "ringamt": {
+            "amount_delta_total": 0,
+            "discordance_among_ties_with_a_visible_enemy": {
+              "hi": 0.4787578760189556,
+              "k": 9,
+              "lo": 0.16664748188562525,
+              "n": 30,
+              "p": 0.3
+            },
+            "distance_pair_hist": {
+              "2->1": 2,
+              "3->0": 1,
+              "3->1": 1,
+              "4->1": 1,
+              "4->3": 1,
+              "5->2": 1,
+              "6->5": 1,
+              "7->6": 1
+            },
+            "firing_rate_of_all_unit_rounds": {
+              "hi": 0.002171601464573068,
+              "k": 9,
+              "lo": 0.0006016207994005406,
+              "n": 7872,
+              "p": 0.0011432926829268292
+            },
+            "gains": {
+              "mean_amount_delta": 0.0,
+              "mean_centre_ring_delta": -1.5555555555555556,
+              "mean_cheb_gain": 1.7777777777777777,
+              "mean_target_ring_delta": 0.0,
+              "n_fired": 9,
+              "newly_within_1": 5,
+              "newly_within_2": 4
+            },
+            "tie_and_enemy_visible_rate": {
+              "hi": 0.005435128976340185,
+              "k": 30,
+              "lo": 0.002670856804938377,
+              "n": 7872,
+              "p": 0.0038109756097560975
+            },
+            "tie_rate_of_all_unit_rounds": {
+              "hi": 0.008219048301059325,
+              "k": 49,
+              "lo": 0.004711818757780863,
+              "n": 7872,
+              "p": 0.006224593495934959
+            },
+            "tie_rate_of_unit_rounds_with_a_target": {
+              "hi": 0.014962852236154124,
+              "k": 49,
+              "lo": 0.008590615172349185,
+              "n": 4320,
+              "p": 0.011342592592592593
+            }
+          },
+          "value": {
+            "amount_delta_total": -125,
+            "discordance_among_ties_with_a_visible_enemy": {
+              "hi": 0.36864104312885315,
+              "k": 349,
+              "lo": 0.31088382764994293,
+              "n": 1029,
+              "p": 0.3391642371234208
+            },
+            "distance_pair_hist": {
+              "1->0": 14,
+              "2->0": 21,
+              "2->1": 78,
+              "3->0": 17,
+              "3->1": 41,
+              "3->2": 50,
+              "4->0": 1,
+              "4->1": 20,
+              "4->2": 28,
+              "4->3": 20,
+              "5->1": 2,
+              "5->2": 15,
+              "5->3": 10,
+              "5->4": 8,
+              "6->2": 2,
+              "6->3": 3,
+              "6->4": 5,
+              "6->5": 5,
+              "7->3": 1,
+              "7->5": 1,
+              "7->6": 3,
+              "8->4": 2,
+              "8->6": 1,
+              "8->7": 1
+            },
+            "firing_rate_of_all_unit_rounds": {
+              "hi": 0.04910796153013625,
+              "k": 349,
+              "lo": 0.04000524149020327,
+              "n": 7872,
+              "p": 0.044334349593495935
+            },
+            "gains": {
+              "mean_amount_delta": -0.35816618911174786,
+              "mean_centre_ring_delta": -0.2664756446991404,
+              "mean_cheb_gain": 1.6905444126074498,
+              "mean_target_ring_delta": 0.994269340974212,
+              "n_fired": 349,
+              "newly_within_1": 180,
+              "newly_within_2": 176
+            },
+            "tie_and_enemy_visible_rate": {
+              "hi": 0.13834343142890435,
+              "k": 1029,
+              "lo": 0.12344973310416699,
+              "n": 7872,
+              "p": 0.13071646341463414
+            },
+            "tie_rate_of_all_unit_rounds": {
+              "hi": 0.2164139332200652,
+              "k": 1632,
+              "lo": 0.19850572659561982,
+              "n": 7872,
+              "p": 0.2073170731707317
+            },
+            "tie_rate_of_unit_rounds_with_a_target": {
+              "hi": 0.3923379812350437,
+              "k": 1632,
+              "lo": 0.36343474770464823,
+              "n": 4320,
+              "p": 0.37777777777777777
+            }
+          }
+        },
+        "has_target_rate": {
+          "hi": 0.5597465989503374,
+          "k": 4320,
+          "lo": 0.5377667910803818,
+          "n": 7872,
+          "p": 0.5487804878048781
+        },
+        "mean_unit_centre_ring": 2.316946138211382,
+        "min_ring_hist": {
+          "0": 50,
+          "1": 1210,
+          "2": 1576,
+          "3": 1104,
+          "4": 380
+        },
+        "steady_rounds": 3936,
+        "steady_unit_rounds": 7872,
+        "teammate_degenerate_form": {
+          "baseline_mean_unit_centre_ring": 2.316946138211382,
+          "firing_rate_of_all_unit_rounds": {
+            "hi": 0.021085299957999556,
+            "k": 141,
+            "lo": 0.015208150129033761,
+            "n": 7872,
+            "p": 0.017911585365853657
+          },
+          "mean_amount_delta": 0.5035460992907801,
+          "mean_centre_ring_delta_of_target": 1.24822695035461,
+          "warning": "a positive mean_centre_ring_delta is `fold_tour` being rebuilt (-81.4 +- 18.5, -4.39 sigma); value is in where you stand"
+        },
+        "tie_ring_rate_of_rounds": {
+          "hi": 0.1056391995135201,
+          "k": 378,
+          "lo": 0.08722172314326371,
+          "n": 3936,
+          "p": 0.09603658536585366
+        },
+        "tie_value_rate_of_rounds": {
+          "hi": 0.3238156276902303,
+          "k": 1217,
+          "lo": 0.2949507577910556,
+          "n": 3936,
+          "p": 0.3091971544715447
+        },
+        "visible_enemy_rate_unit_rounds": {
+          "hi": 0.6606123243027099,
+          "k": 5118,
+          "lo": 0.6395460793855975,
+          "n": 7872,
+          "p": 0.6501524390243902
+        }
+      }
+    },
+    "by_order": {
+      "we_first": {
+        "candidate_count_hist": {
+          "0": 6149,
+          "1": 3822,
+          "2": 1376,
+          "3": 368,
+          "4": 74,
+          "5": 16,
+          "6": 3
+        },
+        "definitions": {
+          "ring": {
+            "amount_delta_total": -3,
+            "discordance_among_ties_with_a_visible_enemy": {
+              "hi": 0.4178545350269565,
+              "k": 162,
+              "lo": 0.3275082593652236,
+              "n": 436,
+              "p": 0.37155963302752293
+            },
+            "distance_pair_hist": {
+              "2->1": 53,
+              "3->0": 1,
+              "3->1": 28,
+              "3->2": 31,
+              "4->0": 1,
+              "4->1": 7,
+              "4->2": 5,
+              "4->3": 10,
+              "5->1": 1,
+              "5->3": 1,
+              "5->4": 3,
+              "6->3": 2,
+              "6->4": 5,
+              "6->5": 6,
+              "7->3": 1,
+              "7->4": 3,
+              "8->6": 2,
+              "8->8": 2
+            },
+            "firing_rate_of_all_unit_rounds": {
+              "hi": 0.015981388399795207,
+              "k": 162,
+              "lo": 0.01177393324269033,
+              "n": 11808,
+              "p": 0.013719512195121951
+            },
+            "gains": {
+              "mean_amount_delta": -0.018518518518518517,
+              "mean_centre_ring_delta": -0.8518518518518519,
+              "mean_cheb_gain": 1.4876543209876543,
+              "mean_target_ring_delta": 0.0,
+              "n_fired": 162,
+              "newly_within_1": 91,
+              "newly_within_2": 74
+            },
+            "tie_and_enemy_visible_rate": {
+              "hi": 0.040478803595181634,
+              "k": 436,
+              "lo": 0.03367063888846708,
+              "n": 11808,
+              "p": 0.03692411924119241
+            },
+            "tie_rate_of_all_unit_rounds": {
+              "hi": 0.042687499873685204,
+              "k": 461,
+              "lo": 0.035694982832697376,
+              "n": 11808,
+              "p": 0.039041327913279134
+            },
+            "tie_rate_of_unit_rounds_with_a_target": {
+              "hi": 0.08887731938104158,
+              "k": 461,
+              "lo": 0.07461683202756904,
+              "n": 5659,
+              "p": 0.0814631560346351
+            }
+          },
+          "ringamt": {
+            "amount_delta_total": 0,
+            "discordance_among_ties_with_a_visible_enemy": {
+              "hi": 0.5295081039364461,
+              "k": 27,
+              "lo": 0.29867417930601237,
+              "n": 66,
+              "p": 0.4090909090909091
+            },
+            "distance_pair_hist": {
+              "2->1": 9,
+              "3->0": 1,
+              "3->1": 3,
+              "3->2": 4,
+              "4->1": 1,
+              "4->3": 3,
+              "6->3": 1,
+              "6->5": 3,
+              "8->6": 1,
+              "8->8": 1
+            },
+            "firing_rate_of_all_unit_rounds": {
+              "hi": 0.0033248916340266003,
+              "k": 27,
+              "lo": 0.0015720128056960594,
+              "n": 11808,
+              "p": 0.0022865853658536584
+            },
+            "gains": {
+              "mean_amount_delta": 0.0,
+              "mean_centre_ring_delta": -0.8148148148148148,
+              "mean_cheb_gain": 1.3703703703703705,
+              "mean_target_ring_delta": 0.0,
+              "n_fired": 27,
+              "newly_within_1": 14,
+              "newly_within_2": 9
+            },
+            "tie_and_enemy_visible_rate": {
+              "hi": 0.007104289368667004,
+              "k": 66,
+              "lo": 0.004396157818520488,
+              "n": 11808,
+              "p": 0.005589430894308943
+            },
+            "tie_rate_of_all_unit_rounds": {
+              "hi": 0.0073880955159065535,
+              "k": 69,
+              "lo": 0.004620316498009002,
+              "n": 11808,
+              "p": 0.005843495934959349
+            },
+            "tie_rate_of_unit_rounds_with_a_target": {
+              "hi": 0.015401358627640315,
+              "k": 69,
+              "lo": 0.009646395209585604,
+              "n": 5659,
+              "p": 0.012192966955292454
+            }
+          },
+          "value": {
+            "amount_delta_total": -104,
+            "discordance_among_ties_with_a_visible_enemy": {
+              "hi": 0.33036755647882854,
+              "k": 530,
+              "lo": 0.2867666082672069,
+              "n": 1720,
+              "p": 0.3081395348837209
+            },
+            "distance_pair_hist": {
+              "1->0": 2,
+              "2->0": 2,
+              "2->1": 188,
+              "3->0": 6,
+              "3->1": 92,
+              "3->2": 85,
+              "4->0": 1,
+              "4->1": 9,
+              "4->2": 27,
+              "4->3": 26,
+              "5->1": 3,
+              "5->2": 2,
+              "5->3": 15,
+              "5->4": 15,
+              "6->3": 6,
+              "6->4": 10,
+              "6->5": 16,
+              "7->3": 2,
+              "7->4": 5,
+              "7->5": 2,
+              "7->6": 6,
+              "8->5": 1,
+              "8->6": 5,
+              "8->7": 2,
+              "8->8": 2
+            },
+            "firing_rate_of_all_unit_rounds": {
+              "hi": 0.048769705799534935,
+              "k": 530,
+              "lo": 0.04129596792159311,
+              "n": 11808,
+              "p": 0.044884823848238484
+            },
+            "gains": {
+              "mean_amount_delta": -0.19622641509433963,
+              "mean_centre_ring_delta": -0.8830188679245283,
+              "mean_cheb_gain": 1.4433962264150944,
+              "mean_target_ring_delta": 0.6943396226415094,
+              "n_fired": 530,
+              "newly_within_1": 301,
+              "newly_within_2": 225
+            },
+            "tie_and_enemy_visible_rate": {
+              "hi": 0.15214203329713522,
+              "k": 1720,
+              "lo": 0.13941635502612482,
+              "n": 11808,
+              "p": 0.14566395663956638
+            },
+            "tie_rate_of_all_unit_rounds": {
+              "hi": 0.16222184184121788,
+              "k": 1837,
+              "lo": 0.1491471747244367,
+              "n": 11808,
+              "p": 0.15557249322493225
+            },
+            "tie_rate_of_unit_rounds_with_a_target": {
+              "hi": 0.3369304724909144,
+              "k": 1837,
+              "lo": 0.3125387887601078,
+              "n": 5659,
+              "p": 0.3246156564764093
+            }
+          }
+        },
+        "has_target_rate": {
+          "hi": 0.4882672807649752,
+          "k": 5659,
+          "lo": 0.47024892505223287,
+          "n": 11808,
+          "p": 0.47925135501355015
+        },
+        "mean_unit_centre_ring": 2.9994071815718155,
+        "min_ring_hist": {
+          "0": 128,
+          "1": 1527,
+          "2": 1901,
+          "3": 1516,
+          "4": 587
+        },
+        "steady_rounds": 5904,
+        "steady_unit_rounds": 11808,
+        "teammate_degenerate_form": {
+          "baseline_mean_unit_centre_ring": 2.9994071815718155,
+          "firing_rate_of_all_unit_rounds": {
+            "hi": 0.018160519493839844,
+            "k": 186,
+            "lo": 0.013658520762470205,
+            "n": 11808,
+            "p": 0.015752032520325202
+          },
+          "mean_amount_delta": 0.5591397849462365,
+          "mean_centre_ring_delta_of_target": 1.8064516129032258,
+          "warning": "a positive mean_centre_ring_delta is `fold_tour` being rebuilt (-81.4 +- 18.5, -4.39 sigma); value is in where you stand"
+        },
+        "tie_ring_rate_of_rounds": {
+          "hi": 0.08097613446328661,
+          "k": 437,
+          "lo": 0.06761306939248563,
+          "n": 5904,
+          "p": 0.07401761517615175
+        },
+        "tie_value_rate_of_rounds": {
+          "hi": 0.26910393639236774,
+          "k": 1522,
+          "lo": 0.2467937023804967,
+          "n": 5904,
+          "p": 0.25779132791327913
+        },
+        "visible_enemy_rate_unit_rounds": {
+          "hi": 0.945981106508456,
+          "k": 11122,
+          "lo": 0.9375390487805564,
+          "n": 11808,
+          "p": 0.9419037940379403
+        }
+      },
+      "we_second": {
+        "candidate_count_hist": {
+          "0": 6092,
+          "1": 3856,
+          "2": 1422,
+          "3": 376,
+          "4": 52,
+          "5": 10
+        },
+        "definitions": {
+          "ring": {
+            "amount_delta_total": -91,
+            "discordance_among_ties_with_a_visible_enemy": {
+              "hi": 0.41679391178001635,
+              "k": 171,
+              "lo": 0.3288088200572904,
+              "n": 460,
+              "p": 0.3717391304347826
+            },
+            "distance_pair_hist": {
+              "1->0": 2,
+              "2->1": 43,
+              "3->1": 28,
+              "3->2": 34,
+              "4->1": 5,
+              "4->2": 7,
+              "4->3": 13,
+              "5->2": 3,
+              "5->3": 2,
+              "5->4": 10,
+              "6->3": 1,
+              "6->4": 1,
+              "6->5": 6,
+              "7->3": 4,
+              "7->4": 4,
+              "8->4": 1,
+              "8->5": 1,
+              "8->6": 1,
+              "8->7": 2,
+              "8->8": 3
+            },
+            "firing_rate_of_all_unit_rounds": {
+              "hi": 0.01679981237349099,
+              "k": 171,
+              "lo": 0.01247940374917874,
+              "n": 11808,
+              "p": 0.014481707317073171
+            },
+            "gains": {
+              "mean_amount_delta": -0.5321637426900585,
+              "mean_centre_ring_delta": -1.1228070175438596,
+              "mean_cheb_gain": 1.5029239766081872,
+              "mean_target_ring_delta": 0.0,
+              "n_fired": 171,
+              "newly_within_1": 76,
+              "newly_within_2": 77
+            },
+            "tie_and_enemy_visible_rate": {
+              "hi": 0.04259920674194983,
+              "k": 460,
+              "lo": 0.035613954355523385,
+              "n": 11808,
+              "p": 0.03895663956639566
+            },
+            "tie_rate_of_all_unit_rounds": {
+              "hi": 0.047008683422018256,
+              "k": 510,
+              "lo": 0.03967055812092269,
+              "n": 11808,
+              "p": 0.043191056910569105
+            },
+            "tie_rate_of_unit_rounds_with_a_target": {
+              "hi": 0.09689182149946483,
+              "k": 510,
+              "lo": 0.0821064018326801,
+              "n": 5716,
+              "p": 0.08922323303009097
+            }
+          },
+          "ringamt": {
+            "amount_delta_total": 0,
+            "discordance_among_ties_with_a_visible_enemy": {
+              "hi": 0.5420159192813644,
+              "k": 24,
+              "lo": 0.2962802629093745,
+              "n": 58,
+              "p": 0.41379310344827586
+            },
+            "distance_pair_hist": {
+              "2->1": 6,
+              "3->1": 4,
+              "3->2": 6,
+              "4->1": 2,
+              "4->2": 1,
+              "5->4": 2,
+              "7->3": 2,
+              "8->5": 1
+            },
+            "firing_rate_of_all_unit_rounds": {
+              "hi": 0.0030226620501072805,
+              "k": 24,
+              "lo": 0.0013662775628873161,
+              "n": 11808,
+              "p": 0.0020325203252032522
+            },
+            "gains": {
+              "mean_amount_delta": 0.0,
+              "mean_centre_ring_delta": -1.8333333333333333,
+              "mean_cheb_gain": 1.7083333333333333,
+              "mean_target_ring_delta": 0.0,
+              "n_fired": 24,
+              "newly_within_1": 12,
+              "newly_within_2": 13
+            },
+            "tie_and_enemy_visible_rate": {
+              "hi": 0.006343975891420849,
+              "k": 58,
+              "lo": 0.003801898424491805,
+              "n": 11808,
+              "p": 0.004911924119241192
+            },
+            "tie_rate_of_all_unit_rounds": {
+              "hi": 0.006819795524303202,
+              "k": 63,
+              "lo": 0.004172686836156228,
+              "n": 11808,
+              "p": 0.005335365853658537
+            },
+            "tie_rate_of_unit_rounds_with_a_target": {
+              "hi": 0.014075611910018698,
+              "k": 63,
+              "lo": 0.00862457301900393,
+              "n": 5716,
+              "p": 0.011021693491952414
+            }
+          },
+          "value": {
+            "amount_delta_total": -374,
+            "discordance_among_ties_with_a_visible_enemy": {
+              "hi": 0.32505647351611355,
+              "k": 516,
+              "lo": 0.28146437974845895,
+              "n": 1704,
+              "p": 0.3028169014084507
+            },
+            "distance_pair_hist": {
+              "1->0": 4,
+              "2->0": 5,
+              "2->1": 155,
+              "3->0": 4,
+              "3->1": 65,
+              "3->2": 94,
+              "4->1": 19,
+              "4->2": 36,
+              "4->3": 25,
+              "5->1": 1,
+              "5->2": 9,
+              "5->3": 11,
+              "5->4": 21,
+              "6->3": 6,
+              "6->4": 10,
+              "6->5": 10,
+              "7->3": 7,
+              "7->4": 7,
+              "7->5": 2,
+              "7->6": 10,
+              "8->4": 1,
+              "8->5": 1,
+              "8->6": 6,
+              "8->7": 2,
+              "8->8": 5
+            },
+            "firing_rate_of_all_unit_rounds": {
+              "hi": 0.04753714752637591,
+              "k": 516,
+              "lo": 0.04015802367002117,
+              "n": 11808,
+              "p": 0.04369918699186992
+            },
+            "gains": {
+              "mean_amount_delta": -0.7248062015503876,
+              "mean_centre_ring_delta": -1.0251937984496124,
+              "mean_cheb_gain": 1.501937984496124,
+              "mean_target_ring_delta": 0.8856589147286822,
+              "n_fired": 516,
+              "newly_within_1": 249,
+              "newly_within_2": 228
+            },
+            "tie_and_enemy_visible_rate": {
+              "hi": 0.1507628331588877,
+              "k": 1704,
+              "lo": 0.13808640942182274,
+              "n": 11808,
+              "p": 0.1443089430894309
+            },
+            "tie_rate_of_all_unit_rounds": {
+              "hi": 0.1642022263732917,
+              "k": 1860,
+              "lo": 0.15106118719727804,
+              "n": 11808,
+              "p": 0.15752032520325204
+            },
+            "tie_rate_of_unit_rounds_with_a_target": {
+              "hi": 0.33766216749255246,
+              "k": 1860,
+              "lo": 0.31337711141949215,
+              "n": 5716,
+              "p": 0.3254023792862141
+            }
+          }
+        },
+        "has_target_rate": {
+          "hi": 0.49309614003313584,
+          "k": 5716,
+          "lo": 0.4750713974919055,
+          "n": 11808,
+          "p": 0.48407859078590787
+        },
+        "mean_unit_centre_ring": 3.0900237127371275,
+        "min_ring_hist": {
+          "0": 72,
+          "1": 1373,
+          "2": 2123,
+          "3": 1562,
+          "4": 586
+        },
+        "steady_rounds": 5904,
+        "steady_unit_rounds": 11808,
+        "teammate_degenerate_form": {
+          "baseline_mean_unit_centre_ring": 3.0900237127371275,
+          "firing_rate_of_all_unit_rounds": {
+            "hi": 0.021591775961347127,
+            "k": 224,
+            "lo": 0.0166614854335184,
+            "n": 11808,
+            "p": 0.018970189701897018
+          },
+          "mean_amount_delta": 0.12946428571428573,
+          "mean_centre_ring_delta_of_target": 1.4464285714285714,
+          "warning": "a positive mean_centre_ring_delta is `fold_tour` being rebuilt (-81.4 +- 18.5, -4.39 sigma); value is in where you stand"
+        },
+        "tie_ring_rate_of_rounds": {
+          "hi": 0.08907491924945442,
+          "k": 483,
+          "lo": 0.0750868081143236,
+          "n": 5904,
+          "p": 0.08180894308943089
+        },
+        "tie_value_rate_of_rounds": {
+          "hi": 0.2752821599459927,
+          "k": 1558,
+          "lo": 0.252802671137485,
+          "n": 5904,
+          "p": 0.2638888888888889
+        },
+        "visible_enemy_rate_unit_rounds": {
+          "hi": 0.9354944541238385,
+          "k": 10994,
+          "lo": 0.9263525352247767,
+          "n": 11808,
+          "p": 0.9310636856368564
+        }
+      }
+    },
+    "condition": {
+      "build_flags": [
+        "-std=c++17",
+        "-O3",
+        "-fPIC",
+        "-Wall",
+        "-Wextra",
+        "-shared",
+        "-D_mm_prefetch(a,b)=((void)0)",
+        "-D_MM_HINT_T0=0"
+      ],
+      "built_from": "/tmp/gr_suppr/base.so",
+      "construct": "f18064c (src/player.cpp sha256 0ecce6fc0d7141dd2ca4ddbb18dbee2aaff67a5a8f0a981df89bc9b9aba84fdd)",
+      "games": 24,
+      "host": {
+        "compiler": "Apple clang version 21.0.0 (clang-2100.1.1.101)",
+        "uname": "Darwin 25.5.0 arm64"
+      },
+      "maps": [
+        "map1",
+        "map2",
+        "map3"
+      ],
+      "opponent": "self-play, second seat = the same frozen construct",
+      "order_conditions": {
+        "we_first": [
+          200,
+          201
+        ],
+        "we_second": [
+          201,
+          200
+        ]
+      },
+      "seeds": [
+        1001,
+        1002,
+        1003,
+        1004
+      ],
+      "selector_replica": "value-blind `grid > 2`; order = (prio[widx], widx) with prio from RM_BASE; identical to f18064c's TT.bestrow",
+      "so_sha256": "3980ce30c20aa30cbeb5c715ac9e530e31d85cd11213851247c1d0af653c8a1c",
+      "tie_definitions": {
+        "ring": ">= 2 candidates at the minimal L1 ring -- the tie survives to the arbitrary within-ring `rm` order, so switching costs no travel time",
+        "ringamt": ">= 2 candidates at the minimal ring AND with the same gold amount -- the only definition that is free in BOTH value and time",
+        "value": "|candidates| >= 2 -- the selector is value-blind above the threshold, so every candidate is equal in its value dimension; this is the task's literal 'tie for maximum value'"
+      },
+      "window": "steady rounds r >= 8 of 500"
+    },
+    "pooled": {
+      "candidate_count_hist": {
+        "0": 12241,
+        "1": 7678,
+        "2": 2798,
+        "3": 744,
+        "4": 126,
+        "5": 26,
+        "6": 3
+      },
+      "definitions": {
+        "ring": {
+          "amount_delta_total": -94,
+          "discordance_among_ties_with_a_visible_enemy": {
+            "hi": 0.40377873906603456,
+            "k": 333,
+            "lo": 0.3406206795982917,
+            "n": 896,
+            "p": 0.3716517857142857
+          },
+          "distance_pair_hist": {
+            "1->0": 2,
+            "2->1": 96,
+            "3->0": 1,
+            "3->1": 56,
+            "3->2": 65,
+            "4->0": 1,
+            "4->1": 12,
+            "4->2": 12,
+            "4->3": 23,
+            "5->1": 1,
+            "5->2": 3,
+            "5->3": 3,
+            "5->4": 13,
+            "6->3": 3,
+            "6->4": 6,
+            "6->5": 12,
+            "7->3": 5,
+            "7->4": 7,
+            "8->4": 1,
+            "8->5": 1,
+            "8->6": 3,
+            "8->7": 2,
+            "8->8": 5
+          },
+          "firing_rate_of_all_unit_rounds": {
+            "hi": 0.015685353528822422,
+            "k": 333,
+            "lo": 0.012673916369216158,
+            "n": 23616,
+            "p": 0.014100609756097561
+          },
+          "gains": {
+            "mean_amount_delta": -0.2822822822822823,
+            "mean_centre_ring_delta": -0.990990990990991,
+            "mean_cheb_gain": 1.4954954954954955,
+            "mean_target_ring_delta": 0.0,
+            "n_fired": 333,
+            "newly_within_1": 167,
+            "newly_within_2": 151
+          },
+          "tie_and_enemy_visible_rate": {
+            "hi": 0.04045315803500992,
+            "k": 896,
+            "lo": 0.035577896703761054,
+            "n": 23616,
+            "p": 0.037940379403794036
+          },
+          "tie_rate_of_all_unit_rounds": {
+            "hi": 0.04372412949050669,
+            "k": 971,
+            "lo": 0.038657518255466664,
+            "n": 23616,
+            "p": 0.04111619241192412
+          },
+          "tie_rate_of_unit_rounds_with_a_target": {
+            "hi": 0.09063854426880882,
+            "k": 971,
+            "lo": 0.08036669083467773,
+            "n": 11375,
+            "p": 0.08536263736263736
+          }
+        },
+        "ringamt": {
+          "amount_delta_total": 0,
+          "discordance_among_ties_with_a_visible_enemy": {
+            "hi": 0.49929521669842203,
+            "k": 51,
+            "lo": 0.3286166344919845,
+            "n": 124,
+            "p": 0.4112903225806452
+          },
+          "distance_pair_hist": {
+            "2->1": 15,
+            "3->0": 1,
+            "3->1": 7,
+            "3->2": 10,
+            "4->1": 3,
+            "4->2": 1,
+            "4->3": 3,
+            "5->4": 2,
+            "6->3": 1,
+            "6->5": 3,
+            "7->3": 2,
+            "8->5": 1,
+            "8->6": 1,
+            "8->8": 1
+          },
+          "firing_rate_of_all_unit_rounds": {
+            "hi": 0.0028380318446650727,
+            "k": 51,
+            "lo": 0.001643008346292625,
+            "n": 23616,
+            "p": 0.0021595528455284553
+          },
+          "gains": {
+            "mean_amount_delta": 0.0,
+            "mean_centre_ring_delta": -1.2941176470588236,
+            "mean_cheb_gain": 1.5294117647058822,
+            "mean_target_ring_delta": 0.0,
+            "n_fired": 51,
+            "newly_within_1": 26,
+            "newly_within_2": 22
+          },
+          "tie_and_enemy_visible_rate": {
+            "hi": 0.006256314904293148,
+            "k": 124,
+            "lo": 0.004405969147008183,
+            "n": 23616,
+            "p": 0.005250677506775068
+          },
+          "tie_rate_of_all_unit_rounds": {
+            "hi": 0.006624006230355268,
+            "k": 132,
+            "lo": 0.004715674408380981,
+            "n": 23616,
+            "p": 0.005589430894308943
+          },
+          "tie_rate_of_unit_rounds_with_a_target": {
+            "hi": 0.013743948307600595,
+            "k": 132,
+            "lo": 0.009794604351663605,
+            "n": 11375,
+            "p": 0.011604395604395605
+          }
+        },
+        "value": {
+          "amount_delta_total": -478,
+          "discordance_among_ties_with_a_visible_enemy": {
+            "hi": 0.3211298680352474,
+            "k": 1046,
+            "lo": 0.2902873996598842,
+            "n": 3424,
+            "p": 0.3054906542056075
+          },
+          "distance_pair_hist": {
+            "1->0": 6,
+            "2->0": 7,
+            "2->1": 343,
+            "3->0": 10,
+            "3->1": 157,
+            "3->2": 179,
+            "4->0": 1,
+            "4->1": 28,
+            "4->2": 63,
+            "4->3": 51,
+            "5->1": 4,
+            "5->2": 11,
+            "5->3": 26,
+            "5->4": 36,
+            "6->3": 12,
+            "6->4": 20,
+            "6->5": 26,
+            "7->3": 9,
+            "7->4": 12,
+            "7->5": 4,
+            "7->6": 16,
+            "8->4": 1,
+            "8->5": 2,
+            "8->6": 11,
+            "8->7": 4,
+            "8->8": 7
+          },
+          "firing_rate_of_all_unit_rounds": {
+            "hi": 0.046990992055637115,
+            "k": 1046,
+            "lo": 0.04174124869753859,
+            "n": 23616,
+            "p": 0.0442920054200542
+          },
+          "gains": {
+            "mean_amount_delta": -0.4569789674952199,
+            "mean_centre_ring_delta": -0.9531548757170172,
+            "mean_cheb_gain": 1.4722753346080306,
+            "mean_target_ring_delta": 0.7887189292543021,
+            "n_fired": 1046,
+            "newly_within_1": 550,
+            "newly_within_2": 453
+          },
+          "tie_and_enemy_visible_rate": {
+            "hi": 0.14953469866812372,
+            "k": 3424,
+            "lo": 0.14055367770008156,
+            "n": 23616,
+            "p": 0.14498644986449866
+          },
+          "tie_rate_of_all_unit_rounds": {
+            "hi": 0.16123666520494534,
+            "k": 3697,
+            "lo": 0.1519678697094765,
+            "n": 23616,
+            "p": 0.15654640921409213
+          },
+          "tie_rate_of_unit_rounds_with_a_target": {
+            "hi": 0.33367617044640663,
+            "k": 3697,
+            "lo": 0.3164639589871756,
+            "n": 11375,
+            "p": 0.325010989010989
+          }
+        }
+      },
+      "has_target_rate": {
+        "hi": 0.48804012647777495,
+        "k": 11375,
+        "lo": 0.47529578322731003,
+        "n": 23616,
+        "p": 0.481664972899729
+      },
+      "mean_unit_centre_ring": 3.0447154471544717,
+      "min_ring_hist": {
+        "0": 200,
+        "1": 2900,
+        "2": 4024,
+        "3": 3078,
+        "4": 1173
+      },
+      "steady_rounds": 11808,
+      "steady_unit_rounds": 23616,
+      "teammate_degenerate_form": {
+        "baseline_mean_unit_centre_ring": 3.0447154471544717,
+        "firing_rate_of_all_unit_rounds": {
+          "hi": 0.01910714896020181,
+          "k": 410,
+          "lo": 0.01577206309189786,
+          "n": 23616,
+          "p": 0.017361111111111112
+        },
+        "mean_amount_delta": 0.32439024390243903,
+        "mean_centre_ring_delta_of_target": 1.6097560975609757,
+        "warning": "a positive mean_centre_ring_delta is `fold_tour` being rebuilt (-81.4 +- 18.5, -4.39 sigma); value is in where you stand"
+      },
+      "tie_ring_rate_of_rounds": {
+        "hi": 0.08288621298025944,
+        "k": 920,
+        "lo": 0.07321488821551692,
+        "n": 11808,
+        "p": 0.07791327913279132
+      },
+      "tie_value_rate_of_rounds": {
+        "hi": 0.26883682037239154,
+        "k": 3080,
+        "lo": 0.25299895606759093,
+        "n": 11808,
+        "p": 0.260840108401084
+      },
+      "visible_enemy_rate_unit_rounds": {
+        "hi": 0.9395238607760393,
+        "k": 22116,
+        "lo": 0.9333016421338535,
+        "n": 23616,
+        "p": 0.9364837398373984
+      }
+    },
+    "pooled_t1field": {
+      "candidate_count_hist": {
+        "0": 12241,
+        "1": 7678,
+        "2": 2798,
+        "3": 744,
+        "4": 126,
+        "5": 26,
+        "6": 3
+      },
+      "definitions": {
+        "ring": {
+          "amount_delta_total": -95,
+          "discordance_among_ties_with_a_visible_enemy": {
+            "hi": 0.36456800897524205,
+            "k": 206,
+            "lo": 0.29149740463029744,
+            "n": 630,
+            "p": 0.326984126984127
+          },
+          "distance_pair_hist": {
+            "1->0": 8,
+            "2->0": 5,
+            "2->1": 37,
+            "3->0": 4,
+            "3->1": 22,
+            "3->2": 32,
+            "4->0": 3,
+            "4->1": 16,
+            "4->2": 9,
+            "4->3": 17,
+            "5->1": 1,
+            "5->2": 9,
+            "5->3": 4,
+            "5->4": 10,
+            "6->2": 1,
+            "6->3": 8,
+            "6->4": 5,
+            "6->5": 3,
+            "7->3": 2,
+            "7->5": 3,
+            "7->6": 3,
+            "8->4": 1,
+            "8->7": 3
+          },
+          "firing_rate_of_all_unit_rounds": {
+            "hi": 0.009991359535845705,
+            "k": 206,
+            "lo": 0.0076142395366635435,
+            "n": 23616,
+            "p": 0.00872289972899729
+          },
+          "gains": {
+            "mean_amount_delta": -0.46116504854368934,
+            "mean_centre_ring_delta": -0.8640776699029126,
+            "mean_cheb_gain": 1.7135922330097086,
+            "mean_target_ring_delta": 0.0,
+            "n_fired": 206,
+            "newly_within_1": 88,
+            "newly_within_2": 97
+          },
+          "tie_and_enemy_visible_rate": {
+            "hi": 0.028810219284015462,
+            "k": 630,
+            "lo": 0.024697398922544467,
+            "n": 23616,
+            "p": 0.026676829268292682
+          },
+          "tie_rate_of_all_unit_rounds": {
+            "hi": 0.04372412949050669,
+            "k": 971,
+            "lo": 0.038657518255466664,
+            "n": 23616,
+            "p": 0.04111619241192412
+          },
+          "tie_rate_of_unit_rounds_with_a_target": {
+            "hi": 0.09063854426880882,
+            "k": 971,
+            "lo": 0.08036669083467773,
+            "n": 11375,
+            "p": 0.08536263736263736
+          }
+        },
+        "ringamt": {
+          "amount_delta_total": 0,
+          "discordance_among_ties_with_a_visible_enemy": {
+            "hi": 0.3681895975310528,
+            "k": 21,
+            "lo": 0.17857401432592873,
+            "n": 80,
+            "p": 0.2625
+          },
+          "distance_pair_hist": {
+            "2->1": 3,
+            "3->0": 1,
+            "3->1": 3,
+            "4->1": 2,
+            "4->2": 1,
+            "4->3": 1,
+            "5->1": 1,
+            "5->2": 2,
+            "6->3": 1,
+            "6->4": 1,
+            "6->5": 2,
+            "7->3": 1,
+            "7->6": 1,
+            "8->7": 1
+          },
+          "firing_rate_of_all_unit_rounds": {
+            "hi": 0.0013590939959890528,
+            "k": 21,
+            "lo": 0.0005817089920877004,
+            "n": 23616,
+            "p": 0.0008892276422764227
+          },
+          "gains": {
+            "mean_amount_delta": 0.0,
+            "mean_centre_ring_delta": -1.5238095238095237,
+            "mean_cheb_gain": 2.0952380952380953,
+            "mean_target_ring_delta": 0.0,
+            "n_fired": 21,
+            "newly_within_1": 10,
+            "newly_within_2": 10
+          },
+          "tie_and_enemy_visible_rate": {
+            "hi": 0.004213684021454865,
+            "k": 80,
+            "lo": 0.0027229187989544134,
+            "n": 23616,
+            "p": 0.0033875338753387536
+          },
+          "tie_rate_of_all_unit_rounds": {
+            "hi": 0.006624006230355268,
+            "k": 132,
+            "lo": 0.004715674408380981,
+            "n": 23616,
+            "p": 0.005589430894308943
+          },
+          "tie_rate_of_unit_rounds_with_a_target": {
+            "hi": 0.013743948307600595,
+            "k": 132,
+            "lo": 0.009794604351663605,
+            "n": 11375,
+            "p": 0.011604395604395605
+          }
+        },
+        "value": {
+          "amount_delta_total": -243,
+          "discordance_among_ties_with_a_visible_enemy": {
+            "hi": 0.3611079588324227,
+            "k": 823,
+            "lo": 0.3232346190685202,
+            "n": 2407,
+            "p": 0.3419194017449107
+          },
+          "distance_pair_hist": {
+            "1->0": 33,
+            "2->0": 40,
+            "2->1": 152,
+            "3->0": 26,
+            "3->1": 96,
+            "3->2": 96,
+            "4->0": 6,
+            "4->1": 33,
+            "4->2": 54,
+            "4->3": 57,
+            "5->1": 5,
+            "5->2": 24,
+            "5->3": 29,
+            "5->4": 38,
+            "6->2": 5,
+            "6->3": 23,
+            "6->4": 27,
+            "6->5": 21,
+            "7->3": 5,
+            "7->4": 7,
+            "7->5": 13,
+            "7->6": 11,
+            "8->4": 3,
+            "8->5": 3,
+            "8->6": 6,
+            "8->7": 8,
+            "8->8": 2
+          },
+          "firing_rate_of_all_unit_rounds": {
+            "hi": 0.037264986978258495,
+            "k": 823,
+            "lo": 0.03258482390016885,
+            "n": 23616,
+            "p": 0.03484925474254742
+          },
+          "gains": {
+            "mean_amount_delta": -0.29526123936816523,
+            "mean_centre_ring_delta": -0.6391251518833536,
+            "mean_cheb_gain": 1.6986634264884568,
+            "mean_target_ring_delta": 0.959902794653706,
+            "n_fired": 823,
+            "newly_within_1": 358,
+            "newly_within_2": 345
+          },
+          "tie_and_enemy_visible_rate": {
+            "hi": 0.1058460588289807,
+            "k": 2407,
+            "lo": 0.09812827636156053,
+            "n": 23616,
+            "p": 0.10192242547425474
+          },
+          "tie_rate_of_all_unit_rounds": {
+            "hi": 0.16123666520494534,
+            "k": 3697,
+            "lo": 0.1519678697094765,
+            "n": 23616,
+            "p": 0.15654640921409213
+          },
+          "tie_rate_of_unit_rounds_with_a_target": {
+            "hi": 0.33367617044640663,
+            "k": 3697,
+            "lo": 0.3164639589871756,
+            "n": 11375,
+            "p": 0.325010989010989
+          }
+        }
+      },
+      "has_target_rate": {
+        "hi": 0.48804012647777495,
+        "k": 11375,
+        "lo": 0.47529578322731003,
+        "n": 23616,
+        "p": 0.481664972899729
+      },
+      "mean_unit_centre_ring": 3.0447154471544717,
+      "min_ring_hist": {
+        "0": 200,
+        "1": 2900,
+        "2": 4024,
+        "3": 3078,
+        "4": 1173
+      },
+      "steady_rounds": 11808,
+      "steady_unit_rounds": 23616,
+      "teammate_degenerate_form": {
+        "baseline_mean_unit_centre_ring": 3.0447154471544717,
+        "firing_rate_of_all_unit_rounds": {
+          "hi": 0.01910714896020181,
+          "k": 410,
+          "lo": 0.01577206309189786,
+          "n": 23616,
+          "p": 0.017361111111111112
+        },
+        "mean_amount_delta": 0.32439024390243903,
+        "mean_centre_ring_delta_of_target": 1.6097560975609757,
+        "warning": "a positive mean_centre_ring_delta is `fold_tour` being rebuilt (-81.4 +- 18.5, -4.39 sigma); value is in where you stand"
+      },
+      "tie_ring_rate_of_rounds": {
+        "hi": 0.08288621298025944,
+        "k": 920,
+        "lo": 0.07321488821551692,
+        "n": 11808,
+        "p": 0.07791327913279132
+      },
+      "tie_value_rate_of_rounds": {
+        "hi": 0.26883682037239154,
+        "k": 3080,
+        "lo": 0.25299895606759093,
+        "n": 11808,
+        "p": 0.260840108401084
+      },
+      "visible_enemy_rate_unit_rounds": {
+        "hi": 0.6644739838798004,
+        "k": 15550,
+        "lo": 0.6523782698928828,
+        "n": 23616,
+        "p": 0.6584518970189702
+      }
+    },
+    "replica_validation": {
+      "agreed": 8133,
+      "agreement": 1.0,
+      "checked": 8133,
+      "scope": "wall-free and bomb-free 3-step LUT path with k == 3 (bomb memory replicated, including the 20-round wave clear); on that subset the emitted action triple is fully determined by the pick"
+    },
+    "scoring_rounds": [
+      {
+        "gold_gain": {
+          "1": 1632,
+          "2": 688
+        },
+        "map": "map1",
+        "order": "we_first",
+        "scoring_unit_rounds": {
+          "1": 307,
+          "2": 171
+        },
+        "seed": 1001,
+        "unit_rounds": {
+          "1": 984,
+          "2": 984
+        }
+      },
+      {
+        "gold_gain": {
+          "1": 673,
+          "2": 1308
+        },
+        "map": "map1",
+        "order": "we_second",
+        "scoring_unit_rounds": {
+          "1": 192,
+          "2": 265
+        },
+        "seed": 1001,
+        "unit_rounds": {
+          "1": 984,
+          "2": 984
+        }
+      },
+      {
+        "gold_gain": {
+          "1": 1495,
+          "2": 583
+        },
+        "map": "map1",
+        "order": "we_first",
+        "scoring_unit_rounds": {
+          "1": 304,
+          "2": 162
+        },
+        "seed": 1002,
+        "unit_rounds": {
+          "1": 984,
+          "2": 984
+        }
+      },
+      {
+        "gold_gain": {
+          "1": 601,
+          "2": 1479
+        },
+        "map": "map1",
+        "order": "we_second",
+        "scoring_unit_rounds": {
+          "1": 176,
+          "2": 286
+        },
+        "seed": 1002,
+        "unit_rounds": {
+          "1": 984,
+          "2": 984
+        }
+      },
+      {
+        "gold_gain": {
+          "1": 1611,
+          "2": 640
+        },
+        "map": "map1",
+        "order": "we_first",
+        "scoring_unit_rounds": {
+          "1": 315,
+          "2": 160
+        },
+        "seed": 1003,
+        "unit_rounds": {
+          "1": 984,
+          "2": 984
+        }
+      },
+      {
+        "gold_gain": {
+          "1": 667,
+          "2": 1549
+        },
+        "map": "map1",
+        "order": "we_second",
+        "scoring_unit_rounds": {
+          "1": 168,
+          "2": 306
+        },
+        "seed": 1003,
+        "unit_rounds": {
+          "1": 984,
+          "2": 984
+        }
+      },
+      {
+        "gold_gain": {
+          "1": 1407,
+          "2": 736
+        },
+        "map": "map1",
+        "order": "we_first",
+        "scoring_unit_rounds": {
+          "1": 280,
+          "2": 163
+        },
+        "seed": 1004,
+        "unit_rounds": {
+          "1": 984,
+          "2": 984
+        }
+      },
+      {
+        "gold_gain": {
+          "1": 677,
+          "2": 1364
+        },
+        "map": "map1",
+        "order": "we_second",
+        "scoring_unit_rounds": {
+          "1": 161,
+          "2": 273
+        },
+        "seed": 1004,
+        "unit_rounds": {
+          "1": 984,
+          "2": 984
+        }
+      },
+      {
+        "gold_gain": {
+          "1": 1460,
+          "2": 604
+        },
+        "map": "map2",
+        "order": "we_first",
+        "scoring_unit_rounds": {
+          "1": 307,
+          "2": 169
+        },
+        "seed": 1001,
+        "unit_rounds": {
+          "1": 984,
+          "2": 984
+        }
+      },
+      {
+        "gold_gain": {
+          "1": 627,
+          "2": 1472
+        },
+        "map": "map2",
+        "order": "we_second",
+        "scoring_unit_rounds": {
+          "1": 163,
+          "2": 300
+        },
+        "seed": 1001,
+        "unit_rounds": {
+          "1": 984,
+          "2": 984
+        }
+      },
+      {
+        "gold_gain": {
+          "1": 1370,
+          "2": 538
+        },
+        "map": "map2",
+        "order": "we_first",
+        "scoring_unit_rounds": {
+          "1": 283,
+          "2": 135
+        },
+        "seed": 1002,
+        "unit_rounds": {
+          "1": 984,
+          "2": 984
+        }
+      },
+      {
+        "gold_gain": {
+          "1": 621,
+          "2": 1356
+        },
+        "map": "map2",
+        "order": "we_second",
+        "scoring_unit_rounds": {
+          "1": 161,
+          "2": 281
+        },
+        "seed": 1002,
+        "unit_rounds": {
+          "1": 984,
+          "2": 984
+        }
+      },
+      {
+        "gold_gain": {
+          "1": 1419,
+          "2": 603
+        },
+        "map": "map2",
+        "order": "we_first",
+        "scoring_unit_rounds": {
+          "1": 284,
+          "2": 157
+        },
+        "seed": 1003,
+        "unit_rounds": {
+          "1": 984,
+          "2": 984
+        }
+      },
+      {
+        "gold_gain": {
+          "1": 566,
+          "2": 1371
+        },
+        "map": "map2",
+        "order": "we_second",
+        "scoring_unit_rounds": {
+          "1": 158,
+          "2": 274
+        },
+        "seed": 1003,
+        "unit_rounds": {
+          "1": 984,
+          "2": 984
+        }
+      },
+      {
+        "gold_gain": {
+          "1": 1439,
+          "2": 786
+        },
+        "map": "map2",
+        "order": "we_first",
+        "scoring_unit_rounds": {
+          "1": 297,
+          "2": 187
+        },
+        "seed": 1004,
+        "unit_rounds": {
+          "1": 984,
+          "2": 984
+        }
+      },
+      {
+        "gold_gain": {
+          "1": 682,
+          "2": 1493
+        },
+        "map": "map2",
+        "order": "we_second",
+        "scoring_unit_rounds": {
+          "1": 186,
+          "2": 297
+        },
+        "seed": 1004,
+        "unit_rounds": {
+          "1": 984,
+          "2": 984
+        }
+      },
+      {
+        "gold_gain": {
+          "1": 1575,
+          "2": 837
+        },
+        "map": "map3",
+        "order": "we_first",
+        "scoring_unit_rounds": {
+          "1": 330,
+          "2": 185
+        },
+        "seed": 1001,
+        "unit_rounds": {
+          "1": 984,
+          "2": 984
+        }
+      },
+      {
+        "gold_gain": {
+          "1": 616,
+          "2": 1550
+        },
+        "map": "map3",
+        "order": "we_second",
+        "scoring_unit_rounds": {
+          "1": 166,
+          "2": 300
+        },
+        "seed": 1001,
+        "unit_rounds": {
+          "1": 984,
+          "2": 984
+        }
+      },
+      {
+        "gold_gain": {
+          "1": 1503,
+          "2": 576
+        },
+        "map": "map3",
+        "order": "we_first",
+        "scoring_unit_rounds": {
+          "1": 308,
+          "2": 152
+        },
+        "seed": 1002,
+        "unit_rounds": {
+          "1": 984,
+          "2": 984
+        }
+      },
+      {
+        "gold_gain": {
+          "1": 583,
+          "2": 1651
+        },
+        "map": "map3",
+        "order": "we_second",
+        "scoring_unit_rounds": {
+          "1": 138,
+          "2": 307
+        },
+        "seed": 1002,
+        "unit_rounds": {
+          "1": 984,
+          "2": 984
+        }
+      },
+      {
+        "gold_gain": {
+          "1": 1631,
+          "2": 558
+        },
+        "map": "map3",
+        "order": "we_first",
+        "scoring_unit_rounds": {
+          "1": 313,
+          "2": 155
+        },
+        "seed": 1003,
+        "unit_rounds": {
+          "1": 984,
+          "2": 984
+        }
+      },
+      {
+        "gold_gain": {
+          "1": 698,
+          "2": 1436
+        },
+        "map": "map3",
+        "order": "we_second",
+        "scoring_unit_rounds": {
+          "1": 158,
+          "2": 284
+        },
+        "seed": 1003,
+        "unit_rounds": {
+          "1": 984,
+          "2": 984
+        }
+      },
+      {
+        "gold_gain": {
+          "1": 1600,
+          "2": 505
+        },
+        "map": "map3",
+        "order": "we_first",
+        "scoring_unit_rounds": {
+          "1": 313,
+          "2": 155
+        },
+        "seed": 1004,
+        "unit_rounds": {
+          "1": 984,
+          "2": 984
+        }
+      },
+      {
+        "gold_gain": {
+          "1": 595,
+          "2": 1859
+        },
+        "map": "map3",
+        "order": "we_second",
+        "scoring_unit_rounds": {
+          "1": 166,
+          "2": 348
+        },
+        "seed": 1004,
+        "unit_rounds": {
+          "1": 984,
+          "2": 984
+        }
+      }
+    ],
+    "t1_enemy_field": {
+      "bias_direction": "visible subset over-represents the centre (detection probability falls monotonically with ring distance), so the sampled field over-states co-location and over-states the candidate's firing rate",
+      "centre_d_le_4_share_visible_subset": 0.4809873248832555,
+      "games_used": [
+        "172219",
+        "171747",
+        "172186",
+        "171719",
+        "172187"
+      ],
+      "mean_centre_ring_l1": 5.314876584389593,
+      "strict_bound_from_t1_spatial_policy": "centre d<=4 in [0.517, 0.726]",
+      "unit_round_observations": 2998
+    }
+  }
+}
