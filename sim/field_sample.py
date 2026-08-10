@@ -455,6 +455,13 @@ def is_contest(rec: dict) -> bool:
     rate from 21/31 to 17/27, i.e. from above the front-16 threshold to below it, which is
     exactly the kind of swing that must not ride on an opponent's malfunction.
 
+    Running total for 2026-08-10: SEVEN games across FOUR opponents were removed by this
+    filter -- QuantLK x4 (-742/-339/-210/-255), Tundra-wawa x2 (-1496/-1491), D12 (-721)
+    and hhh (-64) -- about 7% of contested games. That is a rate, not an anomaly, so the
+    filter is required rather than defensive. Note the malfunction is SLOW, not fast: those
+    games show the opponent at P50 4400-5600ns because it buys vision every round, so they
+    INFLATE an opponent's apparent latency rather than flattering it.
+
     Callers must print how many were excluded; a silent filter is how a corpus quietly
     stops meaning what its label says.
     """
