@@ -1,0 +1,250 @@
+{
+ "band": {
+  "100": {
+   "count": 7,
+   "n": 27,
+   "pp_per_gold": 0.12962962962962965,
+   "share": 0.25925925925925924,
+   "wilson95": [
+    0.13170208422866778,
+    0.4467893040261568
+   ]
+  },
+  "200": {
+   "count": 10,
+   "n": 27,
+   "pp_per_gold": 0.0925925925925926,
+   "share": 0.37037037037037035,
+   "wilson95": [
+    0.21532287067936856,
+    0.5577109537655369
+   ]
+  },
+  "50": {
+   "count": 4,
+   "n": 27,
+   "pp_per_gold": 0.14814814814814814,
+   "share": 0.14814814814814814,
+   "wilson95": [
+    0.059158318596448906,
+    0.32479063346829484
+   ]
+  }
+ },
+ "broken_games": [
+  {
+   "id": 190039,
+   "opp": "QuantLK",
+   "their_net": -742
+  },
+  {
+   "id": 190050,
+   "opp": "QuantLK",
+   "their_net": -339
+  },
+  {
+   "id": 190171,
+   "opp": "QuantLK",
+   "their_net": -210
+  },
+  {
+   "id": 190273,
+   "opp": "QuantLK",
+   "their_net": -255
+  }
+ ],
+ "condition_comparison_pp_per_gold_at_128": {
+  "active_public_slots": 0.0269,
+  "passive_qualifier_like": 0.08680555555555555,
+  "vs_T1_only": 0.2279
+ },
+ "conditions": {
+  "corpus": "platform passive games with created_at > 2026-08-10T08:20:18Z (slot updated_at)",
+  "excluded": [
+   "self-play",
+   "organiser test accounts 2/3/4",
+   "error games",
+   "4 games with NEGATIVE opponent net (broken opponent slot, not a contest)"
+  ],
+  "front16_threshold_at_measurement": 0.6756,
+  "margin": "our coin_num - their coin_num, same game",
+  "our_build": "fd47ea6 public slot (model 278135)"
+ },
+ "flip_slope": {
+  "128": {
+   "flips": 3,
+   "pp": 11.11111111111111,
+   "pp_per_gold": 0.08680555555555555,
+   "wilson95_pp": [
+    3.851964789498724,
+    28.058182543972947
+   ],
+   "win_rate_after": 0.7407407407407407
+  },
+  "200": {
+   "flips": 3,
+   "pp": 11.11111111111111,
+   "pp_per_gold": 0.05555555555555555,
+   "wilson95_pp": [
+    3.851964789498724,
+    28.058182543972947
+   ],
+   "win_rate_after": 0.7407407407407407
+  },
+  "40": {
+   "flips": 1,
+   "pp": 3.7037037037037037,
+   "pp_per_gold": 0.09259259259259259,
+   "wilson95_pp": [
+    0.6567976533097597,
+    18.283853934156518
+   ],
+   "win_rate_after": 0.6666666666666666
+  },
+  "80": {
+   "flips": 2,
+   "pp": 7.407407407407407,
+   "pp_per_gold": 0.09259259259259259,
+   "wilson95_pp": [
+    2.0554221697383523,
+    23.36997729073062
+   ],
+   "win_rate_after": 0.7037037037037037
+  }
+ },
+ "margin": {
+  "mean": 58.370370370370374,
+  "median": 79,
+  "sorted": [
+   -1073,
+   -875,
+   -541,
+   -412,
+   -322,
+   -315,
+   -246,
+   -125,
+   -40,
+   -35,
+   19,
+   40,
+   64,
+   79,
+   89,
+   113,
+   133,
+   278,
+   286,
+   395,
+   419,
+   442,
+   477,
+   549,
+   568,
+   590,
+   1019
+  ]
+ },
+ "n_broken_excluded": 4,
+ "n_passive_total": 31,
+ "n_usable": 27,
+ "per_opponent": {
+  "1": {
+   "margins": [
+    -1073,
+    -875,
+    -412,
+    -246,
+    -125,
+    -40
+   ],
+   "n": 6,
+   "won": 0
+  },
+  "Capoo": {
+   "margins": [
+    568,
+    1019
+   ],
+   "n": 2,
+   "won": 2
+  },
+  "LilanOVO": {
+   "margins": [
+    89,
+    477,
+    549
+   ],
+   "n": 3,
+   "won": 3
+  },
+  "MUGA": {
+   "margins": [
+    19,
+    133,
+    395
+   ],
+   "n": 3,
+   "won": 3
+  },
+  "rikka": {
+   "margins": [
+    -541,
+    -322,
+    -315
+   ],
+   "n": 3,
+   "won": 0
+  },
+  "君の仿瓷": {
+   "margins": [
+    -35,
+    79,
+    278
+   ],
+   "n": 3,
+   "won": 2
+  },
+  "德州雀魂量化投资LLM": {
+   "margins": [
+    40,
+    286
+   ],
+   "n": 2,
+   "won": 2
+  },
+  "数学分析": {
+   "margins": [
+    113
+   ],
+   "n": 1,
+   "won": 1
+  },
+  "激昂狂人": {
+   "margins": [
+    64,
+    419,
+    590
+   ],
+   "n": 3,
+   "won": 3
+  },
+  "邱叔叔与赵叔叔vamos队": {
+   "margins": [
+    442
+   ],
+   "n": 1,
+   "won": 1
+  }
+ },
+ "purpose": "margin distribution and dP(win)/d(margin) in the PASSIVE condition, which is the closest available proxy for the qualifier (our submitted slot vs the opponent's own current code), as opposed to active challenges against possibly stale public slots",
+ "win_rate": {
+  "n": 27,
+  "rate": 0.6296296296296297,
+  "wilson95": [
+   0.442289046234463,
+   0.7846771293206314
+  ],
+  "wins": 17
+ }
+}
