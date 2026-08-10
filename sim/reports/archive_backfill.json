@@ -1,0 +1,2701 @@
+{
+  "agent": "archive_backfill-7610",
+  "archive": {
+    "archiver": "sim/probe/archive_logs.py build",
+    "archiver_modified": false,
+    "counts_after": {
+      "Tiuntled-1": 158,
+      "Tundra-wawa": 112,
+      "_selfplay-champ": 10
+    },
+    "counts_before": {
+      "Tiuntled-1": 69,
+      "Tundra-wawa": 43,
+      "_selfplay-champ": 10
+    },
+    "logs_bytes_total": 800729198,
+    "lost_entries": [],
+    "manifest_entries_after": 280,
+    "manifest_entries_before": 122,
+    "manifest_generated_after_utc": "2026-08-10T07:01:02.870242+00:00",
+    "manifest_generated_before_utc": "2026-08-09T15:13:49.015361+00:00",
+    "manifest_schema_version_after": 2,
+    "manifest_schema_version_before": 2,
+    "new_entries": 158,
+    "raw_game_logs_at_scan": 530,
+    "retained_entries": 122,
+    "retained_entries_bit_identical": true,
+    "root_cause_of_gap": "stale manifest: 258 of the raw logs post-dated the previous manifest build; no archiver defect, no code change needed",
+    "skipped_logs_after": [
+      {
+        "reason": "log has no completed rounds",
+        "source_path": "logs/game_172111.log"
+      }
+    ],
+    "skipped_logs_before": [
+      {
+        "reason": "log has no completed rounds",
+        "source_path": "logs/game_172111.log"
+      }
+    ],
+    "symlink_counts_after": {
+      "Tiuntled-1": 158,
+      "Tundra-wawa": 112,
+      "_selfplay-champ": 10
+    },
+    "tracked_after": 270,
+    "tracked_before": 112
+  },
+  "argmax_revert_re_adjudication": {
+    "T1_map3_leg": {
+      "baseline_n12_reconstructed": {
+        "mean": -102.91666666666667,
+        "n": 12,
+        "se": 63.51466763709392
+      },
+      "candidate_mxT13": {
+        "mean": -376.8333333333333,
+        "n": 6,
+        "se": 40.507955322929405
+      },
+      "changelog_regression": {
+        "combined_sigma": 3.64,
+        "delta": -273.9
+      },
+      "recomputed_regression": {
+        "combined_se": 75.33264531061518,
+        "combined_sigma": 3.6360951555230843,
+        "delta": -273.91666666666663
+      },
+      "verdict": "reproduced exactly from primary data; this leg alone carries the argmax revert, so commit 23db121's rejection stands"
+    },
+    "Tundra_map1_leg": {
+      "candidate_mxTu1": {
+        "game_id_span": [
+          179587,
+          179592
+        ],
+        "mean": -304.6666666666667,
+        "n": 6,
+        "se": 55.77972550826849
+      },
+      "changelog_baseline": {
+        "mean": -35.4,
+        "n_claimed": 20,
+        "reproducible_from_corpus": false,
+        "se": 45.5
+      },
+      "changelog_regression": {
+        "combined_sigma": 3.74,
+        "delta": -269.3
+      },
+      "corpus_same_window_baseline": {
+        "game_id_span": [
+          179643,
+          179761
+        ],
+        "mean": -289.0416666666667,
+        "n": 24,
+        "se": 54.65191164319908
+      },
+      "recomputed_regression": {
+        "combined_se": 78.09103164918375,
+        "combined_sigma": 0.20008699680385542,
+        "delta": -15.625
+      },
+      "verdict": "on same-window primary data the Tundra map1 leg shows no regression (z=0.20); the 3.74 sigma in src/CHANGELOG.md comes entirely from the unreproducible -35.4 baseline"
+    }
+  },
+  "changelog_per_game_audit": {
+    "frTu1 (Tundra map1 recheck)": {
+      "deltas_match": true,
+      "family": "frTu1",
+      "mean_match": true,
+      "measured_deltas_in_game_id_order": [
+        -530,
+        248,
+        -344,
+        -123,
+        -290,
+        -276
+      ],
+      "measured_mean": -219.16666666666666,
+      "measured_se": 107.69413994167824,
+      "quoted_deltas": [
+        -530,
+        248,
+        -344,
+        -123,
+        -290,
+        -276
+      ],
+      "quoted_mean": -219.2,
+      "quoted_se": 107.7,
+      "se_match": true
+    },
+    "frTu2 (Tundra map2 recheck)": {
+      "deltas_match": true,
+      "family": "frTu2",
+      "mean_match": true,
+      "measured_deltas_in_game_id_order": [
+        54,
+        192,
+        -63,
+        122,
+        441,
+        -445
+      ],
+      "measured_mean": 50.166666666666664,
+      "measured_se": 120.55964406789606,
+      "quoted_deltas": [
+        54,
+        192,
+        -63,
+        122,
+        441,
+        -445
+      ],
+      "quoted_mean": 50.2,
+      "quoted_se": 120.6,
+      "se_match": true
+    },
+    "frTu3 (Tundra map3 recheck)": {
+      "deltas_match": true,
+      "family": "frTu3",
+      "mean_match": true,
+      "measured_deltas_in_game_id_order": [
+        157,
+        514,
+        -97,
+        577,
+        31,
+        293
+      ],
+      "measured_mean": 245.83333333333334,
+      "measured_se": 108.84068377424154,
+      "quoted_deltas": [
+        157,
+        514,
+        -97,
+        577,
+        31,
+        293
+      ],
+      "quoted_mean": 245.8,
+      "quoted_se": 108.8,
+      "se_match": true
+    },
+    "lnA0 (linker baseline arm)": {
+      "deltas_match": true,
+      "family": "lnA0",
+      "mean_match": true,
+      "measured_deltas_in_game_id_order": [
+        -151,
+        -552,
+        -466,
+        -267,
+        -550,
+        -490
+      ],
+      "measured_mean": -412.6666666666667,
+      "measured_se": 67.52464570642174,
+      "quoted_deltas": null,
+      "quoted_mean": -412.7,
+      "quoted_se": 67.5,
+      "se_match": true
+    },
+    "lnB0 (linker candidate arm)": {
+      "deltas_match": true,
+      "family": "lnB0",
+      "mean_match": true,
+      "measured_deltas_in_game_id_order": [
+        -537,
+        -437,
+        -250,
+        -730,
+        -344,
+        -25
+      ],
+      "measured_mean": -387.1666666666667,
+      "measured_se": 99.04726705523537,
+      "quoted_deltas": null,
+      "quoted_mean": -387.2,
+      "quoted_se": 99.0,
+      "se_match": true
+    },
+    "mxT13 (argmax cand, T-1 map3)": {
+      "deltas_match": true,
+      "family": "mxT13",
+      "mean_match": true,
+      "measured_deltas_in_game_id_order": [
+        -347,
+        -373,
+        -420,
+        -266,
+        -548,
+        -307
+      ],
+      "measured_mean": -376.8333333333333,
+      "measured_se": 40.507955322929405,
+      "quoted_deltas": [
+        -347,
+        -373,
+        -420,
+        -266,
+        -548,
+        -307
+      ],
+      "quoted_mean": -376.8,
+      "quoted_se": 40.5,
+      "se_match": true
+    },
+    "mxTu1 (argmax cand, Tundra map1)": {
+      "deltas_match": true,
+      "family": "mxTu1",
+      "mean_match": true,
+      "measured_deltas_in_game_id_order": [
+        -407,
+        -252,
+        -53,
+        -367,
+        -414,
+        -335
+      ],
+      "measured_mean": -304.6666666666667,
+      "measured_se": 55.77972550826849,
+      "quoted_deltas": [
+        -407,
+        -252,
+        -53,
+        -367,
+        -414,
+        -335
+      ],
+      "quoted_mean": -304.7,
+      "quoted_se": 55.8,
+      "se_match": true
+    }
+  },
+  "family_census": {
+    "distinct_our_build_names": 260,
+    "distinct_our_families": 114,
+    "families_by_opponent": {
+      "T-1": 67,
+      "Tundra": 47
+    },
+    "families_with_at_least_5_games": {
+      "T-1/chain": {
+        "games": 6,
+        "map": "map1",
+        "mean_score_delta": -1208.8333333333333,
+        "wins": 0
+      },
+      "T-1/mxT13": {
+        "games": 6,
+        "map": "map3",
+        "mean_score_delta": -376.8333333333333,
+        "wins": 0
+      },
+      "T-1/probeob": {
+        "games": 5,
+        "map": "map1",
+        "mean_score_delta": -3829.2,
+        "wins": 0
+      },
+      "T-1/t1f1": {
+        "games": 6,
+        "map": "map1",
+        "mean_score_delta": -274.3333333333333,
+        "wins": 1
+      },
+      "T-1/t1f2": {
+        "games": 6,
+        "map": "map2",
+        "mean_score_delta": -106.66666666666667,
+        "wins": 1
+      },
+      "T-1/t1f3": {
+        "games": 6,
+        "map": "map3",
+        "mean_score_delta": -104.0,
+        "wins": 1
+      },
+      "T-1/t1n2": {
+        "games": 6,
+        "map": "map2",
+        "mean_score_delta": -222.5,
+        "wins": 1
+      },
+      "T-1/t1n3": {
+        "games": 6,
+        "map": "map3",
+        "mean_score_delta": -101.83333333333333,
+        "wins": 2
+      },
+      "T-1/t1x1": {
+        "games": 6,
+        "map": "map1",
+        "mean_score_delta": -643.1666666666666,
+        "wins": 1
+      },
+      "T-1/t1x2": {
+        "games": 6,
+        "map": "map2",
+        "mean_score_delta": -187.5,
+        "wins": 1
+      },
+      "T-1/t1x3": {
+        "games": 6,
+        "map": "map3",
+        "mean_score_delta": -157.5,
+        "wins": 1
+      },
+      "Tundra/a2A0": {
+        "games": 6,
+        "map": "map1",
+        "mean_score_delta": -123.5,
+        "wins": 2
+      },
+      "Tundra/a2B0": {
+        "games": 6,
+        "map": "map1",
+        "mean_score_delta": -386.1666666666667,
+        "wins": 0
+      },
+      "Tundra/alA0": {
+        "games": 6,
+        "map": "map1",
+        "mean_score_delta": -400.8333333333333,
+        "wins": 0
+      },
+      "Tundra/alB0": {
+        "games": 6,
+        "map": "map1",
+        "mean_score_delta": -279.0,
+        "wins": 0
+      },
+      "Tundra/frTu1": {
+        "games": 6,
+        "map": "map1",
+        "mean_score_delta": -219.16666666666666,
+        "wins": 1
+      },
+      "Tundra/frTu2": {
+        "games": 6,
+        "map": "map2",
+        "mean_score_delta": 50.166666666666664,
+        "wins": 4
+      },
+      "Tundra/frTu3": {
+        "games": 6,
+        "map": "map3",
+        "mean_score_delta": 245.83333333333334,
+        "wins": 5
+      },
+      "Tundra/lnA0": {
+        "games": 6,
+        "map": "map1",
+        "mean_score_delta": -412.6666666666667,
+        "wins": 0
+      },
+      "Tundra/lnB0": {
+        "games": 6,
+        "map": "map1",
+        "mean_score_delta": -387.1666666666667,
+        "wins": 0
+      },
+      "Tundra/mxTu1": {
+        "games": 6,
+        "map": "map1",
+        "mean_score_delta": -304.6666666666667,
+        "wins": 0
+      },
+      "Tundra/probeob": {
+        "games": 5,
+        "map": "map1",
+        "mean_score_delta": -4016.8,
+        "wins": 0
+      }
+    },
+    "games_by_opponent_and_map": {
+      "T-1 map1": 99,
+      "T-1 map2": 25,
+      "T-1 map3": 34,
+      "Tundra map1": 90,
+      "Tundra map2": 11,
+      "Tundra map3": 11
+    }
+  },
+  "fog_free_channel": {
+    "enlarged_48_game_set_with_n12_topups": {
+      "factor_split": {
+        "hit_ratio": 1.1680439109717111,
+        "hit_share_of_log_gap": 2.6428466149327257,
+        "mean_ratio": 1.0605354570871812,
+        "yield_ratio": 0.9153723490438799,
+        "yield_share_of_log_gap": -1.5044826759235996
+      },
+      "games": 48,
+      "implied_score_delta_from_channel": -89.49148296593191,
+      "mean_score_delta": -91.5625,
+      "ours": {
+        "ge6": 0.12823563794255177,
+        "ge8": 0.06396125584502338,
+        "hit": 0.34608800935203743,
+        "mean": 1.4783316633266532,
+        "n": 47904,
+        "negative": 0.00709752839011356,
+        "sd": 3.740958547617027,
+        "se": 0.017092162243728375,
+        "yield_per_hit": 4.656613788527656
+      },
+      "reconciliation_residual": 2.071017034068092,
+      "theirs": {
+        "ge6": 0.11552271209084837,
+        "ge8": 0.05744822979291917,
+        "hit": 0.40424599198396793,
+        "mean": 1.5678231462925851,
+        "n": 47904,
+        "negative": 0.004634268537074149,
+        "sd": 4.510846587857234,
+        "se": 0.020609723618920293,
+        "yield_per_hit": 4.262535502194681
+      }
+    },
+    "enlarged_66_game_set_with_topups_and_tundra_map1_arms": {
+      "factor_split": {
+        "hit_ratio": 1.244797879390325,
+        "hit_share_of_log_gap": 2.2642399254997922,
+        "mean_ratio": 1.1015401641612101,
+        "yield_ratio": 0.886210388234057,
+        "yield_share_of_log_gap": -1.2491129180232694
+      },
+      "games": 66,
+      "implied_score_delta_from_channel": -150.43723811258891,
+      "mean_score_delta": -151.77272727272728,
+      "ours": {
+        "ge6": 0.12795287544786543,
+        "ge8": 0.0644622578490314,
+        "hit": 0.34364182911277097,
+        "mean": 1.4815540171251593,
+        "n": 65868,
+        "negative": 0.006513026052104208,
+        "sd": 3.6451040854227923,
+        "se": 0.014202758276067963,
+        "yield_per_hit": 4.6662248729843165
+      },
+      "reconciliation_residual": 1.3354891601383656,
+      "theirs": {
+        "ge6": 0.11890447561790247,
+        "ge8": 0.05813141434383919,
+        "hit": 0.4277646201493897,
+        "mean": 1.6319912552377482,
+        "n": 65868,
+        "negative": 0.004159834821157466,
+        "sd": 4.309967397665189,
+        "se": 0.016793327074409805,
+        "yield_per_hit": 4.135256956274844
+      }
+    },
+    "enlarged_per_battlefield": {
+      "battlefields": {
+        "T-1 map1": {
+          "factor_split": {
+            "hit_ratio": 1.268997668997669,
+            "hit_share_of_log_gap": 1.4714522676132344,
+            "mean_ratio": 1.1757420456972025,
+            "yield_ratio": 0.9521488037062243,
+            "yield_share_of_log_gap": -0.3028666370362696
+          },
+          "games": 6,
+          "implied_score_delta_from_channel": -274.8830995323981,
+          "mean_score_delta": -274.3333333333333,
+          "ours": {
+            "ge6": 0.1295925183700735,
+            "ge8": 0.06813627254509018,
+            "hit": 0.35821643286573146,
+            "mean": 1.5641282565130261,
+            "n": 5988,
+            "negative": 0.004843019372077488,
+            "sd": 3.4562906908735904,
+            "se": 0.04466520851483013,
+            "yield_per_hit": 4.631235431235432
+          },
+          "reconciliation_residual": -0.5497661990647771,
+          "theirs": {
+            "ge6": 0.13510354041416164,
+            "ge8": 0.0686372745490982,
+            "hit": 0.4545758183032732,
+            "mean": 1.8390113560454242,
+            "n": 5988,
+            "negative": 0.004676018704074816,
+            "sd": 4.6399116566587875,
+            "se": 0.05996099291714213,
+            "yield_per_hit": 4.409625275532696
+          }
+        },
+        "T-1 map2": {
+          "factor_split": {
+            "hit_ratio": 1.144960362400906,
+            "hit_share_of_log_gap": 1.6685902864253164,
+            "mean_ratio": 1.0845101115760112,
+            "yield_ratio": 0.9736464063522905,
+            "yield_share_of_log_gap": -0.32919522616579855
+          },
+          "games": 12,
+          "implied_score_delta_from_channel": -161.9071476285907,
+          "mean_score_delta": -164.58333333333334,
+          "ours": {
+            "ge6": 0.15948563794255177,
+            "ge8": 0.08191382765531062,
+            "hit": 0.4423847695390782,
+            "mean": 1.9158316633266532,
+            "n": 11976,
+            "negative": 0.005177020708082832,
+            "sd": 4.4315170172817675,
+            "se": 0.04049454538515104,
+            "yield_per_hit": 4.673272933182333
+          },
+          "reconciliation_residual": 2.676185704742636,
+          "theirs": {
+            "ge6": 0.1572311289245157,
+            "ge8": 0.08450233800935204,
+            "hit": 0.5065130260521042,
+            "mean": 2.077738810955244,
+            "n": 11976,
+            "negative": 0.00459251837007348,
+            "sd": 5.399595014327227,
+            "se": 0.049340698572614014,
+            "yield_per_hit": 4.550115397296406
+          }
+        },
+        "T-1 map3": {
+          "factor_split": {
+            "hit_ratio": 1.087262491203378,
+            "hit_share_of_log_gap": 0.8444877470964528,
+            "mean_ratio": 1.104143142534526,
+            "yield_ratio": 0.9732728788935421,
+            "yield_share_of_log_gap": -0.27345205506619336
+          },
+          "games": 12,
+          "implied_score_delta_from_channel": -100.1169004676018,
+          "mean_score_delta": -102.91666666666667,
+          "ours": {
+            "ge6": 0.08851035404141616,
+            "ge8": 0.04342017368069472,
+            "hit": 0.23730794923179693,
+            "mean": 0.9613393453573814,
+            "n": 11976,
+            "negative": 0.010187040748162993,
+            "sd": 2.920478413590924,
+            "se": 0.026686898686006353,
+            "yield_per_hit": 4.570372976776918
+          },
+          "reconciliation_residual": 2.7997661990648766,
+          "theirs": {
+            "ge6": 0.07130928523714095,
+            "ge8": 0.033984635938543756,
+            "hit": 0.25801603206412826,
+            "mean": 1.0614562458249832,
+            "n": 11976,
+            "negative": 0.005177020708082832,
+            "sd": 3.6698940864396317,
+            "se": 0.03353494797887133,
+            "yield_per_hit": 4.448220064724919
+          }
+        },
+        "Tundra map1": {
+          "factor_split": {
+            "hit_ratio": 1.439756838905775,
+            "hit_share_of_log_gap": 2.088524505257823,
+            "mean_ratio": 1.1906659703707776,
+            "yield_ratio": 0.8184803047956313,
+            "yield_share_of_log_gap": -1.1478009464785695
+          },
+          "games": 24,
+          "implied_score_delta_from_channel": -289.6209084836341,
+          "mean_score_delta": -289.0416666666667,
+          "ours": {
+            "ge6": 0.13051102204408818,
+            "ge8": 0.0665497661990648,
+            "hit": 0.34339512358049434,
+            "mean": 1.5189963259853039,
+            "n": 23952,
+            "negative": 0.0050935203740814965,
+            "sd": 3.42253152561463,
+            "se": 0.022114471540806528,
+            "yield_per_hit": 4.70273556231003
+          },
+          "reconciliation_residual": -0.5792418169673965,
+          "theirs": {
+            "ge6": 0.1294255177020708,
+            "ge8": 0.059953239812959254,
+            "hit": 0.4944054776219105,
+            "mean": 1.808617234468938,
+            "n": 23952,
+            "negative": 0.0028390113560454243,
+            "sd": 3.7821269430995983,
+            "se": 0.02443797464564577,
+            "yield_per_hit": 3.849096436412768
+          }
+        },
+        "Tundra map2": {
+          "factor_split": {
+            "hit_ratio": 1.2318456883509834,
+            "hit_share_of_log_gap": -7.302382353471385,
+            "mean_ratio": 0.971849629368161,
+            "yield_ratio": 0.8352596660769002,
+            "yield_share_of_log_gap": 6.304245814496768
+          },
+          "games": 6,
+          "implied_score_delta_from_channel": 53.27321309285238,
+          "mean_score_delta": 50.166666666666664,
+          "ours": {
+            "ge6": 0.16382765531062124,
+            "ge8": 0.08199732798931196,
+            "hit": 0.4415497661990648,
+            "mean": 1.8924515698062792,
+            "n": 5988,
+            "negative": 0.006346025384101536,
+            "sd": 4.5667979697487855,
+            "se": 0.059016153966024325,
+            "yield_per_hit": 4.709531013615734
+          },
+          "reconciliation_residual": 3.106546426185716,
+          "theirs": {
+            "ge6": 0.1492985971943888,
+            "ge8": 0.07114228456913828,
+            "hit": 0.5439211756847028,
+            "mean": 1.8391783567134268,
+            "n": 5988,
+            "negative": 0.006680026720106881,
+            "sd": 5.571739770940658,
+            "se": 0.07200289006840895,
+            "yield_per_hit": 3.933681301811483
+          }
+        },
+        "Tundra map3": {
+          "factor_split": {
+            "hit_ratio": 0.8095881161377448,
+            "hit_share_of_log_gap": 0.7452150525653575,
+            "mean_ratio": 0.7531823441891221,
+            "yield_ratio": 0.8662342774135661,
+            "yield_share_of_log_gap": 0.5066182070460131
+          },
+          "games": 6,
+          "implied_score_delta_from_channel": 249.3319973279894,
+          "mean_score_delta": 245.83333333333334,
+          "ours": {
+            "ge6": 0.09602538410153641,
+            "ge8": 0.04208416833667335,
+            "hit": 0.24732798931195724,
+            "mean": 1.010187040748163,
+            "n": 5988,
+            "negative": 0.009352037408149633,
+            "sd": 2.9753280517088383,
+            "se": 0.038449789012396166,
+            "yield_per_hit": 4.595543551654288
+          },
+          "reconciliation_residual": 3.498663994656056,
+          "theirs": {
+            "ge6": 0.04876419505678023,
+            "ge8": 0.022879091516366065,
+            "hit": 0.20023380093520374,
+            "mean": 0.7608550434201736,
+            "n": 5988,
+            "negative": 0.0035070140280561123,
+            "sd": 2.700751969909377,
+            "se": 0.03490147695081485,
+            "yield_per_hit": 3.980817347789825
+          }
+        }
+      },
+      "ours_higher_in_n_of_6": {
+        "ge8": 4,
+        "hit": 1,
+        "mean": 2,
+        "yield_per_hit": 6
+      }
+    },
+    "n12_battlefields": {
+      "T-1 map2 n=12": {
+        "factor_split": {
+          "hit_ratio": 1.144960362400906,
+          "hit_share_of_log_gap": 1.6685902864253164,
+          "mean_ratio": 1.0845101115760112,
+          "yield_ratio": 0.9736464063522905,
+          "yield_share_of_log_gap": -0.32919522616579855
+        },
+        "games": 12,
+        "implied_score_delta_from_channel": -161.9071476285907,
+        "mean_score_delta": -164.58333333333334,
+        "ours": {
+          "ge6": 0.15948563794255177,
+          "ge8": 0.08191382765531062,
+          "hit": 0.4423847695390782,
+          "mean": 1.9158316633266532,
+          "n": 11976,
+          "negative": 0.005177020708082832,
+          "sd": 4.4315170172817675,
+          "se": 0.04049454538515104,
+          "yield_per_hit": 4.673272933182333
+        },
+        "reconciliation_residual": 2.676185704742636,
+        "theirs": {
+          "ge6": 0.1572311289245157,
+          "ge8": 0.08450233800935204,
+          "hit": 0.5065130260521042,
+          "mean": 2.077738810955244,
+          "n": 11976,
+          "negative": 0.00459251837007348,
+          "sd": 5.399595014327227,
+          "se": 0.049340698572614014,
+          "yield_per_hit": 4.550115397296406
+        }
+      },
+      "T-1 map3 n=12": {
+        "factor_split": {
+          "hit_ratio": 1.087262491203378,
+          "hit_share_of_log_gap": 0.8444877470964528,
+          "mean_ratio": 1.104143142534526,
+          "yield_ratio": 0.9732728788935421,
+          "yield_share_of_log_gap": -0.27345205506619336
+        },
+        "games": 12,
+        "implied_score_delta_from_channel": -100.1169004676018,
+        "mean_score_delta": -102.91666666666667,
+        "ours": {
+          "ge6": 0.08851035404141616,
+          "ge8": 0.04342017368069472,
+          "hit": 0.23730794923179693,
+          "mean": 0.9613393453573814,
+          "n": 11976,
+          "negative": 0.010187040748162993,
+          "sd": 2.920478413590924,
+          "se": 0.026686898686006353,
+          "yield_per_hit": 4.570372976776918
+        },
+        "reconciliation_residual": 2.7997661990648766,
+        "theirs": {
+          "ge6": 0.07130928523714095,
+          "ge8": 0.033984635938543756,
+          "hit": 0.25801603206412826,
+          "mean": 1.0614562458249832,
+          "n": 11976,
+          "negative": 0.005177020708082832,
+          "sd": 3.6698940864396317,
+          "se": 0.03353494797887133,
+          "yield_per_hit": 4.448220064724919
+        }
+      },
+      "Tundra map1 n=24": {
+        "factor_split": {
+          "hit_ratio": 1.439756838905775,
+          "hit_share_of_log_gap": 2.088524505257823,
+          "mean_ratio": 1.1906659703707776,
+          "yield_ratio": 0.8184803047956313,
+          "yield_share_of_log_gap": -1.1478009464785695
+        },
+        "games": 24,
+        "implied_score_delta_from_channel": -289.6209084836341,
+        "mean_score_delta": -289.0416666666667,
+        "ours": {
+          "ge6": 0.13051102204408818,
+          "ge8": 0.0665497661990648,
+          "hit": 0.34339512358049434,
+          "mean": 1.5189963259853039,
+          "n": 23952,
+          "negative": 0.0050935203740814965,
+          "sd": 3.42253152561463,
+          "se": 0.022114471540806528,
+          "yield_per_hit": 4.70273556231003
+        },
+        "reconciliation_residual": -0.5792418169673965,
+        "theirs": {
+          "ge6": 0.1294255177020708,
+          "ge8": 0.059953239812959254,
+          "hit": 0.4944054776219105,
+          "mean": 1.808617234468938,
+          "n": 23952,
+          "negative": 0.0028390113560454243,
+          "sd": 3.7821269430995983,
+          "se": 0.02443797464564577,
+          "yield_per_hit": 3.849096436412768
+        }
+      }
+    },
+    "note": "sim/analyze_gold_delta.py never reads logs/opponents/manifest.json; it globs logs/game_*.log directly, so the archive gap was a bookkeeping gap and could not have hidden data from the analyzer",
+    "per_family": {
+      "T-1/mxT13": {
+        "games": 6,
+        "mean_score_delta": -376.8333333333333,
+        "ours": {
+          "ge6": 0.07915831663326653,
+          "ge8": 0.03924515698062792,
+          "hit": 0.2159318637274549,
+          "mean": 0.8157982631930528,
+          "n": 5988,
+          "negative": 0.013193052772211089,
+          "sd": 2.8964024927630203,
+          "se": 0.037429843972248675,
+          "yield_per_hit": 4.487238979118329
+        },
+        "theirs": {
+          "ge6": 0.07798931195724783,
+          "ge8": 0.038744154976619906,
+          "hit": 0.2720440881763527,
+          "mean": 1.1903807615230462,
+          "n": 5988,
+          "negative": 0.006012024048096192,
+          "sd": 3.9874734107050327,
+          "se": 0.051529615783406625,
+          "yield_per_hit": 4.677716390423573
+        }
+      },
+      "T-1/t1f1": {
+        "games": 6,
+        "mean_score_delta": -274.3333333333333,
+        "ours": {
+          "ge6": 0.1295925183700735,
+          "ge8": 0.06813627254509018,
+          "hit": 0.35821643286573146,
+          "mean": 1.5641282565130261,
+          "n": 5988,
+          "negative": 0.004843019372077488,
+          "sd": 3.4562906908735904,
+          "se": 0.04466520851483013,
+          "yield_per_hit": 4.631235431235432
+        },
+        "theirs": {
+          "ge6": 0.13510354041416164,
+          "ge8": 0.0686372745490982,
+          "hit": 0.4545758183032732,
+          "mean": 1.8390113560454242,
+          "n": 5988,
+          "negative": 0.004676018704074816,
+          "sd": 4.6399116566587875,
+          "se": 0.05996099291714213,
+          "yield_per_hit": 4.409625275532696
+        }
+      },
+      "T-1/t1f2": {
+        "games": 6,
+        "mean_score_delta": -106.66666666666667,
+        "ours": {
+          "ge6": 0.1623246492985972,
+          "ge8": 0.08316633266533066,
+          "hit": 0.4452237808951236,
+          "mean": 1.920507682030728,
+          "n": 5988,
+          "negative": 0.00584502338009352,
+          "sd": 4.563018673148221,
+          "se": 0.058967314592892506,
+          "yield_per_hit": 4.701050262565642
+        },
+        "theirs": {
+          "ge6": 0.15664662658650635,
+          "ge8": 0.0823313293253173,
+          "hit": 0.4998329993319973,
+          "mean": 2.02438209752839,
+          "n": 5988,
+          "negative": 0.005177020708082832,
+          "sd": 5.717157755683101,
+          "se": 0.07388210833771659,
+          "yield_per_hit": 4.589041095890411
+        }
+      },
+      "T-1/t1f3": {
+        "games": 6,
+        "mean_score_delta": -104.0,
+        "ours": {
+          "ge6": 0.08767535070140281,
+          "ge8": 0.04392117568470274,
+          "hit": 0.2326319305277221,
+          "mean": 0.9509018036072144,
+          "n": 5988,
+          "negative": 0.009352037408149633,
+          "sd": 2.8895243753590845,
+          "se": 0.037340958928855916,
+          "yield_per_hit": 4.564967695620962
+        },
+        "theirs": {
+          "ge6": 0.072812291249165,
+          "ge8": 0.035404141616566465,
+          "hit": 0.26402805611222446,
+          "mean": 1.0521042084168337,
+          "n": 5988,
+          "negative": 0.006179024716098864,
+          "sd": 3.852286440709606,
+          "se": 0.04978261162681827,
+          "yield_per_hit": 4.426944971537002
+        }
+      },
+      "T-1/t1n2": {
+        "games": 6,
+        "mean_score_delta": -222.5,
+        "ours": {
+          "ge6": 0.15664662658650635,
+          "ge8": 0.08066132264529058,
+          "hit": 0.4395457581830327,
+          "mean": 1.9111556446225786,
+          "n": 5988,
+          "negative": 0.0045090180360721445,
+          "sd": 4.296368601972123,
+          "se": 0.05552142936656496,
+          "yield_per_hit": 4.645136778115502
+        },
+        "theirs": {
+          "ge6": 0.15781563126252504,
+          "ge8": 0.08667334669338678,
+          "hit": 0.5131930527722111,
+          "mean": 2.1310955243820975,
+          "n": 5988,
+          "negative": 0.004008016032064128,
+          "sd": 5.062068236174485,
+          "se": 0.06541646913034521,
+          "yield_per_hit": 4.512203058900098
+        }
+      },
+      "T-1/t1n3": {
+        "games": 6,
+        "mean_score_delta": -101.83333333333333,
+        "ours": {
+          "ge6": 0.08934535738142953,
+          "ge8": 0.042919171676686706,
+          "hit": 0.24198396793587174,
+          "mean": 0.9717768871075484,
+          "n": 5988,
+          "negative": 0.011022044088176353,
+          "sd": 2.951312235395229,
+          "se": 0.038139435648272706,
+          "yield_per_hit": 4.575569358178054
+        },
+        "theirs": {
+          "ge6": 0.0698062792251169,
+          "ge8": 0.03256513026052104,
+          "hit": 0.25200400801603207,
+          "mean": 1.070808283233133,
+          "n": 5988,
+          "negative": 0.004175016700066801,
+          "sd": 3.4782479786265914,
+          "se": 0.04494895977409126,
+          "yield_per_hit": 4.470510271703114
+        }
+      },
+      "T-1/t1x2": {
+        "games": 6,
+        "mean_score_delta": -187.5,
+        "ours": {
+          "ge6": 0.15547762191048764,
+          "ge8": 0.07648630594522378,
+          "hit": 0.4390447561790247,
+          "mean": 1.8799265197060788,
+          "n": 5988,
+          "negative": 0.0056780227120908485,
+          "sd": 4.236626098220104,
+          "se": 0.05474938452834348,
+          "yield_per_hit": 4.589577786230506
+        },
+        "theirs": {
+          "ge6": 0.15564462257849032,
+          "ge8": 0.08049432197728791,
+          "hit": 0.5060120240480962,
+          "mean": 2.064796259185037,
+          "n": 5988,
+          "negative": 0.003841015364061456,
+          "sd": 5.339467637976298,
+          "se": 0.06900126660009608,
+          "yield_per_hit": 4.470957095709571
+        }
+      },
+      "T-1/t1x3": {
+        "games": 6,
+        "mean_score_delta": -157.5,
+        "ours": {
+          "ge6": 0.08800935203740815,
+          "ge8": 0.0435871743486974,
+          "hit": 0.22995991983967937,
+          "mean": 0.9478957915831663,
+          "n": 5988,
+          "negative": 0.008350033400133601,
+          "sd": 2.9244065347668284,
+          "se": 0.03779173667376852,
+          "yield_per_hit": 4.6419753086419755
+        },
+        "theirs": {
+          "ge6": 0.07381429525718103,
+          "ge8": 0.03857715430861723,
+          "hit": 0.2697060788243153,
+          "mean": 1.1027054108216432,
+          "n": 5988,
+          "negative": 0.0070140280561122245,
+          "sd": 4.0171636973236255,
+          "se": 0.051913299611328324,
+          "yield_per_hit": 4.525696594427244
+        }
+      },
+      "Tundra/a2A0": {
+        "games": 6,
+        "mean_score_delta": -123.5,
+        "ours": {
+          "ge6": 0.13593854375417502,
+          "ge8": 0.07181028724114896,
+          "hit": 0.34468937875751504,
+          "mean": 1.582999331997328,
+          "n": 5988,
+          "negative": 0.0045090180360721445,
+          "sd": 3.3285577504647477,
+          "se": 0.043014531842107524,
+          "yield_per_hit": 4.8313953488372094
+        },
+        "theirs": {
+          "ge6": 0.11305945223780896,
+          "ge8": 0.055444221776887105,
+          "hit": 0.47461589846359387,
+          "mean": 1.7067468269873078,
+          "n": 5988,
+          "negative": 0.002338009352037408,
+          "sd": 3.4043529113934605,
+          "se": 0.043994023143645124,
+          "yield_per_hit": 3.7216748768472905
+        }
+      },
+      "Tundra/alA0": {
+        "games": 6,
+        "mean_score_delta": -400.8333333333333,
+        "ours": {
+          "ge6": 0.11957247828991316,
+          "ge8": 0.0632932531730127,
+          "hit": 0.32782231128924516,
+          "mean": 1.4362057448229792,
+          "n": 5988,
+          "negative": 0.00501002004008016,
+          "sd": 3.2790855386863744,
+          "se": 0.04237520869124941,
+          "yield_per_hit": 4.636780438104942
+        },
+        "theirs": {
+          "ge6": 0.13276553106212424,
+          "ge8": 0.06312625250501001,
+          "hit": 0.4951569806279225,
+          "mean": 1.8378423513694055,
+          "n": 5988,
+          "negative": 0.00250501002004008,
+          "sd": 3.952945738376991,
+          "se": 0.05108341903029905,
+          "yield_per_hit": 3.921079258010118
+        }
+      },
+      "Tundra/frTu1": {
+        "games": 6,
+        "mean_score_delta": -219.16666666666666,
+        "ours": {
+          "ge6": 0.14044756179024717,
+          "ge8": 0.06880427521710086,
+          "hit": 0.3622244488977956,
+          "mean": 1.6055444221776887,
+          "n": 5988,
+          "negative": 0.005511022044088177,
+          "sd": 3.556513512179538,
+          "se": 0.04596037538936268,
+          "yield_per_hit": 4.731212540341171
+        },
+        "theirs": {
+          "ge6": 0.13393453573814296,
+          "ge8": 0.059953239812959254,
+          "hit": 0.5061790247160989,
+          "mean": 1.8251503006012024,
+          "n": 5988,
+          "negative": 0.0026720106880427524,
+          "sd": 3.9731841316211867,
+          "se": 0.05134495723269738,
+          "yield_per_hit": 3.8304190036291654
+        }
+      },
+      "Tundra/frTu2": {
+        "games": 6,
+        "mean_score_delta": 50.166666666666664,
+        "ours": {
+          "ge6": 0.16382765531062124,
+          "ge8": 0.08199732798931196,
+          "hit": 0.4415497661990648,
+          "mean": 1.8924515698062792,
+          "n": 5988,
+          "negative": 0.006346025384101536,
+          "sd": 4.5667979697487855,
+          "se": 0.059016153966024325,
+          "yield_per_hit": 4.709531013615734
+        },
+        "theirs": {
+          "ge6": 0.1492985971943888,
+          "ge8": 0.07114228456913828,
+          "hit": 0.5439211756847028,
+          "mean": 1.8391783567134268,
+          "n": 5988,
+          "negative": 0.006680026720106881,
+          "sd": 5.571739770940658,
+          "se": 0.07200289006840895,
+          "yield_per_hit": 3.933681301811483
+        }
+      },
+      "Tundra/frTu3": {
+        "games": 6,
+        "mean_score_delta": 245.83333333333334,
+        "ours": {
+          "ge6": 0.09602538410153641,
+          "ge8": 0.04208416833667335,
+          "hit": 0.24732798931195724,
+          "mean": 1.010187040748163,
+          "n": 5988,
+          "negative": 0.009352037408149633,
+          "sd": 2.9753280517088383,
+          "se": 0.038449789012396166,
+          "yield_per_hit": 4.595543551654288
+        },
+        "theirs": {
+          "ge6": 0.04876419505678023,
+          "ge8": 0.022879091516366065,
+          "hit": 0.20023380093520374,
+          "mean": 0.7608550434201736,
+          "n": 5988,
+          "negative": 0.0035070140280561123,
+          "sd": 2.700751969909377,
+          "se": 0.03490147695081485,
+          "yield_per_hit": 3.980817347789825
+        }
+      },
+      "Tundra/lnA0": {
+        "games": 6,
+        "mean_score_delta": -412.6666666666667,
+        "ours": {
+          "ge6": 0.12608550434201737,
+          "ge8": 0.06229124916499666,
+          "hit": 0.3388443553774215,
+          "mean": 1.4512358049432197,
+          "n": 5988,
+          "negative": 0.005344021376085505,
+          "sd": 3.515285784944358,
+          "se": 0.04542759467204216,
+          "yield_per_hit": 4.605224248398225
+        },
+        "theirs": {
+          "ge6": 0.1379425517702071,
+          "ge8": 0.06128924515698063,
+          "hit": 0.5016700066800267,
+          "mean": 1.8647294589178356,
+          "n": 5988,
+          "negative": 0.003841015364061456,
+          "sd": 3.7694638436479453,
+          "se": 0.048712305654792565,
+          "yield_per_hit": 3.9174434087882823
+        }
+      },
+      "Tundra/mxTu1": {
+        "games": 6,
+        "mean_score_delta": -304.6666666666667,
+        "ours": {
+          "ge6": 0.1324315297261189,
+          "ge8": 0.07114228456913828,
+          "hit": 0.33416833667334667,
+          "mean": 1.5344021376085504,
+          "n": 5988,
+          "negative": 0.006513026052104208,
+          "sd": 3.608582302897979,
+          "se": 0.04663325380225057,
+          "yield_per_hit": 4.858570714642679
+        },
+        "theirs": {
+          "ge6": 0.13209752839011357,
+          "ge8": 0.05794923179692719,
+          "hit": 0.5193720774883099,
+          "mean": 1.839679358717435,
+          "n": 5988,
+          "negative": 0.003173012692050768,
+          "sd": 3.6826257549523964,
+          "se": 0.04759010799102035,
+          "yield_per_hit": 3.7389067524115758
+        }
+      }
+    },
+    "per_opponent": {
+      "enlarged_T1_30": {
+        "factor_split": {
+          "hit_ratio": 1.1548857559552748,
+          "hit_share_of_log_gap": 1.389857641823606,
+          "mean_ratio": 1.1091664194601007,
+          "yield_ratio": 0.9687970214270823,
+          "yield_share_of_log_gap": -0.30596024239482933
+        },
+        "games": 30,
+        "implied_score_delta_from_channel": -159.78623914495648,
+        "mean_score_delta": -161.86666666666667,
+        "ours": {
+          "ge6": 0.12511690046760188,
+          "ge8": 0.06376085504342018,
+          "hit": 0.3435203740814963,
+          "mean": 1.4636940547762192,
+          "n": 29940,
+          "negative": 0.007114228456913827,
+          "sd": 3.720223017754686,
+          "se": 0.021500228596935903,
+          "yield_per_hit": 4.636071949440933
+        },
+        "reconciliation_residual": 2.0804275217101917,
+        "theirs": {
+          "ge6": 0.118436873747495,
+          "ge8": 0.061122244488977955,
+          "hit": 0.39672678690714763,
+          "mean": 1.6234802939211757,
+          "n": 29940,
+          "negative": 0.004843019372077488,
+          "sd": 4.6445681038482,
+          "se": 0.026842282167009113,
+          "yield_per_hit": 4.491412695740023
+        }
+      },
+      "enlarged_Tundra_36": {
+        "factor_split": {
+          "hit_ratio": 1.3196761133603239,
+          "hit_share_of_log_gap": 3.0465203110065464,
+          "mean_ratio": 1.0953240086303102,
+          "yield_ratio": 0.8261378511339051,
+          "yield_share_of_log_gap": -2.097673503978087
+        },
+        "games": 36,
+        "implied_score_delta_from_channel": -142.646403918949,
+        "mean_score_delta": -143.36111111111111,
+        "ours": {
+          "ge6": 0.1303161879314184,
+          "ge8": 0.06504676018704075,
+          "hit": 0.34374304163883324,
+          "mean": 1.4964373190826097,
+          "n": 35928,
+          "negative": 0.006012024048096192,
+          "sd": 3.5812855125607226,
+          "se": 0.018893935343529056,
+          "yield_per_hit": 4.691336032388664
+        },
+        "reconciliation_residual": 0.7147071921621091,
+        "theirs": {
+          "ge6": 0.11929414384324204,
+          "ge8": 0.05563905588955689,
+          "hit": 0.4536294811845914,
+          "mean": 1.6390837230015587,
+          "n": 35928,
+          "negative": 0.003590514362057448,
+          "sd": 4.009914087602917,
+          "se": 0.021155268754348224,
+          "yield_per_hit": 3.875690268744631
+        }
+      },
+      "published_T1_18": {
+        "factor_split": {
+          "hit_ratio": 1.1760154738878144,
+          "hit_share_of_log_gap": 1.5780170132788878,
+          "mean_ratio": 1.1082078313253012,
+          "yield_ratio": 0.965698284534795,
+          "yield_share_of_log_gap": -0.33971598771604805
+        },
+        "games": 18,
+        "implied_score_delta_from_channel": -159.98663994655993,
+        "mean_score_delta": -161.66666666666666,
+        "ours": {
+          "ge6": 0.12653083945669116,
+          "ge8": 0.06507459363170787,
+          "hit": 0.3453573814295257,
+          "mean": 1.4785125807169894,
+          "n": 17964,
+          "negative": 0.006680026720106881,
+          "sd": 3.7234816856681214,
+          "se": 0.027780988766933946,
+          "yield_per_hit": 4.646357188910381
+        },
+        "reconciliation_residual": 1.6800267201067243,
+        "theirs": {
+          "ge6": 0.121520819416611,
+          "ge8": 0.06212424849699399,
+          "hit": 0.4061456245824983,
+          "mean": 1.6384992206635494,
+          "n": 17964,
+          "negative": 0.005344021376085505,
+          "sd": 4.815949014823235,
+          "se": 0.03593191447614815,
+          "yield_per_hit": 4.486979166666667
+        }
+      },
+      "published_Tundra_18": {
+        "factor_split": {
+          "hit_ratio": 1.1895455989831587,
+          "hit_share_of_log_gap": -9.340630693984572,
+          "mean_ratio": 0.9815891831820707,
+          "yield_ratio": 0.8314019367988524,
+          "yield_share_of_log_gap": 9.936384465529848
+        },
+        "games": 18,
+        "implied_score_delta_from_channel": 27.666443999109447,
+        "mean_score_delta": 25.61111111111111,
+        "ours": {
+          "ge6": 0.13343353373413494,
+          "ge8": 0.06429525718102873,
+          "hit": 0.3503674014696059,
+          "mean": 1.502727677577377,
+          "n": 17964,
+          "negative": 0.007069694945446448,
+          "sd": 3.7752425029848777,
+          "se": 0.028167177502594693,
+          "yield_per_hit": 4.690181124880839
+        },
+        "reconciliation_residual": 2.055332887998336,
+        "theirs": {
+          "ge6": 0.11066577599643732,
+          "ge8": 0.05132487196615453,
+          "hit": 0.41677800044533514,
+          "mean": 1.4750612335782676,
+          "n": 17964,
+          "negative": 0.004286350478735248,
+          "sd": 4.277218251540373,
+          "se": 0.03191243095330186,
+          "yield_per_hit": 3.8994256711633497
+        }
+      }
+    },
+    "published_36_game_set": {
+      "factor_split": {
+        "hit_ratio": 1.1828292526804287,
+        "hit_share_of_log_gap": 3.866426229767737,
+        "mean_ratio": 1.044384277845206,
+        "yield_ratio": 0.8973915191096237,
+        "yield_share_of_log_gap": -2.492960131731865
+      },
+      "games": 36,
+      "implied_score_delta_from_channel": -66.16009797372536,
+      "mean_score_delta": -68.02777777777777,
+      "ours": {
+        "ge6": 0.12998218659541305,
+        "ge8": 0.06468492540636829,
+        "hit": 0.3478623914495658,
+        "mean": 1.4906201291471832,
+        "n": 35928,
+        "negative": 0.0068748608327766645,
+        "sd": 3.7494187819629228,
+        "se": 0.01978096295136418,
+        "yield_per_hit": 4.66842694831173
+      },
+      "reconciliation_residual": 1.8676798040524147,
+      "theirs": {
+        "ge6": 0.11609329770652416,
+        "ge8": 0.05672456023157426,
+        "hit": 0.4114618125139167,
+        "mean": 1.5567802271209086,
+        "n": 35928,
+        "negative": 0.004815185927410376,
+        "sd": 4.555225705672905,
+        "se": 0.024032191696613883,
+        "yield_per_hit": 4.189406750997768
+      }
+    },
+    "published_per_battlefield": {
+      "battlefields": {
+        "T-1 map1": {
+          "factor_split": {
+            "hit_ratio": 1.268997668997669,
+            "hit_share_of_log_gap": 1.4714522676132344,
+            "mean_ratio": 1.1757420456972025,
+            "yield_ratio": 0.9521488037062243,
+            "yield_share_of_log_gap": -0.3028666370362696
+          },
+          "games": 6,
+          "implied_score_delta_from_channel": -274.8830995323981,
+          "mean_score_delta": -274.3333333333333,
+          "ours": {
+            "ge6": 0.1295925183700735,
+            "ge8": 0.06813627254509018,
+            "hit": 0.35821643286573146,
+            "mean": 1.5641282565130261,
+            "n": 5988,
+            "negative": 0.004843019372077488,
+            "sd": 3.4562906908735904,
+            "se": 0.04466520851483013,
+            "yield_per_hit": 4.631235431235432
+          },
+          "reconciliation_residual": -0.5497661990647771,
+          "theirs": {
+            "ge6": 0.13510354041416164,
+            "ge8": 0.0686372745490982,
+            "hit": 0.4545758183032732,
+            "mean": 1.8390113560454242,
+            "n": 5988,
+            "negative": 0.004676018704074816,
+            "sd": 4.6399116566587875,
+            "se": 0.05996099291714213,
+            "yield_per_hit": 4.409625275532696
+          }
+        },
+        "T-1 map2": {
+          "factor_split": {
+            "hit_ratio": 1.1226556639159788,
+            "hit_share_of_log_gap": 2.1964332411464316,
+            "mean_ratio": 1.054086956521739,
+            "yield_ratio": 0.9761735866627173,
+            "yield_share_of_log_gap": -0.4578049725458696
+          },
+          "games": 6,
+          "implied_score_delta_from_channel": -103.87441549766186,
+          "mean_score_delta": -106.66666666666667,
+          "ours": {
+            "ge6": 0.1623246492985972,
+            "ge8": 0.08316633266533066,
+            "hit": 0.4452237808951236,
+            "mean": 1.920507682030728,
+            "n": 5988,
+            "negative": 0.00584502338009352,
+            "sd": 4.563018673148221,
+            "se": 0.058967314592892506,
+            "yield_per_hit": 4.701050262565642
+          },
+          "reconciliation_residual": 2.792251169004814,
+          "theirs": {
+            "ge6": 0.15664662658650635,
+            "ge8": 0.0823313293253173,
+            "hit": 0.4998329993319973,
+            "mean": 2.02438209752839,
+            "n": 5988,
+            "negative": 0.005177020708082832,
+            "sd": 5.717157755683101,
+            "se": 0.07388210833771659,
+            "yield_per_hit": 4.589041095890411
+          }
+        },
+        "T-1 map3": {
+          "factor_split": {
+            "hit_ratio": 1.1349605168700647,
+            "hit_share_of_log_gap": 1.251750678534149,
+            "mean_ratio": 1.106427818756586,
+            "yield_ratio": 0.9697647971931189,
+            "yield_share_of_log_gap": -0.30356666613448524
+          },
+          "games": 6,
+          "implied_score_delta_from_channel": -101.20240480961928,
+          "mean_score_delta": -104.0,
+          "ours": {
+            "ge6": 0.08767535070140281,
+            "ge8": 0.04392117568470274,
+            "hit": 0.2326319305277221,
+            "mean": 0.9509018036072144,
+            "n": 5988,
+            "negative": 0.009352037408149633,
+            "sd": 2.8895243753590845,
+            "se": 0.037340958928855916,
+            "yield_per_hit": 4.564967695620962
+          },
+          "reconciliation_residual": 2.7975951903807186,
+          "theirs": {
+            "ge6": 0.072812291249165,
+            "ge8": 0.035404141616566465,
+            "hit": 0.26402805611222446,
+            "mean": 1.0521042084168337,
+            "n": 5988,
+            "negative": 0.006179024716098864,
+            "sd": 3.852286440709606,
+            "se": 0.04978261162681827,
+            "yield_per_hit": 4.426944971537002
+          }
+        },
+        "Tundra map1": {
+          "factor_split": {
+            "hit_ratio": 1.39741816505302,
+            "hit_share_of_log_gap": 2.6102015225656645,
+            "mean_ratio": 1.1367796962762637,
+            "yield_ratio": 0.8096061994612804,
+            "yield_share_of_log_gap": -1.6474902512551166
+          },
+          "games": 6,
+          "implied_score_delta_from_channel": -219.60587842351376,
+          "mean_score_delta": -219.16666666666666,
+          "ours": {
+            "ge6": 0.14044756179024717,
+            "ge8": 0.06880427521710086,
+            "hit": 0.3622244488977956,
+            "mean": 1.6055444221776887,
+            "n": 5988,
+            "negative": 0.005511022044088177,
+            "sd": 3.556513512179538,
+            "se": 0.04596037538936268,
+            "yield_per_hit": 4.731212540341171
+          },
+          "reconciliation_residual": -0.4392117568471008,
+          "theirs": {
+            "ge6": 0.13393453573814296,
+            "ge8": 0.059953239812959254,
+            "hit": 0.5061790247160989,
+            "mean": 1.8251503006012024,
+            "n": 5988,
+            "negative": 0.0026720106880427524,
+            "sd": 3.9731841316211867,
+            "se": 0.05134495723269738,
+            "yield_per_hit": 3.8304190036291654
+          }
+        },
+        "Tundra map2": {
+          "factor_split": {
+            "hit_ratio": 1.2318456883509834,
+            "hit_share_of_log_gap": -7.302382353471385,
+            "mean_ratio": 0.971849629368161,
+            "yield_ratio": 0.8352596660769002,
+            "yield_share_of_log_gap": 6.304245814496768
+          },
+          "games": 6,
+          "implied_score_delta_from_channel": 53.27321309285238,
+          "mean_score_delta": 50.166666666666664,
+          "ours": {
+            "ge6": 0.16382765531062124,
+            "ge8": 0.08199732798931196,
+            "hit": 0.4415497661990648,
+            "mean": 1.8924515698062792,
+            "n": 5988,
+            "negative": 0.006346025384101536,
+            "sd": 4.5667979697487855,
+            "se": 0.059016153966024325,
+            "yield_per_hit": 4.709531013615734
+          },
+          "reconciliation_residual": 3.106546426185716,
+          "theirs": {
+            "ge6": 0.1492985971943888,
+            "ge8": 0.07114228456913828,
+            "hit": 0.5439211756847028,
+            "mean": 1.8391783567134268,
+            "n": 5988,
+            "negative": 0.006680026720106881,
+            "sd": 5.571739770940658,
+            "se": 0.07200289006840895,
+            "yield_per_hit": 3.933681301811483
+          }
+        },
+        "Tundra map3": {
+          "factor_split": {
+            "hit_ratio": 0.8095881161377448,
+            "hit_share_of_log_gap": 0.7452150525653575,
+            "mean_ratio": 0.7531823441891221,
+            "yield_ratio": 0.8662342774135661,
+            "yield_share_of_log_gap": 0.5066182070460131
+          },
+          "games": 6,
+          "implied_score_delta_from_channel": 249.3319973279894,
+          "mean_score_delta": 245.83333333333334,
+          "ours": {
+            "ge6": 0.09602538410153641,
+            "ge8": 0.04208416833667335,
+            "hit": 0.24732798931195724,
+            "mean": 1.010187040748163,
+            "n": 5988,
+            "negative": 0.009352037408149633,
+            "sd": 2.9753280517088383,
+            "se": 0.038449789012396166,
+            "yield_per_hit": 4.595543551654288
+          },
+          "reconciliation_residual": 3.498663994656056,
+          "theirs": {
+            "ge6": 0.04876419505678023,
+            "ge8": 0.022879091516366065,
+            "hit": 0.20023380093520374,
+            "mean": 0.7608550434201736,
+            "n": 5988,
+            "negative": 0.0035070140280561123,
+            "sd": 2.700751969909377,
+            "se": 0.03490147695081485,
+            "yield_per_hit": 3.980817347789825
+          }
+        }
+      },
+      "ours_higher_in_n_of_6": {
+        "ge8": 5,
+        "hit": 1,
+        "mean": 2,
+        "yield_per_hit": 6
+      }
+    }
+  },
+  "forfeits": {
+    "any_in_f18064c_families": false,
+    "complete_round_range": [
+      56,
+      425
+    ],
+    "count_in_pre_existing_112": 7,
+    "count_tracked_opponent_games": 7,
+    "games": [
+      {
+        "complete_rounds": 63,
+        "exit_code": -11,
+        "family": "L4tu",
+        "forfeit_row_keys": [
+          "forfeit",
+          "round"
+        ],
+        "forfeit_row_round_field": 63,
+        "forfeiter_is_us": true,
+        "forfeiting_player_id": 1,
+        "game_id": 170565,
+        "log": "game_170565.log",
+        "map": "map1",
+        "opponent": "Tundra",
+        "our_build_name": "L4tun",
+        "our_player_id": 1,
+        "reason": "runtime_error"
+      },
+      {
+        "complete_rounds": 203,
+        "exit_code": -11,
+        "family": "L4t",
+        "forfeit_row_keys": [
+          "forfeit",
+          "round"
+        ],
+        "forfeit_row_round_field": 203,
+        "forfeiter_is_us": true,
+        "forfeiting_player_id": 1,
+        "game_id": 170567,
+        "log": "game_170567.log",
+        "map": "map1",
+        "opponent": "T-1",
+        "our_build_name": "L4t1",
+        "our_player_id": 1,
+        "reason": "runtime_error"
+      },
+      {
+        "complete_rounds": 425,
+        "exit_code": -11,
+        "family": "L8",
+        "forfeit_row_keys": [
+          "forfeit",
+          "round"
+        ],
+        "forfeit_row_round_field": 425,
+        "forfeiter_is_us": true,
+        "forfeiting_player_id": 1,
+        "game_id": 170860,
+        "log": "game_170860.log",
+        "map": "map1",
+        "opponent": "Tundra",
+        "our_build_name": "L8p",
+        "our_player_id": 1,
+        "reason": "runtime_error"
+      },
+      {
+        "complete_rounds": 424,
+        "exit_code": -11,
+        "family": "Ls",
+        "forfeit_row_keys": [
+          "forfeit",
+          "round"
+        ],
+        "forfeit_row_round_field": 424,
+        "forfeiter_is_us": true,
+        "forfeiting_player_id": 1,
+        "game_id": 170986,
+        "log": "game_170986.log",
+        "map": "map1",
+        "opponent": "T-1",
+        "our_build_name": "Lsp",
+        "our_player_id": 1,
+        "reason": "runtime_error"
+      },
+      {
+        "complete_rounds": 56,
+        "exit_code": null,
+        "family": "Lt",
+        "forfeit_row_keys": [
+          "forfeit",
+          "round"
+        ],
+        "forfeit_row_round_field": 56,
+        "forfeiter_is_us": true,
+        "forfeiting_player_id": 1,
+        "game_id": 171022,
+        "log": "game_171022.log",
+        "map": "map1",
+        "opponent": "T-1",
+        "our_build_name": "Ltp",
+        "our_player_id": 1,
+        "reason": "action_out_of_range"
+      },
+      {
+        "complete_rounds": 80,
+        "exit_code": null,
+        "family": "Lx",
+        "forfeit_row_keys": [
+          "forfeit",
+          "round"
+        ],
+        "forfeit_row_round_field": 80,
+        "forfeiter_is_us": true,
+        "forfeiting_player_id": 1,
+        "game_id": 171223,
+        "log": "game_171223.log",
+        "map": "map1",
+        "opponent": "T-1",
+        "our_build_name": "Lxp",
+        "our_player_id": 1,
+        "reason": "action_out_of_range"
+      },
+      {
+        "complete_rounds": 342,
+        "exit_code": null,
+        "family": "Lzv",
+        "forfeit_row_keys": [
+          "forfeit",
+          "round"
+        ],
+        "forfeit_row_round_field": 342,
+        "forfeiter_is_us": true,
+        "forfeiting_player_id": 1,
+        "game_id": 171272,
+        "log": "game_171272.log",
+        "map": "map1",
+        "opponent": "T-1",
+        "our_build_name": "Lzv1",
+        "our_player_id": 1,
+        "reason": "action_out_of_range"
+      }
+    ],
+    "handling": "sim/analyze_gold_delta.py rounds() yields None for a row lacking start/end and unit_deltas() resets `previous`, so the difference chain is broken rather than skipped; verified by reading the source",
+    "one_based_round_range": [
+      57,
+      426
+    ]
+  },
+  "generated_at_utc": "2026-08-10T07:19:25.716809+00:00",
+  "golf_headroom_vs_primary_deficits": {
+    "battlefields": {
+      "T-1 map1 (n=6, t1f1)": -274.33,
+      "T-1 map2 (n=12, t1f2+t1n2)": -164.58333333333334,
+      "T-1 map3 (n=12, t1f3+t1n3)": -102.91666666666667,
+      "Tundra map1 (n=24, four f18064c arms)": -289.0416666666667
+    },
+    "flippable_at_144": [
+      "T-1 map3 (n=12, t1f3+t1n3)"
+    ],
+    "flippable_at_256": [
+      "T-1 map2 (n=12, t1f2+t1n2)",
+      "T-1 map3 (n=12, t1f3+t1n3)"
+    ],
+    "position_gold": [
+      144,
+      256
+    ],
+    "source": "src/CHANGELOG.md subsystem audit, 90-160 instructions = 13.1-23.3ns"
+  },
+  "identity": {
+    "frozen_deliverable": {
+      "commit": "f18064c8e211cdac0f7cf78a4f381dce888167d4",
+      "name": "f18064c",
+      "src_player_cpp_sha256": "0ecce6fc0d7141dd2ca4ddbb18dbee2aaff67a5a8f0a981df89bc9b9aba84fdd"
+    },
+    "head_is_f18064c_source": false,
+    "head_src_player_cpp_sha256": "d9be1e523ca523f1a2d7cecd4faa52971511670d57e3316ef25a32758f455d22",
+    "repo_head": "cb092bcc4b9325f5bb25aa6f513fb7d95072b65a",
+    "repo_head_short": "cb092bc",
+    "tools_used_unmodified": [
+      "sim/probe/archive_logs.py",
+      "sim/analyze_gold_delta.py",
+      "sim/maps.json"
+    ],
+    "worktree_dirty_paths": [
+      "?? sim/analyze_blocked_cost.py",
+      "?? sim/analyze_miss_taxonomy.py",
+      "?? sim/reports/archive_backfill.json"
+    ]
+  },
+  "map1_adjudication": {
+    "T-1_map1": {
+      "all_T1_map1_games_in_corpus": 99,
+      "anchor_matches": true,
+      "changelog_anchor": -274.3,
+      "f18064c_families": [
+        "t1f1"
+      ],
+      "games": 6,
+      "note": "no sibling/top-up family exists for T-1 map1; CHANGELOG '\u672a\u8865\u6837' is correct",
+      "stats": {
+        "deltas_sorted": [
+          -688,
+          -600,
+          -383,
+          -199,
+          -90,
+          314
+        ],
+        "losses": 5,
+        "mean": -274.3333333333333,
+        "n": 6,
+        "sd": 367.3628542281686,
+        "se": 149.97525721857517,
+        "sigma": 1.829190617313079,
+        "wins": 1
+      }
+    },
+    "Tundra_map1": {
+      "all_Tundra_map1_games_in_corpus": 90,
+      "batch_means": {
+        "a2A0": -123.5,
+        "alA0": -400.8333333333333,
+        "frTu1": -219.16666666666666,
+        "lnA0": -412.6666666666667
+      },
+      "between_batch_sd_of_means": 141.5003844386873,
+      "f18064c_families": {
+        "a2A0": {
+          "anchor": {
+            "kind": "paired diff vs a2B0",
+            "paired_mean": -262.7,
+            "paired_se": 97.3,
+            "source": "src/CHANGELOG.md mod64 scan, L2 clean negative"
+          },
+          "anchor_matches": true,
+          "games": 6,
+          "paired_diff_vs_a2B0": {
+            "deltas_sorted": [
+              -703,
+              -341,
+              -174,
+              -174,
+              -162,
+              -22
+            ],
+            "losses": 6,
+            "mean": -262.6666666666667,
+            "n": 6,
+            "sd": 238.24665090335827,
+            "se": 97.26378794003679,
+            "sigma": 2.7005597070576863,
+            "wins": 0
+          },
+          "stats": {
+            "deltas_sorted": [
+              -389,
+              -340,
+              -163,
+              -109,
+              102,
+              158
+            ],
+            "losses": 4,
+            "mean": -123.5,
+            "n": 6,
+            "sd": 223.2601621427343,
+            "se": 91.14557952345615,
+            "sigma": 1.3549752017125252,
+            "wins": 2
+          }
+        },
+        "alA0": {
+          "anchor": {
+            "kind": "none",
+            "source": "A/B design only (L1 alignment baseline); no numeric anchor in repo"
+          },
+          "anchor_matches": null,
+          "games": 6,
+          "stats": {
+            "deltas_sorted": [
+              -986,
+              -558,
+              -383,
+              -227,
+              -176,
+              -75
+            ],
+            "losses": 6,
+            "mean": -400.8333333333333,
+            "n": 6,
+            "sd": 332.97892826223506,
+            "se": 135.93807822354677,
+            "sigma": 2.9486464614732375,
+            "wins": 0
+          }
+        },
+        "frTu1": {
+          "anchor": {
+            "kind": "arm mean",
+            "mean": -219.2,
+            "se": 107.7,
+            "source": "src/CHANGELOG.md Tundra current-window recheck"
+          },
+          "anchor_matches": true,
+          "games": 6,
+          "stats": {
+            "deltas_sorted": [
+              -530,
+              -344,
+              -290,
+              -276,
+              -123,
+              248
+            ],
+            "losses": 5,
+            "mean": -219.16666666666666,
+            "n": 6,
+            "sd": 263.795691144997,
+            "se": 107.69413994167824,
+            "sigma": 2.0350844232133367,
+            "wins": 1
+          }
+        },
+        "lnA0": {
+          "anchor": {
+            "kind": "arm mean",
+            "mean": -412.7,
+            "se": 67.5,
+            "source": "src/CHANGELOG.md linker verdict, baseline arm A"
+          },
+          "anchor_matches": true,
+          "games": 6,
+          "stats": {
+            "deltas_sorted": [
+              -552,
+              -550,
+              -490,
+              -466,
+              -267,
+              -151
+            ],
+            "losses": 6,
+            "mean": -412.6666666666667,
+            "n": 6,
+            "sd": 165.40092704294818,
+            "se": 67.52464570642174,
+            "sigma": 6.111348861581975,
+            "wins": 0
+          }
+        }
+      },
+      "game_id_span": [
+        179643,
+        179761
+      ],
+      "pooled_all_four_arms": {
+        "deltas_sorted": [
+          -986,
+          -558,
+          -552,
+          -550,
+          -530,
+          -490,
+          -466,
+          -389,
+          -383,
+          -344,
+          -340,
+          -290,
+          -276,
+          -267,
+          -227,
+          -176,
+          -163,
+          -151,
+          -123,
+          -109,
+          -75,
+          102,
+          158,
+          248
+        ],
+        "losses": 21,
+        "mean": -289.0416666666667,
+        "n": 24,
+        "sd": 267.73859398701734,
+        "se": 54.65191164319908,
+        "sigma": 5.2887750487797485,
+        "wins": 3
+      },
+      "pooled_anchor_proven_three_arms": {
+        "deltas_sorted": [
+          -552,
+          -550,
+          -530,
+          -490,
+          -466,
+          -389,
+          -344,
+          -340,
+          -290,
+          -276,
+          -267,
+          -163,
+          -151,
+          -123,
+          -109,
+          102,
+          158,
+          248
+        ],
+        "losses": 15,
+        "mean": -251.77777777777777,
+        "n": 18,
+        "sd": 241.8527883689375,
+        "se": 57.00524890151689,
+        "sigma": 4.416747275549183,
+        "wins": 3
+      },
+      "reconciliation_of_minus_35_4": {
+        "best_20_of_population_mean": -111.7,
+        "best_20_of_population_sum": -2234,
+        "claim": "-35.4 +/- 45.5 SE, n=20, src/CHANGELOG.md frozen baseline for Tundra map1",
+        "our_first_dispatch_rate_search": "the old window is documented at 80.04% our-first on Tundra map1; no corpus family reaches it (max a2A0 66.5%), so the old-window batch has no log representation at all",
+        "population_size": 90,
+        "proof": "the 20 best Tundra-map1 games in the entire 90-game corpus average -111.70, so no 20-game subset can average -35.4; the claim is therefore outside this corpus, not merely outside f18064c's own batches",
+        "reproducible_from_corpus": false,
+        "required_sum_of_20_deltas": -708.0,
+        "wins_in_whole_population": 3
+      },
+      "within_batch_noise_prediction_for_that_sd": 109.30382328639816
+    }
+  },
+  "n12_reconstruction": {
+    "T-1 map2": {
+      "base_family_only": {
+        "deltas_sorted": [
+          -327,
+          -280,
+          -127,
+          -18,
+          -7,
+          119
+        ],
+        "losses": 5,
+        "mean": -106.66666666666667,
+        "n": 6,
+        "sd": 171.88678444449027,
+        "se": 70.17248590279368,
+        "sigma": 1.52006395803658,
+        "wins": 1
+      },
+      "campaign_window": {
+        "game_id_span": [
+          176022,
+          176401
+        ],
+        "other_tracked_games_inside_span": []
+      },
+      "families": [
+        "t1f2",
+        "t1n2"
+      ],
+      "match": {
+        "losses": true,
+        "mean": true,
+        "mean_abs_diff": 0.01666666666665151,
+        "named_tail_values_unique_in_corpus": {
+          "-448": [
+            "game_176396.log"
+          ],
+          "-607": [
+            "game_176395.log"
+          ]
+        },
+        "se": true,
+        "se_abs_diff": 0.02870965333733011,
+        "sigma": true,
+        "wins": true
+      },
+      "per_game": [
+        {
+          "game_id": 176022,
+          "log": "game_176022.log",
+          "map": "map2",
+          "net_score_delta": -127,
+          "opponent_net": 2135,
+          "our_build_name": "t1f2a",
+          "our_net": 2008,
+          "our_player_id": 1,
+          "rounds": 500
+        },
+        {
+          "game_id": 176031,
+          "log": "game_176031.log",
+          "map": "map2",
+          "net_score_delta": -18,
+          "opponent_net": 1989,
+          "our_build_name": "t1f2b",
+          "our_net": 1971,
+          "our_player_id": 1,
+          "rounds": 500
+        },
+        {
+          "game_id": 176055,
+          "log": "game_176055.log",
+          "map": "map2",
+          "net_score_delta": -327,
+          "opponent_net": 2126,
+          "our_build_name": "t1f2c",
+          "our_net": 1799,
+          "our_player_id": 1,
+          "rounds": 500
+        },
+        {
+          "game_id": 176063,
+          "log": "game_176063.log",
+          "map": "map2",
+          "net_score_delta": -7,
+          "opponent_net": 1966,
+          "our_build_name": "t1f2d",
+          "our_net": 1959,
+          "our_player_id": 1,
+          "rounds": 500
+        },
+        {
+          "game_id": 176068,
+          "log": "game_176068.log",
+          "map": "map2",
+          "net_score_delta": -280,
+          "opponent_net": 2033,
+          "our_build_name": "t1f2e",
+          "our_net": 1753,
+          "our_player_id": 1,
+          "rounds": 500
+        },
+        {
+          "game_id": 176074,
+          "log": "game_176074.log",
+          "map": "map2",
+          "net_score_delta": 119,
+          "opponent_net": 1873,
+          "our_build_name": "t1f2f",
+          "our_net": 1992,
+          "our_player_id": 1,
+          "rounds": 500
+        },
+        {
+          "game_id": 176395,
+          "log": "game_176395.log",
+          "map": "map2",
+          "net_score_delta": -607,
+          "opponent_net": 2398,
+          "our_build_name": "t1n2a",
+          "our_net": 1791,
+          "our_player_id": 1,
+          "rounds": 500
+        },
+        {
+          "game_id": 176396,
+          "log": "game_176396.log",
+          "map": "map2",
+          "net_score_delta": -448,
+          "opponent_net": 2349,
+          "our_build_name": "t1n2b",
+          "our_net": 1901,
+          "our_player_id": 1,
+          "rounds": 500
+        },
+        {
+          "game_id": 176397,
+          "log": "game_176397.log",
+          "map": "map2",
+          "net_score_delta": 38,
+          "opponent_net": 2056,
+          "our_build_name": "t1n2c",
+          "our_net": 2094,
+          "our_player_id": 1,
+          "rounds": 500
+        },
+        {
+          "game_id": 176399,
+          "log": "game_176399.log",
+          "map": "map2",
+          "net_score_delta": -62,
+          "opponent_net": 1908,
+          "our_build_name": "t1n2d",
+          "our_net": 1846,
+          "our_player_id": 1,
+          "rounds": 500
+        },
+        {
+          "game_id": 176400,
+          "log": "game_176400.log",
+          "map": "map2",
+          "net_score_delta": -88,
+          "opponent_net": 2024,
+          "our_build_name": "t1n2e",
+          "our_net": 1936,
+          "our_player_id": 1,
+          "rounds": 500
+        },
+        {
+          "game_id": 176401,
+          "log": "game_176401.log",
+          "map": "map2",
+          "net_score_delta": -168,
+          "opponent_net": 2026,
+          "our_build_name": "t1n2f",
+          "our_net": 1858,
+          "our_player_id": 1,
+          "rounds": 500
+        }
+      ],
+      "quoted": {
+        "losses": 10,
+        "mean": -164.6,
+        "named_tail": [
+          -448,
+          -607
+        ],
+        "se": 61.6,
+        "sigma": 2.67,
+        "wins": 2
+      },
+      "recomputed": {
+        "deltas_sorted": [
+          -607,
+          -448,
+          -327,
+          -280,
+          -168,
+          -127,
+          -88,
+          -62,
+          -18,
+          -7,
+          38,
+          119
+        ],
+        "losses": 10,
+        "mean": -164.58333333333334,
+        "n": 12,
+        "sd": 213.48811264898157,
+        "se": 61.62870965333733,
+        "sigma": 2.670562701363013,
+        "wins": 2
+      },
+      "topup_family_only": {
+        "deltas_sorted": [
+          -607,
+          -448,
+          -168,
+          -88,
+          -62,
+          38
+        ],
+        "losses": 5,
+        "mean": -222.5,
+        "n": 6,
+        "sd": 250.3483572943909,
+        "se": 102.20428888587146,
+        "sigma": 2.177012358536727,
+        "wins": 1
+      }
+    },
+    "T-1 map3": {
+      "base_family_only": {
+        "deltas_sorted": [
+          -295,
+          -248,
+          -129,
+          -114,
+          -107,
+          269
+        ],
+        "losses": 5,
+        "mean": -104.0,
+        "n": 6,
+        "sd": 198.53463173965392,
+        "se": 81.05142400558631,
+        "sigma": 1.2831360000884378,
+        "wins": 1
+      },
+      "campaign_window": {
+        "game_id_span": [
+          175967,
+          176394
+        ],
+        "other_tracked_games_inside_span": []
+      },
+      "families": [
+        "t1f3",
+        "t1n3"
+      ],
+      "match": {
+        "losses": true,
+        "mean": true,
+        "mean_abs_diff": 0.01666666666666572,
+        "named_tail_values_unique_in_corpus": {},
+        "se": true,
+        "se_abs_diff": 0.014667637093921826,
+        "sigma": true,
+        "wins": true
+      },
+      "per_game": [
+        {
+          "game_id": 175967,
+          "log": "game_175967.log",
+          "map": "map3",
+          "net_score_delta": -295,
+          "opponent_net": 1234,
+          "our_build_name": "t1f3a",
+          "our_net": 939,
+          "our_player_id": 1,
+          "rounds": 500
+        },
+        {
+          "game_id": 175969,
+          "log": "game_175969.log",
+          "map": "map3",
+          "net_score_delta": 269,
+          "opponent_net": 860,
+          "our_build_name": "t1f3b",
+          "our_net": 1129,
+          "our_player_id": 1,
+          "rounds": 500
+        },
+        {
+          "game_id": 175970,
+          "log": "game_175970.log",
+          "map": "map3",
+          "net_score_delta": -107,
+          "opponent_net": 1058,
+          "our_build_name": "t1f3c",
+          "our_net": 951,
+          "our_player_id": 1,
+          "rounds": 500
+        },
+        {
+          "game_id": 175971,
+          "log": "game_175971.log",
+          "map": "map3",
+          "net_score_delta": -248,
+          "opponent_net": 1122,
+          "our_build_name": "t1f3d",
+          "our_net": 874,
+          "our_player_id": 1,
+          "rounds": 500
+        },
+        {
+          "game_id": 175973,
+          "log": "game_175973.log",
+          "map": "map3",
+          "net_score_delta": -129,
+          "opponent_net": 978,
+          "our_build_name": "t1f3e",
+          "our_net": 849,
+          "our_player_id": 1,
+          "rounds": 500
+        },
+        {
+          "game_id": 175974,
+          "log": "game_175974.log",
+          "map": "map3",
+          "net_score_delta": -114,
+          "opponent_net": 1048,
+          "our_build_name": "t1f3f",
+          "our_net": 934,
+          "our_player_id": 1,
+          "rounds": 500
+        },
+        {
+          "game_id": 176387,
+          "log": "game_176387.log",
+          "map": "map3",
+          "net_score_delta": -296,
+          "opponent_net": 1283,
+          "our_build_name": "t1n3a",
+          "our_net": 987,
+          "our_player_id": 1,
+          "rounds": 500
+        },
+        {
+          "game_id": 176389,
+          "log": "game_176389.log",
+          "map": "map3",
+          "net_score_delta": -181,
+          "opponent_net": 1082,
+          "our_build_name": "t1n3b",
+          "our_net": 901,
+          "our_player_id": 1,
+          "rounds": 500
+        },
+        {
+          "game_id": 176390,
+          "log": "game_176390.log",
+          "map": "map3",
+          "net_score_delta": 284,
+          "opponent_net": 780,
+          "our_build_name": "t1n3c",
+          "our_net": 1064,
+          "our_player_id": 1,
+          "rounds": 500
+        },
+        {
+          "game_id": 176391,
+          "log": "game_176391.log",
+          "map": "map3",
+          "net_score_delta": -278,
+          "opponent_net": 1099,
+          "our_build_name": "t1n3d",
+          "our_net": 821,
+          "our_player_id": 1,
+          "rounds": 500
+        },
+        {
+          "game_id": 176392,
+          "log": "game_176392.log",
+          "map": "map3",
+          "net_score_delta": -304,
+          "opponent_net": 1215,
+          "our_build_name": "t1n3e",
+          "our_net": 911,
+          "our_player_id": 1,
+          "rounds": 500
+        },
+        {
+          "game_id": 176394,
+          "log": "game_176394.log",
+          "map": "map3",
+          "net_score_delta": 164,
+          "opponent_net": 953,
+          "our_build_name": "t1n3f",
+          "our_net": 1117,
+          "our_player_id": 1,
+          "rounds": 500
+        }
+      ],
+      "quoted": {
+        "losses": 9,
+        "mean": -102.9,
+        "named_tail": [],
+        "se": 63.5,
+        "sigma": 1.62,
+        "wins": 3
+      },
+      "recomputed": {
+        "deltas_sorted": [
+          -304,
+          -296,
+          -295,
+          -278,
+          -248,
+          -181,
+          -129,
+          -114,
+          -107,
+          164,
+          269,
+          284
+        ],
+        "losses": 9,
+        "mean": -102.91666666666667,
+        "n": 12,
+        "sd": 220.02126274659472,
+        "se": 63.51466763709392,
+        "sigma": 1.620360626850878,
+        "wins": 3
+      },
+      "topup_family_only": {
+        "deltas_sorted": [
+          -304,
+          -296,
+          -278,
+          -181,
+          164,
+          284
+        ],
+        "losses": 4,
+        "mean": -101.83333333333333,
+        "n": 6,
+        "sd": 259.0014800472512,
+        "se": 105.73691145690064,
+        "sigma": 0.9630821624181972,
+        "wins": 2
+      }
+    }
+  },
+  "platform_games_consumed": 0,
+  "schema_version": 1,
+  "untracked_opponents": {
+    "player132": {
+      "game_ids": [
+        163072,
+        163948,
+        163959,
+        163960,
+        163976,
+        163997,
+        163998,
+        164010,
+        164013,
+        164097
+      ],
+      "games": 10,
+      "maps": {
+        "map1": 10
+      },
+      "our_build_families_faced": {
+        "mG": 6,
+        "qG": 2,
+        "rlG": 1,
+        "vsgoldmine": 1
+      }
+    },
+    "player137": {
+      "game_ids": [
+        163074
+      ],
+      "games": 1,
+      "maps": {
+        "map1": 1
+      },
+      "our_build_families_faced": {
+        "vscounter": 1
+      }
+    },
+    "player147": {
+      "game_ids": [
+        163073,
+        163950,
+        163999,
+        164011,
+        164014,
+        164098
+      ],
+      "games": 6,
+      "maps": {
+        "map1": 6
+      },
+      "our_build_families_faced": {
+        "mM": 2,
+        "qM": 2,
+        "rlM": 1,
+        "vsmyster": 1
+      }
+    },
+    "player167": {
+      "game_ids": [
+        163070,
+        163303,
+        163306,
+        163316,
+        163320,
+        163324,
+        163332,
+        163341,
+        163410,
+        163476,
+        163836,
+        163849,
+        163850,
+        163851
+      ],
+      "games": 14,
+      "maps": {
+        "map1": 14
+      },
+      "our_build_families_faced": {
+        "bCT": 1,
+        "bG": 2,
+        "chaint": 1,
+        "champG": 1,
+        "shadB": 5,
+        "shadC": 1,
+        "shadow": 2,
+        "vsausdroi": 1
+      }
+    },
+    "player186": {
+      "game_ids": [
+        163069
+      ],
+      "games": 1,
+      "maps": {
+        "map1": 1
+      },
+      "our_build_families_faced": {
+        "vswakab": 1
+      }
+    },
+    "player2": {
+      "game_ids": [
+        166391
+      ],
+      "games": 1,
+      "maps": {
+        "map1": 1
+      },
+      "our_build_families_faced": {
+        "champVp": 1
+      }
+    },
+    "player204": {
+      "game_ids": [
+        170497,
+        170568
+      ],
+      "games": 2,
+      "maps": {
+        "map1": 2
+      },
+      "our_build_families_faced": {
+        "L3mi": 1,
+        "L4mi": 1
+      }
+    },
+    "player220": {
+      "game_ids": [
+        165431
+      ],
+      "games": 1,
+      "maps": {
+        "map1": 1
+      },
+      "our_build_families_faced": {
+        "tes": 1
+      }
+    },
+    "player224": {
+      "game_ids": [
+        163071
+      ],
+      "games": 1,
+      "maps": {
+        "map1": 1
+      },
+      "our_build_families_faced": {
+        "vstige": 1
+      }
+    },
+    "player3": {
+      "game_ids": [
+        166392
+      ],
+      "games": 1,
+      "maps": {
+        "map1": 1
+      },
+      "our_build_families_faced": {
+        "champVp": 1
+      }
+    },
+    "player47": {
+      "game_ids": [
+        163075,
+        163949
+      ],
+      "games": 2,
+      "maps": {
+        "map1": 2
+      },
+      "our_build_families_faced": {
+        "mR": 1,
+        "vsrikk": 1
+      }
+    },
+    "player83": {
+      "game_ids": [
+        163975
+      ],
+      "games": 1,
+      "maps": {
+        "map1": 1
+      },
+      "our_build_families_faced": {
+        "mJ": 1
+      }
+    }
+  }
+}

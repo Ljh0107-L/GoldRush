@@ -1,0 +1,2489 @@
+{
+ "bias_labels": {
+  "absolute_income": "not platform-comparable (local seat-1 net 1122-1552 vs probeobs 2182.4); only same-seed paired deltas are.",
+  "closed_loop": "same-seed paired, dispatch=fixed, no clock read; trustworthy in sign.",
+  "local_npc_model": "39.18% per-action accuracy; over-greedy and over-central. sim/README.md \u00a77 states the residual over-estimates central competition and relatively over-estimates outer-ring routes, so a repair that walks a unit off the central peak is measured FAVOURABLY here. Local ~0 is an upper bound.",
+  "open_loop_pool": "biased UP: per-round stock/flow double-count, and the oracle inherits the base's positioning for free."
+ },
+ "build": {
+  "source": "git show f18064c:src/player.cpp",
+  "source_sha256": "0ecce6fc0d7141dd2ca4ddbb18dbee2aaff67a5a8f0a981df89bc9b9aba84fdd"
+ },
+ "closed_loop_arms": {
+  "map1/detour/seeds0-5": {
+   "delta_mean": -125.83333333333333,
+   "delta_se": 76.10887669064044,
+   "deltas": [
+    -424,
+    -294,
+    -38,
+    -26,
+    7,
+    20
+   ],
+   "games": 6,
+   "losses": 4,
+   "map": "map1",
+   "repair": "detour",
+   "seeds": [
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5"
+   ],
+   "sigma": -1.6533332090132897,
+   "signature_delta": {
+    "burned_both_players": 437.3333333333333,
+    "effective_moves_per_unit_round": 0.16480352303523035,
+    "pickup_per_unit_round": 0.3328252032520326,
+    "pickup_total": 327.5,
+    "zero_pickup_rate": -0.07266260162601627
+   },
+   "substitutions_per_game": [
+    94,
+    93,
+    80,
+    61,
+    65,
+    76
+   ],
+   "wins": 2
+  },
+  "map1/detour/seeds6-11": {
+   "delta_mean": -123.0,
+   "delta_se": 89.74965180990955,
+   "deltas": [
+    -385,
+    -376,
+    -138,
+    -33,
+    53,
+    141
+   ],
+   "games": 6,
+   "losses": 4,
+   "map": "map1",
+   "repair": "detour",
+   "seeds": [
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11"
+   ],
+   "sigma": -1.3704788544529949,
+   "signature_delta": {
+    "burned_both_players": 382.8333333333333,
+    "effective_moves_per_unit_round": 0.17005420054200546,
+    "pickup_per_unit_round": 0.2777777777777778,
+    "pickup_total": 273.3333333333333,
+    "zero_pickup_rate": -0.060636856368563696
+   },
+   "substitutions_per_game": [
+    71,
+    68,
+    70,
+    69,
+    80,
+    76
+   ],
+   "wins": 2
+  },
+  "map1/oracle3/seeds0-5": {
+   "delta_mean": 167.33333333333334,
+   "delta_se": 22.934205409775547,
+   "deltas": [
+    88,
+    114,
+    163,
+    200,
+    212,
+    227
+   ],
+   "games": 6,
+   "losses": 0,
+   "map": "map1",
+   "repair": "oracle3",
+   "seeds": [
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5"
+   ],
+   "sigma": 7.296234177008316,
+   "signature_delta": {
+    "burned_both_players": 30.666666666666668,
+    "effective_moves_per_unit_round": 0.044715447154471545,
+    "pickup_per_unit_round": 0.21612466124661253,
+    "pickup_total": 212.66666666666666,
+    "zero_pickup_rate": -0.06724254742547425
+   },
+   "substitutions_per_game": [
+    350,
+    399,
+    313,
+    263,
+    356,
+    257
+   ],
+   "wins": 6
+  },
+  "map1/oracle3/seeds6-11": {
+   "delta_mean": 13.833333333333334,
+   "delta_se": 111.34643136525654,
+   "deltas": [
+    -357,
+    -89,
+    -78,
+    -67,
+    335,
+    339
+   ],
+   "games": 6,
+   "losses": 4,
+   "map": "map1",
+   "repair": "oracle3",
+   "seeds": [
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11"
+   ],
+   "sigma": 0.12423688091048919,
+   "signature_delta": {
+    "burned_both_players": 9.333333333333334,
+    "effective_moves_per_unit_round": -0.04336043360433602,
+    "pickup_per_unit_round": 0.05640243902439027,
+    "pickup_total": 55.5,
+    "zero_pickup_rate": -0.03455284552845528
+   },
+   "substitutions_per_game": [
+    309,
+    305,
+    304,
+    340,
+    597,
+    359
+   ],
+   "wins": 2
+  },
+  "map1/oracle3_ge3/seeds0-5": {
+   "delta_mean": 120.83333333333333,
+   "delta_se": 40.993834224727564,
+   "deltas": [
+    0,
+    69,
+    83,
+    112,
+    169,
+    292
+   ],
+   "games": 6,
+   "losses": 0,
+   "map": "map1",
+   "repair": "oracle3_ge3",
+   "seeds": [
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5"
+   ],
+   "sigma": 2.947597745332307,
+   "signature_delta": {
+    "burned_both_players": -48.0,
+    "effective_moves_per_unit_round": 0.055555555555555504,
+    "pickup_per_unit_round": 0.08943089430894317,
+    "pickup_total": 88.0,
+    "zero_pickup_rate": -0.015243902439024404
+   },
+   "substitutions_per_game": [
+    260,
+    297,
+    291,
+    282,
+    346,
+    321
+   ],
+   "wins": 5
+  },
+  "map1/posfix/seeds0-5": {
+   "delta_mean": -142.33333333333334,
+   "delta_se": 36.74567245873239,
+   "deltas": [
+    -285,
+    -212,
+    -117,
+    -116,
+    -85,
+    -39
+   ],
+   "games": 6,
+   "losses": 6,
+   "map": "map1",
+   "repair": "posfix",
+   "seeds": [
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5"
+   ],
+   "sigma": -3.8734719984559343,
+   "signature_delta": {
+    "burned_both_players": -5.5,
+    "effective_moves_per_unit_round": -0.09891598915989153,
+    "pickup_per_unit_round": -0.17411924119241193,
+    "pickup_total": -171.33333333333334,
+    "zero_pickup_rate": 0.016598915989159874
+   },
+   "substitutions_per_game": [
+    421,
+    401,
+    379,
+    346,
+    353,
+    379
+   ],
+   "wins": 0
+  },
+  "map2/oracle3/seeds0-5": {
+   "delta_mean": 113.0,
+   "delta_se": 80.6184428858145,
+   "deltas": [
+    -238,
+    39,
+    96,
+    238,
+    263,
+    280
+   ],
+   "games": 6,
+   "losses": 1,
+   "map": "map2",
+   "repair": "oracle3",
+   "seeds": [
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5"
+   ],
+   "sigma": 1.401664382925998,
+   "signature_delta": {
+    "burned_both_players": 21.5,
+    "effective_moves_per_unit_round": 0.08502710027100269,
+    "pickup_per_unit_round": 0.15785907859078588,
+    "pickup_total": 155.33333333333334,
+    "zero_pickup_rate": -0.042513550135501364
+   },
+   "substitutions_per_game": [
+    160,
+    224,
+    410,
+    186,
+    227,
+    253
+   ],
+   "wins": 5
+  },
+  "map3/oracle3/seeds0-5": {
+   "delta_mean": 94.5,
+   "delta_se": 91.15143078050578,
+   "deltas": [
+    -163,
+    -95,
+    -24,
+    158,
+    307,
+    384
+   ],
+   "games": 6,
+   "losses": 3,
+   "map": "map3",
+   "repair": "oracle3",
+   "seeds": [
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5"
+   ],
+   "sigma": 1.036736331956847,
+   "signature_delta": {
+    "burned_both_players": -222.66666666666666,
+    "effective_moves_per_unit_round": -0.4872967479674797,
+    "pickup_per_unit_round": -0.13465447154471546,
+    "pickup_total": -132.5,
+    "zero_pickup_rate": 0.003218157181571831
+   },
+   "substitutions_per_game": [
+    648,
+    533,
+    561,
+    502,
+    649,
+    597
+   ],
+   "wins": 3
+  }
+ },
+ "closed_loop_pooled": {
+  "map1/detour": {
+   "deltas": [
+    -424.0,
+    -385.0,
+    -376.0,
+    -294.0,
+    -138.0,
+    -38.0,
+    -33.0,
+    -26.0,
+    7.0,
+    20.0,
+    53.0,
+    141.0
+   ],
+   "games": 12,
+   "losses": 8,
+   "mean": -124.41666666666667,
+   "sd": 194.34059059165986,
+   "se": 56.10129614628284,
+   "sigma": -2.2177146556873315,
+   "wins": 4
+  },
+  "map1/oracle3": {
+   "deltas": [
+    -357.0,
+    -89.0,
+    -78.0,
+    -67.0,
+    88.0,
+    114.0,
+    163.0,
+    200.0,
+    212.0,
+    227.0,
+    335.0,
+    339.0
+   ],
+   "games": 12,
+   "losses": 4,
+   "mean": 90.58333333333333,
+   "sd": 204.14053017616578,
+   "se": 58.930295024861124,
+   "sigma": 1.5371267578945367,
+   "wins": 8
+  },
+  "map1/oracle3_ge3": {
+   "deltas": [
+    0.0,
+    69.0,
+    83.0,
+    112.0,
+    169.0,
+    292.0
+   ],
+   "games": 6,
+   "losses": 0,
+   "mean": 120.83333333333333,
+   "sd": 100.41397645082415,
+   "se": 40.993834224727564,
+   "sigma": 2.947597745332307,
+   "wins": 5
+  },
+  "map1/posfix": {
+   "deltas": [
+    -285.0,
+    -212.0,
+    -117.0,
+    -116.0,
+    -85.0,
+    -39.0
+   ],
+   "games": 6,
+   "losses": 6,
+   "mean": -142.33333333333334,
+   "sd": 90.00814777933532,
+   "se": 36.74567245873239,
+   "sigma": -3.8734719984559343,
+   "wins": 0
+  },
+  "map2/oracle3": {
+   "deltas": [
+    -238.0,
+    39.0,
+    96.0,
+    238.0,
+    263.0,
+    280.0
+   ],
+   "games": 6,
+   "losses": 1,
+   "mean": 113.0,
+   "sd": 197.47404892795407,
+   "se": 80.6184428858145,
+   "sigma": 1.401664382925998,
+   "wins": 5
+  },
+  "map3/oracle3": {
+   "deltas": [
+    -163.0,
+    -95.0,
+    -24.0,
+    158.0,
+    307.0,
+    384.0
+   ],
+   "games": 6,
+   "losses": 3,
+   "mean": 94.5,
+   "sd": 223.27449473685974,
+   "se": 91.15143078050578,
+   "sigma": 1.036736331956847,
+   "wins": 3
+  }
+ },
+ "frequency_cross_validation": {
+  "map1": {
+   "block_runs": {
+    "max_run_length": {
+     "mean": 18.8,
+     "median": 19,
+     "n": 5,
+     "p10": 12,
+     "p90": 25,
+     "sd": 4.658325879540846,
+     "se": 2.0832666655999654
+    },
+    "mean_run_length": {
+     "mean": 2.5945631711560333,
+     "median": 2.705263157894737,
+     "n": 5,
+     "p10": 1.990990990990991,
+     "p90": 3.064516129032258,
+     "sd": 0.4485528276490975,
+     "se": 0.20059892282462582
+    },
+    "median_run_length": {
+     "mean": 1.6,
+     "median": 2,
+     "n": 5,
+     "p10": 1,
+     "p90": 2,
+     "sd": 0.5477225575051661,
+     "se": 0.24494897427831777
+    },
+    "p90_run_length": {
+     "mean": 5.4,
+     "median": 6,
+     "n": 5,
+     "p10": 3,
+     "p90": 7,
+     "sd": 1.51657508881031,
+     "se": 0.6782329983125267
+    },
+    "runs": {
+     "mean": 98.2,
+     "median": 95,
+     "n": 5,
+     "p10": 93,
+     "p90": 111,
+     "sd": 7.293833011524187,
+     "se": 3.261901286060018
+    },
+    "share_of_runs_length_1": {
+     "mean": 0.5001779284404038,
+     "median": 0.4639175257731959,
+     "n": 5,
+     "p10": 0.44086021505376344,
+     "p90": 0.5855855855855856,
+     "sd": 0.07098843968285097,
+     "se": 0.03174699534949967
+    }
+   },
+   "blocked_rate_all_unit_rounds": {
+    "mean": 0.25691056910569104,
+    "median": 0.2611788617886179,
+    "n": 5,
+    "p10": 0.22052845528455284,
+    "p90": 0.2896341463414634,
+    "sd": 0.03340080915909057,
+    "se": 0.01493729595664482
+   },
+   "blocked_rate_routed_unit_rounds": {
+    "mean": 0.32138170963895196,
+    "median": 0.32697201017811706,
+    "n": 5,
+    "p10": 0.28152866242038216,
+    "p90": 0.35804020100502515,
+    "sd": 0.0373504588143837,
+    "se": 0.01670363297995363
+   },
+   "cause_share_of_blocks": {
+    "bomb": {
+     "mean": 0.32150813870761563,
+     "median": 0.2986425339366516,
+     "n": 5,
+     "p10": 0.2887323943661972,
+     "p90": 0.4055299539170507,
+     "sd": 0.04883467346994667,
+     "se": 0.021839529907561255
+    },
+    "bounds": {
+     "mean": 0.0,
+     "median": 0.0,
+     "n": 5,
+     "p10": 0.0,
+     "p90": 0.0,
+     "sd": 0.0,
+     "se": 0.0
+    },
+    "wall": {
+     "mean": 0.6784918612923844,
+     "median": 0.7013574660633484,
+     "n": 5,
+     "p10": 0.5944700460829493,
+     "p90": 0.7112676056338029,
+     "sd": 0.04883467346994668,
+     "se": 0.021839529907561262
+    }
+   },
+   "central_wall_share_of_all_blocks": {
+    "mean": 0.47686375490278116,
+    "median": 0.4788732394366197,
+    "n": 5,
+    "p10": 0.4055299539170507,
+    "p90": 0.5565610859728507,
+    "sd": 0.05434192589070112,
+    "se": 0.024302448063972703
+   },
+   "central_wall_share_of_wall_blocks": {
+    "mean": 0.7024727623105013,
+    "median": 0.6821705426356589,
+    "n": 5,
+    "p10": 0.6483516483516484,
+    "p90": 0.7935483870967742,
+    "sd": 0.05622851463522427,
+    "se": 0.02514615619964065
+   },
+   "class_table": {
+    "bomb_blocked": {
+     "d_hist": {
+      "1": 36,
+      "2": 160,
+      "3": 146,
+      "4": 51,
+      "5": 6,
+      "6": 4
+     },
+     "free_extra_ge3_per_unit_round": 1.186104218362283,
+     "free_extra_lowval_per_unit_round": 0.34739454094292804,
+     "free_extra_lowval_share": 0.22653721682847897,
+     "free_gain_per_unit_round": 1.531017369727047,
+     "free_joint_gain_per_unit_round": 1.531017369727047,
+     "free_joint_gain_zero_share": 0.56575682382134,
+     "free_net_per_unit_round": 1.5707196029776676,
+     "magic_gain_per_unit_round": -27.508684863523573,
+     "mean_d": 2.610421836228288,
+     "mean_supply3": 0.6401985111662531,
+     "mean_target_value": 4.074441687344913,
+     "moves_per_unit_round": 0.7617866004962779,
+     "net_per_unit_round": 0.03970223325062035,
+     "pickup_per_unit_round": 0.03970223325062035,
+     "posfix_joint_gain_per_unit_round": 0.20347394540942929,
+     "reach_burn_delta_given_reachable": 25.107744107744107,
+     "reach_burn_delta_per_unit_round": 18.503722084367247,
+     "reach_joint_gain_given_reachable": -21.835016835016834,
+     "reach_joint_gain_per_unit_round": -16.09181141439206,
+     "reach_pickup_delta_given_reachable": 3.272727272727273,
+     "reach_pickup_delta_per_unit_round": 2.411910669975186,
+     "target_mode_share": {
+      "blind": 0.49627791563275436,
+      "has": 0.5037220843672456,
+      "standing": 0.0
+     },
+     "target_reachable_rate": 0.7369727047146402,
+     "unit_rounds": 403,
+     "zero_pickup_rate": 0.9727047146401985
+    },
+    "clear": {
+     "d_hist": {
+      "1": 1138,
+      "2": 866,
+      "3": 459,
+      "4": 143,
+      "5": 38,
+      "6": 20
+     },
+     "free_extra_ge3_per_unit_round": 0.5960960960960962,
+     "free_extra_lowval_per_unit_round": 0.31906906906906907,
+     "free_extra_lowval_share": 0.34864643150123054,
+     "free_gain_per_unit_round": 0.884009009009009,
+     "free_joint_gain_per_unit_round": 0.8911411411411412,
+     "free_joint_gain_zero_share": 0.6888138138138138,
+     "free_net_per_unit_round": 3.218093093093093,
+     "magic_gain_per_unit_round": null,
+     "mean_d": 1.9253003003003002,
+     "mean_supply3": 0.7605105105105106,
+     "mean_target_value": 3.548798798798799,
+     "moves_per_unit_round": 2.730855855855856,
+     "net_per_unit_round": 2.334084084084084,
+     "pickup_per_unit_round": 2.505630630630631,
+     "posfix_joint_gain_per_unit_round": null,
+     "reach_burn_delta_given_reachable": null,
+     "reach_burn_delta_per_unit_round": null,
+     "reach_joint_gain_given_reachable": null,
+     "reach_joint_gain_per_unit_round": null,
+     "reach_pickup_delta_given_reachable": null,
+     "reach_pickup_delta_per_unit_round": null,
+     "target_mode_share": {
+      "blind": 0.47297297297297297,
+      "has": 0.527027027027027,
+      "standing": 0.0
+     },
+     "target_reachable_rate": null,
+     "unit_rounds": 2664,
+     "zero_pickup_rate": 0.5232732732732732
+    },
+    "fold": {
+     "d_hist": {
+      "0": 992
+     },
+     "free_extra_ge3_per_unit_round": 0.057459677419354836,
+     "free_extra_lowval_per_unit_round": 0.38205645161290325,
+     "free_extra_lowval_share": 0.8692660550458715,
+     "free_gain_per_unit_round": 0.657258064516129,
+     "free_joint_gain_per_unit_round": 0.657258064516129,
+     "free_joint_gain_zero_share": 0.7449596774193549,
+     "free_net_per_unit_round": 0.5655241935483871,
+     "magic_gain_per_unit_round": null,
+     "mean_d": 0.0,
+     "mean_supply3": 0.019153225806451613,
+     "mean_target_value": 0.14919354838709678,
+     "moves_per_unit_round": 1.96875,
+     "net_per_unit_round": -0.09173387096774194,
+     "pickup_per_unit_round": 0.1350806451612903,
+     "posfix_joint_gain_per_unit_round": null,
+     "reach_burn_delta_given_reachable": null,
+     "reach_burn_delta_per_unit_round": null,
+     "reach_joint_gain_given_reachable": null,
+     "reach_joint_gain_per_unit_round": null,
+     "reach_pickup_delta_given_reachable": null,
+     "reach_pickup_delta_per_unit_round": null,
+     "target_mode_share": {
+      "blind": 0.9375,
+      "has": 0.019153225806451613,
+      "standing": 0.04334677419354839
+     },
+     "target_reachable_rate": null,
+     "unit_rounds": 992,
+     "zero_pickup_rate": 0.9324596774193549
+    },
+    "wall_blocked": {
+     "d_hist": {
+      "2": 274,
+      "3": 403,
+      "4": 161,
+      "5": 9,
+      "6": 14
+     },
+     "free_extra_ge3_per_unit_round": 1.1939605110336817,
+     "free_extra_lowval_per_unit_round": 0.34727061556329847,
+     "free_extra_lowval_share": 0.22532027128862095,
+     "free_gain_per_unit_round": 1.6260162601626016,
+     "free_joint_gain_per_unit_round": 1.6225319396051103,
+     "free_joint_gain_zero_share": 0.5412311265969802,
+     "free_net_per_unit_round": 1.5981416957026713,
+     "magic_gain_per_unit_round": 1.8072009291521487,
+     "mean_d": 2.938443670150987,
+     "mean_supply3": 1.0220673635307782,
+     "mean_target_value": 5.033681765389082,
+     "moves_per_unit_round": 0.8315911730545877,
+     "net_per_unit_round": -0.027874564459930314,
+     "pickup_per_unit_round": 0.05807200929152149,
+     "posfix_joint_gain_per_unit_round": 0.24274099883855982,
+     "reach_burn_delta_given_reachable": 6.691119691119691,
+     "reach_burn_delta_per_unit_round": 2.012775842044135,
+     "reach_joint_gain_given_reachable": -2.9034749034749034,
+     "reach_joint_gain_per_unit_round": -0.8734030197444832,
+     "reach_pickup_delta_given_reachable": 3.787644787644788,
+     "reach_pickup_delta_per_unit_round": 1.1393728222996515,
+     "target_mode_share": {
+      "blind": 0.22996515679442509,
+      "has": 0.7700348432055749,
+      "standing": 0.0
+     },
+     "target_reachable_rate": 0.3008130081300813,
+     "unit_rounds": 861,
+     "zero_pickup_rate": 0.9570267131242741
+    }
+   },
+   "hit_rate_axis": {
+    "all_blocked_convertible_pp_of_hit_rate": {
+     "mean": 11.077235772357724,
+     "median": 11.178861788617887,
+     "n": 5,
+     "p10": 9.959349593495935,
+     "p90": 12.296747967479675,
+     "sd": 0.859325941325598,
+     "se": 0.38430224392660656
+    },
+    "base_hit_rate": {
+     "mean": 0.2815040650406504,
+     "median": 0.2815040650406504,
+     "n": 5,
+     "p10": 0.25914634146341464,
+     "p90": 0.3048780487804878,
+     "sd": 0.019241967712155982,
+     "se": 0.008605269565047376
+    },
+    "wall_blocked_convertible_pp_of_hit_rate": {
+     "mean": 7.621951219512195,
+     "median": 7.723577235772358,
+     "n": 5,
+     "p10": 6.097560975609756,
+     "p90": 9.247967479674797,
+     "sd": 1.4568365027267736,
+     "se": 0.6515170904400247
+    },
+    "wall_blocked_convertible_unit_rounds": {
+     "mean": 75.0,
+     "median": 76,
+     "n": 5,
+     "p10": 60,
+     "p90": 91,
+     "sd": 14.33527118683145,
+     "se": 6.410928169929842
+    }
+   },
+   "matched_contrast": {
+    "blocked_unit_rounds": 193,
+    "blocked_unit_rounds_matched": 189,
+    "keys": [
+     "target_mode",
+     "d",
+     "target_value_bucket",
+     "supply_bucket"
+    ],
+    "matched_share": 0.9792746113989638,
+    "per_stratum_top": [
+     {
+      "blocked_n": 38,
+      "blocked_pickup": 0.02631578947368421,
+      "clear_n": 25,
+      "clear_pickup": 4.64,
+      "gap": 4.613684210526316,
+      "stratum": [
+       "has",
+       3,
+       2,
+       1
+      ]
+     },
+     {
+      "blocked_n": 18,
+      "blocked_pickup": 0.16666666666666666,
+      "clear_n": 40,
+      "clear_pickup": 3.65,
+      "gap": 3.4833333333333334,
+      "stratum": [
+       "has",
+       2,
+       2,
+       1
+      ]
+     },
+     {
+      "blocked_n": 16,
+      "blocked_pickup": 0.0,
+      "clear_n": 23,
+      "clear_pickup": 0.0,
+      "gap": 0.0,
+      "stratum": [
+       "blind",
+       3,
+       0,
+       0
+      ]
+     },
+     {
+      "blocked_n": 16,
+      "blocked_pickup": 0.125,
+      "clear_n": 13,
+      "clear_pickup": 2.3076923076923075,
+      "gap": 2.1826923076923075,
+      "stratum": [
+       "has",
+       3,
+       1,
+       1
+      ]
+     },
+     {
+      "blocked_n": 15,
+      "blocked_pickup": 0.0,
+      "clear_n": 10,
+      "clear_pickup": 0.0,
+      "gap": 0.0,
+      "stratum": [
+       "blind",
+       4,
+       0,
+       0
+      ]
+     },
+     {
+      "blocked_n": 15,
+      "blocked_pickup": 0.0,
+      "clear_n": 8,
+      "clear_pickup": 0.0,
+      "gap": 0.0,
+      "stratum": [
+       "has",
+       4,
+       2,
+       1
+      ]
+     },
+     {
+      "blocked_n": 14,
+      "blocked_pickup": 0.0,
+      "clear_n": 13,
+      "clear_pickup": 1.9230769230769231,
+      "gap": 1.9230769230769231,
+      "stratum": [
+       "has",
+       2,
+       1,
+       1
+      ]
+     },
+     {
+      "blocked_n": 8,
+      "blocked_pickup": 0.0,
+      "clear_n": 10,
+      "clear_pickup": 2.0,
+      "gap": 2.0,
+      "stratum": [
+       "has",
+       2,
+       1,
+       2
+      ]
+     },
+     {
+      "blocked_n": 8,
+      "blocked_pickup": 0.25,
+      "clear_n": 4,
+      "clear_pickup": 3.75,
+      "gap": 3.5,
+      "stratum": [
+       "has",
+       3,
+       2,
+       2
+      ]
+     },
+     {
+      "blocked_n": 7,
+      "blocked_pickup": 0.0,
+      "clear_n": 20,
+      "clear_pickup": 4.6,
+      "gap": 4.6,
+      "stratum": [
+       "has",
+       2,
+       2,
+       2
+      ]
+     },
+     {
+      "blocked_n": 6,
+      "blocked_pickup": 0.0,
+      "clear_n": 14,
+      "clear_pickup": 6.714285714285714,
+      "gap": 6.714285714285714,
+      "stratum": [
+       "has",
+       3,
+       3,
+       1
+      ]
+     },
+     {
+      "blocked_n": 6,
+      "blocked_pickup": 0.16666666666666666,
+      "clear_n": 3,
+      "clear_pickup": 0.0,
+      "gap": -0.16666666666666666,
+      "stratum": [
+       "has",
+       4,
+       1,
+       1
+      ]
+     }
+    ],
+    "raw_gap": 2.3023939648966265,
+    "strata_blocked": 23,
+    "strata_clear": 36,
+    "strata_common": 21,
+    "weighted_gap": 2.4992162335019477
+   },
+   "overlap_audit": {
+    "covariate": "(start cell, clamped target offset, rich)",
+    "wall_vs_clear_only": {
+     "deterministic_strata": 318,
+     "mixed_strata": 0,
+     "overlap_share": 0.0,
+     "strata": 318,
+     "unit_rounds": 704,
+     "unit_rounds_in_deterministic_strata": 704,
+     "unit_rounds_in_mixed_strata": 0
+    },
+    "with_rich": {
+     "deterministic_strata": 366,
+     "mixed_strata": 25,
+     "overlap_share": 0.157035175879397,
+     "strata": 391,
+     "unit_rounds": 796,
+     "unit_rounds_in_deterministic_strata": 671,
+     "unit_rounds_in_mixed_strata": 125
+    },
+    "without_rich": {
+     "deterministic_strata": 316,
+     "mixed_strata": 25,
+     "overlap_share": 0.17964824120603015,
+     "strata": 341,
+     "unit_rounds": 796,
+     "unit_rounds_in_deterministic_strata": 653,
+     "unit_rounds_in_mixed_strata": 143
+    }
+   },
+   "pool": {
+    "achievable_repair_all_blocked_gold_per_game": {
+     "mean": 409.349593495935,
+     "median": 406.50406504065046,
+     "n": 5,
+     "p10": 358.739837398374,
+     "p90": 456.30081300813015,
+     "sd": 34.890447793256556,
+     "se": 15.603482606225837
+    },
+    "achievable_repair_gold_per_game": {
+     "mean": 283.9430894308943,
+     "median": 258.130081300813,
+     "n": 5,
+     "p10": 222.56097560975613,
+     "p90": 351.62601626016266,
+     "sd": 59.085718939209755,
+     "se": 26.423936809503953
+    },
+    "blocked_per_game": {
+     "mean": 256.9105691056911,
+     "median": 261.1788617886179,
+     "n": 5,
+     "p10": 220.52845528455288,
+     "p90": 289.63414634146346,
+     "sd": 33.400809159090564,
+     "se": 14.937295956644817
+    },
+    "magic_wall_removal_gold_per_game": {
+     "mean": 316.26016260162606,
+     "median": 319.1056910569106,
+     "n": 5,
+     "p10": 178.8617886178862,
+     "p90": 454.26829268292687,
+     "sd": 98.10832654363986,
+     "se": 43.87537746206514
+    },
+    "novel_gold_per_game": {
+     "mean": 33.739837398373986,
+     "median": 28.45528455284553,
+     "n": 5,
+     "p10": 12.195121951219512,
+     "p90": 58.94308943089431,
+     "sd": 17.534537649328414,
+     "se": 7.84168362758554
+    },
+    "novel_share": {
+     "mean": 0.12796225274057668,
+     "median": 0.13023255813953488,
+     "n": 5,
+     "p10": 0.03550295857988166,
+     "p90": 0.17956656346749225,
+     "sd": 0.056156418562970205,
+     "se": 0.025113913855946485
+    },
+    "position_preserving_gold_per_game": {
+     "mean": 42.47967479674797,
+     "median": 54.87804878048781,
+     "n": 5,
+     "p10": -7.1138211382113825,
+     "p90": 67.07317073170732,
+     "sd": 30.423373651737396,
+     "se": 13.605746318032166
+    },
+    "published_style_pool_gold_per_game": {
+     "mean": 428.2512062442887,
+     "median": 451.5874341717977,
+     "n": 5,
+     "p10": 318.4108440718777,
+     "p90": 508.4509044523337,
+     "sd": 79.37445617097407,
+     "se": 35.497335935075135
+    },
+    "scale_to_1000_unit_rounds": {
+     "mean": 1.016260162601626,
+     "median": 1.016260162601626,
+     "n": 5,
+     "p10": 1.016260162601626,
+     "p90": 1.016260162601626,
+     "sd": 0.0,
+     "se": 0.0
+    },
+    "steady_unit_rounds_measured": {
+     "mean": 984.0,
+     "median": 984,
+     "n": 5,
+     "p10": 984,
+     "p90": 984,
+     "sd": 0.0,
+     "se": 0.0
+    },
+    "target_detour_gold_per_game": {
+     "mean": -152.84552845528455,
+     "median": -113.82113821138212,
+     "n": 5,
+     "p10": -440.0406504065041,
+     "p90": 2.032520325203252,
+     "sd": 171.94118875584377,
+     "se": 76.89443723803782
+    },
+    "timing_gold_per_game": {
+     "mean": 237.1951219512195,
+     "median": 210.3658536585366,
+     "n": 5,
+     "p10": 184.95934959349594,
+     "p90": 331.3008130081301,
+     "sd": 62.368077441480004,
+     "se": 27.89185215702409
+    },
+    "wall_blocked_per_game": {
+     "mean": 175.00000000000003,
+     "median": 184.95934959349594,
+     "n": 5,
+     "p10": 131.09756097560978,
+     "p90": 205.28455284552848,
+     "sd": 30.39790267890356,
+     "se": 13.594355352690263
+    }
+   },
+   "published_blocked_rate": 0.373,
+   "reconstruction_mismatches_total": 27,
+   "trajectory_identical_all": true
+  },
+  "map2": {
+   "block_runs": {
+    "max_run_length": {
+     "mean": 14.0,
+     "median": 11,
+     "n": 3,
+     "p10": 7,
+     "p90": 24,
+     "sd": 8.888194417315589,
+     "se": 5.131601439446884
+    },
+    "mean_run_length": {
+     "mean": 1.834434085160544,
+     "median": 1.8224299065420562,
+     "n": 3,
+     "p10": 1.6122448979591837,
+     "p90": 2.0686274509803924,
+     "sd": 0.22842796217575356,
+     "se": 0.13188294545260898
+    },
+    "median_run_length": {
+     "mean": 1.0,
+     "median": 1,
+     "n": 3,
+     "p10": 1.0,
+     "p90": 1.0,
+     "sd": 0.0,
+     "se": 0.0
+    },
+    "p90_run_length": {
+     "mean": 3.0,
+     "median": 3,
+     "n": 3,
+     "p10": 3,
+     "p90": 3,
+     "sd": 0.0,
+     "se": 0.0
+    },
+    "runs": {
+     "mean": 102.33333333333333,
+     "median": 102,
+     "n": 3,
+     "p10": 98,
+     "p90": 107,
+     "sd": 4.509249752822894,
+     "se": 2.6034165586355518
+    },
+    "share_of_runs_length_1": {
+     "mean": 0.590038507614884,
+     "median": 0.5794392523364486,
+     "n": 3,
+     "p10": 0.5784313725490197,
+     "p90": 0.6122448979591837,
+     "sd": 0.019237899690689543,
+     "se": 0.011107006565062626
+    }
+   },
+   "blocked_rate_all_unit_rounds": {
+    "mean": 0.1910569105691057,
+    "median": 0.19817073170731708,
+    "n": 3,
+    "p10": 0.16056910569105692,
+    "p90": 0.21443089430894308,
+    "sd": 0.027626579713553215,
+    "se": 0.015950213234408605
+   },
+   "blocked_rate_routed_unit_rounds": {
+    "mean": 0.2366331114161572,
+    "median": 0.23693803159173754,
+    "n": 3,
+    "p10": 0.2051948051948052,
+    "p90": 0.26776649746192893,
+    "sd": 0.031286960551130796,
+    "se": 0.018063535096320568
+   },
+   "cause_share_of_blocks": {
+    "bomb": {
+     "mean": 0.4322182586745548,
+     "median": 0.4461538461538462,
+     "n": 3,
+     "p10": 0.3670886075949367,
+     "p90": 0.4834123222748815,
+     "sd": 0.0594007752308843,
+     "se": 0.03429505356962351
+    },
+    "bounds": {
+     "mean": 0.0,
+     "median": 0.0,
+     "n": 3,
+     "p10": 0.0,
+     "p90": 0.0,
+     "sd": 0.0,
+     "se": 0.0
+    },
+    "wall": {
+     "mean": 0.5677817413254452,
+     "median": 0.5538461538461539,
+     "n": 3,
+     "p10": 0.5165876777251185,
+     "p90": 0.6329113924050633,
+     "sd": 0.05940077523088433,
+     "se": 0.03429505356962352
+    }
+   },
+   "central_wall_share_of_all_blocks": {
+    "mean": 0.044230935874105835,
+    "median": 0.041025641025641026,
+    "n": 3,
+    "p10": 0.02531645569620253,
+    "p90": 0.06635071090047394,
+    "sd": 0.020704056639738865,
+    "se": 0.011953492674270493
+   },
+   "central_wall_share_of_wall_blocks": {
+    "mean": 0.08083814701551705,
+    "median": 0.07407407407407407,
+    "n": 3,
+    "p10": 0.04,
+    "p90": 0.12844036697247707,
+    "sd": 0.044606492124179345,
+    "se": 0.02575357023549987
+   },
+   "class_table": {
+    "bomb_blocked": {
+     "d_hist": {
+      "1": 18,
+      "2": 77,
+      "3": 92,
+      "4": 53,
+      "5": 5,
+      "6": 2
+     },
+     "free_gain_per_unit_round": 1.6720647773279351,
+     "free_joint_gain_per_unit_round": 1.639676113360324,
+     "free_joint_gain_zero_share": 0.5101214574898786,
+     "free_net_per_unit_round": 1.7165991902834008,
+     "magic_gain_per_unit_round": -30.821862348178136,
+     "mean_d": 2.8218623481781377,
+     "mean_supply3": 0.5506072874493927,
+     "mean_target_value": 3.230769230769231,
+     "moves_per_unit_round": 0.8623481781376519,
+     "net_per_unit_round": 0.044534412955465584,
+     "pickup_per_unit_round": 0.044534412955465584,
+     "posfix_joint_gain_per_unit_round": 0.27530364372469635,
+     "reach_burn_delta_given_reachable": 22.80952380952381,
+     "reach_burn_delta_per_unit_round": 13.574898785425102,
+     "reach_joint_gain_given_reachable": -20.095238095238095,
+     "reach_joint_gain_per_unit_round": -11.959514170040485,
+     "reach_pickup_delta_given_reachable": 2.7142857142857144,
+     "reach_pickup_delta_per_unit_round": 1.6153846153846154,
+     "target_mode_share": {
+      "blind": 0.5263157894736842,
+      "has": 0.47368421052631576,
+      "standing": 0.0
+     },
+     "target_reachable_rate": 0.5951417004048583,
+     "unit_rounds": 247,
+     "zero_pickup_rate": 0.9635627530364372
+    },
+    "clear": {
+     "d_hist": {
+      "1": 729,
+      "2": 466,
+      "3": 411,
+      "4": 172,
+      "5": 21,
+      "6": 18
+     },
+     "free_gain_per_unit_round": 1.0583379196477711,
+     "free_joint_gain_per_unit_round": 1.085305448541552,
+     "free_joint_gain_zero_share": 0.6725371491469455,
+     "free_net_per_unit_round": 3.3505778756191527,
+     "magic_gain_per_unit_round": null,
+     "mean_d": 2.088607594936709,
+     "mean_supply3": 0.7716015410016511,
+     "mean_target_value": 3.695101816180517,
+     "moves_per_unit_round": 2.626857457347276,
+     "net_per_unit_round": 2.2922399559713815,
+     "pickup_per_unit_round": 2.550357732526142,
+     "posfix_joint_gain_per_unit_round": null,
+     "reach_burn_delta_given_reachable": null,
+     "reach_burn_delta_per_unit_round": null,
+     "reach_joint_gain_given_reachable": null,
+     "reach_joint_gain_per_unit_round": null,
+     "reach_pickup_delta_given_reachable": null,
+     "reach_pickup_delta_per_unit_round": null,
+     "target_mode_share": {
+      "blind": 0.4507429829389103,
+      "has": 0.5492570170610898,
+      "standing": 0.0
+     },
+     "target_reachable_rate": null,
+     "unit_rounds": 1817,
+     "zero_pickup_rate": 0.5156851953769951
+    },
+    "fold": {
+     "d_hist": {
+      "0": 571
+     },
+     "free_gain_per_unit_round": 0.4500875656742557,
+     "free_joint_gain_per_unit_round": 0.43257443082311736,
+     "free_joint_gain_zero_share": 0.7793345008756567,
+     "free_net_per_unit_round": 0.47285464098073554,
+     "magic_gain_per_unit_round": null,
+     "mean_d": 0.0,
+     "mean_supply3": 0.024518388791593695,
+     "mean_target_value": 0.13485113835376533,
+     "moves_per_unit_round": 1.924693520140105,
+     "net_per_unit_round": 0.02276707530647986,
+     "pickup_per_unit_round": 0.11558669001751314,
+     "posfix_joint_gain_per_unit_round": null,
+     "reach_burn_delta_given_reachable": null,
+     "reach_burn_delta_per_unit_round": null,
+     "reach_joint_gain_given_reachable": null,
+     "reach_joint_gain_per_unit_round": null,
+     "reach_pickup_delta_given_reachable": null,
+     "reach_pickup_delta_per_unit_round": null,
+     "target_mode_share": {
+      "blind": 0.9474605954465849,
+      "has": 0.024518388791593695,
+      "standing": 0.028021015761821366
+     },
+     "target_reachable_rate": null,
+     "unit_rounds": 571,
+     "zero_pickup_rate": 0.9404553415061296
+    },
+    "wall_blocked": {
+     "d_hist": {
+      "2": 102,
+      "3": 109,
+      "4": 81,
+      "5": 18,
+      "6": 7
+     },
+     "free_gain_per_unit_round": 2.678233438485804,
+     "free_joint_gain_per_unit_round": 2.665615141955836,
+     "free_joint_gain_zero_share": 0.38801261829652994,
+     "free_net_per_unit_round": 2.7129337539432177,
+     "magic_gain_per_unit_round": 1.9779179810725551,
+     "mean_d": 3.1135646687697163,
+     "mean_supply3": 0.9716088328075709,
+     "mean_target_value": 5.4984227129337535,
+     "moves_per_unit_round": 0.9242902208201893,
+     "net_per_unit_round": 0.03470031545741325,
+     "pickup_per_unit_round": 0.056782334384858045,
+     "posfix_joint_gain_per_unit_round": 0.2302839116719243,
+     "reach_burn_delta_given_reachable": 9.055555555555555,
+     "reach_burn_delta_per_unit_round": 4.62776025236593,
+     "reach_joint_gain_given_reachable": -3.6358024691358026,
+     "reach_joint_gain_per_unit_round": -1.8580441640378549,
+     "reach_pickup_delta_given_reachable": 5.419753086419753,
+     "reach_pickup_delta_per_unit_round": 2.769716088328076,
+     "target_mode_share": {
+      "blind": 0.26813880126182965,
+      "has": 0.7318611987381703,
+      "standing": 0.0
+     },
+     "target_reachable_rate": 0.5110410094637224,
+     "unit_rounds": 317,
+     "zero_pickup_rate": 0.9621451104100947
+    }
+   },
+   "hit_rate_axis": {
+    "all_blocked_convertible_pp_of_hit_rate": {
+     "mean": 10.331978319783198,
+     "median": 10.670731707317072,
+     "n": 3,
+     "p10": 9.146341463414634,
+     "p90": 11.178861788617887,
+     "sd": 1.0577571135498645,
+     "se": 0.6106963542452558
+    },
+    "base_hit_rate": {
+     "mean": 0.31673441734417346,
+     "median": 0.3323170731707317,
+     "n": 3,
+     "p10": 0.28353658536585363,
+     "p90": 0.33434959349593496,
+     "sd": 0.02876812160645279,
+     "se": 0.01660928275356541
+    },
+    "wall_blocked_convertible_pp_of_hit_rate": {
+     "mean": 6.3346883468834685,
+     "median": 6.300813008130081,
+     "n": 3,
+     "p10": 6.199186991869919,
+     "p90": 6.504065040650406,
+     "sd": 0.1552363040296693,
+     "se": 0.08962572191953215
+    },
+    "wall_blocked_convertible_unit_rounds": {
+     "mean": 62.333333333333336,
+     "median": 62,
+     "n": 3,
+     "p10": 61,
+     "p90": 64,
+     "sd": 1.5275252316519465,
+     "se": 0.8819171036881969
+    }
+   },
+   "matched_contrast": {
+    "blocked_unit_rounds": 100,
+    "blocked_unit_rounds_matched": 100,
+    "keys": [
+     "target_mode",
+     "d",
+     "target_value_bucket",
+     "supply_bucket"
+    ],
+    "matched_share": 1.0,
+    "per_stratum_top": [
+     {
+      "blocked_n": 21,
+      "blocked_pickup": 0.0,
+      "clear_n": 37,
+      "clear_pickup": 4.0,
+      "gap": 4.0,
+      "stratum": [
+       "has",
+       3,
+       2,
+       1
+      ]
+     },
+     {
+      "blocked_n": 14,
+      "blocked_pickup": 0.14285714285714285,
+      "clear_n": 31,
+      "clear_pickup": 0.16129032258064516,
+      "gap": 0.018433179723502308,
+      "stratum": [
+       "blind",
+       4,
+       0,
+       0
+      ]
+     },
+     {
+      "blocked_n": 9,
+      "blocked_pickup": 0.0,
+      "clear_n": 44,
+      "clear_pickup": 5.068181818181818,
+      "gap": 5.068181818181818,
+      "stratum": [
+       "has",
+       2,
+       2,
+       1
+      ]
+     },
+     {
+      "blocked_n": 8,
+      "blocked_pickup": 0.0,
+      "clear_n": 15,
+      "clear_pickup": 2.6,
+      "gap": 2.6,
+      "stratum": [
+       "has",
+       3,
+       1,
+       1
+      ]
+     },
+     {
+      "blocked_n": 6,
+      "blocked_pickup": 0.0,
+      "clear_n": 18,
+      "clear_pickup": 2.111111111111111,
+      "gap": 2.111111111111111,
+      "stratum": [
+       "has",
+       2,
+       1,
+       1
+      ]
+     },
+     {
+      "blocked_n": 5,
+      "blocked_pickup": 0.0,
+      "clear_n": 6,
+      "clear_pickup": 1.8333333333333333,
+      "gap": 1.8333333333333333,
+      "stratum": [
+       "has",
+       2,
+       1,
+       2
+      ]
+     },
+     {
+      "blocked_n": 5,
+      "blocked_pickup": 0.4,
+      "clear_n": 22,
+      "clear_pickup": 3.590909090909091,
+      "gap": 3.190909090909091,
+      "stratum": [
+       "has",
+       2,
+       2,
+       2
+      ]
+     },
+     {
+      "blocked_n": 5,
+      "blocked_pickup": 0.2,
+      "clear_n": 7,
+      "clear_pickup": 0.0,
+      "gap": -0.2,
+      "stratum": [
+       "has",
+       4,
+       1,
+       1
+      ]
+     },
+     {
+      "blocked_n": 4,
+      "blocked_pickup": 0.0,
+      "clear_n": 8,
+      "clear_pickup": 9.0,
+      "gap": 9.0,
+      "stratum": [
+       "has",
+       2,
+       3,
+       1
+      ]
+     },
+     {
+      "blocked_n": 4,
+      "blocked_pickup": 0.0,
+      "clear_n": 5,
+      "clear_pickup": 0.0,
+      "gap": 0.0,
+      "stratum": [
+       "has",
+       4,
+       3,
+       1
+      ]
+     },
+     {
+      "blocked_n": 3,
+      "blocked_pickup": 0.0,
+      "clear_n": 50,
+      "clear_pickup": 0.04,
+      "gap": 0.04,
+      "stratum": [
+       "blind",
+       3,
+       0,
+       0
+      ]
+     },
+     {
+      "blocked_n": 3,
+      "blocked_pickup": 0.0,
+      "clear_n": 6,
+      "clear_pickup": 0.3333333333333333,
+      "gap": 0.3333333333333333,
+      "stratum": [
+       "blind",
+       5,
+       0,
+       0
+      ]
+     }
+    ],
+    "raw_gap": 2.6101307189542484,
+    "strata_blocked": 19,
+    "strata_clear": 40,
+    "strata_common": 19,
+    "weighted_gap": 2.756748177628823
+   },
+   "overlap_audit": {
+    "covariate": "(start cell, clamped target offset, rich)",
+    "wall_vs_clear_only": {
+     "deterministic_strata": 350,
+     "mixed_strata": 0,
+     "overlap_share": 0.0,
+     "strata": 350,
+     "unit_rounds": 712,
+     "unit_rounds_in_deterministic_strata": 712,
+     "unit_rounds_in_mixed_strata": 0
+    },
+    "with_rich": {
+     "deterministic_strata": 389,
+     "mixed_strata": 18,
+     "overlap_share": 0.08961038961038961,
+     "strata": 407,
+     "unit_rounds": 770,
+     "unit_rounds_in_deterministic_strata": 701,
+     "unit_rounds_in_mixed_strata": 69
+    },
+    "without_rich": {
+     "deterministic_strata": 354,
+     "mixed_strata": 19,
+     "overlap_share": 0.10779220779220779,
+     "strata": 373,
+     "unit_rounds": 770,
+     "unit_rounds_in_deterministic_strata": 687,
+     "unit_rounds_in_mixed_strata": 83
+    }
+   },
+   "pool": {
+    "achievable_repair_all_blocked_gold_per_game": {
+     "mean": 423.4417344173442,
+     "median": 408.5365853658537,
+     "n": 3,
+     "p10": 358.739837398374,
+     "p90": 503.04878048780495,
+     "sd": 73.30000249033091,
+     "se": 42.319776169392796
+    },
+    "achievable_repair_gold_per_game": {
+     "mean": 286.24661246612465,
+     "median": 298.7804878048781,
+     "n": 3,
+     "p10": 258.130081300813,
+     "p90": 301.82926829268297,
+     "sd": 24.39730024394425,
+     "se": 14.085787863341336
+    },
+    "blocked_per_game": {
+     "mean": 191.05691056910572,
+     "median": 198.1707317073171,
+     "n": 3,
+     "p10": 160.56910569105693,
+     "p90": 214.4308943089431,
+     "sd": 27.626579713553216,
+     "se": 15.950213234408604
+    },
+    "magic_wall_removal_gold_per_game": {
+     "mean": 212.39837398373984,
+     "median": 270.32520325203257,
+     "n": 3,
+     "p10": -12.195121951219512,
+     "p90": 379.06504065040656,
+     "sd": 201.95981499192152,
+     "se": 116.60155355107291
+    },
+    "novel_gold_per_game": {
+     "mean": 38.61788617886179,
+     "median": 36.58536585365854,
+     "n": 3,
+     "p10": 32.520325203252035,
+     "p90": 46.7479674796748,
+     "sd": 7.3283562509430675,
+     "se": 4.231028454199457
+    },
+    "novel_share": {
+     "mean": 0.13814669997465698,
+     "median": 0.12121212121212122,
+     "n": 3,
+     "p10": 0.10774410774410774,
+     "p90": 0.18548387096774194,
+     "sd": 0.04154458646941948,
+     "se": 0.02398577818149102
+    },
+    "position_preserving_gold_per_game": {
+     "mean": 24.7289972899729,
+     "median": 26.42276422764228,
+     "n": 3,
+     "p10": 19.308943089430898,
+     "p90": 28.45528455284553,
+     "sd": 4.8026581567607805,
+     "se": 2.7728159796315888
+    },
+    "published_style_pool_gold_per_game": {
+     "mean": 267.09768124368105,
+     "median": 265.25718688559436,
+     "n": 3,
+     "p10": 262.40295331896135,
+     "p90": 273.6329035264875,
+     "sd": 5.8368236248400445,
+     "se": 3.369891691013767
+    },
+    "scale_to_1000_unit_rounds": {
+     "mean": 1.016260162601626,
+     "median": 1.016260162601626,
+     "n": 3,
+     "p10": 1.016260162601626,
+     "p90": 1.016260162601626,
+     "sd": 0.0,
+     "se": 0.0
+    },
+    "steady_unit_rounds_measured": {
+     "mean": 984.0,
+     "median": 984,
+     "n": 3,
+     "p10": 984,
+     "p90": 984,
+     "sd": 0.0,
+     "se": 0.0
+    },
+    "target_detour_gold_per_game": {
+     "mean": -199.5257452574526,
+     "median": -324.1869918699187,
+     "n": 3,
+     "p10": -417.68292682926835,
+     "p90": 143.2926829268293,
+     "sd": 300.5473814401599,
+     "se": 173.52111157871346
+    },
+    "timing_gold_per_game": {
+     "mean": 246.61246612466127,
+     "median": 265.2439024390244,
+     "n": 3,
+     "p10": 205.28455284552848,
+     "p90": 269.3089430894309,
+     "sd": 35.84868827276674,
+     "se": 20.69724982437686
+    },
+    "wall_blocked_per_game": {
+     "mean": 107.3848238482385,
+     "median": 109.75609756097562,
+     "n": 3,
+     "p10": 101.62601626016261,
+     "p90": 110.77235772357724,
+     "sd": 5.013092339752281,
+     "se": 2.8943102118284303
+    }
+   },
+   "published_blocked_rate": 0.245,
+   "reconstruction_mismatches_total": 27,
+   "trajectory_identical_all": true
+  },
+  "map3": {
+   "block_runs": {
+    "max_run_length": {
+     "mean": 16.666666666666668,
+     "median": 12,
+     "n": 3,
+     "p10": 9,
+     "p90": 29,
+     "sd": 10.785793124908958,
+     "se": 6.227180564089802
+    },
+    "mean_run_length": {
+     "mean": 2.070586257899691,
+     "median": 1.8445945945945945,
+     "n": 3,
+     "p10": 1.8,
+     "p90": 2.5671641791044775,
+     "sd": 0.4306267448008944,
+     "se": 0.24862246703104868
+    },
+    "median_run_length": {
+     "mean": 1.6666666666666667,
+     "median": 2.0,
+     "n": 3,
+     "p10": 1,
+     "p90": 2.0,
+     "sd": 0.5773502691896257,
+     "se": 0.3333333333333333
+    },
+    "p90_run_length": {
+     "mean": 3.3333333333333335,
+     "median": 3,
+     "n": 3,
+     "p10": 3,
+     "p90": 4,
+     "sd": 0.5773502691896257,
+     "se": 0.3333333333333333
+    },
+    "runs": {
+     "mean": 145.66666666666666,
+     "median": 148,
+     "n": 3,
+     "p10": 134,
+     "p90": 155,
+     "sd": 10.692676621563626,
+     "se": 6.173419725817378
+    },
+    "share_of_runs_length_1": {
+     "mean": 0.5140051703123442,
+     "median": 0.49324324324324326,
+     "n": 3,
+     "p10": 0.4552238805970149,
+     "p90": 0.5935483870967742,
+     "sd": 0.07146125164253339,
+     "se": 0.041258172872444245
+    }
+   },
+   "blocked_rate_all_unit_rounds": {
+    "mean": 0.30352303523035234,
+    "median": 0.28353658536585363,
+    "n": 3,
+    "p10": 0.2774390243902439,
+    "p90": 0.34959349593495936,
+    "sd": 0.040014504552897776,
+    "se": 0.02310238497510504
+   },
+   "blocked_rate_routed_unit_rounds": {
+    "mean": 0.35814006112785063,
+    "median": 0.3373639661426844,
+    "n": 3,
+    "p10": 0.326555023923445,
+    "p90": 0.4105011933174224,
+    "sd": 0.04566699498658823,
+    "se": 0.026365851848588008
+   },
+   "cause_share_of_blocks": {
+    "bomb": {
+     "mean": 0.1946299685421966,
+     "median": 0.14652014652014653,
+     "n": 3,
+     "p10": 0.11469534050179211,
+     "p90": 0.3226744186046512,
+     "sd": 0.11202562413739899,
+     "se": 0.06467802425186314
+    },
+    "bounds": {
+     "mean": 0.0,
+     "median": 0.0,
+     "n": 3,
+     "p10": 0.0,
+     "p90": 0.0,
+     "sd": 0.0,
+     "se": 0.0
+    },
+    "wall": {
+     "mean": 0.8053700314578034,
+     "median": 0.8534798534798534,
+     "n": 3,
+     "p10": 0.6773255813953488,
+     "p90": 0.8853046594982079,
+     "sd": 0.11202562413739899,
+     "se": 0.06467802425186314
+    }
+   },
+   "central_wall_share_of_all_blocks": {
+    "mean": 0.17287220156687524,
+    "median": 0.20430107526881722,
+    "n": 3,
+    "p10": 0.0872093023255814,
+    "p90": 0.2271062271062271,
+    "sd": 0.07505743112710343,
+    "se": 0.04333442806591496
+   },
+   "central_wall_share_of_wall_blocks": {
+    "mean": 0.20853967205898538,
+    "median": 0.23076923076923078,
+    "n": 3,
+    "p10": 0.12875536480686695,
+    "p90": 0.26609442060085836,
+    "sd": 0.07131703178018178,
+    "se": 0.04117490749609305
+   },
+   "class_table": {
+    "bomb_blocked": {
+     "d_hist": {
+      "1": 8,
+      "2": 95,
+      "3": 41,
+      "4": 37,
+      "5": 1,
+      "6": 1
+     },
+     "free_gain_per_unit_round": 2.5027322404371586,
+     "free_joint_gain_per_unit_round": 2.5027322404371586,
+     "free_joint_gain_zero_share": 0.5245901639344263,
+     "free_net_per_unit_round": 2.3060109289617485,
+     "magic_gain_per_unit_round": -29.453551912568305,
+     "mean_d": 2.622950819672131,
+     "mean_supply3": 1.1311475409836065,
+     "mean_target_value": 6.956284153005464,
+     "moves_per_unit_round": 0.6174863387978142,
+     "net_per_unit_round": -0.19672131147540983,
+     "pickup_per_unit_round": 0.060109289617486336,
+     "posfix_joint_gain_per_unit_round": 0.6010928961748634,
+     "reach_burn_delta_given_reachable": 26.95275590551181,
+     "reach_burn_delta_per_unit_round": 18.704918032786885,
+     "reach_joint_gain_given_reachable": -21.094488188976378,
+     "reach_joint_gain_per_unit_round": -14.639344262295081,
+     "reach_pickup_delta_given_reachable": 5.858267716535433,
+     "reach_pickup_delta_per_unit_round": 4.065573770491803,
+     "target_mode_share": {
+      "blind": 0.24043715846994534,
+      "has": 0.7595628415300546,
+      "standing": 0.0
+     },
+     "target_reachable_rate": 0.6939890710382514,
+     "unit_rounds": 183,
+     "zero_pickup_rate": 0.9617486338797814
+    },
+    "clear": {
+     "d_hist": {
+      "1": 746,
+      "2": 549,
+      "3": 265,
+      "4": 38,
+      "5": 4,
+      "6": 3
+     },
+     "free_gain_per_unit_round": 1.1514018691588785,
+     "free_joint_gain_per_unit_round": 1.2355140186915887,
+     "free_joint_gain_zero_share": 0.7202492211838006,
+     "free_net_per_unit_round": 3.8186915887850468,
+     "magic_gain_per_unit_round": null,
+     "mean_d": 1.7626168224299066,
+     "mean_supply3": 1.063551401869159,
+     "mean_target_value": 4.77196261682243,
+     "moves_per_unit_round": 2.614953271028037,
+     "net_per_unit_round": 2.6672897196261682,
+     "pickup_per_unit_round": 3.0909657320872275,
+     "posfix_joint_gain_per_unit_round": null,
+     "reach_burn_delta_given_reachable": null,
+     "reach_burn_delta_per_unit_round": null,
+     "reach_joint_gain_given_reachable": null,
+     "reach_joint_gain_per_unit_round": null,
+     "reach_pickup_delta_given_reachable": null,
+     "reach_pickup_delta_per_unit_round": null,
+     "target_mode_share": {
+      "blind": 0.30218068535825543,
+      "has": 0.6978193146417445,
+      "standing": 0.0
+     },
+     "target_reachable_rate": null,
+     "unit_rounds": 1605,
+     "zero_pickup_rate": 0.44174454828660437
+    },
+    "fold": {
+     "d_hist": {
+      "0": 451
+     },
+     "free_gain_per_unit_round": 0.6651884700665188,
+     "free_joint_gain_per_unit_round": 0.647450110864745,
+     "free_joint_gain_zero_share": 0.7760532150776053,
+     "free_net_per_unit_round": 0.4634146341463415,
+     "magic_gain_per_unit_round": null,
+     "mean_d": 0.0,
+     "mean_supply3": 0.015521064301552107,
+     "mean_target_value": 0.09977827050997783,
+     "moves_per_unit_round": 1.957871396895787,
+     "net_per_unit_round": -0.2017738359201774,
+     "pickup_per_unit_round": 0.11086474501108648,
+     "posfix_joint_gain_per_unit_round": null,
+     "reach_burn_delta_given_reachable": null,
+     "reach_burn_delta_per_unit_round": null,
+     "reach_joint_gain_given_reachable": null,
+     "reach_joint_gain_per_unit_round": null,
+     "reach_pickup_delta_given_reachable": null,
+     "reach_pickup_delta_per_unit_round": null,
+     "target_mode_share": {
+      "blind": 0.9667405764966741,
+      "has": 0.015521064301552107,
+      "standing": 0.017738359201773836
+     },
+     "target_reachable_rate": null,
+     "unit_rounds": 451,
+     "zero_pickup_rate": 0.9334811529933481
+    },
+    "wall_blocked": {
+     "d_hist": {
+      "2": 121,
+      "3": 291,
+      "4": 224,
+      "5": 53,
+      "6": 24
+     },
+     "free_gain_per_unit_round": 1.2272089761570828,
+     "free_joint_gain_per_unit_round": 1.214586255259467,
+     "free_joint_gain_zero_share": 0.635343618513324,
+     "free_net_per_unit_round": 1.0659186535764376,
+     "magic_gain_per_unit_round": 0.07012622720897616,
+     "mean_d": 3.394109396914446,
+     "mean_supply3": 0.5582047685834503,
+     "mean_target_value": 3.102384291725105,
+     "moves_per_unit_round": 0.8345021037868162,
+     "net_per_unit_round": -0.16129032258064516,
+     "pickup_per_unit_round": 0.051893408134642355,
+     "posfix_joint_gain_per_unit_round": 0.3884992987377279,
+     "reach_burn_delta_given_reachable": 5.07177033492823,
+     "reach_burn_delta_per_unit_round": 1.4866760168302946,
+     "reach_joint_gain_given_reachable": -2.38755980861244,
+     "reach_joint_gain_per_unit_round": -0.699859747545582,
+     "reach_pickup_delta_given_reachable": 2.6842105263157894,
+     "reach_pickup_delta_per_unit_round": 0.7868162692847125,
+     "target_mode_share": {
+      "blind": 0.5638148667601683,
+      "has": 0.4361851332398317,
+      "standing": 0.0
+     },
+     "target_reachable_rate": 0.29312762973352036,
+     "unit_rounds": 713,
+     "zero_pickup_rate": 0.9593267882187938
+    }
+   },
+   "hit_rate_axis": {
+    "all_blocked_convertible_pp_of_hit_rate": {
+     "mean": 11.314363143631434,
+     "median": 10.670731707317072,
+     "n": 3,
+     "p10": 9.959349593495935,
+     "p90": 13.3130081300813,
+     "sd": 1.7670462541659857,
+     "se": 1.0202046305132517
+    },
+    "base_hit_rate": {
+     "mean": 0.32588075880758804,
+     "median": 0.32621951219512196,
+     "n": 3,
+     "p10": 0.30691056910569103,
+     "p90": 0.3445121951219512,
+     "sd": 0.01880310174305951,
+     "se": 0.01085597585295533
+    },
+    "wall_blocked_convertible_pp_of_hit_rate": {
+     "mean": 8.502710027100271,
+     "median": 8.841463414634147,
+     "n": 3,
+     "p10": 7.723577235772358,
+     "p90": 8.94308943089431,
+     "sd": 0.6766593616340848,
+     "se": 0.3906694645891192
+    },
+    "wall_blocked_convertible_unit_rounds": {
+     "mean": 83.66666666666667,
+     "median": 87,
+     "n": 3,
+     "p10": 76,
+     "p90": 88,
+     "sd": 6.6583281184793925,
+     "se": 3.844187531556932
+    }
+   },
+   "matched_contrast": {
+    "blocked_unit_rounds": 233,
+    "blocked_unit_rounds_matched": 159,
+    "keys": [
+     "target_mode",
+     "d",
+     "target_value_bucket",
+     "supply_bucket"
+    ],
+    "matched_share": 0.6824034334763949,
+    "per_stratum_top": [
+     {
+      "blocked_n": 38,
+      "blocked_pickup": 0.0,
+      "clear_n": 15,
+      "clear_pickup": 0.06666666666666667,
+      "gap": 0.06666666666666667,
+      "stratum": [
+       "blind",
+       3,
+       0,
+       0
+      ]
+     },
+     {
+      "blocked_n": 24,
+      "blocked_pickup": 0.08333333333333333,
+      "clear_n": 44,
+      "clear_pickup": 0.022727272727272728,
+      "gap": -0.0606060606060606,
+      "stratum": [
+       "blind",
+       2,
+       0,
+       0
+      ]
+     },
+     {
+      "blocked_n": 23,
+      "blocked_pickup": 0.0,
+      "clear_n": 26,
+      "clear_pickup": 3.1538461538461537,
+      "gap": 3.1538461538461537,
+      "stratum": [
+       "has",
+       3,
+       2,
+       1
+      ]
+     },
+     {
+      "blocked_n": 17,
+      "blocked_pickup": 0.23529411764705882,
+      "clear_n": 5,
+      "clear_pickup": 0.0,
+      "gap": -0.23529411764705882,
+      "stratum": [
+       "has",
+       4,
+       2,
+       1
+      ]
+     },
+     {
+      "blocked_n": 16,
+      "blocked_pickup": 0.0,
+      "clear_n": 2,
+      "clear_pickup": 1.5,
+      "gap": 1.5,
+      "stratum": [
+       "blind",
+       5,
+       0,
+       0
+      ]
+     },
+     {
+      "blocked_n": 14,
+      "blocked_pickup": 0.0,
+      "clear_n": 20,
+      "clear_pickup": 1.65,
+      "gap": 1.65,
+      "stratum": [
+       "has",
+       3,
+       1,
+       1
+      ]
+     },
+     {
+      "blocked_n": 6,
+      "blocked_pickup": 0.0,
+      "clear_n": 2,
+      "clear_pickup": 6.0,
+      "gap": 6.0,
+      "stratum": [
+       "has",
+       3,
+       2,
+       2
+      ]
+     },
+     {
+      "blocked_n": 5,
+      "blocked_pickup": 0.0,
+      "clear_n": 54,
+      "clear_pickup": 4.462962962962963,
+      "gap": 4.462962962962963,
+      "stratum": [
+       "has",
+       2,
+       2,
+       1
+      ]
+     },
+     {
+      "blocked_n": 3,
+      "blocked_pickup": 0.0,
+      "clear_n": 10,
+      "clear_pickup": 7.2,
+      "gap": 7.2,
+      "stratum": [
+       "has",
+       3,
+       3,
+       1
+      ]
+     },
+     {
+      "blocked_n": 3,
+      "blocked_pickup": 0.0,
+      "clear_n": 4,
+      "clear_pickup": 0.5,
+      "gap": 0.5,
+      "stratum": [
+       "has",
+       4,
+       3,
+       1
+      ]
+     },
+     {
+      "blocked_n": 2,
+      "blocked_pickup": 0.0,
+      "clear_n": 1,
+      "clear_pickup": 0.0,
+      "gap": 0.0,
+      "stratum": [
+       "blind",
+       6,
+       0,
+       0
+      ]
+     },
+     {
+      "blocked_n": 2,
+      "blocked_pickup": 0.0,
+      "clear_n": 20,
+      "clear_pickup": 2.25,
+      "gap": 2.25,
+      "stratum": [
+       "has",
+       2,
+       1,
+       1
+      ]
+     }
+    ],
+    "raw_gap": 3.15651335337353,
+    "strata_blocked": 25,
+    "strata_clear": 33,
+    "strata_common": 17,
+    "weighted_gap": 1.3752481314215836
+   },
+   "overlap_audit": {
+    "covariate": "(start cell, clamped target offset, rich)",
+    "wall_vs_clear_only": {
+     "deterministic_strata": 241,
+     "mixed_strata": 0,
+     "overlap_share": 0.0,
+     "strata": 241,
+     "unit_rounds": 727,
+     "unit_rounds_in_deterministic_strata": 727,
+     "unit_rounds_in_mixed_strata": 0
+    },
+    "with_rich": {
+     "deterministic_strata": 267,
+     "mixed_strata": 27,
+     "overlap_share": 0.20763723150357996,
+     "strata": 294,
+     "unit_rounds": 838,
+     "unit_rounds_in_deterministic_strata": 664,
+     "unit_rounds_in_mixed_strata": 174
+    },
+    "without_rich": {
+     "deterministic_strata": 224,
+     "mixed_strata": 29,
+     "overlap_share": 0.22553699284009546,
+     "strata": 253,
+     "unit_rounds": 838,
+     "unit_rounds_in_deterministic_strata": 649,
+     "unit_rounds_in_mixed_strata": 189
+    }
+   },
+   "pool": {
+    "achievable_repair_all_blocked_gold_per_game": {
+     "mean": 448.509485094851,
+     "median": 421.74796747967486,
+     "n": 3,
+     "p10": 394.30894308943095,
+     "p90": 529.4715447154472,
+     "sd": 71.44484822839802,
+     "se": 41.24870235687755
+    },
+    "achievable_repair_gold_per_game": {
+     "mean": 293.3604336043361,
+     "median": 290.6504065040651,
+     "n": 3,
+     "p10": 275.4065040650407,
+     "p90": 314.0243902439025,
+     "sd": 19.45105314357127,
+     "se": 11.23007076846259
+    },
+    "blocked_per_game": {
+     "mean": 303.5230352303523,
+     "median": 283.5365853658537,
+     "n": 3,
+     "p10": 277.4390243902439,
+     "p90": 349.5934959349594,
+     "sd": 40.014504552897776,
+     "se": 23.10238497510504
+    },
+    "magic_wall_removal_gold_per_game": {
+     "mean": 16.93766937669377,
+     "median": -7.1138211382113825,
+     "n": 3,
+     "p10": -153.45528455284554,
+     "p90": 211.38211382113823,
+     "sd": 183.6040235399695,
+     "se": 106.00383241509978
+    },
+    "novel_gold_per_game": {
+     "mean": 21.002710027100274,
+     "median": 15.243902439024392,
+     "n": 3,
+     "p10": 7.1138211382113825,
+     "p90": 40.650406504065046,
+     "sd": 17.494242999560107,
+     "se": 10.100305905064754
+    },
+    "novel_share": {
+     "mean": 0.08364977641741793,
+     "median": 0.0528169014084507,
+     "n": 3,
+     "p10": 0.03684210526315789,
+     "p90": 0.16129032258064516,
+     "sd": 0.0677114416798526,
+     "se": 0.03909321908108055
+    },
+    "position_preserving_gold_per_game": {
+     "mean": 93.83468834688347,
+     "median": 84.34959349593497,
+     "n": 3,
+     "p10": 78.25203252032522,
+     "p90": 118.90243902439025,
+     "sd": 21.92234374981495,
+     "se": 12.656871065223172
+    },
+    "published_style_pool_gold_per_game": {
+     "mean": 733.0743088455866,
+     "median": 747.4264342845859,
+     "n": 3,
+     "p10": 681.0055783039583,
+     "p90": 770.7909139482159,
+     "sd": 46.58153338663914,
+     "se": 26.893860840041647
+    },
+    "scale_to_1000_unit_rounds": {
+     "mean": 1.016260162601626,
+     "median": 1.016260162601626,
+     "n": 3,
+     "p10": 1.016260162601626,
+     "p90": 1.016260162601626,
+     "sd": 0.0,
+     "se": 0.0
+    },
+    "steady_unit_rounds_measured": {
+     "mean": 984.0,
+     "median": 984,
+     "n": 3,
+     "p10": 984,
+     "p90": 984,
+     "sd": 0.0,
+     "se": 0.0
+    },
+    "target_detour_gold_per_game": {
+     "mean": -169.0379403794038,
+     "median": -119.91869918699189,
+     "n": 3,
+     "p10": -311.9918699186992,
+     "p90": -75.20325203252033,
+     "sd": 125.80436113903387,
+     "se": 72.63318176885011
+    },
+    "timing_gold_per_game": {
+     "mean": 223.57723577235774,
+     "median": 211.38211382113823,
+     "n": 3,
+     "p10": 185.97560975609758,
+     "p90": 273.3739837398374,
+     "sd": 44.9573096760054,
+     "se": 25.956114843483086
+    },
+    "wall_blocked_per_game": {
+     "mean": 241.53116531165313,
+     "median": 236.78861788617888,
+     "n": 3,
+     "p10": 236.78861788617888,
+     "p90": 251.01626016260164,
+     "sd": 8.214333098226378,
+     "se": 4.742547425474252
+    }
+   },
+   "published_blocked_rate": 0.367,
+   "reconstruction_mismatches_total": 30,
+   "trajectory_identical_all": true
+  }
+ },
+ "instruction_price": {
+  "caveats": [
+   "11 gold/ns holds only inside the +-20ns crossover band (src/INFRA.md \u00a72.5)",
+   "1.6 gold/instruction is an average; the frozen header records 84 instructions deleted returning only 5.6 cycles, six times below average"
+  ],
+  "gold_per_instruction_average": 1.5994
+ },
+ "map1_deficit_reference": {
+  "T1_map1_n6": {
+   "losses": 5,
+   "mean": -274.3333333333333,
+   "note": "independently reproduced here from sim/analyze_gold_delta.py net_delta over family t1f1: deltas [-688,-600,-383,-199,-90,+314]; undecidable at 2 sigma",
+   "se": 149.97525721857517,
+   "sigma": 1.829190617313079,
+   "wins": 1
+  },
+  "Tundra_map1_anchor_proven_n18": {
+   "mean": -251.7777777777778,
+   "se": 57.0052,
+   "sigma": 4.42
+  },
+  "Tundra_map1_pooled_n24": {
+   "losses": 21,
+   "mean": -289.0416666666667,
+   "note": "four f18064c baseline arms inside one 12-minute window; between-batch sd of arm means 141.5 (frTu1 -219.2, a2A0 -123.5, alA0 -400.8, lnA0 -412.7) -- heterogeneous but pooled per orchestrator instruction",
+   "se": 54.65191164319908,
+   "sigma": 5.2887750487797485,
+   "wins": 3
+  },
+  "hit_rate_frame": {
+   "hit_rate_pp_needed": {
+    "T-1 map1": 5.9,
+    "Tundra map1": 6.1
+   },
+   "source": "sim/reports/gold_delta_channel.json",
+   "theirs_over_ours_hit_ratio": {
+    "T-1 map1": 1.269,
+    "Tundra map1": 1.397,
+    "Tundra map3": 0.81
+   }
+  },
+  "retired": {
+   "reason": "no n stated in any repo file, no archived build family exceeds 6 replicates (sim/analyze_gold_delta.py survey --min 8 returns empty for both opponents), and the sibling's impossibility proof shows the 20 best Tundra map1 games in the corpus sum to -2234 (mean -111.70) against the -708 the figure requires",
+   "value": "-35.4 +- 45.5 (src/CHANGELOG.md line 167, 'frozen baseline')"
+  },
+  "source": "sim/reports/archive_backfill.json -> map1_adjudication (sibling agent, primary platform logs, orchestrator-adopted)"
+ },
+ "platform_games_consumed": 0,
+ "pricing_ladder_gold_per_game": {
+  "identified_achievable_repair_open_loop": {
+   "mean": 283.9430894308943,
+   "se": 26.423936809503953
+  },
+  "novel_gold": {
+   "mean": 33.739837398373986,
+   "se": 7.84168362758554
+  },
+  "position_preserving_open_loop": {
+   "mean": 42.47967479674797,
+   "se": 13.605746318032166
+  },
+  "published_arithmetic_on_measured_inputs": {
+   "mean": 428.2512062442887,
+   "se": 35.497335935075135
+  },
+  "published_claim": 920.0,
+  "target_reaching_detour_open_loop": {
+   "mean": -152.84552845528455,
+   "se": 76.89443723803782
+  },
+  "timing_gold": {
+   "mean": 237.1951219512195,
+   "se": 27.89185215702409
+  },
+  "unphysical_wall_removal": {
+   "mean": 316.26016260162606,
+   "se": 43.87537746206514
+  }
+ },
+ "primary_map": "map1",
+ "schema_version": 1,
+ "subject": "map1 blocked-routing repricing and the 920 gold/game pool verdict",
+ "the_920_figure": {
+  "candidates": [
+   {
+    "count": 373.0,
+    "error_vs_920": 193.03199999999993,
+    "gap": 2.984,
+    "name": "A: all blocked unit-rounds x (clear - wall gap)",
+    "reproduces_920": false,
+    "value": 1113.032
+   },
+   {
+    "count": 308.09799999999996,
+    "error_vs_920": -0.6355680000001485,
+    "gap": 2.984,
+    "name": "B: wall-blocked unit-rounds x (clear - wall gap)",
+    "reproduces_920": true,
+    "value": 919.3644319999999
+   },
+   {
+    "count": 373.0,
+    "error_vs_920": 195.23866799999996,
+    "gap": null,
+    "name": "C: wall+bomb split, each with its own gap",
+    "reproduces_920": false,
+    "value": 1115.238668
+   },
+   {
+    "count": 373.0,
+    "error_vs_920": 216.904,
+    "gap": 3.048,
+    "name": "D: all blocked unit-rounds x clear pickup (no counterfactual credit)",
+    "reproduces_920": false,
+    "value": 1136.904
+   },
+   {
+    "count": 234.617,
+    "error_vs_920": -219.902872,
+    "gap": 2.984,
+    "name": "E: central-wall blocks only x (clear - wall gap)",
+    "reproduces_920": false,
+    "value": 700.097128
+   }
+  ],
+  "gap_clear_minus_bomb_blocked": 3.0180000000000002,
+  "gap_clear_minus_wall_blocked": 2.984,
+  "identified_denominator": "B: wall-blocked unit-rounds x (clear - wall gap)",
+  "published_pool": 920.0
+ },
+ "verdict": {
+  "map1_central_wall_lesion_is": "false premise (\u4f2a\u547d\u9898)",
+  "one_sentence": "The 920 gold/game map1 wall pool is a mirage -- its arithmetic applies a routed-decision rate to an all-unit-round base and then multiplies by a conditional-mean gap whose two arms share exactly zero common support, the wall-detour mechanism it motivated is reproducibly negative (-124.4 +- 56.1 gold/game over 12 paired games, matching the platform's -51.5 +- 94), and even an unimplementable perfect per-round repair of the whole blocked class is only +90.6 +- 58.9 (1.54 sigma, undecidable) -- so the map1 central-wall lesion is a false premise and this path is closed.",
+  "pool_920_is": "mirage",
+  "residual_real_cost": "Upper bound +90.6 +- 58.9 gold/game on map1 (perfect per-round three-step play on blocked unit-rounds only, n=12 paired, 1.54 sigma = NOT established; map2 +113.0 +- 80.6, map3 +94.5 +- 91.2, both undecidable). It is not a wall repair: the oracle arrives at the blocked target in only 11.3% of substitutions and never returns to its start cell; 75% of its extra gold comes from OTHER visible >=3 cells. Cost of the cheapest known implementation shape (CHANGELOG gate C-2: +224B text, ~+105 instructions, +27 cycles P50) is 55-77 gold/game, comparable to the whole unestablished bound, with a live risk of the 23db121 platform latency surprise (local +10ns -> platform +27.5ns)."
+ }
+}
