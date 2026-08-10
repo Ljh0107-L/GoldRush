@@ -1,0 +1,3779 @@
+{
+ "acceptance_rule": {
+  "formula": "accept iff margin - max(2*SE, abs(calibrated - uniform)) > 0 AND the sign agrees on a disjoint out-of-sample seed set",
+  "undecidable_rule": "if SE > 20 the row is reported as undecidable; if the two-field term exceeds the effect the row is reported as undecidable on this apparatus",
+  "why_two_terms": "2*SE is statistical and shrinks with n; abs(calibrated - uniform) is apparatus bias and does NOT shrink with n, because the repo simulator places central gold uniformly over region 1 and so has no gradient inside the central 9x9 where the measured gradient lives"
+ },
+ "baseline": {
+  "commit": "fd47ea6",
+  "condition": "extracted with git show and sha256-asserted before every build; src/player.cpp was never written by this line",
+  "path": "src/player.cpp",
+  "sha256": "df270cd3d638046d6a90d4c6ccabd540759d8a66aa5cfa59fecc357db1bae217"
+ },
+ "boundaries": [
+  "the 51.1% baseline behind the +17.6 pp gap has three known biases (older published build, self-selected challengers, unstratified) and the real starting point after the published slot got 18x faster is unknown, so +17.6 pp is an estimate not a measurement",
+  "every pp figure carries an unknown multiplier: the +40 gold ~ +2 pp rate uses the sigma of our own paired A/B dispersion while field-wide per-game sigma is larger, and a 4.7x discrepancy in the exchange rate is unresolved, so do not convert these gold figures to pp",
+  "everything is self-play against our own unmodified fd47ea6; transfer to the benchmark opponent is unverified",
+  "the local NPC model is over-greedy and over-central, which flatters any centre-local mechanism",
+  "the calibrated field recovers only ~75% of the measured gradient, which is why the two-field difference is printed on every row as a mandatory error term; its DIRECTION differs per candidate (+13.8..+26.6 for the cursor form, -7.6..-15.0 for the stack and colvedge), so a single global claim about simulator optimism would be wrong either way",
+  "simulator margins are gross of latency by construction because dispatch is fixed; the cost term is separate and for this candidate it is NEGATIVE, a favourable-direction correction, so it is reported under both weightings and neither is silently adopted"
+ ],
+ "candidate_A_k_1_5": {
+  "condition": "nofoldpure + cursor5a, compared against base on the identical seed, order arm, field model and map",
+  "idea": "k in {1,5} instead of {0,6}: leave the donor ONE step to walk back to its anchor",
+  "implementation_note": "the donor retained step needs no new code: a blind unit target already IS its anchor, so its own first LUT action is already the step toward the anchor",
+  "income": "see candidate_B_trigger_widening.income_* rows under arm a5",
+  "same_stream_delta_instructions": -0.62,
+  "why": "this line measured the reallocated tail moving the producer by under 0.05 rings and net INWARD on map2, yet the pooled mean ring rises +0.173 on BOTH units, so the drift is donor-freeze and donating all three slots is over-donation"
+ },
+ "candidate_B_trigger_widening": {
+  "ceiling_verdict": "CLOSED, and this is the mechanism ceiling rather than an implementation failure.  Gold per firing collapses 16x (0.520 -> 0.393 -> 0.263 -> 0.032) and the TOTAL falls monotonically the moment the trigger widens past blind (+107.6 at 41% -> +101.3 at 52% -> +84.1 at 64% -> +13.8 at 85%).  Marginal value falls faster than firing rate rises, immediately, so the blind trigger IS the optimum and the +265 linear extrapolation is refuted -- it extrapolated from the zero-opportunity-cost extreme.  The collapse mechanism is measured: mean ring rises monotonically with permissiveness (nc -0.047 inward -> f34 +0.090) while our own scoring rounds fall monotonically (-13.9 -> -57.7) and the opponent rise (+2.8) at full widening",
+  "condition": "each level is nofold or nofoldpure plus that predicate, compared against base on the identical seed, order arm, field model and map; map2 is judged first because it is the only convertible per-map line within reach",
+  "cost": {
+   "D": {
+    "arms": {
+     "a5": -0.6179999999999382,
+     "base": 0.0,
+     "d0": 87.52002000000005,
+     "d1": 89.420703,
+     "d2": 86.80601999999999,
+     "d34": 82.627477,
+     "nc": -42.06998699999997,
+     "ncp": -6.36600999999996
+    },
+    "same_stream_base_instructions": 802.80436
+   },
+   "E_and_F": {
+    "arms": {
+     "a5": -0.6179700000000139,
+     "base": 0.0,
+     "e1": 4.0140270000000555,
+     "e2": 2.488014000000021,
+     "e34": 6.110013999999978,
+     "f1": -37.637996000000044,
+     "f2": -39.16398300000003,
+     "f34": -35.525980000000004,
+     "ncp": -6.365983000000028
+    },
+    "same_stream_base_instructions": 802.804353
+   }
+  },
+  "firing_rate_and_ring_drift": {
+   "drift_seeds": [
+    "3000",
+    "3001",
+    "3002",
+    "3003"
+   ],
+   "field": "centripetal",
+   "gate": "a step-transfer arm must not raise the mean ring distance; fold_tour died because a three-step tour cannot return to its start on a parity board and walked the unit off the central generation peak",
+   "k_histogram": {
+    "a5": {
+     "game_176022.log": {
+      "1": 94,
+      "3": 298,
+      "5": 108
+     }
+    },
+    "base": {
+     "game_176022.log": {
+      "3": 500
+     }
+    },
+    "f1": {
+     "game_176022.log": {
+      "0": 154,
+      "3": 180,
+      "6": 166
+     }
+    },
+    "f2": {
+     "game_176022.log": {
+      "0": 123,
+      "3": 242,
+      "6": 135
+     }
+    },
+    "f34": {
+     "game_176022.log": {
+      "0": 214,
+      "3": 75,
+      "6": 211
+     }
+    },
+    "nc": {
+     "game_176022.log": {
+      "0": 97,
+      "3": 293,
+      "6": 110
+     }
+    },
+    "ncp": {
+     "game_176022.log": {
+      "0": 94,
+      "3": 298,
+      "6": 108
+     }
+    }
+   },
+   "logs": [
+    "/home/Ubiquant220/tmp/game_176022.log"
+   ],
+   "map": "map2",
+   "ring_by_unit": {
+    "a5": {
+     "both": {
+      "max": 3.272357723577236,
+      "mean": 3.125508130081301,
+      "median": 3.127032520325203,
+      "min": 3.019308943089431,
+      "n": 8,
+      "positive": 8,
+      "sd": 0.09127286901084412,
+      "se": 0.032269832307959684,
+      "sigma": 96.85541902584856,
+      "zero": 0
+     },
+     "both_delta_vs_base": 0.06910569105691033,
+     "unit0": {
+      "max": 3.1016260162601625,
+      "mean": 2.821392276422764,
+      "median": 2.7591463414634143,
+      "min": 2.6402439024390243,
+      "n": 8,
+      "positive": 8,
+      "sd": 0.18216850658488057,
+      "se": 0.06440629316239764,
+      "sigma": 43.806158340905405,
+      "zero": 0
+     },
+     "unit0_delta_vs_base": -0.007367886178861749,
+     "unit1": {
+      "max": 3.6422764227642275,
+      "mean": 3.4296239837398375,
+      "median": 3.434959349593496,
+      "min": 3.180894308943089,
+      "n": 8,
+      "positive": 8,
+      "sd": 0.13733727096271586,
+      "se": 0.04855605780369535,
+      "sigma": 70.63225761871522,
+      "zero": 0
+     },
+     "unit1_delta_vs_base": 0.14557926829268286
+    },
+    "base": {
+     "both": {
+      "max": 3.1778455284552845,
+      "mean": 3.0564024390243905,
+      "median": 3.0614837398373984,
+      "min": 2.8841463414634148,
+      "n": 8,
+      "positive": 8,
+      "sd": 0.09164551494134726,
+      "se": 0.03240158254017985,
+      "sigma": 94.32880123167668,
+      "zero": 0
+     },
+     "unit0": {
+      "max": 2.9857723577235773,
+      "mean": 2.828760162601626,
+      "median": 2.8607723577235773,
+      "min": 2.652439024390244,
+      "n": 8,
+      "positive": 8,
+      "sd": 0.12507492820545474,
+      "se": 0.04422066494524881,
+      "sigma": 63.969191012935134,
+      "zero": 0
+     },
+     "unit1": {
+      "max": 3.522357723577236,
+      "mean": 3.2840447154471546,
+      "median": 3.3241869918699187,
+      "min": 3.018292682926829,
+      "n": 8,
+      "positive": 8,
+      "sd": 0.19613482632645496,
+      "se": 0.06934413286114104,
+      "sigma": 47.358652851328145,
+      "zero": 0
+     }
+    },
+    "f1": {
+     "both": {
+      "max": 3.4197154471544717,
+      "mean": 3.1101371951219514,
+      "median": 3.0584349593495936,
+      "min": 2.8536585365853657,
+      "n": 8,
+      "positive": 8,
+      "sd": 0.1970009531224315,
+      "se": 0.06965035492654223,
+      "sigma": 44.653572812401364,
+      "zero": 0
+     },
+     "both_delta_vs_base": 0.053734756097560954,
+     "unit0": {
+      "max": 3.0365853658536586,
+      "mean": 2.7721036585365852,
+      "median": 2.7621951219512195,
+      "min": 2.4898373983739837,
+      "n": 8,
+      "positive": 8,
+      "sd": 0.17933773355435112,
+      "se": 0.06340546375945395,
+      "sigma": 43.72026469285552,
+      "zero": 0
+     },
+     "unit0_delta_vs_base": -0.056656504065040636,
+     "unit1": {
+      "max": 4.0,
+      "mean": 3.448170731707317,
+      "median": 3.372967479674797,
+      "min": 3.152439024390244,
+      "n": 8,
+      "positive": 8,
+      "sd": 0.30184710975475537,
+      "se": 0.10671906909457379,
+      "sigma": 32.31072722955978,
+      "zero": 0
+     },
+     "unit1_delta_vs_base": 0.16412601626016254
+    },
+    "f2": {
+     "both": {
+      "max": 3.4298780487804876,
+      "mean": 3.194232723577236,
+      "median": 3.230182926829268,
+      "min": 2.9339430894308944,
+      "n": 8,
+      "positive": 8,
+      "sd": 0.15823611067686774,
+      "se": 0.05594491344409911,
+      "sigma": 57.09603477658349,
+      "zero": 0
+     },
+     "both_delta_vs_base": 0.1378302845528454,
+     "unit0": {
+      "max": 3.1666666666666665,
+      "mean": 2.8958333333333335,
+      "median": 2.852642276422764,
+      "min": 2.6260162601626016,
+      "n": 8,
+      "positive": 8,
+      "sd": 0.2268859542688526,
+      "se": 0.08021629840974329,
+      "sigma": 36.10031116795584,
+      "zero": 0
+     },
+     "unit0_delta_vs_base": 0.0670731707317076,
+     "unit1": {
+      "max": 4.095528455284553,
+      "mean": 3.4926321138211383,
+      "median": 3.388211382113821,
+      "min": 3.2052845528455283,
+      "n": 8,
+      "positive": 8,
+      "sd": 0.2864482614933514,
+      "se": 0.10127475408052308,
+      "sigma": 34.48670051614406,
+      "zero": 0
+     },
+     "unit1_delta_vs_base": 0.20858739837398366
+    },
+    "f34": {
+     "both": {
+      "max": 3.3272357723577235,
+      "mean": 3.168064024390244,
+      "median": 3.1392276422764227,
+      "min": 3.0701219512195124,
+      "n": 8,
+      "positive": 8,
+      "sd": 0.09940359941880961,
+      "se": 0.035144479611695714,
+      "sigma": 90.14400154429788,
+      "zero": 0
+     },
+     "both_delta_vs_base": 0.11166158536585336,
+     "unit0": {
+      "max": 3.0934959349593494,
+      "mean": 2.9479166666666665,
+      "median": 2.95630081300813,
+      "min": 2.792682926829268,
+      "n": 8,
+      "positive": 8,
+      "sd": 0.10114834021584977,
+      "se": 0.03576133863619567,
+      "sigma": 82.43306260585409,
+      "zero": 0
+     },
+     "unit0_delta_vs_base": 0.11915650406504064,
+     "unit1": {
+      "max": 3.8252032520325203,
+      "mean": 3.388211382113821,
+      "median": 3.3221544715447155,
+      "min": 3.1747967479674797,
+      "n": 8,
+      "positive": 8,
+      "sd": 0.2210660365924127,
+      "se": 0.07815864678226422,
+      "sigma": 43.35043557692039,
+      "zero": 0
+     },
+     "unit1_delta_vs_base": 0.10416666666666652
+    },
+    "nc": {
+     "both": {
+      "max": 3.203252032520325,
+      "mean": 3.046239837398374,
+      "median": 3.043191056910569,
+      "min": 2.9247967479674797,
+      "n": 8,
+      "positive": 8,
+      "sd": 0.09297530903644455,
+      "se": 0.03287173575129241,
+      "sigma": 92.67048933607364,
+      "zero": 0
+     },
+     "both_delta_vs_base": -0.010162601626016343,
+     "unit0": {
+      "max": 3.1991869918699187,
+      "mean": 2.828252032520325,
+      "median": 2.7703252032520327,
+      "min": 2.5772357723577235,
+      "n": 8,
+      "positive": 8,
+      "sd": 0.23704301358849506,
+      "se": 0.08380736117065989,
+      "sigma": 33.7470598407347,
+      "zero": 0
+     },
+     "unit0_delta_vs_base": -0.000508130081300795,
+     "unit1": {
+      "max": 3.5040650406504064,
+      "mean": 3.2642276422764227,
+      "median": 3.2865853658536586,
+      "min": 2.819105691056911,
+      "n": 8,
+      "positive": 8,
+      "sd": 0.204681385248739,
+      "se": 0.07236579774601976,
+      "sigma": 45.10732616715969,
+      "zero": 0
+     },
+     "unit1_delta_vs_base": -0.01981707317073189
+    },
+    "ncp": {
+     "both": {
+      "max": 3.2621951219512195,
+      "mean": 3.11572662601626,
+      "median": 3.0970528455284554,
+      "min": 2.9908536585365852,
+      "n": 8,
+      "positive": 8,
+      "sd": 0.10135916984152843,
+      "se": 0.035835878165191876,
+      "sigma": 86.9443358316423,
+      "zero": 0
+     },
+     "both_delta_vs_base": 0.0593241869918697,
+     "unit0": {
+      "max": 3.1951219512195124,
+      "mean": 2.9717987804878048,
+      "median": 2.9959349593495936,
+      "min": 2.6707317073170733,
+      "n": 8,
+      "positive": 8,
+      "sd": 0.20959452959390248,
+      "se": 0.07410285658772647,
+      "sigma": 40.103700684866965,
+      "zero": 0
+     },
+     "unit0_delta_vs_base": 0.1430386178861789,
+     "unit1": {
+      "max": 3.569105691056911,
+      "mean": 3.2596544715447155,
+      "median": 3.28150406504065,
+      "min": 2.819105691056911,
+      "n": 8,
+      "positive": 8,
+      "sd": 0.2149363644561019,
+      "se": 0.07599148041524643,
+      "sigma": 42.89499893583755,
+      "zero": 0
+     },
+     "unit1_delta_vs_base": -0.024390243902439046
+    }
+   }
+  },
+  "idea": "the reallocation machine is already paid for, so widen its trigger from \"donor is blind\" to \"the two units reachable value is asymmetric\"",
+  "income_map1": {},
+  "income_map2": {
+   "a5": {
+    "accept": true,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "joint move",
+    "games": 100,
+    "gate": 44.86124398766949,
+    "gate_binding_term": "statistical",
+    "margin": 104.15,
+    "margin_minus_gate": 59.288756012330516,
+    "oos_margin": 90.05,
+    "oos_sign_agrees": true,
+    "our_burn_delta": -0.24,
+    "our_net_delta": 85.25,
+    "our_net_delta_se": 14.951938997935343,
+    "our_scoring_rounds_delta": -8.98,
+    "se": 22.430621993834745,
+    "their_net_delta": -18.9,
+    "their_net_delta_se": 14.445414497341364,
+    "two_field_difference": 7.260000000000005,
+    "two_field_difference_se": 31.072600779334824,
+    "two_se": 44.86124398766949,
+    "uniform_margin": 96.89,
+    "uniform_se": 21.502876927555906,
+    "verdict": "accept",
+    "we_first": 135.04,
+    "we_second": 73.26
+   },
+   "f1": {
+    "accept": true,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "co-gain (ours faster)",
+    "games": 100,
+    "gate": 42.03981451006182,
+    "gate_binding_term": "statistical",
+    "margin": 84.08,
+    "margin_minus_gate": 42.04018548993818,
+    "oos_margin": 61.12,
+    "oos_sign_agrees": true,
+    "our_burn_delta": -37.05,
+    "our_net_delta": 113.05,
+    "our_net_delta_se": 14.586830749451073,
+    "our_scoring_rounds_delta": -32.71,
+    "se": 21.01990725503091,
+    "their_net_delta": 28.97,
+    "their_net_delta_se": 12.832238875015324,
+    "two_field_difference": 13.700000000000003,
+    "two_field_difference_se": 27.858830491670613,
+    "two_se": 42.03981451006182,
+    "uniform_margin": 70.38,
+    "uniform_se": 18.283269274217215,
+    "verdict": "accept",
+    "we_first": 128.16,
+    "we_second": 40.0
+   },
+   "f2": {
+    "accept": true,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "co-gain (ours faster)",
+    "games": 100,
+    "gate": 38.225938573146635,
+    "gate_binding_term": "statistical",
+    "margin": 101.31,
+    "margin_minus_gate": 63.08406142685337,
+    "oos_margin": 97.65,
+    "oos_sign_agrees": true,
+    "our_burn_delta": -11.19,
+    "our_net_delta": 107.59,
+    "our_net_delta_se": 13.126040853389437,
+    "our_scoring_rounds_delta": -19.3,
+    "se": 19.112969286573318,
+    "their_net_delta": 6.28,
+    "their_net_delta_se": 12.302057641802133,
+    "two_field_difference": -10.120000000000005,
+    "two_field_difference_se": 28.423567366152014,
+    "two_se": 38.225938573146635,
+    "uniform_margin": 111.43,
+    "uniform_se": 21.037908329220535,
+    "verdict": "accept",
+    "we_first": 151.76,
+    "we_second": 50.86
+   },
+   "f34": {
+    "accept": false,
+    "apparatus_limited": true,
+    "bit_identical_to_base": 0,
+    "classification": "co-gain (ours faster)",
+    "games": 100,
+    "gate": 38.086607524525895,
+    "gate_binding_term": "statistical",
+    "margin": 13.84,
+    "margin_minus_gate": -24.246607524525896,
+    "oos_margin": 24.08,
+    "oos_sign_agrees": true,
+    "our_burn_delta": -40.97,
+    "our_net_delta": 42.5,
+    "our_net_delta_se": 13.272691642404093,
+    "our_scoring_rounds_delta": -57.68,
+    "se": 19.043303762262948,
+    "their_net_delta": 28.66,
+    "their_net_delta_se": 13.164362821072979,
+    "two_field_difference": 14.86,
+    "two_field_difference_se": 27.889510355665763,
+    "two_se": 38.086607524525895,
+    "uniform_margin": -1.02,
+    "uniform_se": 20.375901690403047,
+    "verdict": "undecidable on this apparatus",
+    "we_first": 8.74,
+    "we_second": 18.94
+   },
+   "nc": {
+    "accept": true,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "joint move",
+    "games": 100,
+    "gate": 39.14242416735287,
+    "gate_binding_term": "statistical",
+    "margin": 107.59,
+    "margin_minus_gate": 68.44757583264713,
+    "oos_margin": 76.01,
+    "oos_sign_agrees": true,
+    "our_burn_delta": -6.71,
+    "our_net_delta": 106.2,
+    "our_net_delta_se": 12.363574717612208,
+    "our_scoring_rounds_delta": -13.92,
+    "se": 19.571212083676436,
+    "their_net_delta": -1.39,
+    "their_net_delta_se": 13.396659428319577,
+    "two_field_difference": 1.5100000000000051,
+    "two_field_difference_se": 29.17411255607175,
+    "two_se": 39.14242416735287,
+    "uniform_margin": 106.08,
+    "uniform_se": 21.635537918205337,
+    "verdict": "accept",
+    "we_first": 167.72,
+    "we_second": 47.46
+   },
+   "ncp": {
+    "accept": true,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "co-gain (ours faster)",
+    "games": 100,
+    "gate": 39.64983146689952,
+    "gate_binding_term": "statistical",
+    "margin": 83.17,
+    "margin_minus_gate": 43.52016853310048,
+    "oos_margin": 41.45,
+    "oos_sign_agrees": true,
+    "our_burn_delta": -8.38,
+    "our_net_delta": 98.0,
+    "our_net_delta_se": 13.091164419507757,
+    "our_scoring_rounds_delta": -16.73,
+    "se": 19.82491573344976,
+    "their_net_delta": 14.83,
+    "their_net_delta_se": 13.976423546512716,
+    "two_field_difference": -25.510000000000005,
+    "two_field_difference_se": 28.693341834937346,
+    "two_se": 39.64983146689952,
+    "uniform_margin": 108.68,
+    "uniform_se": 20.743205678442806,
+    "verdict": "accept",
+    "we_first": 113.84,
+    "we_second": 52.5
+   },
+   "null": {
+    "accept": false,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "pie-shrinking",
+    "games": 100,
+    "gate": 0.0,
+    "gate_binding_term": "statistical",
+    "margin": 0.0,
+    "margin_minus_gate": 0.0,
+    "oos_margin": 0.0,
+    "oos_sign_agrees": false,
+    "our_burn_delta": 0.0,
+    "our_net_delta": 0.0,
+    "our_net_delta_se": 0.0,
+    "our_scoring_rounds_delta": 0.0,
+    "se": 0.0,
+    "their_net_delta": 0.0,
+    "their_net_delta_se": 0.0,
+    "two_field_difference": 0.0,
+    "two_field_difference_se": 0.0,
+    "two_se": 0.0,
+    "uniform_margin": 0.0,
+    "uniform_se": 0.0,
+    "verdict": "reject",
+    "we_first": 0.0,
+    "we_second": 0.0
+   }
+  },
+  "income_map3": {},
+  "ladder_D": {
+   "levels": {
+    "D0": "value(donor)==0 i.e. blind",
+    "D1": "value(donor)<=2",
+    "D2": "value(donor) < value(other)/3",
+    "D34": "always to the richer; D3 and D4 coincide"
+   },
+   "measure": "popcount of the v>2 mask per window row, after the column mask and the row-in-range mask",
+   "verdict": "DEAD ON COST, no games spent: +82.63 to +89.42 instructions same-stream, because the popcount has to sit inside the unrolled AVX row loop and that breaks the vectorised store pattern the delivered scan depends on"
+  },
+  "ladder_E": {
+   "cost_note": "with nofoldpure the E levels are +2.49..+6.11 above the same-stream baseline and are excluded by the at-or-below-baseline rule; paired with nofold (-61.01 on its own) every level is 35.5-39.2 BELOW baseline",
+   "levels": {
+    "E0": "donor blind",
+    "E1": "donor best target in the outer half of the ring priority order",
+    "E2": "outermost fifth",
+    "E34": "always to the better-target unit"
+   },
+   "measure": "bv, the winner of the EXISTING row-min reduction, encoding (ring_priority << 5) | window_index with 0xFFFF meaning no reachable rich cell; smaller bv = better reachable target and bv==0xFFFF is exactly blind, so it is a free ordinal proxy costing one saved int and one compare"
+  }
+ },
+ "combination_g5": {
+  "arm": "g5 = nofold + k in {1,5}",
+  "contrasts_map2": {
+   "a5_minus_ncp_what_k15_contributes": {
+    "delta": 21.0,
+    "se": 29.9,
+    "sigma": 0.7
+   },
+   "condition": "all four arms ran on the SAME map2 seeds, order arms and field models against the same baseline games, so each contrast is a like-for-like difference of two paired margins with a quadrature SE; the informative contrast is against the BETTER PARENT, because measuring against the common baseline double-counts nofold contribution",
+   "g5_minus_a5_beats_other_parent": {
+    "delta": 8.1,
+    "se": 29.7,
+    "sigma": 0.27
+   },
+   "g5_minus_nc_beats_better_parent": {
+    "delta": 4.7,
+    "se": 27.6,
+    "sigma": 0.17
+   },
+   "interaction": {
+    "delta": -16.3,
+    "se": 49.5,
+    "sigma": 0.33
+   },
+   "measured_against_common_baseline": {
+    "delta": 29.1,
+    "se": 27.8
+   },
+   "naive_sum_of_contributions": {
+    "delta": 45.4,
+    "se": 41.0
+   },
+   "nc_minus_ncp_what_nofold_contributes": {
+    "delta": 24.4,
+    "se": 27.8,
+    "sigma": 0.88
+   }
+  },
+  "rows_map2": {
+   "g5": {
+    "accept": true,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "joint move",
+    "games": 100,
+    "gate": 38.92796616180904,
+    "gate_binding_term": "statistical",
+    "margin": 112.27,
+    "margin_minus_gate": 73.34203383819096,
+    "oos_margin": 76.03,
+    "oos_sign_agrees": true,
+    "our_burn_delta": -3.28,
+    "our_net_delta": 88.32,
+    "our_net_delta_se": 13.85554536543897,
+    "our_scoring_rounds_delta": -9.54,
+    "se": 19.46398308090452,
+    "their_net_delta": -23.95,
+    "their_net_delta_se": 12.023826304047269,
+    "two_field_difference": -3.469999999999999,
+    "two_field_difference_se": 30.01563052407155,
+    "two_se": 38.92796616180904,
+    "uniform_margin": 115.74,
+    "uniform_se": 22.849320304635725,
+    "verdict": "accept",
+    "we_first": 147.34,
+    "we_second": 77.2
+   }
+  },
+  "verdict": "not an upgrade: it beats its better parent by +4.7 +- 27.6.  The two members are largely the same gain arriving by two routes"
+ },
+ "construct": {
+  "arms": {
+   "base": {
+    "build_warnings": "",
+    "entry": {
+     "addr": 6736,
+     "addr_hex": "0x1a50",
+     "mod64": 16,
+     "mod64_hex": "0x10"
+    },
+    "entry_mod64_ok": true,
+    "fp16_instructions": 0,
+    "pad": 96,
+    "pad_retuned": false,
+    "pad_search": [
+     {
+      "addr": 6736,
+      "addr_hex": "0x1a50",
+      "mod64": 16,
+      "mod64_hex": "0x10",
+      "pad": 96
+     }
+    ],
+    "patches": [],
+    "rodata_identical_to_base": true,
+    "rodata_sha256": "df87a9bd0bf45865ba0c9d32d10f9726173bc5ed8e2bf5e17b00aab11c72e473",
+    "rodata_size": 1360,
+    "rodata_size_delta": 0,
+    "so": "/home/Ubiquant220/gr_highn/build/base.so",
+    "so_sha256": "7a278c88f4599051fe4620b012f065f583ef44f8553f8b29252d6cf7f0ffe946",
+    "src_sha256": "df270cd3d638046d6a90d4c6ccabd540759d8a66aa5cfa59fecc357db1bae217",
+    "static_instruction_delta": 0,
+    "static_instructions_moveDecision": 640,
+    "text_identical_to_base": true,
+    "text_sha256": "a24f33d4172066346789045f7119fe496122b457f5a824f1e1b89cb67513a854",
+    "text_size": 5267,
+    "text_size_delta": 0
+   },
+   "colvedge": {
+    "build_warnings": "",
+    "entry": {
+     "addr": 6736,
+     "addr_hex": "0x1a50",
+     "mod64": 16,
+     "mod64_hex": "0x10"
+    },
+    "entry_mod64_ok": true,
+    "fp16_instructions": 0,
+    "pad": 96,
+    "pad_retuned": false,
+    "pad_search": [
+     {
+      "addr": 6736,
+      "addr_hex": "0x1a50",
+      "mod64": 16,
+      "mod64_hex": "0x10",
+      "pad": 96
+     }
+    ],
+    "patches": [
+     "colvedge"
+    ],
+    "rodata_identical_to_base": false,
+    "rodata_sha256": "b7049f3f404ed5d380244be9843105734f8661c36f84b9640fb18b2bb9276cdd",
+    "rodata_size": 1360,
+    "rodata_size_delta": 0,
+    "so": "/home/Ubiquant220/gr_highn/build/colvedge.so",
+    "so_sha256": "f297d9ec9c239b3c1fbf785966f3271c5e8dde7ee2e843fc4932d414730044f1",
+    "src_sha256": "b42d6442f1b7032af018a2cc1577d7831bab08d6af6ac569b9066f66b58aa9bc",
+    "static_instruction_delta": 0,
+    "static_instructions_moveDecision": 640,
+    "text_identical_to_base": true,
+    "text_sha256": "a24f33d4172066346789045f7119fe496122b457f5a824f1e1b89cb67513a854",
+    "text_size": 5267,
+    "text_size_delta": 0
+   },
+   "cursor": {
+    "build_warnings": "",
+    "entry": {
+     "addr": 6672,
+     "addr_hex": "0x1a10",
+     "mod64": 16,
+     "mod64_hex": "0x10"
+    },
+    "entry_mod64_ok": true,
+    "fp16_instructions": 0,
+    "pad": 96,
+    "pad_retuned": false,
+    "pad_search": [
+     {
+      "addr": 6672,
+      "addr_hex": "0x1a10",
+      "mod64": 16,
+      "mod64_hex": "0x10",
+      "pad": 96
+     }
+    ],
+    "patches": [
+     "cursor6"
+    ],
+    "rodata_identical_to_base": false,
+    "rodata_sha256": "e3c97f3946bbbb904cbd78cc23cf2dd0202be353fd870e3665e382843edeb6ec",
+    "rodata_size": 1808,
+    "rodata_size_delta": 448,
+    "so": "/home/Ubiquant220/gr_highn/build/cursor.so",
+    "so_sha256": "436dbea75f4254b919993b31357594d8bb289e98975feae83e6723a397b4a6f1",
+    "src_sha256": "e3d455473c54cf9c2a1720adba195cbc3683158c0555f6fb83d4755d91b3a364",
+    "static_instruction_delta": 37,
+    "static_instructions_moveDecision": 677,
+    "text_identical_to_base": false,
+    "text_sha256": "dfca06613227f68d4aaecaed8bd4e2499e1f2d31166d828234edcc0250a61640",
+    "text_size": 5379,
+    "text_size_delta": 112
+   },
+   "cursor4": {
+    "build_warnings": "",
+    "entry": {
+     "addr": 6736,
+     "addr_hex": "0x1a50",
+     "mod64": 16,
+     "mod64_hex": "0x10"
+    },
+    "entry_mod64_ok": true,
+    "fp16_instructions": 0,
+    "pad": 128,
+    "pad_retuned": true,
+    "pad_search": [
+     {
+      "addr": 6704,
+      "addr_hex": "0x1a30",
+      "mod64": 48,
+      "mod64_hex": "0x30",
+      "pad": 96
+     },
+     {
+      "addr": 6736,
+      "addr_hex": "0x1a50",
+      "mod64": 16,
+      "mod64_hex": "0x10",
+      "pad": 128
+     }
+    ],
+    "patches": [
+     "cursor4"
+    ],
+    "rodata_identical_to_base": false,
+    "rodata_sha256": "fd46be8ea566d745e11c580a93e0fcb43c689fdc1fd2650c9a6607ee7154da21",
+    "rodata_size": 1520,
+    "rodata_size_delta": 160,
+    "so": "/home/Ubiquant220/gr_highn/build/cursor4.so",
+    "so_sha256": "61f1f5fed2d40728ca09730e046247fbe05905374d9f15a4823a94bf736b245b",
+    "src_sha256": "3975707bf6c156dfcc2fe5378ab2bce0198c14ad1cb480ac907cc823038acf19",
+    "static_instruction_delta": 35,
+    "static_instructions_moveDecision": 675,
+    "text_identical_to_base": false,
+    "text_sha256": "1dfbf1a6c5aa611697785521b2cfd6a599b86385907708271b8f42e299c4111f",
+    "text_size": 5427,
+    "text_size_delta": 160
+   },
+   "cursorv": {
+    "build_warnings": "",
+    "entry": {
+     "addr": 6736,
+     "addr_hex": "0x1a50",
+     "mod64": 16,
+     "mod64_hex": "0x10"
+    },
+    "entry_mod64_ok": true,
+    "fp16_instructions": 0,
+    "pad": 144,
+    "pad_retuned": true,
+    "pad_search": [
+     {
+      "addr": 6688,
+      "addr_hex": "0x1a20",
+      "mod64": 32,
+      "mod64_hex": "0x20",
+      "pad": 96
+     },
+     {
+      "addr": 6736,
+      "addr_hex": "0x1a50",
+      "mod64": 16,
+      "mod64_hex": "0x10",
+      "pad": 144
+     }
+    ],
+    "patches": [
+     "cursor6v"
+    ],
+    "rodata_identical_to_base": false,
+    "rodata_sha256": "e3c97f3946bbbb904cbd78cc23cf2dd0202be353fd870e3665e382843edeb6ec",
+    "rodata_size": 1808,
+    "rodata_size_delta": 448,
+    "so": "/home/Ubiquant220/gr_highn/build/cursorv.so",
+    "so_sha256": "90f47a80984a41825a5fafbe816b162a074e9ad67fffc935e16e0e0acfc1ad42",
+    "src_sha256": "06934e8df4c86f8ef8e25f54fa57baabbfa32025d7f41cefd3ab5ab8cc8966ed",
+    "static_instruction_delta": 60,
+    "static_instructions_moveDecision": 700,
+    "text_identical_to_base": false,
+    "text_sha256": "ff088d26b3eb71b75247dc3a587bbd28f7b4609f9b3a535cf16207ef9d1c8c29",
+    "text_size": 5550,
+    "text_size_delta": 283
+   },
+   "loo_nocolv": {
+    "build_warnings": "",
+    "entry": {
+     "addr": 6672,
+     "addr_hex": "0x1a10",
+     "mod64": 16,
+     "mod64_hex": "0x10"
+    },
+    "entry_mod64_ok": true,
+    "fp16_instructions": 0,
+    "pad": 96,
+    "pad_retuned": false,
+    "pad_search": [
+     {
+      "addr": 6672,
+      "addr_hex": "0x1a10",
+      "mod64": 16,
+      "mod64_hex": "0x10",
+      "pad": 96
+     }
+    ],
+    "patches": [
+     "nofoldpure",
+     "cursor6"
+    ],
+    "rodata_identical_to_base": false,
+    "rodata_sha256": "e3c97f3946bbbb904cbd78cc23cf2dd0202be353fd870e3665e382843edeb6ec",
+    "rodata_size": 1808,
+    "rodata_size_delta": 448,
+    "so": "/home/Ubiquant220/gr_highn/build/loo_nocolv.so",
+    "so_sha256": "09649c728074b02151b70180ae22bdf707e073be7c6a7b37706e599607f2cdee",
+    "src_sha256": "a8d3a9696de15c3232e4e36ab8543eacfa1ff09823c844c980b156c083ead203",
+    "static_instruction_delta": -5,
+    "static_instructions_moveDecision": 635,
+    "text_identical_to_base": false,
+    "text_sha256": "264d1ceb3cf81192acb185bf7577c29c468a17feb3d7ea21902969fd51aa989b",
+    "text_size": 5235,
+    "text_size_delta": -32
+   },
+   "loo_nocursor": {
+    "build_warnings": "",
+    "entry": {
+     "addr": 6736,
+     "addr_hex": "0x1a50",
+     "mod64": 16,
+     "mod64_hex": "0x10"
+    },
+    "entry_mod64_ok": true,
+    "fp16_instructions": 0,
+    "pad": 96,
+    "pad_retuned": false,
+    "pad_search": [
+     {
+      "addr": 6736,
+      "addr_hex": "0x1a50",
+      "mod64": 16,
+      "mod64_hex": "0x10",
+      "pad": 96
+     }
+    ],
+    "patches": [
+     "colvedge",
+     "nofoldpure"
+    ],
+    "rodata_identical_to_base": false,
+    "rodata_sha256": "b7049f3f404ed5d380244be9843105734f8661c36f84b9640fb18b2bb9276cdd",
+    "rodata_size": 1360,
+    "rodata_size_delta": 0,
+    "so": "/home/Ubiquant220/gr_highn/build/loo_nocursor.so",
+    "so_sha256": "6f8d4b990bc80d100c1a6410d3379fab875bf9c19f0011bf397867ac6df29926",
+    "src_sha256": "75b924a257d521aba311c43b7beaec32365155f4b5899a6f6485e3fffc2c4f8d",
+    "static_instruction_delta": -45,
+    "static_instructions_moveDecision": 595,
+    "text_identical_to_base": false,
+    "text_sha256": "e2304ee62718f1e0cf0ff9c903d66b26eaa49f6d9788b1b297cdf29970eb4606",
+    "text_size": 5107,
+    "text_size_delta": -160
+   },
+   "loo_nofold": {
+    "build_warnings": "",
+    "entry": {
+     "addr": 6672,
+     "addr_hex": "0x1a10",
+     "mod64": 16,
+     "mod64_hex": "0x10"
+    },
+    "entry_mod64_ok": true,
+    "fp16_instructions": 0,
+    "pad": 96,
+    "pad_retuned": false,
+    "pad_search": [
+     {
+      "addr": 6672,
+      "addr_hex": "0x1a10",
+      "mod64": 16,
+      "mod64_hex": "0x10",
+      "pad": 96
+     }
+    ],
+    "patches": [
+     "colvedge",
+     "cursor6"
+    ],
+    "rodata_identical_to_base": false,
+    "rodata_sha256": "5c8974e687f8941d3bb7033fcfbe4aa848211505816561e7d198b13fde5fd9b9",
+    "rodata_size": 1808,
+    "rodata_size_delta": 448,
+    "so": "/home/Ubiquant220/gr_highn/build/loo_nofold.so",
+    "so_sha256": "9680ce50b243c5db19593e075823a06479f2dd5a06609833a3f0e16ca6abe90c",
+    "src_sha256": "1c8456857cc2c4d093261286feedda02be202045d2d467a3bda888aaf698f463",
+    "static_instruction_delta": 37,
+    "static_instructions_moveDecision": 677,
+    "text_identical_to_base": false,
+    "text_sha256": "dfca06613227f68d4aaecaed8bd4e2499e1f2d31166d828234edcc0250a61640",
+    "text_size": 5379,
+    "text_size_delta": 112
+   },
+   "nc": {
+    "build_warnings": "",
+    "entry": {
+     "addr": 6736,
+     "addr_hex": "0x1a50",
+     "mod64": 16,
+     "mod64_hex": "0x10"
+    },
+    "entry_mod64_ok": true,
+    "fp16_instructions": 0,
+    "pad": 144,
+    "pad_retuned": true,
+    "pad_search": [
+     {
+      "addr": 6688,
+      "addr_hex": "0x1a20",
+      "mod64": 32,
+      "mod64_hex": "0x20",
+      "pad": 96
+     },
+     {
+      "addr": 6736,
+      "addr_hex": "0x1a50",
+      "mod64": 16,
+      "mod64_hex": "0x10",
+      "pad": 144
+     }
+    ],
+    "patches": [
+     "nofold",
+     "cursor6"
+    ],
+    "rodata_identical_to_base": false,
+    "rodata_sha256": "e3c97f3946bbbb904cbd78cc23cf2dd0202be353fd870e3665e382843edeb6ec",
+    "rodata_size": 1808,
+    "rodata_size_delta": 448,
+    "so": "/home/Ubiquant220/gr_highn/build/nc.so",
+    "so_sha256": "dd7cff30bccb5c4fea63673642dac2baa1de233c8ccebaae6bf06aecf2935128",
+    "src_sha256": "37b126dfcc73dcb8af3fa9cf182f75cbbd166f8d18c4aee253400307867612be",
+    "static_instruction_delta": -17,
+    "static_instructions_moveDecision": 623,
+    "text_identical_to_base": false,
+    "text_sha256": "aed8c68970fa47e14ae7b2825f71adb04dfbbf649574d933bd13bc87bd76d8dd",
+    "text_size": 5283,
+    "text_size_delta": 16
+   },
+   "ncp": {
+    "build_warnings": "",
+    "entry": {
+     "addr": 6672,
+     "addr_hex": "0x1a10",
+     "mod64": 16,
+     "mod64_hex": "0x10"
+    },
+    "entry_mod64_ok": true,
+    "fp16_instructions": 0,
+    "pad": 96,
+    "pad_retuned": false,
+    "pad_search": [
+     {
+      "addr": 6672,
+      "addr_hex": "0x1a10",
+      "mod64": 16,
+      "mod64_hex": "0x10",
+      "pad": 96
+     }
+    ],
+    "patches": [
+     "nofoldpure",
+     "cursor6"
+    ],
+    "rodata_identical_to_base": false,
+    "rodata_sha256": "e3c97f3946bbbb904cbd78cc23cf2dd0202be353fd870e3665e382843edeb6ec",
+    "rodata_size": 1808,
+    "rodata_size_delta": 448,
+    "so": "/home/Ubiquant220/gr_highn/build/ncp.so",
+    "so_sha256": "92f15da6f7e6815160b214c0848f614a2a9ec2481fb4158b13384ba07ceda739",
+    "src_sha256": "a8d3a9696de15c3232e4e36ab8543eacfa1ff09823c844c980b156c083ead203",
+    "static_instruction_delta": -5,
+    "static_instructions_moveDecision": 635,
+    "text_identical_to_base": false,
+    "text_sha256": "264d1ceb3cf81192acb185bf7577c29c468a17feb3d7ea21902969fd51aa989b",
+    "text_size": 5235,
+    "text_size_delta": -32
+   },
+   "nofold": {
+    "build_warnings": "",
+    "entry": {
+     "addr": 6800,
+     "addr_hex": "0x1a90",
+     "mod64": 16,
+     "mod64_hex": "0x10"
+    },
+    "entry_mod64_ok": true,
+    "fp16_instructions": 0,
+    "pad": 144,
+    "pad_retuned": true,
+    "pad_search": [
+     {
+      "addr": 6752,
+      "addr_hex": "0x1a60",
+      "mod64": 32,
+      "mod64_hex": "0x20",
+      "pad": 96
+     },
+     {
+      "addr": 6800,
+      "addr_hex": "0x1a90",
+      "mod64": 16,
+      "mod64_hex": "0x10",
+      "pad": 144
+     }
+    ],
+    "patches": [
+     "nofold"
+    ],
+    "rodata_identical_to_base": true,
+    "rodata_sha256": "df87a9bd0bf45865ba0c9d32d10f9726173bc5ed8e2bf5e17b00aab11c72e473",
+    "rodata_size": 1360,
+    "rodata_size_delta": 0,
+    "so": "/home/Ubiquant220/gr_highn/build/nofold.so",
+    "so_sha256": "6d786814ba546ad027cd6e2aa4c0f9f4d7c620e45d2455ecdf0c1a1db592cba4",
+    "src_sha256": "3bd514d21c5ce4d82e947c4f3d3b393337f3065e2fd2829d01188bef54e4ad15",
+    "static_instruction_delta": -67,
+    "static_instructions_moveDecision": 573,
+    "text_identical_to_base": false,
+    "text_sha256": "fafe2af62daa033a5e0e4ea5a0dde71d9d2be5830e40d66163e0bcaf17e723c3",
+    "text_size": 5107,
+    "text_size_delta": -160
+   },
+   "nofoldpure": {
+    "build_warnings": "",
+    "entry": {
+     "addr": 6736,
+     "addr_hex": "0x1a50",
+     "mod64": 16,
+     "mod64_hex": "0x10"
+    },
+    "entry_mod64_ok": true,
+    "fp16_instructions": 0,
+    "pad": 96,
+    "pad_retuned": false,
+    "pad_search": [
+     {
+      "addr": 6736,
+      "addr_hex": "0x1a50",
+      "mod64": 16,
+      "mod64_hex": "0x10",
+      "pad": 96
+     }
+    ],
+    "patches": [
+     "nofoldpure"
+    ],
+    "rodata_identical_to_base": true,
+    "rodata_sha256": "df87a9bd0bf45865ba0c9d32d10f9726173bc5ed8e2bf5e17b00aab11c72e473",
+    "rodata_size": 1360,
+    "rodata_size_delta": 0,
+    "so": "/home/Ubiquant220/gr_highn/build/nofoldpure.so",
+    "so_sha256": "581069b4961589691e4095e30e98010ce6a8aeed63d07a6988a1e92ad9fecba3",
+    "src_sha256": "b5b1b73489ab51513829640c2fa2a88d150e5766ef5b790d7e72b3d831a1ff4b",
+    "static_instruction_delta": -45,
+    "static_instructions_moveDecision": 595,
+    "text_identical_to_base": false,
+    "text_sha256": "e2304ee62718f1e0cf0ff9c903d66b26eaa49f6d9788b1b297cdf29970eb4606",
+    "text_size": 5107,
+    "text_size_delta": -160
+   },
+   "null": {
+    "build_warnings": "",
+    "entry": {
+     "addr": 6736,
+     "addr_hex": "0x1a50",
+     "mod64": 16,
+     "mod64_hex": "0x10"
+    },
+    "entry_mod64_ok": true,
+    "fp16_instructions": 0,
+    "pad": 96,
+    "pad_retuned": false,
+    "pad_search": [
+     {
+      "addr": 6736,
+      "addr_hex": "0x1a50",
+      "mod64": 16,
+      "mod64_hex": "0x10",
+      "pad": 96
+     }
+    ],
+    "patches": [],
+    "rodata_identical_to_base": true,
+    "rodata_sha256": "df87a9bd0bf45865ba0c9d32d10f9726173bc5ed8e2bf5e17b00aab11c72e473",
+    "rodata_size": 1360,
+    "rodata_size_delta": 0,
+    "so": "/home/Ubiquant220/gr_highn/build/null.so",
+    "so_sha256": "80cf2798f5132744e9b20d5f6b84f760b8068cd7202340698e9bcc6871739b6f",
+    "src_sha256": "df270cd3d638046d6a90d4c6ccabd540759d8a66aa5cfa59fecc357db1bae217",
+    "static_instruction_delta": 0,
+    "static_instructions_moveDecision": 640,
+    "text_identical_to_base": true,
+    "text_sha256": "a24f33d4172066346789045f7119fe496122b457f5a824f1e1b89cb67513a854",
+    "text_size": 5267,
+    "text_size_delta": 0
+   },
+   "safet2": {
+    "build_warnings": "",
+    "entry": {
+     "addr": 6736,
+     "addr_hex": "0x1a50",
+     "mod64": 16,
+     "mod64_hex": "0x10"
+    },
+    "entry_mod64_ok": true,
+    "fp16_instructions": 0,
+    "pad": 96,
+    "pad_retuned": false,
+    "pad_search": [
+     {
+      "addr": 6736,
+      "addr_hex": "0x1a50",
+      "mod64": 16,
+      "mod64_hex": "0x10",
+      "pad": 96
+     }
+    ],
+    "patches": [
+     "safet2"
+    ],
+    "rodata_identical_to_base": true,
+    "rodata_sha256": "df87a9bd0bf45865ba0c9d32d10f9726173bc5ed8e2bf5e17b00aab11c72e473",
+    "rodata_size": 1360,
+    "rodata_size_delta": 0,
+    "so": "/home/Ubiquant220/gr_highn/build/safet2.so",
+    "so_sha256": "556e9380ba5c2250f97375ae3cb66f6fd3d4ae643270ce9e7952ade4dd38b91e",
+    "src_sha256": "3b201d78935bb25fc0e7d7ea9d48a1bbedd72acd5ee6f6e20ef8f709ba84ca22",
+    "static_instruction_delta": 73,
+    "static_instructions_moveDecision": 713,
+    "text_identical_to_base": false,
+    "text_sha256": "1f0436802f6cedb40b45a48bf8ff27dc04f046d67e9e4c31452c57e89aaa114a",
+    "text_size": 5571,
+    "text_size_delta": 304
+   },
+   "stack": {
+    "build_warnings": "",
+    "entry": {
+     "addr": 6736,
+     "addr_hex": "0x1a50",
+     "mod64": 16,
+     "mod64_hex": "0x10"
+    },
+    "entry_mod64_ok": true,
+    "fp16_instructions": 0,
+    "pad": 144,
+    "pad_retuned": true,
+    "pad_search": [
+     {
+      "addr": 6688,
+      "addr_hex": "0x1a20",
+      "mod64": 32,
+      "mod64_hex": "0x20",
+      "pad": 96
+     },
+     {
+      "addr": 6736,
+      "addr_hex": "0x1a50",
+      "mod64": 16,
+      "mod64_hex": "0x10",
+      "pad": 144
+     }
+    ],
+    "patches": [
+     "colvedge",
+     "nofold",
+     "cursor6"
+    ],
+    "rodata_identical_to_base": false,
+    "rodata_sha256": "5c8974e687f8941d3bb7033fcfbe4aa848211505816561e7d198b13fde5fd9b9",
+    "rodata_size": 1808,
+    "rodata_size_delta": 448,
+    "so": "/home/Ubiquant220/gr_highn/build/stack.so",
+    "so_sha256": "8162227ec88ce34725e40f52705b364ecc5b278b1a7810f533f57144c9ee41cd",
+    "src_sha256": "830576cebc4ca151b4d05aa7159bc643ef9b9877761cad35c88cd0558124284e",
+    "static_instruction_delta": -17,
+    "static_instructions_moveDecision": 623,
+    "text_identical_to_base": false,
+    "text_sha256": "aed8c68970fa47e14ae7b2825f71adb04dfbbf649574d933bd13bc87bd76d8dd",
+    "text_size": 5283,
+    "text_size_delta": 16
+   },
+   "stackp": {
+    "build_warnings": "",
+    "entry": {
+     "addr": 6672,
+     "addr_hex": "0x1a10",
+     "mod64": 16,
+     "mod64_hex": "0x10"
+    },
+    "entry_mod64_ok": true,
+    "fp16_instructions": 0,
+    "pad": 96,
+    "pad_retuned": false,
+    "pad_search": [
+     {
+      "addr": 6672,
+      "addr_hex": "0x1a10",
+      "mod64": 16,
+      "mod64_hex": "0x10",
+      "pad": 96
+     }
+    ],
+    "patches": [
+     "colvedge",
+     "nofoldpure",
+     "cursor6"
+    ],
+    "rodata_identical_to_base": false,
+    "rodata_sha256": "5c8974e687f8941d3bb7033fcfbe4aa848211505816561e7d198b13fde5fd9b9",
+    "rodata_size": 1808,
+    "rodata_size_delta": 448,
+    "so": "/home/Ubiquant220/gr_highn/build/stackp.so",
+    "so_sha256": "9d17926ad92fa5847a6db77fc4cb5793dc08d40fa35cd404ee9135395c1f1dcd",
+    "src_sha256": "9fe53712ba177307f7f8ab918f6af6bfba46d2b9891f41166d2964067d0aa68b",
+    "static_instruction_delta": -5,
+    "static_instructions_moveDecision": 635,
+    "text_identical_to_base": false,
+    "text_sha256": "264d1ceb3cf81192acb185bf7577c29c468a17feb3d7ea21902969fd51aa989b",
+    "text_size": 5235,
+    "text_size_delta": -32
+   },
+   "zc": {
+    "build_warnings": "",
+    "entry": {
+     "addr": 6800,
+     "addr_hex": "0x1a90",
+     "mod64": 16,
+     "mod64_hex": "0x10"
+    },
+    "entry_mod64_ok": true,
+    "fp16_instructions": 0,
+    "pad": 144,
+    "pad_retuned": true,
+    "pad_search": [
+     {
+      "addr": 6752,
+      "addr_hex": "0x1a60",
+      "mod64": 32,
+      "mod64_hex": "0x20",
+      "pad": 96
+     },
+     {
+      "addr": 6800,
+      "addr_hex": "0x1a90",
+      "mod64": 16,
+      "mod64_hex": "0x10",
+      "pad": 144
+     }
+    ],
+    "patches": [
+     "colvedge",
+     "nofold"
+    ],
+    "rodata_identical_to_base": false,
+    "rodata_sha256": "b7049f3f404ed5d380244be9843105734f8661c36f84b9640fb18b2bb9276cdd",
+    "rodata_size": 1360,
+    "rodata_size_delta": 0,
+    "so": "/home/Ubiquant220/gr_highn/build/zc.so",
+    "so_sha256": "c00f0cee6007b9c5dfc65005d96f0a2478934697d8448ee7c2f1e52520e65aca",
+    "src_sha256": "ee4bbc5197b631bba9178758ec57803f607ea87687c87988ed5b517ba6ba5198",
+    "static_instruction_delta": -67,
+    "static_instructions_moveDecision": 573,
+    "text_identical_to_base": false,
+    "text_sha256": "fafe2af62daa033a5e0e4ea5a0dde71d9d2be5830e40d66163e0bcaf17e723c3",
+    "text_size": 5107,
+    "text_size_delta": -160
+   },
+   "zcp": {
+    "build_warnings": "",
+    "entry": {
+     "addr": 6736,
+     "addr_hex": "0x1a50",
+     "mod64": 16,
+     "mod64_hex": "0x10"
+    },
+    "entry_mod64_ok": true,
+    "fp16_instructions": 0,
+    "pad": 96,
+    "pad_retuned": false,
+    "pad_search": [
+     {
+      "addr": 6736,
+      "addr_hex": "0x1a50",
+      "mod64": 16,
+      "mod64_hex": "0x10",
+      "pad": 96
+     }
+    ],
+    "patches": [
+     "colvedge",
+     "nofoldpure"
+    ],
+    "rodata_identical_to_base": false,
+    "rodata_sha256": "b7049f3f404ed5d380244be9843105734f8661c36f84b9640fb18b2bb9276cdd",
+    "rodata_size": 1360,
+    "rodata_size_delta": 0,
+    "so": "/home/Ubiquant220/gr_highn/build/zcp.so",
+    "so_sha256": "91b701cfafec6b0afb5d058ecd1a0b2712267b5fd1cd252d7e9e856562cce67d",
+    "src_sha256": "75b924a257d521aba311c43b7beaec32365155f4b5899a6f6485e3fffc2c4f8d",
+    "static_instruction_delta": -45,
+    "static_instructions_moveDecision": 595,
+    "text_identical_to_base": false,
+    "text_sha256": "e2304ee62718f1e0cf0ff9c903d66b26eaa49f6d9788b1b297cdf29970eb4606",
+    "text_size": 5107,
+    "text_size_delta": -160
+   }
+  },
+  "baseline_commit": "fd47ea6",
+  "baseline_sha256": "df270cd3d638046d6a90d4c6ccabd540759d8a66aa5cfa59fecc357db1bae217",
+  "build_flags": [
+   "-std=c++17",
+   "-O3",
+   "-march=native",
+   "-fPIC",
+   "-Wall",
+   "-Wextra",
+   "-shared"
+  ],
+  "compiler": "g++ (GCC) 14.3.1 20251022 (Red Hat 14.3.1-4)",
+  "delivered_pad": 96,
+  "host": "Linux 6.12.0-211.18.1.el10_2.0.1.x86_64 x86_64",
+  "note": "the delivered fd47ea6 already carries asm('.space 96, 0x90') and its entry lands at mod64 == 0x10 unaided by any further pad, so a proposed '48-byte dead pad' is already banked; a 48-byte pad would put the entry at 0x20.  For every other variant the pad is re-tuned here until mod64 == 0x10, which is why no layout tax appears in any cost figure.",
+  "want_mod64": "0x10"
+ },
+ "cost": {
+  "base": {
+   "condition": "instructions: 500000 calls x 3 reps, best rep, replayed against the SAME recorded stream out/icount_src.bin (map1 seed 1000 self-play, 500 rounds, 722000 bytes) and differenced against the base build of the same session on that same stream, where f18064c measures 848.452294 and fd47ea6 measures 802.804343; instruction count is stream-specific and is NOT a construct constant.  cycles: the same tool interleaving base and arm on a pinned core, 15 rounds with the first 2 discarded, reported as a paired difference so clock and placement drift are common-mode; the byte-identical null control on this instrument sits at -2.0..+1.4 cycles, which is its resolution floor.",
+   "delta_cycles_interleaved_paired": null,
+   "delta_cycles_se": null,
+   "delta_instructions_vs_same_stream_base": 0.0,
+   "same_stream_instructions_per_call": 802.804316
+  },
+  "colvedge": {
+   "condition": "instructions: 500000 calls x 3 reps, best rep, replayed against the SAME recorded stream out/icount_src.bin (map1 seed 1000 self-play, 500 rounds, 722000 bytes) and differenced against the base build of the same session on that same stream, where f18064c measures 848.452294 and fd47ea6 measures 802.804343; instruction count is stream-specific and is NOT a construct constant.  cycles: the same tool interleaving base and arm on a pinned core, 15 rounds with the first 2 discarded, reported as a paired difference so clock and placement drift are common-mode; the byte-identical null control on this instrument sits at -2.0..+1.4 cycles, which is its resolution floor.",
+   "delta_cycles_interleaved_paired": 0.16155246153845854,
+   "delta_cycles_se": 1.8602784072700886,
+   "delta_instructions_vs_same_stream_base": -0.4619679999999562,
+   "gold_field_weighted": [
+    -0.1215520720615362,
+    -0.202586786769227
+   ],
+   "gold_vs_latency_comparable_opponents": -0.6752892892307567,
+   "ns_at_0p38_per_cycle": 0.06138993538461424,
+   "same_stream_instructions_per_call": 802.342348
+  },
+  "cursor": {
+   "condition": "instructions: 500000 calls x 3 reps, best rep, replayed against the SAME recorded stream out/icount_src.bin (map1 seed 1000 self-play, 500 rounds, 722000 bytes) and differenced against the base build of the same session on that same stream, where f18064c measures 848.452294 and fd47ea6 measures 802.804343; instruction count is stream-specific and is NOT a construct constant.  cycles: the same tool interleaving base and arm on a pinned core, 15 rounds with the first 2 discarded, reported as a paired difference so clock and placement drift are common-mode; the byte-identical null control on this instrument sits at -2.0..+1.4 cycles, which is its resolution floor.",
+   "delta_cycles_interleaved_paired": 5.9398922307692255,
+   "delta_cycles_se": 1.917255326383355,
+   "delta_instructions_vs_same_stream_base": 12.746024000000034,
+   "gold_field_weighted": [
+    -4.4691749144307655,
+    -7.448624857384609
+   ],
+   "gold_vs_latency_comparable_opponents": -24.828749524615365,
+   "ns_at_0p38_per_cycle": 2.257159047692306,
+   "same_stream_instructions_per_call": 815.55034
+  },
+  "cursor4": {
+   "condition": "instructions: 500000 calls x 3 reps, best rep, replayed against the SAME recorded stream out/icount_src.bin (map1 seed 1000 self-play, 500 rounds, 722000 bytes) and differenced against the base build of the same session on that same stream, where f18064c measures 848.452294 and fd47ea6 measures 802.804343; instruction count is stream-specific and is NOT a construct constant.  cycles: the same tool interleaving base and arm on a pinned core, 15 rounds with the first 2 discarded, reported as a paired difference so clock and placement drift are common-mode; the byte-identical null control on this instrument sits at -2.0..+1.4 cycles, which is its resolution floor.",
+   "delta_cycles_interleaved_paired": 3.713883307692308,
+   "delta_cycles_se": 1.9635348379605362,
+   "delta_instructions_vs_same_stream_base": 23.446004000000016,
+   "gold_field_weighted": [
+    -2.7943258007076923,
+    -4.657209667846154
+   ],
+   "gold_vs_latency_comparable_opponents": -15.524032226153848,
+   "ns_at_0p38_per_cycle": 1.411275656923077,
+   "same_stream_instructions_per_call": 826.25032
+  },
+  "cursorv": {
+   "condition": "instructions: 500000 calls x 3 reps, best rep, replayed against the SAME recorded stream out/icount_src.bin (map1 seed 1000 self-play, 500 rounds, 722000 bytes) and differenced against the base build of the same session on that same stream, where f18064c measures 848.452294 and fd47ea6 measures 802.804343; instruction count is stream-specific and is NOT a construct constant.  cycles: the same tool interleaving base and arm on a pinned core, 15 rounds with the first 2 discarded, reported as a paired difference so clock and placement drift are common-mode; the byte-identical null control on this instrument sits at -2.0..+1.4 cycles, which is its resolution floor.",
+   "delta_cycles_interleaved_paired": 14.291005923076918,
+   "delta_cycles_se": 2.5115580306059413,
+   "delta_instructions_vs_same_stream_base": 45.854021999999986,
+   "gold_field_weighted": [
+    -10.752552856523073,
+    -17.920921427538456
+   ],
+   "gold_vs_latency_comparable_opponents": -59.73640475846152,
+   "ns_at_0p38_per_cycle": 5.430582250769229,
+   "same_stream_instructions_per_call": 848.658338
+  },
+  "loo_nocursor": {
+   "condition": "instructions: 500000 calls x 3 reps, best rep, replayed against the SAME recorded stream out/icount_src.bin (map1 seed 1000 self-play, 500 rounds, 722000 bytes) and differenced against the base build of the same session on that same stream, where f18064c measures 848.452294 and fd47ea6 measures 802.804343; instruction count is stream-specific and is NOT a construct constant.  cycles: the same tool interleaving base and arm on a pinned core, 15 rounds with the first 2 discarded, reported as a paired difference so clock and placement drift are common-mode; the byte-identical null control on this instrument sits at -2.0..+1.4 cycles, which is its resolution floor.",
+   "delta_cycles_interleaved_paired": null,
+   "delta_cycles_se": null,
+   "delta_instructions_vs_same_stream_base": -13.285999999999945,
+   "same_stream_instructions_per_call": 789.518316
+  },
+  "loo_nofold": {
+   "condition": "instructions: 500000 calls x 3 reps, best rep, replayed against the SAME recorded stream out/icount_src.bin (map1 seed 1000 self-play, 500 rounds, 722000 bytes) and differenced against the base build of the same session on that same stream, where f18064c measures 848.452294 and fd47ea6 measures 802.804343; instruction count is stream-specific and is NOT a construct constant.  cycles: the same tool interleaving base and arm on a pinned core, 15 rounds with the first 2 discarded, reported as a paired difference so clock and placement drift are common-mode; the byte-identical null control on this instrument sits at -2.0..+1.4 cycles, which is its resolution floor.",
+   "delta_cycles_interleaved_paired": null,
+   "delta_cycles_se": null,
+   "delta_instructions_vs_same_stream_base": 12.274001999999996,
+   "same_stream_instructions_per_call": 815.078318
+  },
+  "nc": {
+   "condition": "instructions: 500000 calls x 3 reps, best rep, replayed against the SAME recorded stream out/icount_src.bin (map1 seed 1000 self-play, 500 rounds, 722000 bytes) and differenced against the base build of the same session on that same stream, where f18064c measures 848.452294 and fd47ea6 measures 802.804343; instruction count is stream-specific and is NOT a construct constant.  cycles: the same tool interleaving base and arm on a pinned core, 15 rounds with the first 2 discarded, reported as a paired difference so clock and placement drift are common-mode; the byte-identical null control on this instrument sits at -2.0..+1.4 cycles, which is its resolution floor.",
+   "delta_cycles_interleaved_paired": null,
+   "delta_cycles_se": null,
+   "delta_instructions_vs_same_stream_base": -42.06999799999994,
+   "same_stream_instructions_per_call": 760.734318
+  },
+  "ncp": {
+   "condition": "instructions: 500000 calls x 3 reps, best rep, replayed against the SAME recorded stream out/icount_src.bin (map1 seed 1000 self-play, 500 rounds, 722000 bytes) and differenced against the base build of the same session on that same stream, where f18064c measures 848.452294 and fd47ea6 measures 802.804343; instruction count is stream-specific and is NOT a construct constant.  cycles: the same tool interleaving base and arm on a pinned core, 15 rounds with the first 2 discarded, reported as a paired difference so clock and placement drift are common-mode; the byte-identical null control on this instrument sits at -2.0..+1.4 cycles, which is its resolution floor.",
+   "delta_cycles_interleaved_paired": null,
+   "delta_cycles_se": null,
+   "delta_instructions_vs_same_stream_base": -6.365992000000006,
+   "same_stream_instructions_per_call": 796.438324
+  },
+  "nofold": {
+   "condition": "instructions: 500000 calls x 3 reps, best rep, replayed against the SAME recorded stream out/icount_src.bin (map1 seed 1000 self-play, 500 rounds, 722000 bytes) and differenced against the base build of the same session on that same stream, where f18064c measures 848.452294 and fd47ea6 measures 802.804343; instruction count is stream-specific and is NOT a construct constant.  cycles: the same tool interleaving base and arm on a pinned core, 15 rounds with the first 2 discarded, reported as a paired difference so clock and placement drift are common-mode; the byte-identical null control on this instrument sits at -2.0..+1.4 cycles, which is its resolution floor.",
+   "delta_cycles_interleaved_paired": -8.793359615384619,
+   "delta_cycles_se": 2.15640234686879,
+   "delta_instructions_vs_same_stream_base": -61.00996799999996,
+   "gold_field_weighted": [
+    6.616123774615387,
+    11.026872957692312
+   ],
+   "gold_vs_latency_comparable_opponents": 36.75624319230771,
+   "ns_at_0p38_per_cycle": -3.341476653846155,
+   "same_stream_instructions_per_call": 741.794348
+  },
+  "nofoldpure": {
+   "condition": "instructions: 500000 calls x 3 reps, best rep, replayed against the SAME recorded stream out/icount_src.bin (map1 seed 1000 self-play, 500 rounds, 722000 bytes) and differenced against the base build of the same session on that same stream, where f18064c measures 848.452294 and fd47ea6 measures 802.804343; instruction count is stream-specific and is NOT a construct constant.  cycles: the same tool interleaving base and arm on a pinned core, 15 rounds with the first 2 discarded, reported as a paired difference so clock and placement drift are common-mode; the byte-identical null control on this instrument sits at -2.0..+1.4 cycles, which is its resolution floor.",
+   "delta_cycles_interleaved_paired": -4.602133307692305,
+   "delta_cycles_se": 1.2328065356952842,
+   "delta_instructions_vs_same_stream_base": -12.83596799999998,
+   "gold_field_weighted": [
+    3.4626451007076904,
+    5.77107516784615
+   ],
+   "gold_vs_latency_comparable_opponents": 19.236917226153835,
+   "ns_at_0p38_per_cycle": -1.748810656923076,
+   "same_stream_instructions_per_call": 789.968348
+  },
+  "null": {
+   "condition": "instructions: 500000 calls x 3 reps, best rep, replayed against the SAME recorded stream out/icount_src.bin (map1 seed 1000 self-play, 500 rounds, 722000 bytes) and differenced against the base build of the same session on that same stream, where f18064c measures 848.452294 and fd47ea6 measures 802.804343; instruction count is stream-specific and is NOT a construct constant.  cycles: the same tool interleaving base and arm on a pinned core, 15 rounds with the first 2 discarded, reported as a paired difference so clock and placement drift are common-mode; the byte-identical null control on this instrument sits at -2.0..+1.4 cycles, which is its resolution floor.",
+   "delta_cycles_interleaved_paired": null,
+   "delta_cycles_se": null,
+   "delta_instructions_vs_same_stream_base": -3.999999989900971e-06,
+   "same_stream_instructions_per_call": 802.804312
+  },
+  "safet2": {
+   "condition": "instructions: 500000 calls x 3 reps, best rep, replayed against the SAME recorded stream out/icount_src.bin (map1 seed 1000 self-play, 500 rounds, 722000 bytes) and differenced against the base build of the same session on that same stream, where f18064c measures 848.452294 and fd47ea6 measures 802.804343; instruction count is stream-specific and is NOT a construct constant.  cycles: the same tool interleaving base and arm on a pinned core, 15 rounds with the first 2 discarded, reported as a paired difference so clock and placement drift are common-mode; the byte-identical null control on this instrument sits at -2.0..+1.4 cycles, which is its resolution floor.",
+   "delta_cycles_interleaved_paired": 42.80582292307693,
+   "delta_cycles_se": 1.6160234785573724,
+   "delta_instructions_vs_same_stream_base": 144.03605000000005,
+   "gold_field_weighted": [
+    -32.20710116732308,
+    -53.67850194553847
+   ],
+   "gold_vs_latency_comparable_opponents": -178.92833981846158,
+   "ns_at_0p38_per_cycle": 16.266212710769235,
+   "same_stream_instructions_per_call": 946.840366
+  },
+  "stack": {
+   "condition": "instructions: 500000 calls x 3 reps, best rep, replayed against the SAME recorded stream out/icount_src.bin (map1 seed 1000 self-play, 500 rounds, 722000 bytes) and differenced against the base build of the same session on that same stream, where f18064c measures 848.452294 and fd47ea6 measures 802.804343; instruction count is stream-specific and is NOT a construct constant.  cycles: the same tool interleaving base and arm on a pinned core, 15 rounds with the first 2 discarded, reported as a paired difference so clock and placement drift are common-mode; the byte-identical null control on this instrument sits at -2.0..+1.4 cycles, which is its resolution floor.",
+   "delta_cycles_interleaved_paired": -4.810520307692308,
+   "delta_cycles_se": 1.555573615900471,
+   "delta_instructions_vs_same_stream_base": -42.542010000000005,
+   "gold_field_weighted": [
+    3.6194354795076924,
+    6.032392465846154
+   ],
+   "gold_vs_latency_comparable_opponents": 20.107974886153848,
+   "ns_at_0p38_per_cycle": -1.8279977169230772,
+   "same_stream_instructions_per_call": 760.262306
+  },
+  "stackp": {
+   "condition": "instructions: 500000 calls x 3 reps, best rep, replayed against the SAME recorded stream out/icount_src.bin (map1 seed 1000 self-play, 500 rounds, 722000 bytes) and differenced against the base build of the same session on that same stream, where f18064c measures 848.452294 and fd47ea6 measures 802.804343; instruction count is stream-specific and is NOT a construct constant.  cycles: the same tool interleaving base and arm on a pinned core, 15 rounds with the first 2 discarded, reported as a paired difference so clock and placement drift are common-mode; the byte-identical null control on this instrument sits at -2.0..+1.4 cycles, which is its resolution floor.",
+   "delta_cycles_interleaved_paired": -2.09076092307694,
+   "delta_cycles_se": 2.2778666686305513,
+   "delta_instructions_vs_same_stream_base": -6.843995999999947,
+   "gold_field_weighted": [
+    1.5730885185230898,
+    2.6218141975384834
+   ],
+   "gold_vs_latency_comparable_opponents": 8.739380658461611,
+   "ns_at_0p38_per_cycle": -0.7944891507692373,
+   "same_stream_instructions_per_call": 795.96032
+  },
+  "zc": {
+   "condition": "instructions: 500000 calls x 3 reps, best rep, replayed against the SAME recorded stream out/icount_src.bin (map1 seed 1000 self-play, 500 rounds, 722000 bytes) and differenced against the base build of the same session on that same stream, where f18064c measures 848.452294 and fd47ea6 measures 802.804343; instruction count is stream-specific and is NOT a construct constant.  cycles: the same tool interleaving base and arm on a pinned core, 15 rounds with the first 2 discarded, reported as a paired difference so clock and placement drift are common-mode; the byte-identical null control on this instrument sits at -2.0..+1.4 cycles, which is its resolution floor.",
+   "delta_cycles_interleaved_paired": -6.707934923076935,
+   "delta_cycles_se": 1.0684863142431646,
+   "delta_instructions_vs_same_stream_base": -61.46599600000002,
+   "gold_field_weighted": [
+    5.047050236123086,
+    8.411750393538476
+   ],
+   "gold_vs_latency_comparable_opponents": 28.039167978461588,
+   "ns_at_0p38_per_cycle": -2.5490152707692353,
+   "same_stream_instructions_per_call": 741.33832
+  },
+  "zcp": {
+   "condition": "instructions: 500000 calls x 3 reps, best rep, replayed against the SAME recorded stream out/icount_src.bin (map1 seed 1000 self-play, 500 rounds, 722000 bytes) and differenced against the base build of the same session on that same stream, where f18064c measures 848.452294 and fd47ea6 measures 802.804343; instruction count is stream-specific and is NOT a construct constant.  cycles: the same tool interleaving base and arm on a pinned core, 15 rounds with the first 2 discarded, reported as a paired difference so clock and placement drift are common-mode; the byte-identical null control on this instrument sits at -2.0..+1.4 cycles, which is its resolution floor.",
+   "delta_cycles_interleaved_paired": -6.207911538461531,
+   "delta_cycles_se": 1.1192715864692302,
+   "delta_instructions_vs_same_stream_base": -13.285995999999955,
+   "gold_field_weighted": [
+    4.670832641538455,
+    7.784721069230759
+   ],
+   "gold_vs_latency_comparable_opponents": 25.9490702307692,
+   "ns_at_0p38_per_cycle": -2.3590063846153817,
+   "same_stream_instructions_per_call": 789.51832
+  }
+ },
+ "crossing_margins_map2": {
+  "a5": {
+   "claimable": false,
+   "condition": "a threshold claim needs an error bar on the CROSSING margin, not on the margin; requirement 108 is the median-to-zero per-map even-record figure supplied by the orchestrator",
+   "crossing_margin": -3.8499999999999943,
+   "crossing_se": 22.430621993834745,
+   "crossing_sigma": -0.17164035848217676,
+   "margin": 104.15,
+   "requirement": 108,
+   "se": 22.430621993834745
+  },
+  "f1": {
+   "claimable": false,
+   "condition": "a threshold claim needs an error bar on the CROSSING margin, not on the margin; requirement 108 is the median-to-zero per-map even-record figure supplied by the orchestrator",
+   "crossing_margin": -23.92,
+   "crossing_se": 21.01990725503091,
+   "crossing_sigma": -1.1379688649327881,
+   "margin": 84.08,
+   "requirement": 108,
+   "se": 21.01990725503091
+  },
+  "f2": {
+   "claimable": false,
+   "condition": "a threshold claim needs an error bar on the CROSSING margin, not on the margin; requirement 108 is the median-to-zero per-map even-record figure supplied by the orchestrator",
+   "crossing_margin": -6.689999999999998,
+   "crossing_se": 19.112969286573318,
+   "crossing_sigma": -0.35002410665200306,
+   "margin": 101.31,
+   "requirement": 108,
+   "se": 19.112969286573318
+  },
+  "f34": {
+   "claimable": false,
+   "condition": "a threshold claim needs an error bar on the CROSSING margin, not on the margin; requirement 108 is the median-to-zero per-map even-record figure supplied by the orchestrator",
+   "crossing_margin": -94.16,
+   "crossing_se": 19.043303762262948,
+   "crossing_sigma": -4.944520193318116,
+   "margin": 13.84,
+   "requirement": 108,
+   "se": 19.043303762262948
+  },
+  "g5": {
+   "claimable": false,
+   "condition": "a threshold claim needs an error bar on the CROSSING margin, not on the margin; requirement 108 is the median-to-zero per-map even-record figure supplied by the orchestrator",
+   "crossing_margin": 4.269999999999996,
+   "crossing_se": 19.46398308090452,
+   "crossing_sigma": 0.21937955773241266,
+   "margin": 112.27,
+   "requirement": 108,
+   "se": 19.46398308090452
+  },
+  "nc": {
+   "claimable": false,
+   "condition": "a threshold claim needs an error bar on the CROSSING margin, not on the margin; requirement 108 is the median-to-zero per-map even-record figure supplied by the orchestrator",
+   "crossing_margin": -0.4099999999999966,
+   "crossing_se": 19.571212083676436,
+   "crossing_sigma": -0.020949136836648004,
+   "margin": 107.59,
+   "requirement": 108,
+   "se": 19.571212083676436
+  },
+  "ncp": {
+   "claimable": false,
+   "condition": "a threshold claim needs an error bar on the CROSSING margin, not on the margin; requirement 108 is the median-to-zero per-map even-record figure supplied by the orchestrator",
+   "crossing_margin": -24.83,
+   "crossing_se": 19.82491573344976,
+   "crossing_sigma": -1.2524643400176156,
+   "margin": 83.17,
+   "requirement": 108,
+   "se": 19.82491573344976
+  },
+  "stack": {
+   "claimable": false,
+   "condition": "a threshold claim needs an error bar on the CROSSING margin, not on the margin; requirement 108 is the median-to-zero per-map even-record figure supplied by the orchestrator",
+   "crossing_margin": 3.3400000000000034,
+   "crossing_se": 19.58976345756202,
+   "crossing_sigma": 0.17049720928154954,
+   "margin": 111.34,
+   "requirement": 108,
+   "se": 19.58976345756202
+  }
+ },
+ "deduplication": {
+  "cross_check_vs_shim": {
+   "calibrated": {
+    "cpp": 62.0,
+    "cpp_se": 47.2,
+    "paired_difference": -27.9,
+    "paired_difference_se": 53.3,
+    "shim": 89.9,
+    "shim_se": 45.5
+   },
+   "condition": "20 paired games per field on map1, host arm64 scalar build; the same seeds and order arms for both, each compared against a baseline run of the unmodified fd47ea6 .so on the identical seed, and the difference paired game by game.  The paired difference is indistinguishable from zero in both fields, so the C++ artifact and the previously measured shim arm are the same intervention at this resolution",
+   "shim_replica_match_rate": 1.0,
+   "uniform": {
+    "cpp": 26.6,
+    "cpp_se": 64.8,
+    "paired_difference": 47.5,
+    "paired_difference_se": 60.3,
+    "shim": -20.9,
+    "shim_se": 48.5
+   }
+  },
+  "measured_once_as": "cursor",
+  "resolved": "Clut_k6_stay cursor form and cheapest variable-k arm C are the same candidate"
+ },
+ "dropped_candidates": {
+  "colvedge": "-16.1 +- 21.4 inside the stack and -24.9 +- 20.6 standalone, sign flips between seed bands, and it fires on only 12 of 1500 real platform decisions",
+  "cursor4": "first build was defective in the unit-1-producer branch; rebuilt but not A/B-ed, so its number is withdrawn rather than reported",
+  "dead_pad_48B": "already banked; a 48-byte pad would move a good bucket (0x10) to a bad one (0x20), priced at +11.67 ns",
+  "safe_t2": "net definitively negative under a MEASURED cost: +144.04 instructions and +42.81 +- 1.62 cycles = -179 gold vs latency-comparable opponents, against a gross on record of +13.4 +- 19.1.  Permissive inclusion covers uncertain GROSS sign, not arithmetic on a measured net",
+  "tail_ring_clamp": "the tail moves the producer < 0.05 rings and is net INWARD on map2, so the clamp would delete a third of the income-bearing slots to fix a drift the tail did not cause"
+ },
+ "field_calibration": {
+  "condition": "per-cell central landing rate enumerated straight off ScenarioGenerator for 500 rounds x 8 seeds with no strategy and no engine, compared against the 13-game measured field profile in src/CHANGELOG.md",
+  "implementation": "sim.analyze_hotfield_table.install_field, an in-process monkeypatch; sim/scenario.py was not modified",
+  "integrity_gate": "the two field models must produce disjoint scenario digests; verified true in every ab run",
+  "measured_ring1_over_ring5_steepness": 3.35,
+  "recovery_fraction": 0.748,
+  "sim_calibrated": 2.51,
+  "sim_uniform": 1.22
+ },
+ "final_artifact": {
+  "arm": "g5 = nofold + k in {1,5}",
+  "conservative_alternative": {
+   "arm": "nc = nofold + cursor",
+   "reason": "cheapest at -42.07 and its map2 figure is within noise of g5",
+   "source_sha256_pad144": "37b126dfcc73dcb8af3fa9cf182f75cbbd166f8d18c4aee253400307867612be",
+   "text_sha256": "aed8c68970fa47e14ae7b2825f71adb04dfbbf649574d933bd13bc87bd76d8dd"
+  },
+  "cross_checks_that_landed": {
+   "base_text_sha256_matches_committed_head": "a24f33d417206634 6789...",
+   "ncp_text_sha256_matches_orchestrator_rebuild": "264d1ceb3cf81192acb185bf7577c29c468a17feb3d7ea21902969fd51aa989b"
+  },
+  "delta_instructions_vs_same_stream_base": -38.31,
+  "entry": "0x1a50",
+  "fp16": 0,
+  "map1_margin": 119.0,
+  "map1_se": 18.0,
+  "map2_margin": 112.3,
+  "map2_se": 19.5,
+  "mod64": "0x10",
+  "pad": 144,
+  "same_stream_instructions": 764.496,
+  "source_sha256_pad144": "1c3861eeb9d5a719e8b9121691297b50ba6a5dadf62a87be97f1f97d05db6e04",
+  "text_sha256": "cd1ed9367404f138b34b90b1ad76f88822c24b59a222f7fdf62a5c9812085184",
+  "text_size": 5283,
+  "warning": "nc requires asm(\".space 144, 0x90\"), NOT the delivered 96; with 96 the entry leaves the 0x10 bucket"
+ },
+ "final_map1_split": {
+  "condition": "map1, 60 tune (3000-3059) + 60 disjoint OOS (7000-7059) seeds, both order arms => 120 paired games per arm per field per band, all three arms sharing the identical baseline games, each compared against the unmodified fd47ea6 on the same seed, order arm and field model",
+  "g5_vs_better_parent": {
+   "both_maps_equal_weight": {
+    "delta": 20.1,
+    "g5": 115.7,
+    "g5_se": 13.2,
+    "nc": 95.6,
+    "nc_se": 14.7,
+    "se": 19.8,
+    "sigma": 1.02
+   },
+   "condition": "g5 minus nc on the SAME seeds, order arms and field models against the same baseline games; the contrast is against the BETTER parent because measuring against the common baseline ncp would double-count nofold",
+   "map1": {
+    "delta": 35.4,
+    "se": 28.4,
+    "sigma": 1.25
+   },
+   "map2": {
+    "delta": 4.7,
+    "se": 27.6,
+    "sigma": 0.17
+   },
+   "reading": "not significant at 1.02 sigma pooled, but sign-consistent on both maps in both seed bands, joint move on both maps where nc is co-gain on map1, the lowest SE of any arm measured (18.0), for 3.76 more instructions"
+  },
+  "oos_rows": {
+   "g5": {
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "joint move",
+    "games": 120,
+    "gate": 39.95258952096145,
+    "gate_binding_term": "statistical",
+    "margin": 96.30833333333334,
+    "margin_minus_gate": 56.355743812371884,
+    "our_burn_delta": -5.341666666666667,
+    "our_net_delta": 73.55833333333334,
+    "our_net_delta_se": 13.941478305531453,
+    "our_scoring_rounds_delta": -16.366666666666667,
+    "se": 19.976294760480727,
+    "their_net_delta": -22.75,
+    "their_net_delta_se": 12.84885334233702,
+    "two_field_difference": -28.224999999999994,
+    "two_field_difference_se": 26.530864984053085,
+    "two_se": 39.95258952096145,
+    "uniform_margin": 124.53333333333333,
+    "uniform_se": 17.459508711428406,
+    "we_first": 146.95,
+    "we_second": 45.666666666666664
+   },
+   "nc": {
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "co-gain (ours faster)",
+    "games": 120,
+    "gate": 47.75833333333333,
+    "gate_binding_term": "apparatus",
+    "margin": 52.43333333333333,
+    "margin_minus_gate": 4.674999999999997,
+    "our_burn_delta": -21.825,
+    "our_net_delta": 64.15833333333333,
+    "our_net_delta_se": 12.18801700524227,
+    "our_scoring_rounds_delta": -28.183333333333334,
+    "se": 18.92737385003557,
+    "their_net_delta": 11.725,
+    "their_net_delta_se": 13.610271508908943,
+    "two_field_difference": -47.75833333333333,
+    "two_field_difference_se": 26.38565794634346,
+    "two_se": 37.85474770007114,
+    "uniform_margin": 100.19166666666666,
+    "uniform_se": 18.383619458703652,
+    "we_first": 81.36666666666666,
+    "we_second": 23.5
+   },
+   "ncp": {
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "joint move",
+    "games": 120,
+    "gate": 41.3446672531147,
+    "gate_binding_term": "statistical",
+    "margin": 42.50833333333333,
+    "margin_minus_gate": 1.1636660802186327,
+    "our_burn_delta": -1.425,
+    "our_net_delta": 40.25,
+    "our_net_delta_se": 14.405352500798754,
+    "our_scoring_rounds_delta": -28.433333333333334,
+    "se": 20.67233362655735,
+    "their_net_delta": -2.2583333333333333,
+    "their_net_delta_se": 13.721389872483025,
+    "two_field_difference": -27.833333333333336,
+    "two_field_difference_se": 27.64321124045481,
+    "two_se": 41.3446672531147,
+    "uniform_margin": 70.34166666666667,
+    "uniform_se": 18.352159276682222,
+    "we_first": 73.83333333333333,
+    "we_second": 11.183333333333334
+   }
+  },
+  "rows": {
+   "g5": {
+    "accept": true,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "joint move",
+    "games": 120,
+    "gate": 35.94399614692655,
+    "gate_binding_term": "statistical",
+    "margin": 119.01666666666667,
+    "margin_minus_gate": 83.07267051974011,
+    "oos_margin": 96.30833333333334,
+    "oos_sign_agrees": true,
+    "our_burn_delta": -26.891666666666666,
+    "our_net_delta": 98.13333333333334,
+    "our_net_delta_se": 13.812540141941152,
+    "our_scoring_rounds_delta": -12.1,
+    "se": 17.971998073463276,
+    "their_net_delta": -20.883333333333333,
+    "their_net_delta_se": 13.037379912262177,
+    "two_field_difference": 11.583333333333329,
+    "two_field_difference_se": 27.340204736822177,
+    "two_se": 35.94399614692655,
+    "uniform_margin": 107.43333333333334,
+    "uniform_se": 20.60325411916249,
+    "verdict": "accept",
+    "we_first": 159.76666666666668,
+    "we_second": 78.26666666666667
+   },
+   "nc": {
+    "accept": true,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "co-gain (ours faster)",
+    "games": 120,
+    "gate": 43.975505633306234,
+    "gate_binding_term": "statistical",
+    "margin": 83.59166666666667,
+    "margin_minus_gate": 39.616161033360434,
+    "oos_margin": 52.43333333333333,
+    "oos_sign_agrees": true,
+    "our_burn_delta": -29.008333333333333,
+    "our_net_delta": 99.19166666666666,
+    "our_net_delta_se": 13.80740523025031,
+    "our_scoring_rounds_delta": -22.841666666666665,
+    "se": 21.987752816653117,
+    "their_net_delta": 15.6,
+    "their_net_delta_se": 16.08152113852578,
+    "two_field_difference": -4.099999999999994,
+    "two_field_difference_se": 30.33634121433635,
+    "two_se": 43.975505633306234,
+    "uniform_margin": 87.69166666666666,
+    "uniform_se": 20.90053406844919,
+    "verdict": "accept",
+    "we_first": 133.6,
+    "we_second": 33.583333333333336
+   },
+   "ncp": {
+    "accept": true,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "joint move",
+    "games": 120,
+    "gate": 42.68001582904033,
+    "gate_binding_term": "statistical",
+    "margin": 73.84166666666667,
+    "margin_minus_gate": 31.16165083762634,
+    "oos_margin": 42.50833333333333,
+    "oos_sign_agrees": true,
+    "our_burn_delta": -21.116666666666667,
+    "our_net_delta": 71.46666666666667,
+    "our_net_delta_se": 13.47312364268001,
+    "our_scoring_rounds_delta": -24.683333333333334,
+    "se": 21.340007914520164,
+    "their_net_delta": -2.375,
+    "their_net_delta_se": 14.906731801813718,
+    "two_field_difference": 13.991666666666667,
+    "two_field_difference_se": 29.97517330763236,
+    "two_se": 42.68001582904033,
+    "uniform_margin": 59.85,
+    "uniform_se": 21.050298739704676,
+    "verdict": "accept",
+    "we_first": 95.76666666666667,
+    "we_second": 51.916666666666664
+   }
+  }
+ },
+ "host": {
+  "build_flags": [
+   "-std=c++17",
+   "-O3",
+   "-march=native",
+   "-fPIC",
+   "-Wall",
+   "-Wextra",
+   "-shared"
+  ],
+  "caliper_check": {
+   "condition": "f18064c compiled on this host and replayed against out/icount_src.bin, compared against the anchor registered by the hot-field line; agreement to six decimals establishes this is the same instrument",
+   "f18064c_instructions_per_call_on_shared_stream": 848.452294,
+   "registered_anchor": 848.452
+  },
+  "compiler": "g++ (GCC) 14.3.1 20251022 (Red Hat 14.3.1-4)",
+  "machine": "Ubiquant220@8.153.76.120",
+  "uname": "Linux 6.12.0-211.18.1.el10_2.0.1.x86_64 x86_64"
+ },
+ "local_latency": {
+  "base_p50_ns": 120,
+  "condition": "contest machine with 127 other users and a 10 ns clock quantisation step; P50 and P90 are INDISTINGUISHABLE across base, cursor and stack on this instrument and must not be quoted as a result.  The acceptance quantity is perf cycles, reported under cost above",
+  "cursor_p50_ns": [
+   110,
+   120
+  ],
+  "p90_ns_range_all_arms": [
+   160,
+   280
+  ],
+  "protocol": "latency_bench --mode hot --reps 9, pinned core, 5 interleaved rounds each",
+  "run_to_run_scatter_ns": 60,
+  "stack_p50_ns": [
+   110,
+   120
+  ]
+ },
+ "pad_question": {
+  "condition": "eleven separate builds of the delivered text with only the .space operand changed, each nm-ed for the moveDecision symbol, compared against the delivered pad of 96",
+  "consequence": "the entry moves one byte per pad byte, so any shift is absorbed in ONE step by pad = 96 + ((0x10 - mod64) mod 64), always in [96,159]; the position tax is a build step, not a cost, and no layout term appears in any cost figure",
+  "delivered_entry": "0x1a50",
+  "delivered_mod64": "0x10",
+  "delivered_pad_bytes": 96,
+  "resolved": "the 48-byte dead pad is already banked and the candidate is dropped",
+  "sweep": {
+   "0": "0x30",
+   "112": "0x20",
+   "128": "0x30",
+   "144": "0x00",
+   "16": "0x00",
+   "160": "0x10",
+   "32": "0x10",
+   "48": "0x20",
+   "64": "0x30",
+   "80": "0x00",
+   "96": "0x10"
+  },
+  "sweep_text_sizes": [
+   5171,
+   5187,
+   5203,
+   5219,
+   5235,
+   5251,
+   5267,
+   5283,
+   5299,
+   5315,
+   5331
+  ],
+  "warning": "do not infer which code precedes the entry from source order: the pad sits AFTER moveDecision and still moves it, and nofold / nofoldpure have identical .text sizes yet need different pads (144 vs 96).  Only nm is authoritative"
+ },
+ "per_map": {
+  "condition": "map2 and map3 use 50 tune (3000-3049) + 50 disjoint OOS (7000-7049) seeds, 2 order arms => 100 paired games per arm per field per band, each arm compared against the unmodified fd47ea6 on the identical seed, order arm and field model, with its own null control re-run on that map",
+  "map1": {
+   "null": {
+    "accept": false,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "pie-shrinking",
+    "games": 300,
+    "gate": 0.0,
+    "gate_binding_term": "statistical",
+    "margin": 0.0,
+    "margin_minus_gate": 0.0,
+    "oos_margin": 0.0,
+    "oos_sign_agrees": false,
+    "our_burn_delta": 0.0,
+    "our_net_delta": 0.0,
+    "our_net_delta_se": 0.0,
+    "our_scoring_rounds_delta": 0.0,
+    "se": 0.0,
+    "their_net_delta": 0.0,
+    "their_net_delta_se": 0.0,
+    "two_field_difference": 0.0,
+    "two_field_difference_se": 0.0,
+    "two_se": 0.0,
+    "uniform_margin": 0.0,
+    "uniform_se": 0.0,
+    "verdict": "reject",
+    "we_first": 0.0,
+    "we_second": 0.0
+   },
+   "stack": {
+    "accept": true,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "co-gain (ours faster)",
+    "games": 300,
+    "gate": 27.763863480204883,
+    "gate_binding_term": "statistical",
+    "margin": 63.373333333333335,
+    "margin_minus_gate": 35.60946985312845,
+    "oos_margin": 59.03,
+    "oos_sign_agrees": true,
+    "our_burn_delta": -25.426666666666666,
+    "our_net_delta": 76.08333333333333,
+    "our_net_delta_se": 9.220907678985705,
+    "our_scoring_rounds_delta": -22.1,
+    "se": 13.881931740102441,
+    "their_net_delta": 12.71,
+    "their_net_delta_se": 9.084147542082977,
+    "two_field_difference": -7.623333333333335,
+    "two_field_difference_se": 19.531338675309662,
+    "two_se": 27.763863480204883,
+    "uniform_margin": 70.99666666666667,
+    "uniform_se": 13.739183440539081,
+    "verdict": "accept",
+    "we_first": 111.3,
+    "we_second": 15.446666666666667
+   },
+   "stackp": {
+    "accept": true,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "co-gain (ours faster)",
+    "games": 300,
+    "gate": 25.153192134295377,
+    "gate_binding_term": "statistical",
+    "margin": 60.013333333333335,
+    "margin_minus_gate": 34.860141199037955,
+    "oos_margin": 63.94,
+    "oos_sign_agrees": true,
+    "our_burn_delta": -15.58,
+    "our_net_delta": 66.32333333333334,
+    "our_net_delta_se": 8.312047935196077,
+    "our_scoring_rounds_delta": -22.973333333333333,
+    "se": 12.576596067147689,
+    "their_net_delta": 6.31,
+    "their_net_delta_se": 8.883798444635337,
+    "two_field_difference": -8.069999999999993,
+    "two_field_difference_se": 17.822653799110782,
+    "two_se": 25.153192134295377,
+    "uniform_margin": 68.08333333333333,
+    "uniform_se": 12.628389438355283,
+    "verdict": "accept",
+    "we_first": 69.86,
+    "we_second": 50.166666666666664
+   },
+   "zc": {
+    "accept": false,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "joint move",
+    "games": 300,
+    "gate": 23.474440826765605,
+    "gate_binding_term": "statistical",
+    "margin": 20.31,
+    "margin_minus_gate": -3.164440826765606,
+    "oos_margin": 18.636666666666667,
+    "oos_sign_agrees": true,
+    "our_burn_delta": -32.44,
+    "our_net_delta": 8.57,
+    "our_net_delta_se": 7.626287584325716,
+    "our_scoring_rounds_delta": -7.346666666666667,
+    "se": 11.737220413382802,
+    "their_net_delta": -11.74,
+    "their_net_delta_se": 8.279451481462448,
+    "two_field_difference": 5.933333333333332,
+    "two_field_difference_se": 16.770253103308107,
+    "two_se": 23.474440826765605,
+    "uniform_margin": 14.376666666666667,
+    "uniform_se": 11.978273920589945,
+    "verdict": "reject",
+    "we_first": 30.553333333333335,
+    "we_second": 10.066666666666666
+   },
+   "zcp": {
+    "accept": false,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "pure loss",
+    "games": 300,
+    "gate": 23.89674057964249,
+    "gate_binding_term": "statistical",
+    "margin": -15.933333333333334,
+    "margin_minus_gate": -39.83007391297582,
+    "oos_margin": 16.9,
+    "oos_sign_agrees": false,
+    "our_burn_delta": -23.503333333333334,
+    "our_net_delta": -5.323333333333333,
+    "our_net_delta_se": 7.744254990546395,
+    "our_scoring_rounds_delta": -9.8,
+    "se": 11.948370289821245,
+    "their_net_delta": 10.61,
+    "their_net_delta_se": 8.495858634378283,
+    "two_field_difference": -9.723333333333333,
+    "two_field_difference_se": 17.051471177147473,
+    "two_se": 23.89674057964249,
+    "uniform_margin": -6.21,
+    "uniform_se": 12.165077752419341,
+    "verdict": "reject",
+    "we_first": -4.013333333333334,
+    "we_second": -27.85333333333333
+   }
+  },
+  "map1_individuals": {
+   "colvedge": {
+    "accept": false,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "pure loss",
+    "games": 80,
+    "gate": 41.200101292581635,
+    "gate_binding_term": "statistical",
+    "margin": -24.9125,
+    "margin_minus_gate": -66.11260129258164,
+    "oos_margin": 2.9875,
+    "oos_sign_agrees": false,
+    "our_burn_delta": 5.9875,
+    "our_net_delta": -12.95,
+    "our_net_delta_se": 13.251055606386394,
+    "our_scoring_rounds_delta": -0.1125,
+    "se": 20.600050646290818,
+    "their_net_delta": 11.9625,
+    "their_net_delta_se": 14.166945881773128,
+    "two_field_difference": -15.037500000000001,
+    "two_field_difference_se": 28.675517546619023,
+    "two_se": 41.200101292581635,
+    "uniform_margin": -9.875,
+    "uniform_se": 19.948012932036836,
+    "verdict": "undecidable",
+    "we_first": 2.975,
+    "we_second": -52.8
+   },
+   "cursor": {
+    "accept": true,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "co-gain (ours faster)",
+    "games": 80,
+    "gate": 51.92750476945988,
+    "gate_binding_term": "statistical",
+    "margin": 76.6625,
+    "margin_minus_gate": 24.734995230540115,
+    "oos_margin": 69.45,
+    "oos_sign_agrees": true,
+    "our_burn_delta": -21.8375,
+    "our_net_delta": 89.75,
+    "our_net_delta_se": 17.45882588451534,
+    "our_scoring_rounds_delta": -18.4375,
+    "se": 25.96375238472994,
+    "their_net_delta": 13.0875,
+    "their_net_delta_se": 17.473526030718656,
+    "two_field_difference": 13.849999999999994,
+    "two_field_difference_se": 37.91876325519857,
+    "two_se": 51.92750476945988,
+    "uniform_margin": 62.8125,
+    "uniform_se": 27.635415120968016,
+    "verdict": "accept",
+    "we_first": 128.25,
+    "we_second": 25.075
+   },
+   "cursor4": {
+    "accept": false,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "pure loss",
+    "games": 80,
+    "gate": 59.412499999999994,
+    "gate_binding_term": "apparatus",
+    "margin": -152.975,
+    "margin_minus_gate": -212.3875,
+    "oos_margin": -124.9375,
+    "oos_sign_agrees": true,
+    "our_burn_delta": 49.0125,
+    "our_net_delta": -96.4375,
+    "our_net_delta_se": 17.140085924245138,
+    "our_scoring_rounds_delta": -28.9625,
+    "se": 26.489375557099553,
+    "their_net_delta": 56.5375,
+    "their_net_delta_se": 18.532335269841127,
+    "two_field_difference": 59.412499999999994,
+    "two_field_difference_se": 34.961794105462964,
+    "two_se": 52.978751114199106,
+    "uniform_margin": -212.3875,
+    "uniform_se": 22.817537765230533,
+    "verdict": "undecidable",
+    "we_first": -208.7,
+    "we_second": -97.25
+   },
+   "nofold": {
+    "accept": false,
+    "apparatus_limited": true,
+    "bit_identical_to_base": 0,
+    "classification": "joint move",
+    "games": 80,
+    "gate": 48.31911034001591,
+    "gate_binding_term": "statistical",
+    "margin": 23.425,
+    "margin_minus_gate": -24.89411034001591,
+    "oos_margin": 23.2875,
+    "oos_sign_agrees": true,
+    "our_burn_delta": -22.275,
+    "our_net_delta": 10.875,
+    "our_net_delta_se": 15.135217283382152,
+    "our_scoring_rounds_delta": -7.4,
+    "se": 24.159555170007955,
+    "their_net_delta": -12.55,
+    "their_net_delta_se": 15.515793301412335,
+    "two_field_difference": 28.9375,
+    "two_field_difference_se": 32.352194419878934,
+    "two_se": 48.31911034001591,
+    "uniform_margin": -5.5125,
+    "uniform_se": 21.516978825313448,
+    "verdict": "undecidable on this apparatus",
+    "we_first": 30.125,
+    "we_second": 16.725
+   },
+   "nofoldpure": {
+    "accept": false,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "co-gain (ours faster)",
+    "games": 80,
+    "gate": 52.424339015408975,
+    "gate_binding_term": "statistical",
+    "margin": 4.5375,
+    "margin_minus_gate": -47.886839015408974,
+    "oos_margin": 39.9,
+    "oos_sign_agrees": true,
+    "our_burn_delta": -26.075,
+    "our_net_delta": 13.9875,
+    "our_net_delta_se": 15.523170653448217,
+    "our_scoring_rounds_delta": -9.0625,
+    "se": 26.212169507704488,
+    "their_net_delta": 9.45,
+    "their_net_delta_se": 18.21704498122847,
+    "two_field_difference": -3.8625000000000007,
+    "two_field_difference_se": 35.753230993899905,
+    "two_se": 52.424339015408975,
+    "uniform_margin": 8.4,
+    "uniform_se": 24.314927435683035,
+    "verdict": "undecidable",
+    "we_first": 13.25,
+    "we_second": -4.175
+   },
+   "null": {
+    "accept": false,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "pie-shrinking",
+    "games": 80,
+    "gate": 0.0,
+    "gate_binding_term": "statistical",
+    "margin": 0.0,
+    "margin_minus_gate": 0.0,
+    "oos_margin": 0.0,
+    "oos_sign_agrees": false,
+    "our_burn_delta": 0.0,
+    "our_net_delta": 0.0,
+    "our_net_delta_se": 0.0,
+    "our_scoring_rounds_delta": 0.0,
+    "se": 0.0,
+    "their_net_delta": 0.0,
+    "their_net_delta_se": 0.0,
+    "two_field_difference": 0.0,
+    "two_field_difference_se": 0.0,
+    "two_se": 0.0,
+    "uniform_margin": 0.0,
+    "uniform_se": 0.0,
+    "verdict": "reject",
+    "we_first": 0.0,
+    "we_second": 0.0
+   }
+  },
+  "map2": {
+   "cursor": {
+    "accept": true,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "co-gain (ours faster)",
+    "games": 100,
+    "gate": 42.59316585765582,
+    "gate_binding_term": "statistical",
+    "margin": 90.2,
+    "margin_minus_gate": 47.606834142344184,
+    "oos_margin": 74.04,
+    "oos_sign_agrees": true,
+    "our_burn_delta": -6.02,
+    "our_net_delta": 105.6,
+    "our_net_delta_se": 14.522834684479724,
+    "our_scoring_rounds_delta": -11.06,
+    "se": 21.29658292882791,
+    "their_net_delta": 15.4,
+    "their_net_delta_se": 13.339316839230326,
+    "two_field_difference": 13.269999999999996,
+    "two_field_difference_se": 29.436493035384196,
+    "two_se": 42.59316585765582,
+    "uniform_margin": 76.93,
+    "uniform_se": 20.32148315890791,
+    "verdict": "accept",
+    "we_first": 137.1,
+    "we_second": 43.3
+   },
+   "null": {
+    "accept": false,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "pie-shrinking",
+    "games": 100,
+    "gate": 0.0,
+    "gate_binding_term": "statistical",
+    "margin": 0.0,
+    "margin_minus_gate": 0.0,
+    "oos_margin": 0.0,
+    "oos_sign_agrees": false,
+    "our_burn_delta": 0.0,
+    "our_net_delta": 0.0,
+    "our_net_delta_se": 0.0,
+    "our_scoring_rounds_delta": 0.0,
+    "se": 0.0,
+    "their_net_delta": 0.0,
+    "their_net_delta_se": 0.0,
+    "two_field_difference": 0.0,
+    "two_field_difference_se": 0.0,
+    "two_se": 0.0,
+    "uniform_margin": 0.0,
+    "uniform_se": 0.0,
+    "verdict": "reject",
+    "we_first": 0.0,
+    "we_second": 0.0
+   },
+   "stack": {
+    "accept": true,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "joint move",
+    "games": 100,
+    "gate": 39.17952691512404,
+    "gate_binding_term": "statistical",
+    "margin": 111.34,
+    "margin_minus_gate": 72.16047308487596,
+    "oos_margin": 57.35,
+    "oos_sign_agrees": true,
+    "our_burn_delta": -18.64,
+    "our_net_delta": 101.15,
+    "our_net_delta_se": 13.728370499285651,
+    "our_scoring_rounds_delta": -15.08,
+    "se": 19.58976345756202,
+    "their_net_delta": -10.19,
+    "their_net_delta_se": 13.664875677177866,
+    "two_field_difference": 26.63000000000001,
+    "two_field_difference_se": 28.453593318371453,
+    "two_se": 39.17952691512404,
+    "uniform_margin": 84.71,
+    "uniform_se": 20.636088301905485,
+    "verdict": "accept",
+    "we_first": 163.58,
+    "we_second": 59.1
+   }
+  },
+  "map3": {
+   "cursor": {
+    "accept": true,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "co-gain (ours faster)",
+    "games": 100,
+    "gate": 54.68426309554725,
+    "gate_binding_term": "statistical",
+    "margin": 90.42,
+    "margin_minus_gate": 35.73573690445275,
+    "oos_margin": 37.86,
+    "oos_sign_agrees": true,
+    "our_burn_delta": -17.23,
+    "our_net_delta": 97.9,
+    "our_net_delta_se": 18.519334695818788,
+    "our_scoring_rounds_delta": -9.53,
+    "se": 27.342131547773626,
+    "their_net_delta": 7.48,
+    "their_net_delta_se": 18.875276330842325,
+    "two_field_difference": -8.129999999999995,
+    "two_field_difference_se": 34.069511697010384,
+    "two_se": 54.68426309554725,
+    "uniform_margin": 98.55,
+    "uniform_se": 20.32583257081908,
+    "verdict": "accept",
+    "we_first": 148.94,
+    "we_second": 31.9
+   },
+   "null": {
+    "accept": false,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "pie-shrinking",
+    "games": 100,
+    "gate": 0.0,
+    "gate_binding_term": "statistical",
+    "margin": 0.0,
+    "margin_minus_gate": 0.0,
+    "oos_margin": 0.0,
+    "oos_sign_agrees": false,
+    "our_burn_delta": 0.0,
+    "our_net_delta": 0.0,
+    "our_net_delta_se": 0.0,
+    "our_scoring_rounds_delta": 0.0,
+    "se": 0.0,
+    "their_net_delta": 0.0,
+    "their_net_delta_se": 0.0,
+    "two_field_difference": 0.0,
+    "two_field_difference_se": 0.0,
+    "two_se": 0.0,
+    "uniform_margin": 0.0,
+    "uniform_se": 0.0,
+    "verdict": "reject",
+    "we_first": 0.0,
+    "we_second": 0.0
+   },
+   "stack": {
+    "accept": true,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "joint move",
+    "games": 100,
+    "gate": 43.283228608641004,
+    "gate_binding_term": "statistical",
+    "margin": 65.75,
+    "margin_minus_gate": 22.466771391358996,
+    "oos_margin": 8.86,
+    "oos_sign_agrees": true,
+    "our_burn_delta": -24.73,
+    "our_net_delta": 58.54,
+    "our_net_delta_se": 16.46639933533458,
+    "our_scoring_rounds_delta": -11.93,
+    "se": 21.641614304320502,
+    "their_net_delta": -7.21,
+    "their_net_delta_se": 16.005745780181503,
+    "two_field_difference": 13.270000000000003,
+    "two_field_difference_se": 30.280746474793304,
+    "two_se": 43.283228608641004,
+    "uniform_margin": 52.48,
+    "uniform_se": 21.179332788681926,
+    "verdict": "accept",
+    "we_first": 98.32,
+    "we_second": 33.18
+   }
+  },
+  "why": "a pooled number cannot be converted into win rate; the convertible per-map 50% lines against the benchmark opponent are map2 +86 (cheapest, near-linear), map3 +127 (convex), map1 +200 (outlier), pooled equal-weight +166"
+ },
+ "positioning_gates": {
+  "k_histogram": {
+   "base": {
+    "game_175967.log": {
+     "3": 500
+    },
+    "game_176022.log": {
+     "3": 500
+    },
+    "game_176120.log": {
+     "3": 500
+    }
+   },
+   "colvedge": {
+    "game_175967.log": {
+     "3": 500
+    },
+    "game_176022.log": {
+     "3": 500
+    },
+    "game_176120.log": {
+     "3": 500
+    }
+   },
+   "cursor": {
+    "game_175967.log": {
+     "0": 51,
+     "3": 382,
+     "6": 67
+    },
+    "game_176022.log": {
+     "0": 94,
+     "3": 298,
+     "6": 108
+    },
+    "game_176120.log": {
+     "0": 73,
+     "3": 327,
+     "6": 100
+    }
+   },
+   "nofold": {
+    "game_175967.log": {
+     "3": 500
+    },
+    "game_176022.log": {
+     "3": 500
+    },
+    "game_176120.log": {
+     "3": 500
+    }
+   },
+   "nofoldpure": {
+    "game_175967.log": {
+     "3": 500
+    },
+    "game_176022.log": {
+     "3": 500
+    },
+    "game_176120.log": {
+     "3": 500
+    }
+   },
+   "stack": {
+    "game_175967.log": {
+     "0": 49,
+     "3": 386,
+     "6": 65
+    },
+    "game_176022.log": {
+     "0": 99,
+     "3": 288,
+     "6": 113
+    },
+    "game_176120.log": {
+     "0": 75,
+     "3": 324,
+     "6": 101
+    }
+   }
+  },
+  "residual_drift_mechanism": "the +0.173 pooled ring drift appears on BOTH units while the tail geometry is flat and the donor takes zero steps, so the cause is that silencing a unit which was walking BACK to its anchor freezes it further out than the anchor.  This gives a precondition to the previously unexplained fold_never ~ 0: standing still is as good as oscillating ONLY when the unit is already AT its anchor",
+  "ring_by_unit": {
+   "base": {
+    "both": {
+     "max": 3.407520325203252,
+     "mean": 3.1936610772357725,
+     "median": 3.2195121951219514,
+     "min": 2.91260162601626,
+     "n": 16,
+     "positive": 16,
+     "sd": 0.13421405900943378,
+     "se": 0.033553514752358446,
+     "sigma": 95.1811189023437,
+     "zero": 0
+    },
+    "unit0": {
+     "max": 3.225609756097561,
+     "mean": 2.756605691056911,
+     "median": 2.7713414634146343,
+     "min": 2.2235772357723578,
+     "n": 16,
+     "positive": 16,
+     "sd": 0.2796908476833535,
+     "se": 0.06992271192083838,
+     "sigma": 39.42360951585727,
+     "zero": 0
+    },
+    "unit1": {
+     "max": 4.058943089430894,
+     "mean": 3.6307164634146343,
+     "median": 3.6534552845528454,
+     "min": 3.1686991869918697,
+     "n": 16,
+     "positive": 16,
+     "sd": 0.20624986855463034,
+     "se": 0.051562467138657586,
+     "sigma": 70.41393992361164,
+     "zero": 0
+    }
+   },
+   "colvedge": {
+    "both": {
+     "max": 3.4339430894308944,
+     "mean": 3.1229039634146343,
+     "median": 3.09400406504065,
+     "min": 2.688008130081301,
+     "n": 16,
+     "positive": 16,
+     "sd": 0.17792641163061554,
+     "se": 0.044481602907653885,
+     "sigma": 70.20664183118457,
+     "zero": 0
+    },
+    "both_delta_vs_base": -0.07075711382113825,
+    "unit0": {
+     "max": 3.091463414634146,
+     "mean": 2.7278963414634148,
+     "median": 2.757113821138211,
+     "min": 2.018292682926829,
+     "n": 16,
+     "positive": 16,
+     "sd": 0.27620734771437944,
+     "se": 0.06905183692859486,
+     "sigma": 39.50505102832063,
+     "zero": 0
+    },
+    "unit0_delta_vs_base": -0.028709349593496025,
+    "unit1": {
+     "max": 3.9166666666666665,
+     "mean": 3.517911585365854,
+     "median": 3.511178861788618,
+     "min": 3.1321138211382116,
+     "n": 16,
+     "positive": 16,
+     "sd": 0.19015994654271942,
+     "se": 0.047539986635679855,
+     "sigma": 73.99900240454801,
+     "zero": 0
+    },
+    "unit1_delta_vs_base": -0.11280487804878048
+   },
+   "cursor": {
+    "both": {
+     "max": 3.768292682926829,
+     "mean": 3.3825584349593494,
+     "median": 3.4314024390243905,
+     "min": 2.8953252032520327,
+     "n": 16,
+     "positive": 16,
+     "sd": 0.2748275068450823,
+     "se": 0.06870687671127057,
+     "sigma": 49.23173045944147,
+     "zero": 0
+    },
+    "both_delta_vs_base": 0.18889735772357685,
+    "unit0": {
+     "max": 3.7439024390243905,
+     "mean": 2.989456300813008,
+     "median": 2.967479674796748,
+     "min": 2.3658536585365852,
+     "n": 16,
+     "positive": 16,
+     "sd": 0.3972331840335236,
+     "se": 0.0993082960083809,
+     "sigma": 30.102785174772503,
+     "zero": 0
+    },
+    "unit0_delta_vs_base": 0.23285060975609717,
+    "unit1": {
+     "max": 4.40650406504065,
+     "mean": 3.7756605691056913,
+     "median": 3.808943089430894,
+     "min": 3.2235772357723578,
+     "n": 16,
+     "positive": 16,
+     "sd": 0.2923579901711316,
+     "se": 0.0730894975427829,
+     "sigma": 51.65804521909061,
+     "zero": 0
+    },
+    "unit1_delta_vs_base": 0.14494410569105698
+   },
+   "nofold": {
+    "both": {
+     "max": 3.5904471544715446,
+     "mean": 3.1794334349593494,
+     "median": 3.1641260162601625,
+     "min": 2.660569105691057,
+     "n": 16,
+     "positive": 16,
+     "sd": 0.2447115556095829,
+     "se": 0.06117788890239573,
+     "sigma": 51.97030319290476,
+     "zero": 0
+    },
+    "both_delta_vs_base": -0.014227642276423147,
+    "unit0": {
+     "max": 3.815040650406504,
+     "mean": 2.7929369918699187,
+     "median": 2.7378048780487805,
+     "min": 2.0569105691056913,
+     "n": 16,
+     "positive": 16,
+     "sd": 0.4327539987346198,
+     "se": 0.10818849968365495,
+     "sigma": 25.815470221294454,
+     "zero": 0
+    },
+    "unit0_delta_vs_base": 0.03633130081300795,
+    "unit1": {
+     "max": 3.8841463414634148,
+     "mean": 3.5659298780487805,
+     "median": 3.5752032520325203,
+     "min": 3.2642276422764227,
+     "n": 16,
+     "positive": 16,
+     "sd": 0.1924343026081341,
+     "se": 0.048108575652033525,
+     "sigma": 74.12254114195648,
+     "zero": 0
+    },
+    "unit1_delta_vs_base": -0.0647865853658538
+   },
+   "nofoldpure": {
+    "both": {
+     "max": 3.8140243902439024,
+     "mean": 3.2578760162601625,
+     "median": 3.3135162601626016,
+     "min": 2.783536585365854,
+     "n": 16,
+     "positive": 16,
+     "sd": 0.2931512785760729,
+     "se": 0.07328781964401823,
+     "sigma": 44.45317151041853,
+     "zero": 0
+    },
+    "both_delta_vs_base": 0.06421493902439002,
+    "unit0": {
+     "max": 4.274390243902439,
+     "mean": 2.966844512195122,
+     "median": 2.9207317073170733,
+     "min": 2.434959349593496,
+     "n": 16,
+     "positive": 16,
+     "sd": 0.43625589928166225,
+     "se": 0.10906397482041556,
+     "sigma": 27.202790995654798,
+     "zero": 0
+    },
+    "unit0_delta_vs_base": 0.21023882113821113,
+    "unit1": {
+     "max": 4.067073170731708,
+     "mean": 3.548907520325203,
+     "median": 3.65650406504065,
+     "min": 2.798780487804878,
+     "n": 16,
+     "positive": 16,
+     "sd": 0.33164393486691046,
+     "se": 0.08291098371672762,
+     "sigma": 42.8038284101217,
+     "zero": 0
+    },
+    "unit1_delta_vs_base": -0.0818089430894311
+   },
+   "stack": {
+    "both": {
+     "max": 3.6758130081300813,
+     "mean": 3.3906885162601625,
+     "median": 3.4065040650406506,
+     "min": 3.0569105691056913,
+     "n": 16,
+     "positive": 16,
+     "sd": 0.18535908171718776,
+     "se": 0.04633977042929694,
+     "sigma": 73.17016214902308,
+     "zero": 0
+    },
+    "both_delta_vs_base": 0.19702743902439002,
+    "unit0": {
+     "max": 3.5101626016260163,
+     "mean": 3.1133130081300813,
+     "median": 3.0924796747967482,
+     "min": 2.597560975609756,
+     "n": 16,
+     "positive": 16,
+     "sd": 0.25660840777761756,
+     "se": 0.06415210194440439,
+     "sigma": 48.530179273442144,
+     "zero": 0
+    },
+    "unit0_delta_vs_base": 0.3567073170731705,
+    "unit1": {
+     "max": 4.020325203252033,
+     "mean": 3.668064024390244,
+     "median": 3.7682926829268295,
+     "min": 3.1951219512195124,
+     "n": 16,
+     "positive": 16,
+     "sd": 0.2285583565549808,
+     "se": 0.0571395891387452,
+     "sigma": 64.19479173158778,
+     "zero": 0
+    },
+    "unit1_delta_vs_base": 0.03734756097560954
+   }
+  },
+  "ring_condition": "per-unit mean L1 ring from (8,8) at round end, rounds >= 8, calibrated field, 16 paired games, compared against the same-seed baseline; the instrument agrees with two independent harnesses to 0.07-0.11 rings",
+  "tail_condition": "each .so replayed over three REAL platform logs; positions come from the logged input and actions from the .so own output, so nothing here depends on a simulator field model, and each tail slot ring is compared against the SAME unit ring after step 3 in the SAME round",
+  "tail_geometry": {
+   "base": {
+    "game_175967.log": {
+     "donor_span_is_noop": 0,
+     "donor_span_is_noop_share": 0.0,
+     "firing_rounds": 0,
+     "increment": {},
+     "increment_share": {},
+     "landing_ring_histogram": {},
+     "mean_ring_after_step3": null,
+     "mean_ring_tail_slots": null,
+     "tail_share_ring_ge5": 0.0,
+     "tail_slots": 0
+    },
+    "game_176022.log": {
+     "donor_span_is_noop": 0,
+     "donor_span_is_noop_share": 0.0,
+     "firing_rounds": 0,
+     "increment": {},
+     "increment_share": {},
+     "landing_ring_histogram": {},
+     "mean_ring_after_step3": null,
+     "mean_ring_tail_slots": null,
+     "tail_share_ring_ge5": 0.0,
+     "tail_slots": 0
+    },
+    "game_176120.log": {
+     "donor_span_is_noop": 0,
+     "donor_span_is_noop_share": 0.0,
+     "firing_rounds": 0,
+     "increment": {},
+     "increment_share": {},
+     "landing_ring_histogram": {},
+     "mean_ring_after_step3": null,
+     "mean_ring_tail_slots": null,
+     "tail_share_ring_ge5": 0.0,
+     "tail_slots": 0
+    }
+   },
+   "cursor": {
+    "game_175967.log": {
+     "donor_span_is_noop": 118,
+     "donor_span_is_noop_share": 1.0,
+     "firing_rounds": 118,
+     "increment": {
+      "inward": 78,
+      "outward": 94,
+      "tangential": 182
+     },
+     "increment_share": {
+      "inward": 0.22033898305084745,
+      "outward": 0.2655367231638418,
+      "tangential": 0.5141242937853108
+     },
+     "landing_ring_histogram": {
+      "0": 23,
+      "1": 129,
+      "2": 130,
+      "3": 54,
+      "4": 10,
+      "5": 8
+     },
+     "mean_ring_after_step3": 1.7372881355932204,
+     "mean_ring_tail_slots": 1.7824858757062148,
+     "tail_share_ring_ge5": 0.022598870056497175,
+     "tail_slots": 354
+    },
+    "game_176022.log": {
+     "donor_span_is_noop": 202,
+     "donor_span_is_noop_share": 1.0,
+     "firing_rounds": 202,
+     "increment": {
+      "inward": 166,
+      "outward": 142,
+      "tangential": 298
+     },
+     "increment_share": {
+      "inward": 0.2739273927392739,
+      "outward": 0.23432343234323433,
+      "tangential": 0.49174917491749176
+     },
+     "landing_ring_histogram": {
+      "0": 23,
+      "1": 81,
+      "10": 12,
+      "11": 3,
+      "2": 137,
+      "3": 122,
+      "4": 96,
+      "5": 54,
+      "6": 47,
+      "7": 24,
+      "8": 7
+     },
+     "mean_ring_after_step3": 3.396039603960396,
+     "mean_ring_tail_slots": 3.3564356435643563,
+     "tail_share_ring_ge5": 0.24257425742574257,
+     "tail_slots": 606
+    },
+    "game_176120.log": {
+     "donor_span_is_noop": 173,
+     "donor_span_is_noop_share": 1.0,
+     "firing_rounds": 173,
+     "increment": {
+      "inward": 86,
+      "outward": 94,
+      "tangential": 339
+     },
+     "increment_share": {
+      "inward": 0.16570327552986513,
+      "outward": 0.1811175337186898,
+      "tangential": 0.653179190751445
+     },
+     "landing_ring_histogram": {
+      "0": 57,
+      "1": 86,
+      "10": 4,
+      "11": 3,
+      "12": 4,
+      "2": 37,
+      "3": 79,
+      "4": 133,
+      "5": 80,
+      "6": 19,
+      "7": 7,
+      "8": 9,
+      "9": 1
+     },
+     "mean_ring_after_step3": 3.2485549132947975,
+     "mean_ring_tail_slots": 3.2639691714836223,
+     "tail_share_ring_ge5": 0.24470134874759153,
+     "tail_slots": 519
+    }
+   },
+   "stack": {
+    "game_175967.log": {
+     "donor_span_is_noop": 114,
+     "donor_span_is_noop_share": 1.0,
+     "firing_rounds": 114,
+     "increment": {
+      "inward": 78,
+      "outward": 94,
+      "tangential": 170
+     },
+     "increment_share": {
+      "inward": 0.22807017543859648,
+      "outward": 0.27485380116959063,
+      "tangential": 0.49707602339181284
+     },
+     "landing_ring_histogram": {
+      "0": 23,
+      "1": 126,
+      "2": 121,
+      "3": 54,
+      "4": 10,
+      "5": 8
+     },
+     "mean_ring_after_step3": 1.736842105263158,
+     "mean_ring_tail_slots": 1.7836257309941521,
+     "tail_share_ring_ge5": 0.023391812865497075,
+     "tail_slots": 342
+    },
+    "game_176022.log": {
+     "donor_span_is_noop": 212,
+     "donor_span_is_noop_share": 1.0,
+     "firing_rounds": 212,
+     "increment": {
+      "inward": 176,
+      "outward": 146,
+      "tangential": 314
+     },
+     "increment_share": {
+      "inward": 0.27672955974842767,
+      "outward": 0.22955974842767296,
+      "tangential": 0.4937106918238994
+     },
+     "landing_ring_histogram": {
+      "0": 26,
+      "1": 85,
+      "10": 14,
+      "11": 4,
+      "2": 144,
+      "3": 128,
+      "4": 105,
+      "5": 55,
+      "6": 40,
+      "7": 23,
+      "8": 12
+     },
+     "mean_ring_after_step3": 3.400943396226415,
+     "mean_ring_tail_slots": 3.3537735849056602,
+     "tail_share_ring_ge5": 0.23270440251572327,
+     "tail_slots": 636
+    },
+    "game_176120.log": {
+     "donor_span_is_noop": 176,
+     "donor_span_is_noop_share": 1.0,
+     "firing_rounds": 176,
+     "increment": {
+      "inward": 90,
+      "outward": 96,
+      "tangential": 342
+     },
+     "increment_share": {
+      "inward": 0.17045454545454544,
+      "outward": 0.18181818181818182,
+      "tangential": 0.6477272727272727
+     },
+     "landing_ring_histogram": {
+      "0": 60,
+      "1": 84,
+      "10": 4,
+      "11": 3,
+      "12": 1,
+      "2": 39,
+      "3": 84,
+      "4": 136,
+      "5": 82,
+      "6": 21,
+      "7": 6,
+      "8": 7,
+      "9": 1
+     },
+     "mean_ring_after_step3": 3.1818181818181817,
+     "mean_ring_tail_slots": 3.1931818181818183,
+     "tail_share_ring_ge5": 0.23674242424242425,
+     "tail_slots": 528
+    }
+   }
+  },
+  "verdict": "gate passes: donor span is a no-op on 100% of firing rounds on all three maps, the tail moves the producer by under 0.05 rings and is net inward on map2, and the ring>=5 share is explained by the producer starting ring (map3 control: producers at mean ring 1.737, share collapses to 2.3%)",
+  "why": "fold_tour died at -81.4 +- 18.5 because a three-step tour cannot close on a parity board and walked the unit off the central generation peak; two further candidates died the same way, so any step-transfer arm must show it is not reproducing it"
+ },
+ "process_failure_recorded": {
+  "what": "a construct run overwrote base.so while 24 A/B workers were dlopen-ing it; the run died with \"file too short\" and lost an nc measurement at 1001/4800 games",
+  "why_recorded": "the loud failure was luck.  Had the rebuild finished a millisecond earlier, half the paired comparisons in that run would have been measured against one build and half against another, with no error, no warning and a plausible-looking margin.  Never write a build directory an A/B is reading"
+ },
+ "recommendation": {
+  "artifact": "ncp = nofoldpure + cursor",
+  "cheaper_sibling": {
+   "behavioural_difference_vs_ncp": "6/500 and 9/500 rounds on real platform replay",
+   "delta_instructions": -42.07,
+   "name": "nc = nofold + cursor",
+   "pad": 144,
+   "source_sha256": "73f703956cce95816e827b19fa7d664ac71703d22121b83c1f14e64b6096c26f"
+  },
+  "entry_mod64": "0x10",
+  "fp16": 0,
+  "not_sufficient": "reaches the map2 convertible 50% line (+86) but not map1 (+200) nor the pooled equal-weight line (+166)",
+  "pad_for_ncp": 96,
+  "platform_request": {
+   "binary_decision": "whether the +90..+111 map2 margin measured in self-play transfers to the benchmark opponent",
+   "consumed_by_this_line": 0,
+   "games": 34,
+   "map": "map2",
+   "split": "17 per order arm",
+   "why_34": "at a per-game margin sd of ~250 against a real opponent, 34 games resolve a +100 effect to ~2.3 sigma; 17 gives 1.6 sigma and could not change a decision"
+  },
+  "source_sha256": "a8d3a9696de15c3232e4e36ab8543eacfa1ff09823c844c980b156c083ead203"
+ },
+ "step1_coarse_screen": {
+  "condition": "closed-loop self-play on map1, dispatch fixed, each arm compared against the unmodified fd47ea6 on the identical seed, order arm and field model",
+  "inclusion_rule": "include unless clearly negative, i.e. unless the point estimate is negative by more than its own gate; a false exclusion is permanent while a false inclusion is absorbed by the stacked measurement",
+  "purpose": "decides who enters the stack only; precision deliberately not bought",
+  "rows": {
+   "colvedge": {
+    "accept": false,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "pure loss",
+    "games": 80,
+    "gate": 41.200101292581635,
+    "gate_binding_term": "statistical",
+    "margin": -24.9125,
+    "margin_minus_gate": -66.11260129258164,
+    "oos_margin": 2.9875,
+    "oos_sign_agrees": false,
+    "our_burn_delta": 5.9875,
+    "our_net_delta": -12.95,
+    "our_net_delta_se": 13.251055606386394,
+    "our_scoring_rounds_delta": -0.1125,
+    "se": 20.600050646290818,
+    "their_net_delta": 11.9625,
+    "their_net_delta_se": 14.166945881773128,
+    "two_field_difference": -15.037500000000001,
+    "two_field_difference_se": 28.675517546619023,
+    "two_se": 41.200101292581635,
+    "uniform_margin": -9.875,
+    "uniform_se": 19.948012932036836,
+    "verdict": "undecidable",
+    "we_first": 2.975,
+    "we_second": -52.8
+   },
+   "cursor": {
+    "accept": true,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "co-gain (ours faster)",
+    "games": 80,
+    "gate": 51.92750476945988,
+    "gate_binding_term": "statistical",
+    "margin": 76.6625,
+    "margin_minus_gate": 24.734995230540115,
+    "oos_margin": 69.45,
+    "oos_sign_agrees": true,
+    "our_burn_delta": -21.8375,
+    "our_net_delta": 89.75,
+    "our_net_delta_se": 17.45882588451534,
+    "our_scoring_rounds_delta": -18.4375,
+    "se": 25.96375238472994,
+    "their_net_delta": 13.0875,
+    "their_net_delta_se": 17.473526030718656,
+    "two_field_difference": 13.849999999999994,
+    "two_field_difference_se": 37.91876325519857,
+    "two_se": 51.92750476945988,
+    "uniform_margin": 62.8125,
+    "uniform_se": 27.635415120968016,
+    "verdict": "accept",
+    "we_first": 128.25,
+    "we_second": 25.075
+   },
+   "cursor4": {
+    "accept": false,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "pure loss",
+    "games": 80,
+    "gate": 59.412499999999994,
+    "gate_binding_term": "apparatus",
+    "margin": -152.975,
+    "margin_minus_gate": -212.3875,
+    "oos_margin": -124.9375,
+    "oos_sign_agrees": true,
+    "our_burn_delta": 49.0125,
+    "our_net_delta": -96.4375,
+    "our_net_delta_se": 17.140085924245138,
+    "our_scoring_rounds_delta": -28.9625,
+    "se": 26.489375557099553,
+    "their_net_delta": 56.5375,
+    "their_net_delta_se": 18.532335269841127,
+    "two_field_difference": 59.412499999999994,
+    "two_field_difference_se": 34.961794105462964,
+    "two_se": 52.978751114199106,
+    "uniform_margin": -212.3875,
+    "uniform_se": 22.817537765230533,
+    "verdict": "undecidable",
+    "we_first": -208.7,
+    "we_second": -97.25
+   },
+   "nofold": {
+    "accept": false,
+    "apparatus_limited": true,
+    "bit_identical_to_base": 0,
+    "classification": "joint move",
+    "games": 80,
+    "gate": 48.31911034001591,
+    "gate_binding_term": "statistical",
+    "margin": 23.425,
+    "margin_minus_gate": -24.89411034001591,
+    "oos_margin": 23.2875,
+    "oos_sign_agrees": true,
+    "our_burn_delta": -22.275,
+    "our_net_delta": 10.875,
+    "our_net_delta_se": 15.135217283382152,
+    "our_scoring_rounds_delta": -7.4,
+    "se": 24.159555170007955,
+    "their_net_delta": -12.55,
+    "their_net_delta_se": 15.515793301412335,
+    "two_field_difference": 28.9375,
+    "two_field_difference_se": 32.352194419878934,
+    "two_se": 48.31911034001591,
+    "uniform_margin": -5.5125,
+    "uniform_se": 21.516978825313448,
+    "verdict": "undecidable on this apparatus",
+    "we_first": 30.125,
+    "we_second": 16.725
+   },
+   "nofoldpure": {
+    "accept": false,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "co-gain (ours faster)",
+    "games": 80,
+    "gate": 52.424339015408975,
+    "gate_binding_term": "statistical",
+    "margin": 4.5375,
+    "margin_minus_gate": -47.886839015408974,
+    "oos_margin": 39.9,
+    "oos_sign_agrees": true,
+    "our_burn_delta": -26.075,
+    "our_net_delta": 13.9875,
+    "our_net_delta_se": 15.523170653448217,
+    "our_scoring_rounds_delta": -9.0625,
+    "se": 26.212169507704488,
+    "their_net_delta": 9.45,
+    "their_net_delta_se": 18.21704498122847,
+    "two_field_difference": -3.8625000000000007,
+    "two_field_difference_se": 35.753230993899905,
+    "two_se": 52.424339015408975,
+    "uniform_margin": 8.4,
+    "uniform_se": 24.314927435683035,
+    "verdict": "undecidable",
+    "we_first": 13.25,
+    "we_second": -4.175
+   },
+   "null": {
+    "accept": false,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "pie-shrinking",
+    "games": 80,
+    "gate": 0.0,
+    "gate_binding_term": "statistical",
+    "margin": 0.0,
+    "margin_minus_gate": 0.0,
+    "oos_margin": 0.0,
+    "oos_sign_agrees": false,
+    "our_burn_delta": 0.0,
+    "our_net_delta": 0.0,
+    "our_net_delta_se": 0.0,
+    "our_scoring_rounds_delta": 0.0,
+    "se": 0.0,
+    "their_net_delta": 0.0,
+    "their_net_delta_se": 0.0,
+    "two_field_difference": 0.0,
+    "two_field_difference_se": 0.0,
+    "two_se": 0.0,
+    "uniform_margin": 0.0,
+    "uniform_se": 0.0,
+    "verdict": "reject",
+    "we_first": 0.0,
+    "we_second": 0.0
+   }
+  },
+  "seeds": "40 tune (3000-3039) + 40 disjoint OOS (7000-7039), 2 order arms => 80 paired games per field per band, map1"
+ },
+ "step2_stacked_verdict": {
+  "achieved_se_range": [
+   11.7,
+   13.9
+  ],
+  "condition": "as step 1 but at 300 paired games per cell; integrity verified with 300 distinct scenario digests per field, disjoint between the two field models",
+  "oos_rows": {
+   "null": {
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "pie-shrinking",
+    "games": 300,
+    "gate": 0.0,
+    "gate_binding_term": "statistical",
+    "margin": 0.0,
+    "margin_minus_gate": 0.0,
+    "our_burn_delta": 0.0,
+    "our_net_delta": 0.0,
+    "our_net_delta_se": 0.0,
+    "our_scoring_rounds_delta": 0.0,
+    "se": 0.0,
+    "their_net_delta": 0.0,
+    "their_net_delta_se": 0.0,
+    "two_field_difference": 0.0,
+    "two_field_difference_se": 0.0,
+    "two_se": 0.0,
+    "uniform_margin": 0.0,
+    "uniform_se": 0.0,
+    "we_first": 0.0,
+    "we_second": 0.0
+   },
+   "stack": {
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "co-gain (ours faster)",
+    "games": 300,
+    "gate": 23.787405425060278,
+    "gate_binding_term": "statistical",
+    "margin": 59.03,
+    "margin_minus_gate": 35.24259457493972,
+    "our_burn_delta": -22.436666666666667,
+    "our_net_delta": 69.68666666666667,
+    "our_net_delta_se": 8.54608762389046,
+    "our_scoring_rounds_delta": -23.206666666666667,
+    "se": 11.893702712530139,
+    "their_net_delta": 10.656666666666666,
+    "their_net_delta_se": 7.9344061437955675,
+    "two_field_difference": -6.323333333333338,
+    "two_field_difference_se": 17.01367778065435,
+    "two_se": 23.787405425060278,
+    "uniform_margin": 65.35333333333334,
+    "uniform_se": 12.165733328077053,
+    "we_first": 106.49333333333334,
+    "we_second": 11.566666666666666
+   },
+   "stackp": {
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "co-gain (ours faster)",
+    "games": 300,
+    "gate": 24.28986320724209,
+    "gate_binding_term": "statistical",
+    "margin": 63.94,
+    "margin_minus_gate": 39.650136792757905,
+    "our_burn_delta": -26.523333333333333,
+    "our_net_delta": 64.28333333333333,
+    "our_net_delta_se": 8.597675995046183,
+    "our_scoring_rounds_delta": -25.726666666666667,
+    "se": 12.144931603621044,
+    "their_net_delta": 0.3433333333333333,
+    "their_net_delta_se": 8.049336191127816,
+    "two_field_difference": 1.0833333333333286,
+    "two_field_difference_se": 17.32566025924563,
+    "two_se": 24.28986320724209,
+    "uniform_margin": 62.85666666666667,
+    "uniform_se": 12.35634006339135,
+    "we_first": 92.99333333333334,
+    "we_second": 34.88666666666666
+   },
+   "zc": {
+    "apparatus_limited": true,
+    "bit_identical_to_base": 0,
+    "classification": "joint move",
+    "games": 300,
+    "gate": 23.353077230374446,
+    "gate_binding_term": "statistical",
+    "margin": 18.636666666666667,
+    "margin_minus_gate": -4.716410563707779,
+    "our_burn_delta": -17.10333333333333,
+    "our_net_delta": 0.03333333333333333,
+    "our_net_delta_se": 8.118346802911132,
+    "our_scoring_rounds_delta": -7.316666666666666,
+    "se": 11.676538615187223,
+    "their_net_delta": -18.60333333333333,
+    "their_net_delta_se": 8.386260327564347,
+    "two_field_difference": 21.76,
+    "two_field_difference_se": 16.93889267627835,
+    "two_se": 23.353077230374446,
+    "uniform_margin": -3.1233333333333335,
+    "uniform_se": 12.271288891820532,
+    "we_first": 3.1933333333333334,
+    "we_second": 34.08
+   },
+   "zcp": {
+    "apparatus_limited": true,
+    "bit_identical_to_base": 0,
+    "classification": "joint move",
+    "games": 300,
+    "gate": 27.456666666666663,
+    "gate_binding_term": "apparatus",
+    "margin": 16.9,
+    "margin_minus_gate": -10.556666666666665,
+    "our_burn_delta": -29.323333333333334,
+    "our_net_delta": 6.8933333333333335,
+    "our_net_delta_se": 8.111233788008514,
+    "our_scoring_rounds_delta": -8.906666666666666,
+    "se": 11.389423304570881,
+    "their_net_delta": -10.006666666666666,
+    "their_net_delta_se": 8.031011511243138,
+    "two_field_difference": 27.456666666666663,
+    "two_field_difference_se": 16.704231814063046,
+    "two_se": 22.778846609141763,
+    "uniform_margin": -10.556666666666667,
+    "uniform_se": 12.219345206976262,
+    "we_first": 22.393333333333334,
+    "we_second": 11.406666666666666
+   }
+  },
+  "purpose": "the only measurement that decides; immune to multiple comparisons, to the additivity assumption, and to interaction pricing, because interaction is already inside the number",
+  "rows": {
+   "null": {
+    "accept": false,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "pie-shrinking",
+    "games": 300,
+    "gate": 0.0,
+    "gate_binding_term": "statistical",
+    "margin": 0.0,
+    "margin_minus_gate": 0.0,
+    "oos_margin": 0.0,
+    "oos_sign_agrees": false,
+    "our_burn_delta": 0.0,
+    "our_net_delta": 0.0,
+    "our_net_delta_se": 0.0,
+    "our_scoring_rounds_delta": 0.0,
+    "se": 0.0,
+    "their_net_delta": 0.0,
+    "their_net_delta_se": 0.0,
+    "two_field_difference": 0.0,
+    "two_field_difference_se": 0.0,
+    "two_se": 0.0,
+    "uniform_margin": 0.0,
+    "uniform_se": 0.0,
+    "verdict": "reject",
+    "we_first": 0.0,
+    "we_second": 0.0
+   },
+   "stack": {
+    "accept": true,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "co-gain (ours faster)",
+    "games": 300,
+    "gate": 27.763863480204883,
+    "gate_binding_term": "statistical",
+    "margin": 63.373333333333335,
+    "margin_minus_gate": 35.60946985312845,
+    "oos_margin": 59.03,
+    "oos_sign_agrees": true,
+    "our_burn_delta": -25.426666666666666,
+    "our_net_delta": 76.08333333333333,
+    "our_net_delta_se": 9.220907678985705,
+    "our_scoring_rounds_delta": -22.1,
+    "se": 13.881931740102441,
+    "their_net_delta": 12.71,
+    "their_net_delta_se": 9.084147542082977,
+    "two_field_difference": -7.623333333333335,
+    "two_field_difference_se": 19.531338675309662,
+    "two_se": 27.763863480204883,
+    "uniform_margin": 70.99666666666667,
+    "uniform_se": 13.739183440539081,
+    "verdict": "accept",
+    "we_first": 111.3,
+    "we_second": 15.446666666666667
+   },
+   "stackp": {
+    "accept": true,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "co-gain (ours faster)",
+    "games": 300,
+    "gate": 25.153192134295377,
+    "gate_binding_term": "statistical",
+    "margin": 60.013333333333335,
+    "margin_minus_gate": 34.860141199037955,
+    "oos_margin": 63.94,
+    "oos_sign_agrees": true,
+    "our_burn_delta": -15.58,
+    "our_net_delta": 66.32333333333334,
+    "our_net_delta_se": 8.312047935196077,
+    "our_scoring_rounds_delta": -22.973333333333333,
+    "se": 12.576596067147689,
+    "their_net_delta": 6.31,
+    "their_net_delta_se": 8.883798444635337,
+    "two_field_difference": -8.069999999999993,
+    "two_field_difference_se": 17.822653799110782,
+    "two_se": 25.153192134295377,
+    "uniform_margin": 68.08333333333333,
+    "uniform_se": 12.628389438355283,
+    "verdict": "accept",
+    "we_first": 69.86,
+    "we_second": 50.166666666666664
+   },
+   "zc": {
+    "accept": false,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "joint move",
+    "games": 300,
+    "gate": 23.474440826765605,
+    "gate_binding_term": "statistical",
+    "margin": 20.31,
+    "margin_minus_gate": -3.164440826765606,
+    "oos_margin": 18.636666666666667,
+    "oos_sign_agrees": true,
+    "our_burn_delta": -32.44,
+    "our_net_delta": 8.57,
+    "our_net_delta_se": 7.626287584325716,
+    "our_scoring_rounds_delta": -7.346666666666667,
+    "se": 11.737220413382802,
+    "their_net_delta": -11.74,
+    "their_net_delta_se": 8.279451481462448,
+    "two_field_difference": 5.933333333333332,
+    "two_field_difference_se": 16.770253103308107,
+    "two_se": 23.474440826765605,
+    "uniform_margin": 14.376666666666667,
+    "uniform_se": 11.978273920589945,
+    "verdict": "reject",
+    "we_first": 30.553333333333335,
+    "we_second": 10.066666666666666
+   },
+   "zcp": {
+    "accept": false,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "pure loss",
+    "games": 300,
+    "gate": 23.89674057964249,
+    "gate_binding_term": "statistical",
+    "margin": -15.933333333333334,
+    "margin_minus_gate": -39.83007391297582,
+    "oos_margin": 16.9,
+    "oos_sign_agrees": false,
+    "our_burn_delta": -23.503333333333334,
+    "our_net_delta": -5.323333333333333,
+    "our_net_delta_se": 7.744254990546395,
+    "our_scoring_rounds_delta": -9.8,
+    "se": 11.948370289821245,
+    "their_net_delta": 10.61,
+    "their_net_delta_se": 8.495858634378283,
+    "two_field_difference": -9.723333333333333,
+    "two_field_difference_se": 17.051471177147473,
+    "two_se": 23.89674057964249,
+    "uniform_margin": -6.21,
+    "uniform_se": 12.165077752419341,
+    "verdict": "reject",
+    "we_first": -4.013333333333334,
+    "we_second": -27.85333333333333
+   }
+  },
+  "seeds": "150 tune (3000-3149) + 150 disjoint OOS (7000-7149), 2 order arms => 300 paired games per arm per field per band, map1"
+ },
+ "step3_leave_one_out": {
+  "condition": "each arm is the stack with exactly one member removed, compared against base on the identical seed, order arm and field model, so the difference between a row and the stack row is that member contribution INSIDE the stack",
+  "purpose": "attribution: with k members this is k measurements rather than k(k-1)/2 pairs, and it answers which member to drop",
+  "rows": {
+   "loo_nocolv": {
+    "accept": true,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "co-gain (ours faster)",
+    "games": 200,
+    "gate": 32.338143936632044,
+    "gate_binding_term": "statistical",
+    "margin": 79.535,
+    "margin_minus_gate": 47.19685606336795,
+    "oos_margin": 50.355,
+    "oos_sign_agrees": true,
+    "our_burn_delta": -24.02,
+    "our_net_delta": 85.215,
+    "our_net_delta_se": 10.406003962488995,
+    "our_scoring_rounds_delta": -22.685,
+    "se": 16.169071968316022,
+    "their_net_delta": 5.68,
+    "their_net_delta_se": 11.176700369777247,
+    "two_field_difference": 18.939999999999998,
+    "two_field_difference_se": 22.716825693700912,
+    "two_se": 32.338143936632044,
+    "uniform_margin": 60.595,
+    "uniform_se": 15.956668865443282,
+    "verdict": "accept",
+    "we_first": 112.7,
+    "we_second": 46.37
+   },
+   "loo_nocursor": {
+    "accept": false,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "pure loss",
+    "games": 200,
+    "gate": 29.42877353132116,
+    "gate_binding_term": "statistical",
+    "margin": -4.24,
+    "margin_minus_gate": -33.66877353132116,
+    "oos_margin": 16.62,
+    "oos_sign_agrees": false,
+    "our_burn_delta": -25.165,
+    "our_net_delta": -3.535,
+    "our_net_delta_se": 9.595677621726383,
+    "our_scoring_rounds_delta": -8.81,
+    "se": 14.71438676566058,
+    "their_net_delta": 0.705,
+    "their_net_delta_se": 10.253921415584621,
+    "two_field_difference": -2.8400000000000003,
+    "two_field_difference_se": 21.108891217735977,
+    "two_se": 29.42877353132116,
+    "uniform_margin": -1.4,
+    "uniform_se": 15.135128362612715,
+    "verdict": "reject",
+    "we_first": -0.35,
+    "we_second": -8.13
+   },
+   "loo_nofold": {
+    "accept": true,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "joint move",
+    "games": 200,
+    "gate": 29.84982526484382,
+    "gate_binding_term": "statistical",
+    "margin": 72.86,
+    "margin_minus_gate": 43.010174735156184,
+    "oos_margin": 60.12,
+    "oos_sign_agrees": true,
+    "our_burn_delta": -5.06,
+    "our_net_delta": 66.53,
+    "our_net_delta_se": 9.650724215800969,
+    "our_scoring_rounds_delta": -18.095,
+    "se": 14.92491263242191,
+    "their_net_delta": -6.33,
+    "their_net_delta_se": 10.593382569857315,
+    "two_field_difference": 9.560000000000002,
+    "two_field_difference_se": 22.301203338648765,
+    "two_se": 29.84982526484382,
+    "uniform_margin": 63.3,
+    "uniform_se": 16.5707770869785,
+    "verdict": "accept",
+    "we_first": 96.42,
+    "we_second": 49.3
+   }
+  },
+  "seeds": "100 tune (3000-3099) + 100 disjoint OOS (7000-7099), 2 order arms => 200 paired games per arm per field per band, map1"
+ },
+ "two_member_vs_three_member": {
+  "condition": "nc = nofold+cursor and ncp = nofoldpure+cursor at 150 tune + 150 OOS seeds on map1, compared against base on the identical seed, order arm and field",
+  "rows": {
+   "g5": {
+    "accept": true,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "joint move",
+    "games": 120,
+    "gate": 35.94399614692655,
+    "gate_binding_term": "statistical",
+    "margin": 119.01666666666667,
+    "margin_minus_gate": 83.07267051974011,
+    "oos_margin": 96.30833333333334,
+    "oos_sign_agrees": true,
+    "our_burn_delta": -26.891666666666666,
+    "our_net_delta": 98.13333333333334,
+    "our_net_delta_se": 13.812540141941152,
+    "our_scoring_rounds_delta": -12.1,
+    "se": 17.971998073463276,
+    "their_net_delta": -20.883333333333333,
+    "their_net_delta_se": 13.037379912262177,
+    "two_field_difference": 11.583333333333329,
+    "two_field_difference_se": 27.340204736822177,
+    "two_se": 35.94399614692655,
+    "uniform_margin": 107.43333333333334,
+    "uniform_se": 20.60325411916249,
+    "verdict": "accept",
+    "we_first": 159.76666666666668,
+    "we_second": 78.26666666666667
+   },
+   "nc": {
+    "accept": true,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "co-gain (ours faster)",
+    "games": 120,
+    "gate": 43.975505633306234,
+    "gate_binding_term": "statistical",
+    "margin": 83.59166666666667,
+    "margin_minus_gate": 39.616161033360434,
+    "oos_margin": 52.43333333333333,
+    "oos_sign_agrees": true,
+    "our_burn_delta": -29.008333333333333,
+    "our_net_delta": 99.19166666666666,
+    "our_net_delta_se": 13.80740523025031,
+    "our_scoring_rounds_delta": -22.841666666666665,
+    "se": 21.987752816653117,
+    "their_net_delta": 15.6,
+    "their_net_delta_se": 16.08152113852578,
+    "two_field_difference": -4.099999999999994,
+    "two_field_difference_se": 30.33634121433635,
+    "two_se": 43.975505633306234,
+    "uniform_margin": 87.69166666666666,
+    "uniform_se": 20.90053406844919,
+    "verdict": "accept",
+    "we_first": 133.6,
+    "we_second": 33.583333333333336
+   },
+   "ncp": {
+    "accept": true,
+    "apparatus_limited": false,
+    "bit_identical_to_base": 0,
+    "classification": "joint move",
+    "games": 120,
+    "gate": 42.68001582904033,
+    "gate_binding_term": "statistical",
+    "margin": 73.84166666666667,
+    "margin_minus_gate": 31.16165083762634,
+    "oos_margin": 42.50833333333333,
+    "oos_sign_agrees": true,
+    "our_burn_delta": -21.116666666666667,
+    "our_net_delta": 71.46666666666667,
+    "our_net_delta_se": 13.47312364268001,
+    "our_scoring_rounds_delta": -24.683333333333334,
+    "se": 21.340007914520164,
+    "their_net_delta": -2.375,
+    "their_net_delta_se": 14.906731801813718,
+    "two_field_difference": 13.991666666666667,
+    "two_field_difference_se": 29.97517330763236,
+    "two_se": 42.68001582904033,
+    "uniform_margin": 59.85,
+    "uniform_se": 21.050298739704676,
+    "verdict": "accept",
+    "we_first": 95.76666666666667,
+    "we_second": 51.916666666666664
+   }
+  }
+ },
+ "zero_signal_dry_run": {
+  "bit_identical_fraction": 1.0,
+  "closed_loop_margin": 0.0,
+  "closed_loop_se": 0.0,
+  "condition": "the delivered baseline text rebuilt to a different filename, compared against base on the identical seed, order arm and field model; every game has an equal log_sha256, which is why both gate terms are exactly zero.  Note the CYCLE instrument is NOT zero on a byte-identical build: a first, non-interleaved protocol put a null at +6.28 cycles, which is why the interleaved paired protocol is used throughout",
+  "cycle_instrument_null_controls": [
+   1.388,
+   -0.636,
+   -2.01,
+   -1.706,
+   0.13,
+   0.364
+  ],
+  "delta_instructions": 0.0,
+  "games_map2": 100,
+  "games_step1": 80,
+  "games_step2": 300,
+  "pair_diff_three_real_platform_logs": [
+   0,
+   0,
+   0
+  ],
+  "text_sha256_identical_to_base": true
+ }
+}

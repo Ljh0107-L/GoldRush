@@ -404,6 +404,263 @@ def patch_cursor(text: str, *, budget: int = 6, validate: bool = False) -> str:
     return _sub(text, A_LOOP_TAIL, tail, "loop_tail")
 
 
+
+def patch_cursor5a(text: str) -> str:  # noqa: C901
+    """Candidate A: ``k`` in {1, 5} instead of {0, 6} -- leave the donor ONE step home.
+
+    Motivated by this line's own drift measurement: the reallocated *tail* moves the producer
+    by under 0.05 rings and is net inward on map2, yet the pooled mean ring rises +0.173 on
+    **both** units.  The only remaining explanation is that silencing a unit which was walking
+    *back* toward its anchor freezes it wherever it stands, and that is on average further out
+    than the anchor.  So donating all three slots is **over**-donation.
+
+    The donor's one retained step is **its own first planned action**, which requires no new
+    code at all: a blind unit's target already *is* its anchor, so its first LUT action is
+    already the step toward the anchor.  This inverts ``fold_tour``'s cause instead of
+    repeating it -- that arm died by leaving the peak; this one returns to it.
+
+    Slot arithmetic, both directions, with no slot left uninitialised:
+
+    * unit 0 donates (k = 1): unit 0 keeps slot 0, which is already its own first action, so
+      nothing is written there.  Unit 1's head slides 3,4,5 -> 1,2,3 and its tail lands on 4,5.
+    * unit 1 donates (k = 5): unit 0's head stays on 0,1,2 and its tail lands on 3,4 -- but
+      slot 3 currently holds unit 1's first action, so that value is saved first and rewritten
+      into slot 5, which is unit 1's one retained slot.
+    """
+    text = _sub(text, A_SLUT_FACT,
+                "    static constexpr int SLW = 5;\n"
+                "    uint8_t fact[7][7][SLW];", "slut_fact")
+    text = _sub(text, A_SLUT_DECL, "int8_t  pdr[7][7][SLW], pdc[7][7][SLW];", "slut_decl")
+    text = _sub(text, A_SLUT_BODY, _SLUT_WIDE_BODY, "slut_body")
+    text = _sub(text, A_LOOP_HEAD,
+                """    int cur = 3;                                 // k 当游标: 3 = 交付布局, 1/5 = 已重分配
+    int blind0 = 0;                              // u0 是否盲(u1 的尾块要读)
+    const uint8_t* ext0 = nullptr;               // u0 的 LUT 计划; 非空才可续写尾段
+    for (int u = 0; u < 2; ++u) {
+        int sr = in->my_units[u].row, sc = in->my_units[u].col;
+        int* acts = out.actions + u * 3;
+        acts[0] = acts[1] = acts[2] = STAY;
+        const uint8_t* pext = nullptr;""", "loop_head")
+    text = _sub(text, A_ROUTE_OK,
+                """            if (ok) {
+                acts[0] = pa[0]; acts[1] = pa[1]; acts[2] = pa[2];
+                pext = pa;                       // 可续写: 尾段与本段同表同目标
+            } else {""", "route_ok")
+    tail = """        g_s.last_r[u] = (int8_t)sr; g_s.last_c[u] = (int8_t)sc;
+        int bd = blind != 0;
+        if (u == 0) {
+            blind0 = bd; ext0 = pext;
+        } else if (bd != blind0) {                // 恰好一个盲 ⇒ 五步给能用的, 留一步回哨位
+            const uint8_t* pe = blind0 ? pext : ext0;
+            if (!pe) pe = SL.fact[3][3];          // 非 LUT 路径: 表项恒 STAY
+            if (blind0) {                         // u1 生产: 头段 3,4,5 -> 1,2,3, 尾段落 4,5
+                out.actions[1] = out.actions[3];  // 槽 0 已是 u0 自己的回锚第一步, 不动
+                out.actions[2] = out.actions[4];
+                out.actions[3] = out.actions[5];
+                out.actions[4] = pe[3];
+                out.actions[5] = pe[4];
+                cur = 1;
+            } else {                              // u0 生产: 尾段落 3,4; u1 的回锚步搬到槽 5
+                int home = out.actions[3];
+                out.actions[3] = pe[3];
+                out.actions[4] = pe[4];
+                out.actions[5] = home;
+                cur = 5;
+            }
+        }
+    }
+
+    out.k = cur;"""
+    return _sub(text, A_LOOP_TAIL, tail, "loop_tail")
+
+
+# ---------------------------------------------------------------- candidate B: wider trigger
+
+A_AVX_ROWSEL_FULL = "                rowsel[i] = TT.bestrow[i][(((g8 << 2) >> lsh) & 31u) & rv];"
+A_SCALAR_PICK_B = """                if (v > 2) {
+                    uint16_t e = TT.bestrow[i][1u << j];
+                    if (e < rowsel[i]) rowsel[i] = e;
+                } else if (v == -3) g_s.bombbit[rr + 3] |= 1u << (cc + 1);"""
+
+
+#: the owner's explicit ladder.  ``value(u)`` is the count of cells with ``v > 2`` inside u's
+#: own 5x5 after the column mask and the row-in-range mask, i.e. the number of *reachable* rich
+#: cells -- the only asymmetry measure the delivered scan already produces for free.
+TRIGGER_LADDER = {
+    "D0":  ("lo == 0 && cnt0 != cnt",  "value(donor) == 0, i.e. blind: no v>2 anywhere in its 5x5"),
+    "D1":  ("lo <= 2 && cnt0 != cnt",  "value(donor) <= 2: has gold in reach but is poor"),
+    "D2":  ("lo * 3 < hi",             "value(donor) < value(other) / 3"),
+    "D34": ("cnt0 != cnt",             "value(donor) < value(other): always give the budget to "
+                                       "whichever unit has more reachable value; D3 and D4 "
+                                       "coincide under this measure, ties keep the 3+3 layout"),
+}
+
+
+def patch_trigger(text: str, level) -> str:
+    """Candidate B: widen the reallocation trigger from "donor is blind" to "donor is POORER".
+
+    The reallocation machine is already paid for, so widening its trigger is a comparison plus
+    the cursor that already exists.  The asymmetry measure has to be free, and exactly one is:
+    the scan already computes, per window row, the 5-bit mask of cells with ``v > 2`` after the
+    column mask and the row-in-range mask are applied.  Its **popcount** is the number of
+    reachable rich cells, i.e. a proxy for reachable value, at 5 popcounts and 5 adds.
+
+    ``level`` is the donor-side threshold.  ``level = 0`` reproduces the delivered blind trigger
+    exactly (a blind unit has count 0), and each higher level admits donors that *did* have
+    something to collect -- so per-firing value must FALL as the level rises, because blind
+    rounds are the zero-opportunity-cost extreme.  The point of the scan is to find where the
+    curve turns negative, not to assume it does not.
+
+    ``level`` is a key of :data:`TRIGGER_LADDER`.  ``D0`` reproduces the delivered blind trigger
+    exactly (a blind unit has count 0) and is the control that ties this family to the landed
+    artifact; every higher level admits donors that *did* have something to collect, so per-firing
+    value must **fall** as the level rises.  The point of the ladder is to find where the curve
+    turns over, not to assume it does not.
+    """
+    predicate, _why = TRIGGER_LADDER[str(level)]
+    text = _sub(text, A_SLUT_FACT,
+                "    static constexpr int SLW = 6;\n"
+                "    uint8_t fact[7][7][SLW];", "slut_fact")
+    text = _sub(text, A_SLUT_DECL, "int8_t  pdr[7][7][SLW], pdc[7][7][SLW];", "slut_decl")
+    text = _sub(text, A_SLUT_BODY, _SLUT_WIDE_BODY, "slut_body")
+    text = _sub(text, A_LOOP_HEAD,
+                """    int cur = 3;                                 // k 当游标: 3 = 交付布局, 0/6 = 已重分配
+    int cnt0 = 0;                                // u0 可达富格数(不对称度量, 由扫描顺带得到)
+    const uint8_t* ext0 = nullptr;               // u0 的 LUT 计划; 非空才可续写尾段
+    for (int u = 0; u < 2; ++u) {
+        int sr = in->my_units[u].row, sc = in->my_units[u].col;
+        int* acts = out.actions + u * 3;
+        acts[0] = acts[1] = acts[2] = STAY;
+        const uint8_t* pext = nullptr;
+        int cnt = 0;""", "loop_head")
+    # accumulate the popcount in the AVX path
+    text = _sub(text, A_AVX_ROWSEL_FULL,
+                "                unsigned gm = (((g8 << 2) >> lsh) & 31u) & rv;\n"
+                "                cnt += __builtin_popcount(gm);\n"
+                "                rowsel[i] = TT.bestrow[i][gm];", "avx_rowsel")
+    # and in the scalar reference path
+    text = _sub(text, A_SCALAR_PICK_B,
+                """                if (v > 2) {
+                    uint16_t e = TT.bestrow[i][1u << j];
+                    if (e < rowsel[i]) rowsel[i] = e;
+                    ++cnt;
+                } else if (v == -3) g_s.bombbit[rr + 3] |= 1u << (cc + 1);""", "scalar_pick")
+    text = _sub(text, A_ROUTE_OK,
+                """            if (ok) {
+                acts[0] = pa[0]; acts[1] = pa[1]; acts[2] = pa[2];
+                pext = pa;                       // 可续写: 尾段与本段同表同目标
+            } else {""", "route_ok")
+    tail = ("""        g_s.last_r[u] = (int8_t)sr; g_s.last_c[u] = (int8_t)sc;
+        if (u == 0) {
+            cnt0 = cnt; ext0 = pext;
+        } else {
+            int lo = cnt0 < cnt ? cnt0 : cnt;     // 贫者为捐方
+            int hi = cnt0 < cnt ? cnt : cnt0;
+            (void)lo; (void)hi;
+            if (%s) {
+                int give0 = cnt0 < cnt;           // u0 更贫 ⇒ u1 生产
+                const uint8_t* pe = give0 ? pext : ext0;
+                if (!pe) pe = SL.fact[3][3];      // 非 LUT 路径: 六格恒 STAY 的表项
+                if (give0) {                      // u1 生产: 头段下移到跨度起点
+                    out.actions[0] = out.actions[3];
+                    out.actions[1] = out.actions[4];
+                    out.actions[2] = out.actions[5];
+                    cur = 0;
+                } else cur = 6;                   // u0 生产: 头段已在槽 0, 零搬移
+                out.actions[3] = pe[3];
+                out.actions[4] = pe[4];
+                out.actions[5] = pe[5];
+            }
+        }
+    }
+
+    out.k = cur;""" % predicate)
+    return _sub(text, A_LOOP_TAIL, tail, "loop_tail")
+
+
+#: Ladder E: the same ladder as D, but on a measure that is **already computed**.
+#: ``bv`` is the winner of the row-min reduction, encoding ``(ring_priority << 5) | window_index``,
+#: with ``0xFFFF`` meaning "no reachable rich cell".  Smaller ``bv`` = better reachable target, so
+#: ``bv`` is a free ordinal proxy for reachable value and ``bv == 0xFFFF`` is exactly blind.
+#: Ladder D used the popcount of the ``v > 2`` mask, which is a better measure but is NOT free:
+#: measured at **+82.6 to +89.4 instructions**, because accumulating it inside the unrolled AVX
+#: row loop breaks the vectorised store pattern.  Ladder E costs one saved int and one compare.
+TRIGGER_LADDER_E = {
+    "E0":  ("bv0 == 0xFFFF && bvc != 0xFFFF",
+            "donor blind: reproduces the delivered arm C trigger on the free measure"),
+    "E1":  ("(bv0 >> 5) >= 12 && bv0 > bvc",
+            "donor's best reachable target is in the outer half of the ring priority order"),
+    "E2":  ("(bv0 >> 5) >= 20 && bv0 > bvc",
+            "donor's best reachable target is in the outermost fifth of the priority order"),
+    "E34": ("bv0 != bvc",
+            "always give the budget to whichever unit has the better reachable target; D3 and D4 "
+            "coincide under an ordinal measure, ties keep the delivered 3+3 layout"),
+}
+
+A_MINRED_BV = """            uint16_t bv = b0123 < rowsel[4] ? b0123 : rowsel[4];
+            int w = bv & 31;"""
+
+
+def patch_trigger_e(text: str, level: str) -> str:
+    """Candidate B on a free asymmetry measure.
+
+    Symmetric in the two units: the donor is whichever unit has the **larger** ``bv``, so the
+    predicate is written for "unit 0 donates" and the mirrored case is handled by swapping.
+    """
+    predicate, _why = TRIGGER_LADDER_E[str(level)]
+    text = _sub(text, A_SLUT_FACT,
+                "    static constexpr int SLW = 6;\n"
+                "    uint8_t fact[7][7][SLW];", "slut_fact")
+    text = _sub(text, A_SLUT_DECL, "int8_t  pdr[7][7][SLW], pdc[7][7][SLW];", "slut_decl")
+    text = _sub(text, A_SLUT_BODY, _SLUT_WIDE_BODY, "slut_body")
+    text = _sub(text, A_LOOP_HEAD,
+                """    int cur = 3;                                 // k 当游标: 3 = 交付布局, 0/6 = 已重分配
+    unsigned bv0 = 0;                            // u0 的行 min 胜者(可达最优靶的序数, 免费)
+    const uint8_t* ext0 = nullptr;               // u0 的 LUT 计划; 非空才可续写尾段
+    for (int u = 0; u < 2; ++u) {
+        int sr = in->my_units[u].row, sc = in->my_units[u].col;
+        int* acts = out.actions + u * 3;
+        acts[0] = acts[1] = acts[2] = STAY;
+        const uint8_t* pext = nullptr;
+        unsigned bvc = 0xFFFFu;""", "loop_head")
+    text = _sub(text, A_MINRED_BV,
+                """            uint16_t bv = b0123 < rowsel[4] ? b0123 : rowsel[4];
+            bvc = bv;                            // 留给尾块做不对称比较, 零额外计算
+            int w = bv & 31;""", "minred_bv")
+    text = _sub(text, A_ROUTE_OK,
+                """            if (ok) {
+                acts[0] = pa[0]; acts[1] = pa[1]; acts[2] = pa[2];
+                pext = pa;                       // 可续写: 尾段与本段同表同目标
+            } else {""", "route_ok")
+    tail = ("""        g_s.last_r[u] = (int8_t)sr; g_s.last_c[u] = (int8_t)sc;
+        if (u == 0) {
+            bv0 = bvc; ext0 = pext;
+        } else {
+            int give0 = (%s);                     // u0 靶更差 ⇒ u0 捐, u1 生产
+            int give1 = (%s);                     // 镜像: u1 捐, u0 生产
+            if (give0 && bv0 > bvc) {
+                out.actions[0] = out.actions[3];  // u1 生产: 头段下移到跨度起点
+                out.actions[1] = out.actions[4];
+                out.actions[2] = out.actions[5];
+                const uint8_t* pe = pext ? pext : SL.fact[3][3];
+                out.actions[3] = pe[3];
+                out.actions[4] = pe[4];
+                out.actions[5] = pe[5];
+                cur = 0;
+            } else if (give1 && bvc > bv0) {
+                const uint8_t* pe = ext0 ? ext0 : SL.fact[3][3];
+                out.actions[3] = pe[3];           // u0 生产: 头段已在槽 0, 零搬移
+                out.actions[4] = pe[4];
+                out.actions[5] = pe[5];
+                cur = 6;
+            }
+        }
+    }
+
+    out.k = cur;""" % (predicate, predicate.replace("bv0", "@").replace("bvc", "bv0").replace("@", "bvc")))
+    return _sub(text, A_LOOP_TAIL, tail, "loop_tail")
+
+
 # ---------------------------------------------------------------------------
 # the registry
 # ---------------------------------------------------------------------------
@@ -466,6 +723,15 @@ VARIANTS: Mapping[str, Mapping[str, object]] = {
 }
 
 _PATCHERS = {
+    "cursor5a": patch_cursor5a,
+    "D0": lambda x: patch_trigger(x, "D0"),
+    "D1": lambda x: patch_trigger(x, "D1"),
+    "D2": lambda x: patch_trigger(x, "D2"),
+    "D34": lambda x: patch_trigger(x, "D34"),
+    "E0": lambda x: patch_trigger_e(x, "E0"),
+    "E1": lambda x: patch_trigger_e(x, "E1"),
+    "E2": lambda x: patch_trigger_e(x, "E2"),
+    "E34": lambda x: patch_trigger_e(x, "E34"),
     "nofold": patch_nofold,
     "nofoldpure": patch_nofoldpure,
     "colvedge": patch_colvedge,
@@ -477,7 +743,9 @@ _PATCHERS = {
 
 # order matters: nofold/safet2 both rewrite the target-selection block, so safet2 must be
 # applied first (it consumes the three-way anchor) and nofold's fold removal after.
-PATCH_ORDER = ("safet2", "nofold", "nofoldpure", "colvedge", "cursor6", "cursor6v", "cursor4")
+PATCH_ORDER = ("safet2", "nofold", "nofoldpure", "colvedge", "cursor6", "cursor6v",
+               "cursor4", "cursor5a", "D0", "D1", "D2", "D34",
+               "E0", "E1", "E2", "E34")
 
 
 def compose(name: str, patches: Sequence[str]) -> Mapping[str, object]:

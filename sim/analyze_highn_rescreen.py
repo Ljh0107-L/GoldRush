@@ -681,9 +681,116 @@ def mode_drift(args: argparse.Namespace) -> Mapping[str, Any]:
     }
 
 
+def mode_tail(args: argparse.Namespace) -> Mapping[str, Any]:
+    """Where do the reallocated tail slots actually go, and does the donor really not move?
+
+    Three quantities the owner requires, all taken by replaying the arm ``.so`` over **real
+    platform logs** so no simulator field model is involved at all:
+
+    ``increment``   for each firing round, the producer's ring after step 3 is the reference
+                    and slots 4/5/6 are classified ``inward`` / ``tangential`` / ``outward``.
+    ``ring_ge5``    share of tail landings on ring >= 5, which is dead ground: measured
+                    generation there is <= 0.004 against 0.032-0.035 at rings 1-2.
+    ``donor_noop``  the donor receives zero slots, so within a round its actions must be a
+                    no-op.  Across a closed loop the two trajectories diverge, so global
+                    bit-identity is impossible by construction and this is the only well posed
+                    form of the check: replay the same logged input and confirm the donor's
+                    span is empty or all STAY.
+    """
+    import ctypes
+    sys.path.insert(0, str(ROOT / "tests"))
+    import replay as rp                                            # type: ignore
+    from dump_inputs import build_input                            # type: ignore
+
+    DR = (-1, 1, 0, 0, 0)
+    DC = (0, 0, -1, 1, 0)
+    STAY = 4
+    workdir = Path(args.workdir)
+    specs = _arm_specs(args)
+    logs = [Path(p) for p in args.logs.split(",") if p]
+
+    def ring(row: int, col: int) -> int:
+        return abs(row - 8) + abs(col - 8)
+
+    out: dict[str, Any] = {}
+    for name in specs:
+        so = workdir / ("%s.so" % name)
+        if not so.exists():
+            continue
+        handle = rp.load_so(str(so))
+        per_log: dict[str, Any] = {}
+        for log in logs:
+            rows = [json.loads(line) for line in log.read_text().splitlines()[2:]]
+            cls: collections.Counter = collections.Counter()
+            landing: collections.Counter = collections.Counter()
+            donor_noop = donor_total = 0
+            head_rings: list[int] = []
+            tail_rings: list[int] = []
+            for index in range(len(rows)):
+                gi = build_input(rows, index)
+                res = handle.moveDecision(ctypes.byref(gi))
+                k = int(res.k)
+                acts = [int(v) for v in res.actions]
+                if k == 3:
+                    continue
+                producer = 0 if k == 6 else 1
+                donor = 1 - producer
+                span = acts[:k] if producer == 0 else acts[k:]
+                dspan = acts[k:] if producer == 0 else acts[:k]
+                donor_total += 1
+                donor_noop += 1 if all(a == STAY for a in dspan) else 1 if not dspan else 0
+                row = int(gi.my_units[producer].row)
+                col = int(gi.my_units[producer].col)
+                walk = []
+                for a in span:
+                    if a != STAY:
+                        nrow, ncol = row + DR[a], col + DC[a]
+                        if 0 <= nrow < 17 and 0 <= ncol < 17:
+                            row, col = nrow, ncol
+                    walk.append(ring(row, col))
+                if len(walk) < 6:
+                    continue
+                reference = walk[2]
+                head_rings.append(reference)
+                for slot in (3, 4, 5):
+                    here = walk[slot]
+                    tail_rings.append(here)
+                    if here < reference:
+                        cls["inward"] += 1
+                    elif here == reference:
+                        cls["tangential"] += 1
+                    else:
+                        cls["outward"] += 1
+                    landing[min(here, 12)] += 1
+            total = sum(cls.values())
+            per_log[log.name] = {
+                "firing_rounds": donor_total,
+                "tail_slots": total,
+                "increment": {k2: v for k2, v in cls.items()},
+                "increment_share": {k2: v / max(1, total) for k2, v in cls.items()},
+                "landing_ring_histogram": {str(k2): v for k2, v in sorted(landing.items())},
+                "tail_share_ring_ge5": sum(v for k2, v in landing.items() if k2 >= 5)
+                                        / max(1, total),
+                "mean_ring_after_step3": (statistics.fmean(head_rings) if head_rings else None),
+                "mean_ring_tail_slots": (statistics.fmean(tail_rings) if tail_rings else None),
+                "donor_span_is_noop": donor_noop,
+                "donor_span_is_noop_share": donor_noop / max(1, donor_total),
+            }
+        out[name] = per_log
+    return {
+        "logs": [str(p) for p in logs], "arms": list(out),
+        "protocol": "each .so replayed over real platform logs; positions come from the logged "
+                    "input and actions from the .so's own output, so nothing here depends on a "
+                    "simulator field model",
+        "dead_ground_note": "ring >= 5 measured generation <= 0.004 per cell-round against "
+                            "0.032-0.035 at rings 1-2 (src/CHANGELOG.md 13-game field profile)",
+        "per_arm": out,
+    }
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("mode", choices=["construct", "icount", "ab", "stream", "drift"])
+    parser.add_argument("mode", choices=["construct", "icount", "ab", "stream", "drift", "tail"])
     parser.add_argument("--workdir", default="/tmp/gr_highn/build")
     parser.add_argument("--map", default="map1")
     parser.add_argument("--arms", default="null,nofold,nofoldpure,colvedge,safet2,cursor")
@@ -711,6 +818,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         payload = mode_stream(args)
     elif args.mode == "drift":
         payload = mode_drift(args)
+    elif args.mode == "tail":
+        payload = mode_tail(args)
     else:
         payload = mode_ab(args)
     text = json.dumps(payload, indent=1, sort_keys=True, default=str)
