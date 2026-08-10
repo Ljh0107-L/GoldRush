@@ -113,3 +113,56 @@ gives **+5.73pp of first-mover rate per 10 ns**, which combined with the flip va
 derived from primary platform logs by a completely different route than the original head-to-head
 calibration. Worth recording as a cross-validation success, with the same caveat as the original:
 it holds near the crossover band and decays away from it.
+
+
+---
+
+## 5. `C_k5_stay` — candidate, measured, sub-gate, with a cost range and one fatal gate
+
+> Added after the step-budget round. **Not delivered, not landed.** Ownership of `src/player.cpp`,
+> `src/INFRA.md` and `src/CHANGELOG.md` is currently **unassigned**, so nothing here may be applied
+> until an owner is designated.
+
+**What it is.** `k` is a split point over a fixed 6-action budget (`src/game_api.h:58-60`, engine at
+`sim/engine.py:1089-1090`): unit 0 executes `actions[0..k-1]`, unit 1 executes `actions[k..5]`.
+Currently `k` is always 3. The candidate sets the split so that **a unit which is `blind` — no `v>2`
+anywhere in its own 5×5, about 20% of unit-rounds — receives 1 action (a stay) while the other unit
+receives 5.** Must work in **both** directions, since either unit can be the blind one; supporting
+one direction halves the benefit. Trigger is computed from our own 5×5 in the same round, so it needs
+no dispatch-order knowledge, no opponent visibility and no snapshot.
+
+**Measured (self-play, map1, both order arms, same-seed paired, judged on `margin` = change in
+`ours − theirs`):** tune seeds 1000-1011 **+161.0 ± 45.4 (3.55σ)**, out-of-sample seeds 2000-2011
+**+120.7 ± 38.9 (3.11σ)**, positive in **6 of 6** shards.
+
+**Mechanism confirmed by a three-way control set**: silencing a *random* unit instead of the blind one
+gives −85.5 / −118.7 (so the benefit requires the blind trigger specifically, and is **not** about
+asymmetry); silencing the *productive* unit gives **−383 to −426 at −6.5 to −7.7σ**; a matched
+silence control gives ≈0.
+
+**Why it does not clear its gate.** The pre-registered gate was margin ≥ +150 on both seed sets. k5
+clears on tune and misses out-of-sample; k6 does the reverse and is seed-unstable. Independently, the
+genuinely free part of the pool is capped at **+83 to +106 gold/game** (fully idle unit-rounds are
+~148 steps/game with income identically 0.000), and the measured +111 to +121 sits on that cap. So
+this candidate **captures approximately all of the free waste and nothing beyond it** — which is why
+the earlier "monotone rise to +194" red flag dissolved.
+
+**Cost, and the gate that can invert it.** This is a **behaviour** change, not a table-value change:
+the delivered `SLut` emits only 3 steps and the PACK ordering assumes 3+3, so action generation,
+legality checking and PACK need extending. At a conservative average of 1.6 gold/instruction, 50
+instructions ≈ 80 gold → **net ≈ +40**; at the measured marginal price of ~0.025 ns/instruction ≈
+0.28 gold/instruction, 50 instructions ≈ 14 gold → **net ≈ +106**. So the honest range is
+**+40 to +106**.
+
+⚠️ **And it carries the alignment risk: `moveDecision` entry `mod64` must stay at `0x10`, because
+`0x20`/`0x30` each cost +11.67 ns ≈ 128 gold — more than the whole candidate.** Pad length is coupled
+to `decide`'s size, so any change in that translation unit can move it silently. **Run
+`tests/verify_construct.sh` and re-tune the pad; without that step the +40 end of the range goes
+negative.**
+
+**Validation route.** Do not spend 8 platform games on it: at a per-game margin sd of ~250, 8 games
+resolve +120 to only ~1.0σ — undecidable, and therefore a batch that cannot change a decision.
+Reaching 2σ needs **n ≈ 17 per arm**. Preferred route is to **ride along** with the next behaviour
+change that goes to the platform, provided attribution can be separated (different organs, locatable
+by `pair_diff`); if it cannot be separated, schedule the 17 games rather than shipping an
+unattributable batch. Transfer to T-1 is **unverified** — all measurements above are self-play.

@@ -23,6 +23,44 @@ arithmetic:
 Five cases, five times "right quantity, wrong question". Classification rules cannot catch this,
 because each number is individually correct. Only one action catches it, and it is mechanical:
 
+## Multi-source convergence is not causation
+
+> **When a mechanism hypothesis is supported by several independent observations that "converge",
+> that raises its priority for testing. It does not raise confidence that it is true. Before
+> accepting it, design a randomisation or permutation control whose job is to KILL it; only if the
+> control fails to kill it does it stand.**
+
+Worked case, and the cleanest one this project has produced. The hypothesis was **role
+specialisation**: that giving a blind unit 0 steps and the other 6 pays because the two units become
+*asymmetric*. Three independent lines converged on it — an arm that moved both anchors *symmetrically*
+failed while the asymmetric arm succeeded; the field's strongest team was measured with its two units
+**avoiding each other** (occupancy overlap z < −2 in 4 of 5 games); and the owner's replay
+observation described "two robots each covering half".
+
+A single randomisation control refuted it. Silencing a **randomly chosen** unit rather than the blind
+one gives **−85.5 ± 45.0** (tune) and **−118.7 ± 41.7** (out-of-sample) — negative on both seed sets.
+So the benefit requires silencing *specifically the blind unit*, and the mechanism is the plainest
+possible one: **reclaiming steps that were genuinely being wasted.** A reverse control confirmed the
+direction, silencing the *productive* unit costing **−383 to −426 gold at −6.5 to −7.7σ**.
+
+**All three converging observations remain true.** They simply are not the cause of this effect. That
+is the point: the failure mode here is not a wrong number and not a wrong question — it is a **wrong
+story built over correct numbers answering correct questions.**
+
+This sits one level above the zero-signal dry-run rule. That rule catches an instrument reporting
+signal where there is none; **this one catches an instrument that has real signal and attributes it
+to the wrong organ.**
+
+### Corollary: pre-registration earned its keep here
+
+The same episode contains a case *for* pre-registration. I had pre-registered that value should
+**saturate at k=4–5**, because the 5×5 window makes the farthest visible cell Manhattan 4, and that a
+monotone rise to k=6 would indicate an unmodelled factor rather than a shippable gain. I then
+observed exactly that forbidden monotone rise and reported it as a red flag rather than as a result.
+It turned out to be a **shard-splicing artefact**: pooled correctly per seed-set, **k5 is the stable
+arm and k6 is the unstable one**, which is what the prediction said. Without the pre-registered
+prediction, the +194 figure would have been banked as the headline.
+
 ## Delivery gate: write the condition sentence
 
 > **Any report containing a decomposition, an accounting identity, or a cross-group comparison must,
