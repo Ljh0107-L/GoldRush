@@ -1,0 +1,375 @@
+{
+  "map_filter": 1,
+  "per_opponent": {
+    "1": {
+      "games": 4,
+      "ge8": 0.08892785571142285,
+      "hit": 0.3900300601202405,
+      "map_mix": {
+        "1": 4
+      },
+      "mean": 1.9849699398797596,
+      "unit_rounds": 3992,
+      "vision_spent_total": 0,
+      "yield_per_hit": 5.387925497752088
+    },
+    "112937": {
+      "games": 5,
+      "ge8": 0.06973947895791584,
+      "hit": 0.3691382765531062,
+      "map_mix": {
+        "1": 5
+      },
+      "mean": 1.5070140280561122,
+      "unit_rounds": 4990,
+      "vision_spent_total": 303,
+      "yield_per_hit": 4.373507057546146
+    },
+    "Capoo": {
+      "games": 4,
+      "ge8": 0.051352705410821646,
+      "hit": 0.3344188376753507,
+      "map_mix": {
+        "1": 4
+      },
+      "mean": 1.2788076152304608,
+      "unit_rounds": 3992,
+      "vision_spent_total": 0,
+      "yield_per_hit": 4.18501872659176
+    },
+    "Convergens": {
+      "games": 1,
+      "ge8": 0.10320641282565131,
+      "hit": 0.4408817635270541,
+      "map_mix": {
+        "1": 1
+      },
+      "mean": 1.723446893787575,
+      "unit_rounds": 998,
+      "vision_spent_total": 0,
+      "yield_per_hit": 4.547727272727273
+    },
+    "DeepAlpha": {
+      "games": 6,
+      "ge8": 0.06963927855711423,
+      "hit": 0.4231796927187709,
+      "map_mix": {
+        "1": 6
+      },
+      "mean": 1.7865731462925851,
+      "unit_rounds": 5988,
+      "vision_spent_total": 0,
+      "yield_per_hit": 4.40568271507498
+    },
+    "HEQ": {
+      "games": 1,
+      "ge8": 0.10521042084168336,
+      "hit": 0.36472945891783565,
+      "map_mix": {
+        "1": 1
+      },
+      "mean": 1.6683366733466933,
+      "unit_rounds": 998,
+      "vision_spent_total": 1500,
+      "yield_per_hit": 6.34065934065934
+    },
+    "LJP的队伍": {
+      "games": 1,
+      "ge8": 0.05410821643286573,
+      "hit": 0.4258517034068136,
+      "map_mix": {
+        "1": 1
+      },
+      "mean": 1.592184368737475,
+      "unit_rounds": 998,
+      "vision_spent_total": 27,
+      "yield_per_hit": 3.8141176470588234
+    },
+    "LilanOVO": {
+      "games": 2,
+      "ge8": 0.11172344689378758,
+      "hit": 0.37975951903807614,
+      "map_mix": {
+        "1": 2
+      },
+      "mean": 2.1277555110220443,
+      "unit_rounds": 1996,
+      "vision_spent_total": 0,
+      "yield_per_hit": 6.005277044854881
+    },
+    "MUGA": {
+      "games": 1,
+      "ge8": 0.0,
+      "hit": 0.0070140280561122245,
+      "map_mix": {
+        "1": 1
+      },
+      "mean": 0.008016032064128256,
+      "unit_rounds": 998,
+      "vision_spent_total": 1500,
+      "yield_per_hit": 1.2857142857142858
+    },
+    "Q-Knight": {
+      "games": 2,
+      "ge8": 0.05911823647294589,
+      "hit": 0.40180360721442887,
+      "map_mix": {
+        "1": 2
+      },
+      "mean": 1.3627254509018036,
+      "unit_rounds": 1996,
+      "vision_spent_total": 12,
+      "yield_per_hit": 3.917705735660848
+    },
+    "QuantLK": {
+      "games": 4,
+      "ge8": 0.0468436873747495,
+      "hit": 0.35896793587174347,
+      "map_mix": {
+        "1": 4
+      },
+      "mean": 1.2652805611222444,
+      "unit_rounds": 3992,
+      "vision_spent_total": 5841,
+      "yield_per_hit": 3.9490579204466156
+    },
+    "ZZK": {
+      "games": 3,
+      "ge8": 0.09619238476953908,
+      "hit": 0.4278557114228457,
+      "map_mix": {
+        "1": 3
+      },
+      "mean": 2.0754843019372076,
+      "unit_rounds": 2994,
+      "vision_spent_total": 90,
+      "yield_per_hit": 5.07728337236534
+    },
+    "cununn": {
+      "games": 1,
+      "ge8": 0.09318637274549098,
+      "hit": 0.5881763527054108,
+      "map_mix": {
+        "1": 1
+      },
+      "mean": 1.9929859719438878,
+      "unit_rounds": 998,
+      "vision_spent_total": 0,
+      "yield_per_hit": 4.0698466780238505
+    },
+    "easy队": {
+      "games": 3,
+      "ge8": 0.07748830995323981,
+      "hit": 0.3573814295257181,
+      "map_mix": {
+        "1": 3
+      },
+      "mean": 1.3663994655978624,
+      "unit_rounds": 2994,
+      "vision_spent_total": 107,
+      "yield_per_hit": 5.194392523364486
+    },
+    "eureka": {
+      "games": 1,
+      "ge8": 0.12925851703406813,
+      "hit": 0.44488977955911824,
+      "map_mix": {
+        "1": 1
+      },
+      "mean": 2.4228456913827654,
+      "unit_rounds": 998,
+      "vision_spent_total": 0,
+      "yield_per_hit": 5.4842342342342345
+    },
+    "jtubbme": {
+      "games": 1,
+      "ge8": 0.09218436873747494,
+      "hit": 0.3376753507014028,
+      "map_mix": {
+        "1": 1
+      },
+      "mean": 1.5501002004008015,
+      "unit_rounds": 998,
+      "vision_spent_total": 160,
+      "yield_per_hit": 5.3026706231454
+    },
+    "rikka": {
+      "games": 4,
+      "ge8": 0.11197394789579158,
+      "hit": 0.45490981963927857,
+      "map_mix": {
+        "1": 4
+      },
+      "mean": 2.5172845691382766,
+      "unit_rounds": 3992,
+      "vision_spent_total": 999,
+      "yield_per_hit": 5.795704845814978
+    },
+    "rocket dogs": {
+      "games": 2,
+      "ge8": 0.09519038076152304,
+      "hit": 0.4514028056112224,
+      "map_mix": {
+        "1": 2
+      },
+      "mean": 2.2399799599198396,
+      "unit_rounds": 1996,
+      "vision_spent_total": 0,
+      "yield_per_hit": 4.962264150943396
+    },
+    "sumikko": {
+      "games": 3,
+      "ge8": 0.08082832331329326,
+      "hit": 0.5571142284569138,
+      "map_mix": {
+        "1": 3
+      },
+      "mean": 2.2772211088844356,
+      "unit_rounds": 2994,
+      "vision_spent_total": 0,
+      "yield_per_hit": 4.099520383693045
+    },
+    "一二布布队": {
+      "games": 7,
+      "ge8": 0.05797308903521328,
+      "hit": 0.41797881477240195,
+      "map_mix": {
+        "1": 7
+      },
+      "mean": 1.4070999141139422,
+      "unit_rounds": 6986,
+      "vision_spent_total": 0,
+      "yield_per_hit": 3.98013698630137
+    },
+    "你是凑企鹅": {
+      "games": 1,
+      "ge8": 0.07715430861723446,
+      "hit": 0.593186372745491,
+      "map_mix": {
+        "1": 1
+      },
+      "mean": 2.2695390781563125,
+      "unit_rounds": 998,
+      "vision_spent_total": 3,
+      "yield_per_hit": 4.059121621621622
+    },
+    "剑川路之狼": {
+      "games": 2,
+      "ge8": 0.06412825651302605,
+      "hit": 0.34318637274549096,
+      "map_mix": {
+        "1": 2
+      },
+      "mean": 1.4819639278557115,
+      "unit_rounds": 1996,
+      "vision_spent_total": 0,
+      "yield_per_hit": 4.786861313868613
+    },
+    "君の仿瓷": {
+      "games": 1,
+      "ge8": 0.01903807615230461,
+      "hit": 0.10420841683366733,
+      "map_mix": {
+        "1": 1
+      },
+      "mean": 0.40080160320641284,
+      "unit_rounds": 998,
+      "vision_spent_total": 0,
+      "yield_per_hit": 4.711538461538462
+    },
+    "啊对对对队": {
+      "games": 2,
+      "ge8": 0.05911823647294589,
+      "hit": 0.4774549098196393,
+      "map_mix": {
+        "1": 2
+      },
+      "mean": 1.9914829659318638,
+      "unit_rounds": 1996,
+      "vision_spent_total": 0,
+      "yield_per_hit": 4.185729275970619
+    },
+    "对的对的不对不对": {
+      "games": 2,
+      "ge8": 0.05711422845691383,
+      "hit": 0.33867735470941884,
+      "map_mix": {
+        "1": 2
+      },
+      "mean": 1.067635270541082,
+      "unit_rounds": 1996,
+      "vision_spent_total": 1500,
+      "yield_per_hit": 4.02810650887574
+    },
+    "封单超大": {
+      "games": 1,
+      "ge8": 0.09619238476953908,
+      "hit": 0.4779559118236473,
+      "map_mix": {
+        "1": 1
+      },
+      "mean": 1.9859719438877756,
+      "unit_rounds": 998,
+      "vision_spent_total": 199,
+      "yield_per_hit": 4.8574423480083855
+    },
+    "库珀队": {
+      "games": 2,
+      "ge8": 0.05060120240480962,
+      "hit": 0.43236472945891785,
+      "map_mix": {
+        "1": 2
+      },
+      "mean": 1.3481963927855711,
+      "unit_rounds": 1996,
+      "vision_spent_total": 396,
+      "yield_per_hit": 3.816917728852839
+    },
+    "激昂狂人": {
+      "games": 5,
+      "ge8": 0.09398797595190381,
+      "hit": 0.43066132264529056,
+      "map_mix": {
+        "1": 5
+      },
+      "mean": 1.680561122244489,
+      "unit_rounds": 4990,
+      "vision_spent_total": 0,
+      "yield_per_hit": 4.867845509539321
+    },
+    "炼金术师": {
+      "games": 1,
+      "ge8": 0.12324649298597194,
+      "hit": 0.4779559118236473,
+      "map_mix": {
+        "1": 1
+      },
+      "mean": 2.4258517034068134,
+      "unit_rounds": 998,
+      "vision_spent_total": 26,
+      "yield_per_hit": 5.415094339622642
+    }
+  },
+  "reference": {
+    "OURS frozen (all 3 maps)": {
+      "hit": 0.348,
+      "note": "pooled 36 games",
+      "yield": 4.668
+    },
+    "OURS frozen (map1)": {
+      "hit": 0.36,
+      "note": "mean of 36.2/35.8",
+      "yield": 4.68
+    },
+    "Tiuntled-1 (map1)": {
+      "hit": 0.455,
+      "note": "",
+      "yield": 4.41
+    },
+    "Tundra-wawa (map1)": {
+      "hit": 0.506,
+      "note": "",
+      "yield": 3.83
+    }
+  }
+}

@@ -1,0 +1,135 @@
+{
+  "map_filter": 1,
+  "per_opponent": {
+    "Ausdroid": {
+      "games": 14,
+      "ge8": 0.09053821929573433,
+      "hit": 0.40488119095333525,
+      "map_mix": {
+        "1": 14
+      },
+      "mean": 1.8027483538505582,
+      "unit_rounds": 13972,
+      "vision_spent_total": 0,
+      "yield_per_hit": 4.971362913204879
+    },
+    "GoldMiner": {
+      "games": 10,
+      "ge8": 0.06543086172344689,
+      "hit": 0.3248496993987976,
+      "map_mix": {
+        "1": 10
+      },
+      "mean": 1.3846693386773548,
+      "unit_rounds": 9980,
+      "vision_spent_total": 34,
+      "yield_per_hit": 4.458050586057989
+    },
+    "ZZK": {
+      "games": 1,
+      "ge8": 0.08444444444444445,
+      "hit": 0.45111111111111113,
+      "map_mix": {
+        "1": 1
+      },
+      "mean": 2.1344444444444446,
+      "unit_rounds": 900,
+      "vision_spent_total": 0,
+      "yield_per_hit": 4.733990147783251
+    },
+    "counterfactual": {
+      "games": 1,
+      "ge8": 0.05811623246492986,
+      "hit": 0.44488977955911824,
+      "map_mix": {
+        "1": 1
+      },
+      "mean": 1.843687374749499,
+      "unit_rounds": 998,
+      "vision_spent_total": 0,
+      "yield_per_hit": 4.1441441441441444
+    },
+    "rikka": {
+      "games": 2,
+      "ge8": 0.036072144288577156,
+      "hit": 0.4093186372745491,
+      "map_mix": {
+        "1": 2
+      },
+      "mean": 1.371743486973948,
+      "unit_rounds": 1996,
+      "vision_spent_total": 0,
+      "yield_per_hit": 3.353733170134639
+    },
+    "东川路之虎": {
+      "games": 1,
+      "ge8": 0.09919839679358718,
+      "hit": 0.3727454909819639,
+      "map_mix": {
+        "1": 1
+      },
+      "mean": 1.845691382765531,
+      "unit_rounds": 998,
+      "vision_spent_total": 0,
+      "yield_per_hit": 5.618279569892473
+    },
+    "神秘高手": {
+      "games": 6,
+      "ge8": 0.061790247160988646,
+      "hit": 0.3877755511022044,
+      "map_mix": {
+        "1": 6
+      },
+      "mean": 1.468937875751503,
+      "unit_rounds": 5988,
+      "vision_spent_total": 450,
+      "yield_per_hit": 4.064599483204135
+    },
+    "若叶睦的狗2.0": {
+      "games": 1,
+      "ge8": 0.07214428857715431,
+      "hit": 0.40981963927855714,
+      "map_mix": {
+        "1": 1
+      },
+      "mean": 1.6633266533066133,
+      "unit_rounds": 998,
+      "vision_spent_total": 72,
+      "yield_per_hit": 4.266503667481663
+    },
+    "酱味大鸡": {
+      "games": 1,
+      "ge8": 0.06212424849699399,
+      "hit": 0.4559118236472946,
+      "map_mix": {
+        "1": 1
+      },
+      "mean": 1.6122244488977955,
+      "unit_rounds": 998,
+      "vision_spent_total": 0,
+      "yield_per_hit": 3.804395604395604
+    }
+  },
+  "reference": {
+    "OURS frozen (all 3 maps)": {
+      "hit": 0.348,
+      "note": "pooled 36 games",
+      "yield": 4.668
+    },
+    "OURS frozen (map1)": {
+      "hit": 0.36,
+      "note": "mean of 36.2/35.8",
+      "yield": 4.68
+    },
+    "Tiuntled-1 (map1)": {
+      "hit": 0.455,
+      "note": "",
+      "yield": 4.41
+    },
+    "Tundra-wawa (map1)": {
+      "hit": 0.506,
+      "note": "",
+      "yield": 3.83
+    }
+  }
+}
