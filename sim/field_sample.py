@@ -620,6 +620,87 @@ def cmd_estimate(_args: argparse.Namespace) -> int:
             print("  AND a lower win rate, the middle link holds. If our second-mover share is")
             print("  flat across bins, then opponent speed is NOT reaching us through action")
             print("  order, and the scarcity chain must be carried by something else.")
+            print("  CAUTION -- this table is observational and action order is ENDOGENOUS: we")
+            print("  cause it. Our slow fallback branch fires exactly when our local situation is")
+            print("  bad, so a bad board makes us slow AND poor at once, and binning on speed")
+            print("  compares our worst situations against a random sample of theirs. The other")
+            print("  line measured this confound directly (sim/reports/comparison_discipline.md):")
+            print("  restricted to a near-tie window our order sensitivity collapses from 2.380x")
+            print("  to 1.759x, ratio-of-ratios 1.445x -> 1.127x, and in absolute gold per round")
+            print("  we lose marginally LESS from moving second than they do. So do NOT read the")
+            print("  bins causally; read the near-tie block below, and treat the gap between the")
+            print("  two as the size of the confound.")
+
+            # quasi-random subset: games where the two sides' P50 are within a hair, so
+            # which side moves first is close to a coin flip and our own branch mix is
+            # not driving the split. This is the game-level analogue of the near-tie
+            # window; the difference from the full sample measures the confound.
+            for window in (10, 20):
+                tie = [d for d in binned
+                       if abs(d["mechanics"]["their_p50_ns"] - d["mechanics"]["our_p50_ns"]) <= window]
+                if len(tie) >= 6:
+                    tw = statistics.fmean(d["is_win"] for d in tie)
+                    tsecond = statistics.fmean(1.0 - d["mechanics"]["f"] for d in tie)
+                    lo_t, hi_t = wilson(sum(int(d["is_win"]) for d in tie), len(tie))
+                    print("  near-tie |dP50|<=%2dns: n=%2d  our 2nd-mover %.3f  win rate %.3f"
+                          " Wilson95 [%.3f, %.3f]"
+                          % (window, len(tie), tsecond, tw, lo_t, hi_t))
+                else:
+                    print("  near-tie |dP50|<=%2dns: n=%d, too few to report" % (window, len(tie)))
+            print("  if the near-tie win rate is ALSO low, the deficit is a LEVEL deficit, not an")
+            print("  order-sensitivity deficit, and no amount of winning the order race fixes it.")
+
+            # The endogeneity gate, stated as a comparison rather than a warning.
+            # Opponent P50 is the only clean EXOGENOUS stratifier here: we cannot
+            # influence how fast they are. f is ENDOGENOUS -- it is a function of our own
+            # cost, which is a function of which branch our code took, which is worse
+            # exactly when our local board is worse. Reporting both and differencing them
+            # is what turns "beware the confound" into a measured quantity.
+            fb = sorted(binned, key=lambda d: d["mechanics"]["f"])
+            qf = max(1, len(fb) // 4)
+            fgroups = [fb[i:i + qf] for i in range(0, len(fb), qf)][:4]
+            print()
+            print("--- the same win rates binned by f (ENDOGENOUS) vs by opponent P50 (EXOGENOUS) ---")
+            print("%-18s %4s %9s   |  %-18s %4s %9s" % (
+                "f range (endog)", "n", "win rate", "P50 range (exog)", "n", "win rate"))
+            for fg, sg in zip(fgroups, groups):
+                print("%-18s %4d %9.3f   |  %-18s %4d %9.3f" % (
+                    "%.3f-%.3f" % (fg[0]["mechanics"]["f"], fg[-1]["mechanics"]["f"]),
+                    len(fg), statistics.fmean(d["is_win"] for d in fg),
+                    "%.0f-%.0f" % (sg[0]["mechanics"]["their_p50_ns"],
+                                   sg[-1]["mechanics"]["their_p50_ns"]),
+                    len(sg), statistics.fmean(d["is_win"] for d in sg)))
+            def spread_se(a, b):
+                """Top-minus-bottom win-rate gap and its standard error."""
+                pa = statistics.fmean(d["is_win"] for d in a)
+                pb = statistics.fmean(d["is_win"] for d in b)
+                se = (pa * (1 - pa) / len(a) + pb * (1 - pb) / len(b)) ** 0.5
+                return pb - pa, se
+            f_spread, f_se = spread_se(fgroups[0], fgroups[-1])
+            p_spread, p_se = spread_se(groups[0], groups[-1])
+            d_se = (f_se ** 2 + p_se ** 2) ** 0.5
+            # Printed WITH standard errors, because a quartile gap over n~22 per bin has
+            # an SE near 0.14: a zero-signal dry run where the winner was a pure coin flip
+            # still produced an exogenous spread of -0.250, which without an error bar
+            # reads as a real gradient. Same failure mode as the old "r > 0" test.
+            print("  top-minus-bottom spread: by f %+.3f+-%.3f   by opponent P50 %+.3f+-%.3f"
+                  % (f_spread, f_se, p_spread, p_se))
+            print("  difference (the confound) %+.3f+-%.3f  -> %s"
+                  % (f_spread - p_spread, d_se,
+                     "exceeds 2 SE, confound is real"
+                     if abs(f_spread - p_spread) > 2 * d_se
+                     else "within 2 SE, no measurable confound at this n"))
+            for label, sp, se in (("by f", f_spread, f_se),
+                                  ("by opponent P50", p_spread, p_se)):
+                if abs(sp) <= 2 * se:
+                    print("    note: the %s gradient itself is within 2 SE -- do not read a trend"
+                          % label)
+            print("  THAT DIFFERENCE IS THE CONFOUND, not an effect: f is produced by our own")
+            print("  cost, so binning on it sorts our own good boards from our bad ones. Only the")
+            print("  exogenous column supports a causal reading, and even it is observational.")
+            print("  Precedent: the observational 2.380x order sensitivity became 1.759x in a")
+            print("  near-tie window (ratio-of-ratios 1.445x -> 1.127x), so the anchor that P4/P5")
+            print("  were originally built on shrank by roughly an order of magnitude.")
 
     bench = [d for d in done if d["kind"] == "purposive"]
     if bench:
