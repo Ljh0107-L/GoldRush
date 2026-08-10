@@ -211,6 +211,22 @@ else
         if [[ $pd_rc -eq 0 ]]; then
             pass "pair_diff 0/500 on all ${#LOG_LIST[@]} maps"
             printf '%s\n' "$pd_out" | sed 's/^/          /'
+            # 军规：等价性门必须公布自己的覆盖面。0/500 的强度上限 = dump_inputs 填了几个输入字段。
+            printf '          ---- 本门覆盖的输入字段（未覆盖者，本门对读它的改动失明）----\n'
+            "$(command -v python3)" - <<'PYCOV' | sed 's/^/          /'
+import os, sys
+sys.path.insert(0, os.path.join(os.environ.get("ROOT", "."), "tests"))
+try:
+    from dump_inputs import COVERAGE
+except Exception as exc:                    # noqa: BLE001
+    print("!! COVERAGE 不可读: %s" % exc); raise SystemExit(0)
+for name, state in COVERAGE.items():
+    mark = "OK " if state.startswith("COVERED") else "!! "
+    print("%s%-42s %s" % (mark, name, state))
+missing = [k for k, v in COVERAGE.items() if v.startswith("UNCOVERED")]
+if missing:
+    print("!! 本门对以上 %d 个字段失明；读取它们的构型会拿到假绿灯。" % len(missing))
+PYCOV
         else
             fail "$(printf 'pair_diff found divergences (%s line(s) non-zero) — this is NOT an equivalence refactor.
 %s
