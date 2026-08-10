@@ -34,6 +34,42 @@ Measured cost of this one: our own obsolete public slot scores **49.22%** on the
 that corpus, which would place a three-generations-old build at the **90th percentile**. The artefact
 is **≥14.6pp**, roughly twice the 7.7pp gap that was being argued about.
 
+### Condition 4 is not enough on its own: action order is **endogenous**
+
+Conditioning on action order removes the *arithmetic* mismatch that produced case 7, but it does
+**not** make the comparison causal, because order is not assigned to us — **we cause it**. The engine
+awards first move to whoever decided faster; our decision is slow on the `ok == 0` fallback branch
+(+40 ns/unit, fired in 53.5% of map1 rounds); and that branch fires precisely when the LUT path is
+**blocked**, which is a bad local situation. So a bad situation makes us slow **and** poor
+simultaneously. Comparing "our second-mover rounds" against "their second-mover rounds" therefore
+compares our *worst* situations against a roughly random sample of theirs.
+
+Measured size of this confound, on the 30-game map1 corpus. Restricting to a near-tie window where
+`|our_cost − their_cost| <= 10 ns`, so that which side moves first is quasi-random and our own branch
+mix is matched across arms:
+
+| stratum | our first/second ratio | theirs | ratio-of-ratios | absolute order gap, ours vs theirs |
+|---|---:|---:|---:|---|
+| observational | **2.380×** | 1.647× | **1.445×** | +2.366 vs +1.845 |
+| **RD, ≤10 ns** | **1.759×** | 1.562× | **1.127×** | **+1.622 vs +1.660** |
+| RD, ≤20 ns | 1.900× | 1.531× | 1.241× | +1.799 vs +1.579 |
+
+The apparent 44.5% excess order-sensitivity collapses to 12.7%, and **in absolute gold per round we
+lose marginally *less* from moving second than the opponents do.** The same collapse appears
+per-account (player163 1.65× → 1.13×, player57 1.39× → 1.07×). So "we are abnormally fragile when
+moving second" is **largely an artefact of reverse causation**; what survives is the *level* deficit,
+which is visible in the same table and is what the map1 erratum already identified.
+
+The general rule this yields:
+
+> **When the conditioning variable is itself produced by the thing under study, stratifying on it is
+> not identification. Find a stratum where it is quasi-random — here, a near-tie window — and report
+> both, because the gap between them measures the confound.**
+
+This is the third distinct correction of the same family in one session (case 7 mismatched the
+condition, case 8 mismatched the corpus, this one mismatched *causality within a matched condition*),
+which is why it is recorded as a rule rather than as a footnote.
+
 ## The eight cases
 
 | # | claim as used | what it actually measured | cost of the error |
