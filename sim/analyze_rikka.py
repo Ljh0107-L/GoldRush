@@ -146,8 +146,16 @@ def rikka_games(index: Sequence[Mapping[str, Any]], uid: int = 47) -> list[Mappi
     return [row for row in index if uid in (row.get("user_id"), row.get("user_id2"))]
 
 
-def classify(row: Mapping[str, Any], uid: int = 47) -> Mapping[str, Any]:
-    """Resolve construct families and the publish-boundary stratum for one game."""
+def classify(row: Mapping[str, Any], uid: int = 47,
+             fold_prefix: str | None = None) -> Mapping[str, Any]:
+    """Resolve construct families and the publish-boundary stratum for one game.
+
+    ``fold_prefix`` folds our own replicate names into a single stratum, e.g. the
+    pre-registered batch ``pl47a``..``pl47t`` collapses to ``active_pl47``.  It is
+    an explicit opt-in rather than a general "strip the trailing letter" rule,
+    because that rule would silently merge genuinely different constructs -- it
+    would turn ``cpp20``/``cpp21``/``cpp22`` into one bucket.
+    """
     theirs = ours = None
     for entry in row["players"]:
         name = str(entry["model_name"])
@@ -159,6 +167,9 @@ def classify(row: Mapping[str, Any], uid: int = 47) -> Mapping[str, Any]:
         return {}
     initiated_by_them = row.get("user_id") == uid
     created = str(row.get("created_at", ""))
+    our_name = str(ours["model_name"])
+    folded = (fold_prefix if (fold_prefix and our_name.startswith(fold_prefix))
+              else our_name)
     return {
         "game_id": row["id"],
         "map": "map%s" % row.get("map_id"),
@@ -167,11 +178,11 @@ def classify(row: Mapping[str, Any], uid: int = 47) -> Mapping[str, Any]:
         # whatever was published at the time, which the boundary resolves.
         "passive_for_us": initiated_by_them,
         "their_model": str(theirs["model_name"]),
-        "our_model": str(ours["model_name"]),
+        "our_model": our_name,
         "their_family": "public" if str(theirs["model_name"]) == public_slot(uid) else "targeted",
         "our_stratum": (
             ("defence_fd47ea6" if created >= PUBLISH_BOUNDARY else "defence_0807_slow")
-            if initiated_by_them else "active_%s" % ours["model_name"]
+            if initiated_by_them else "active_%s" % folded
         ),
         "our_coins": int(ours["coin_num"]),
         "their_coins": int(theirs["coin_num"]),
@@ -550,7 +561,8 @@ def income_by_family(games: Sequence[Mapping[str, Any]]) -> Mapping[str, Any]:
 
 def _games(args: argparse.Namespace) -> list[Mapping[str, Any]]:
     index = load_roster(Path(args.index))
-    rows = [classify(row, args.uid) for row in rikka_games(index, args.uid)]
+    rows = [classify(row, args.uid, getattr(args, 'fold_prefix', None))
+            for row in rikka_games(index, args.uid)]
     measured = [measure_game(row) for row in rows if row]
     games = [row for row in measured if row]
     keep = getattr(args, "map", None)
@@ -1101,6 +1113,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                         help="platform game index JSON (get_game_list_1 dump)")
     parser.add_argument("--uid", type=int, default=47, help="opponent user_id")
     parser.add_argument("--map", default=None, help="restrict to one map, e.g. map1")
+    parser.add_argument("--fold-prefix", default=None, dest="fold_prefix",
+                        help="fold our replicate model names sharing this prefix into one stratum")
     subparsers = parser.add_subparsers(dest="command", required=True)
     for name, handler in (
         ("roster", cmd_roster), ("income", cmd_income), ("budget", cmd_budget),
