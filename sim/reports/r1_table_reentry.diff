@@ -1,3 +1,30 @@
+# ⚠️ KNOWN DEFECT — do NOT adopt this patch as-is
+#
+# The re-entry passability check reads `blk`, which at the tail of the unit loop holds
+# UNIT 1's blocked bitmap, while the producer may be UNIT 0. The two differ in the
+# `rich` bomb term (`held >= 100`), so the tail check can be wrong for a rich unit-0
+# producer. Rare; does not affect the head three steps.
+#
+# FIX if taken up: recompute the producer's `rich` mask and rebuild its `blk` row range,
+# or hoist both units' masks before the loop.
+#
+# This defect was left IN for the income measurement on purpose: silently fixing it would
+# have meant comparing an income figure against a construct that does not exist on file.
+# A characterised defect in a measured artifact beats an unmeasured clean one.
+#
+# Verified figures for THIS file (contest machine, GCC 14.3.1, -O3 -march=native):
+#   .rodata 1360 (byte-identical to fd47ea6)   .text 5731 (+464)
+#   pad 112  =>  entry 0x1a10, mod64 == 0x10   FP16 0
+#   same-stream instructions 869.938 (baseline 802.804, so +67.13)
+#   calibrated eviction harness: dP50 +27 ticks on all three maps, null floor 0/0
+#   dP90 +0/+27/+0
+#   PLATFORM latency cost: NOT MEASURED. Prior from a comparable-footprint variant is
+#   up to +33 ns at P50, at which point the net against the benchmark opponent is clearly
+#   negative. The sign depends on an unmeasured quantity.
+#
+# Cheaper sibling: `nofold` + this mechanism is +11.67 instructions instead of +67.13,
+# with .rodata still 1360 and .text +288 instead of +464.
+#
 diff --git a/src/player.cpp b/src/player.cpp
 index 1cea7a2..f81f925 100644
 --- a/src/player.cpp
