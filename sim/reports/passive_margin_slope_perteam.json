@@ -1,0 +1,200 @@
+{
+ "between_team_sd": 0.4172218523448575,
+ "bootstrap_over_teams": {
+  "ci95": [
+   0.5,
+   1.0
+  ],
+  "median": 0.7666666666666667,
+  "p_above_threshold": 0.7528
+ },
+ "conditions": {
+  "corpus": "passive games after 2026-08-10T08:20:18Z",
+  "excluded": "4 games with negative opponent net (QuantLK) - that opponent disappears entirely",
+  "front16_threshold": 0.6756,
+  "our_build": "fd47ea6 public slot"
+ },
+ "granularity_artefact": {
+  "1": {
+   "field_weight_pp": 1.6666666666666667,
+   "n": 6,
+   "nearest_losing_margin": -40,
+   "one_flip_moves_team_rate_pp": 16.666666666666668
+  },
+  "Capoo": {
+   "field_weight_pp": 5.0,
+   "n": 2,
+   "nearest_losing_margin": null,
+   "one_flip_moves_team_rate_pp": 50.0
+  },
+  "LilanOVO": {
+   "field_weight_pp": 3.3333333333333335,
+   "n": 3,
+   "nearest_losing_margin": null,
+   "one_flip_moves_team_rate_pp": 33.333333333333336
+  },
+  "MUGA": {
+   "field_weight_pp": 3.3333333333333335,
+   "n": 3,
+   "nearest_losing_margin": null,
+   "one_flip_moves_team_rate_pp": 33.333333333333336
+  },
+  "rikka": {
+   "field_weight_pp": 3.3333333333333335,
+   "n": 3,
+   "nearest_losing_margin": -315,
+   "one_flip_moves_team_rate_pp": 33.333333333333336
+  },
+  "君の仿瓷": {
+   "field_weight_pp": 3.3333333333333335,
+   "n": 3,
+   "nearest_losing_margin": -35,
+   "one_flip_moves_team_rate_pp": 33.333333333333336
+  },
+  "德州雀魂量化投资LLM": {
+   "field_weight_pp": 5.0,
+   "n": 2,
+   "nearest_losing_margin": null,
+   "one_flip_moves_team_rate_pp": 50.0
+  },
+  "数学分析": {
+   "field_weight_pp": 10.0,
+   "n": 1,
+   "nearest_losing_margin": null,
+   "one_flip_moves_team_rate_pp": 100.0
+  },
+  "激昂狂人": {
+   "field_weight_pp": 3.3333333333333335,
+   "n": 3,
+   "nearest_losing_margin": null,
+   "one_flip_moves_team_rate_pp": 33.333333333333336
+  },
+  "邱叔叔与赵叔叔vamos队": {
+   "field_weight_pp": 10.0,
+   "n": 1,
+   "nearest_losing_margin": null,
+   "one_flip_moves_team_rate_pp": 100.0
+  }
+ },
+ "granularity_note": "the apparent 2x value of the 3-game opponent over the 6-game opponent is exactly the ratio of their observation counts (6/3), not a property of the qualifier, where every pairing is played equally often. Their nearest losing margins are -35 and -40, i.e. essentially identical, so a +40 candidate flips one game against each; per-opponent estimates at n=1..6 are too granular to rank opponents by value.",
+ "n_games": 27,
+ "n_teams": 10,
+ "per_game_rate": 0.6296296296296297,
+ "per_opponent": {
+  "1": {
+   "margins": [
+    -1073,
+    -875,
+    -412,
+    -246,
+    -125,
+    -40
+   ],
+   "n": 6,
+   "rate": 0.0,
+   "wins": 0
+  },
+  "Capoo": {
+   "margins": [
+    568,
+    1019
+   ],
+   "n": 2,
+   "rate": 1.0,
+   "wins": 2
+  },
+  "LilanOVO": {
+   "margins": [
+    89,
+    477,
+    549
+   ],
+   "n": 3,
+   "rate": 1.0,
+   "wins": 3
+  },
+  "MUGA": {
+   "margins": [
+    19,
+    133,
+    395
+   ],
+   "n": 3,
+   "rate": 1.0,
+   "wins": 3
+  },
+  "rikka": {
+   "margins": [
+    -541,
+    -322,
+    -315
+   ],
+   "n": 3,
+   "rate": 0.0,
+   "wins": 0
+  },
+  "君の仿瓷": {
+   "margins": [
+    -35,
+    79,
+    278
+   ],
+   "n": 3,
+   "rate": 0.6666666666666666,
+   "wins": 2
+  },
+  "德州雀魂量化投资LLM": {
+   "margins": [
+    40,
+    286
+   ],
+   "n": 2,
+   "rate": 1.0,
+   "wins": 2
+  },
+  "数学分析": {
+   "margins": [
+    113
+   ],
+   "n": 1,
+   "rate": 1.0,
+   "wins": 1
+  },
+  "激昂狂人": {
+   "margins": [
+    64,
+    419,
+    590
+   ],
+   "n": 3,
+   "rate": 1.0,
+   "wins": 3
+  },
+  "邱叔叔与赵叔叔vamos队": {
+   "margins": [
+    442
+   ],
+   "n": 1,
+   "rate": 1.0,
+   "wins": 1
+  }
+ },
+ "per_opponent_rate": 0.7666666666666666,
+ "per_opponent_se": 0.13193713430042128,
+ "purpose": "the round-robin estimand is the mean over OPPONENTS of P(win), not the mean over games; this re-weights the passive corpus and is verified here together with the uncertainty that decides whether the threshold comparison is resolvable at all",
+ "slope_per_game_pp": {
+  "128": 11.11111111111111,
+  "200": 11.11111111111111,
+  "329": 22.22222222222222,
+  "40": 3.7037037037037033,
+  "80": 7.4074074074074066
+ },
+ "slope_per_opponent_pp": {
+  "128": 6.666666666666665,
+  "200": 6.666666666666665,
+  "329": 15.000000000000014,
+  "40": 3.3333333333333437,
+  "80": 5.000000000000016
+ },
+ "verdict": "point estimate 76.7% is 9pp above the 67.56% threshold, but the bootstrap CI over teams is [50.0, 100.0] and P(above threshold) is only 75.3%. The pre-registered falsifier -- CI indistinguishable from the threshold -- is TRIGGERED, so 'we are above the line' is NOT established. Both estimators straddle it; our position is genuinely unresolved rather than either 4.6pp below or 9pp above."
+}
