@@ -1,0 +1,460 @@
+{
+ "conditions": {
+  "changeover": "2026-08-10T08:20:18+00:00",
+  "corpus": "passive games only (user_id2 == 220), post-changeover",
+  "estimand": "mean over OPPONENTS of P(win) -- the round-robin functional",
+  "threshold_note": "rank 16's 24h rolling win rate; NOT a constant"
+ },
+ "generated_at_utc": "2026-08-10T16:41:19.148141+00:00",
+ "judgement": {
+  "alert": false,
+  "between_team_sd": 0.4172218523448575,
+  "bootstrap_ci95_over_teams": [
+   0.5,
+   1.0
+  ],
+  "excluded_broken": 4,
+  "excluded_broken_detail": [
+   {
+    "game_id": 190039,
+    "opponent": "QuantLK",
+    "their_net": -742
+   },
+   {
+    "game_id": 190050,
+    "opponent": "QuantLK",
+    "their_net": -339
+   },
+   {
+    "game_id": 190171,
+    "opponent": "QuantLK",
+    "their_net": -210
+   },
+   {
+    "game_id": 190273,
+    "opponent": "QuantLK",
+    "their_net": -255
+   }
+  ],
+  "n_games": 27,
+  "n_teams": 10,
+  "near_tie_watch": {
+   "1": [
+    -125,
+    -40
+   ],
+   "rikka": [],
+   "君の仿瓷": [
+    -35,
+    79
+   ]
+  },
+  "p_above_threshold": 0.7528,
+  "per_game_rate": 0.6296296296296297,
+  "per_opponent_detail": {
+   "1": {
+    "margins": [
+     -1073,
+     -875,
+     -412,
+     -246,
+     -125,
+     -40
+    ],
+    "n": 6,
+    "wins": 0
+   },
+   "Capoo": {
+    "margins": [
+     568,
+     1019
+    ],
+    "n": 2,
+    "wins": 2
+   },
+   "LilanOVO": {
+    "margins": [
+     89,
+     477,
+     549
+    ],
+    "n": 3,
+    "wins": 3
+   },
+   "MUGA": {
+    "margins": [
+     19,
+     133,
+     395
+    ],
+    "n": 3,
+    "wins": 3
+   },
+   "rikka": {
+    "margins": [
+     -541,
+     -322,
+     -315
+    ],
+    "n": 3,
+    "wins": 0
+   },
+   "君の仿瓷": {
+    "margins": [
+     -35,
+     79,
+     278
+    ],
+    "n": 3,
+    "wins": 2
+   },
+   "德州雀魂量化投资LLM": {
+    "margins": [
+     40,
+     286
+    ],
+    "n": 2,
+    "wins": 2
+   },
+   "数学分析": {
+    "margins": [
+     113
+    ],
+    "n": 1,
+    "wins": 1
+   },
+   "激昂狂人": {
+    "margins": [
+     64,
+     419,
+     590
+    ],
+    "n": 3,
+    "wins": 3
+   },
+   "邱叔叔与赵叔叔vamos队": {
+    "margins": [
+     442
+    ],
+    "n": 1,
+    "wins": 1
+   }
+  },
+  "per_opponent_rate": 0.7666666666666666,
+  "threshold": 0.678,
+  "threshold_read_at_utc": "2026-08-10T16:41:19.147534+00:00",
+  "verdict": "UNDECIDED: threshold inside the CI. Needs roughly 25 teams; passive games cannot be initiated, so this is a time constraint."
+ },
+ "records": [
+  {
+   "created_at": "2026-08-10T09:34:05.000Z",
+   "game_id": 185615,
+   "is_win": 0,
+   "map_id": 1,
+   "opponent": "rikka",
+   "opponent_model": "g47v220m1",
+   "our_net": 1794,
+   "their_net": 2335
+  },
+  {
+   "created_at": "2026-08-10T09:34:27.000Z",
+   "game_id": 185647,
+   "is_win": 1,
+   "map_id": 2,
+   "opponent": "邱叔叔与赵叔叔vamos队",
+   "opponent_model": "vv",
+   "our_net": 2194,
+   "their_net": 1752
+  },
+  {
+   "created_at": "2026-08-10T09:34:58.000Z",
+   "game_id": 185688,
+   "is_win": 0,
+   "map_id": 2,
+   "opponent": "rikka",
+   "opponent_model": "g47v220m2",
+   "our_net": 2097,
+   "their_net": 2412
+  },
+  {
+   "created_at": "2026-08-10T09:35:36.000Z",
+   "game_id": 185763,
+   "is_win": 0,
+   "map_id": 3,
+   "opponent": "rikka",
+   "opponent_model": "g47v220m3",
+   "our_net": 1160,
+   "their_net": 1482
+  },
+  {
+   "created_at": "2026-08-10T09:47:54.000Z",
+   "game_id": 185924,
+   "is_win": 1,
+   "map_id": 2,
+   "opponent": "德州雀魂量化投资LLM",
+   "opponent_model": "v229field",
+   "our_net": 1885,
+   "their_net": 1599
+  },
+  {
+   "created_at": "2026-08-10T09:55:50.000Z",
+   "game_id": 185976,
+   "is_win": 1,
+   "map_id": 2,
+   "opponent": "德州雀魂量化投资LLM",
+   "opponent_model": "v229r1r4field",
+   "our_net": 1884,
+   "their_net": 1844
+  },
+  {
+   "created_at": "2026-08-10T10:08:50.000Z",
+   "game_id": 186147,
+   "is_win": 1,
+   "map_id": 1,
+   "opponent": "Capoo",
+   "opponent_model": "c12fast56528b3",
+   "our_net": 1833,
+   "their_net": 814
+  },
+  {
+   "created_at": "2026-08-10T10:21:45.000Z",
+   "game_id": 186426,
+   "is_win": 1,
+   "map_id": 1,
+   "opponent": "Capoo",
+   "opponent_model": "c13r257298b21",
+   "our_net": 1905,
+   "their_net": 1337
+  },
+  {
+   "created_at": "2026-08-10T10:46:00.000Z",
+   "game_id": 186596,
+   "is_win": 1,
+   "map_id": 1,
+   "opponent": "激昂狂人",
+   "opponent_model": "player209",
+   "our_net": 1799,
+   "their_net": 1380
+  },
+  {
+   "created_at": "2026-08-10T10:48:02.000Z",
+   "game_id": 186610,
+   "is_win": 1,
+   "map_id": 2,
+   "opponent": "激昂狂人",
+   "opponent_model": "player209",
+   "our_net": 2018,
+   "their_net": 1954
+  },
+  {
+   "created_at": "2026-08-10T10:48:06.000Z",
+   "game_id": 186615,
+   "is_win": 1,
+   "map_id": 3,
+   "opponent": "激昂狂人",
+   "opponent_model": "player209",
+   "our_net": 939,
+   "their_net": 349
+  },
+  {
+   "created_at": "2026-08-10T10:55:25.000Z",
+   "game_id": 186685,
+   "is_win": 0,
+   "map_id": 1,
+   "opponent": "1",
+   "opponent_model": "v484a08",
+   "our_net": 1441,
+   "their_net": 1481
+  },
+  {
+   "created_at": "2026-08-10T11:04:21.000Z",
+   "game_id": 186958,
+   "is_win": 0,
+   "map_id": 1,
+   "opponent": "1",
+   "opponent_model": "v484r1351",
+   "our_net": 1280,
+   "their_net": 2155
+  },
+  {
+   "created_at": "2026-08-10T11:04:22.000Z",
+   "game_id": 186959,
+   "is_win": 0,
+   "map_id": 1,
+   "opponent": "1",
+   "opponent_model": "v484r1352",
+   "our_net": 700,
+   "their_net": 1773
+  },
+  {
+   "created_at": "2026-08-10T11:04:23.000Z",
+   "game_id": 186960,
+   "is_win": 0,
+   "map_id": 1,
+   "opponent": "1",
+   "opponent_model": "v484r1353",
+   "our_net": 1392,
+   "their_net": 1517
+  },
+  {
+   "created_at": "2026-08-10T11:32:03.000Z",
+   "game_id": 187248,
+   "is_win": 0,
+   "map_id": 1,
+   "opponent": "君の仿瓷",
+   "opponent_model": "player",
+   "our_net": 1756,
+   "their_net": 1791
+  },
+  {
+   "created_at": "2026-08-10T11:39:23.000Z",
+   "game_id": 187466,
+   "is_win": 1,
+   "map_id": 2,
+   "opponent": "君の仿瓷",
+   "opponent_model": "player",
+   "our_net": 1903,
+   "their_net": 1625
+  },
+  {
+   "created_at": "2026-08-10T11:42:43.000Z",
+   "game_id": 187542,
+   "is_win": 0,
+   "map_id": 1,
+   "opponent": "1",
+   "opponent_model": "v485s1351",
+   "our_net": 1418,
+   "their_net": 1830
+  },
+  {
+   "created_at": "2026-08-10T11:42:44.000Z",
+   "game_id": 187544,
+   "is_win": 0,
+   "map_id": 1,
+   "opponent": "1",
+   "opponent_model": "v485s1352",
+   "our_net": 1333,
+   "their_net": 1579
+  },
+  {
+   "created_at": "2026-08-10T11:56:11.000Z",
+   "game_id": 187798,
+   "is_win": 1,
+   "map_id": 3,
+   "opponent": "君の仿瓷",
+   "opponent_model": "player",
+   "our_net": 1186,
+   "their_net": 1107
+  },
+  {
+   "created_at": "2026-08-10T14:07:52.000Z",
+   "game_id": 188771,
+   "is_win": 1,
+   "map_id": 1,
+   "opponent": "LilanOVO",
+   "opponent_model": "v432",
+   "our_net": 1771,
+   "their_net": 1222
+  },
+  {
+   "created_at": "2026-08-10T14:11:24.000Z",
+   "game_id": 188898,
+   "is_win": 1,
+   "map_id": 2,
+   "opponent": "LilanOVO",
+   "opponent_model": "v432",
+   "our_net": 2240,
+   "their_net": 1763
+  },
+  {
+   "created_at": "2026-08-10T14:15:46.000Z",
+   "game_id": 189039,
+   "is_win": 1,
+   "map_id": 3,
+   "opponent": "LilanOVO",
+   "opponent_model": "v432",
+   "our_net": 964,
+   "their_net": 875
+  },
+  {
+   "created_at": "2026-08-10T15:10:54.000Z",
+   "game_id": 190039,
+   "is_win": 1,
+   "map_id": 3,
+   "opponent": "QuantLK",
+   "opponent_model": "terra366",
+   "our_net": 871,
+   "their_net": -742
+  },
+  {
+   "created_at": "2026-08-10T15:11:43.000Z",
+   "game_id": 190050,
+   "is_win": 1,
+   "map_id": 1,
+   "opponent": "QuantLK",
+   "opponent_model": "terra169",
+   "our_net": 1791,
+   "their_net": -339
+  },
+  {
+   "created_at": "2026-08-10T15:14:56.000Z",
+   "game_id": 190171,
+   "is_win": 1,
+   "map_id": 2,
+   "opponent": "QuantLK",
+   "opponent_model": "terra299",
+   "our_net": 2574,
+   "their_net": -210
+  },
+  {
+   "created_at": "2026-08-10T15:21:44.000Z",
+   "game_id": 190273,
+   "is_win": 1,
+   "map_id": 2,
+   "opponent": "QuantLK",
+   "opponent_model": "terra256",
+   "our_net": 2740,
+   "their_net": -255
+  },
+  {
+   "created_at": "2026-08-10T15:30:16.000Z",
+   "game_id": 190687,
+   "is_win": 1,
+   "map_id": 1,
+   "opponent": "MUGA",
+   "opponent_model": "fe2758",
+   "our_net": 1735,
+   "their_net": 1716
+  },
+  {
+   "created_at": "2026-08-10T15:30:16.000Z",
+   "game_id": 190690,
+   "is_win": 1,
+   "map_id": 2,
+   "opponent": "MUGA",
+   "opponent_model": "fe2758",
+   "our_net": 2106,
+   "their_net": 1711
+  },
+  {
+   "created_at": "2026-08-10T15:30:16.000Z",
+   "game_id": 190693,
+   "is_win": 1,
+   "map_id": 3,
+   "opponent": "MUGA",
+   "opponent_model": "fe2758",
+   "our_net": 1016,
+   "their_net": 883
+  },
+  {
+   "created_at": "2026-08-10T16:12:51.000Z",
+   "game_id": 191742,
+   "is_win": 1,
+   "map_id": 1,
+   "opponent": "数学分析",
+   "opponent_model": "a",
+   "our_net": 1684,
+   "their_net": 1571
+  }
+ ]
+}

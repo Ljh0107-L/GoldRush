@@ -350,7 +350,7 @@ def validate() -> int:
     ]
     for label, recs, thr, expect in scen:
         v = judge(recs, thr)
-        got = v["verdict"].split()[0]
+        got = v["verdict"].split()[0].rstrip(":")
         ok = got == expect
         failures += not ok
         print("  [%s] %-38s -> %s (CI [%.2f, %.2f])"
