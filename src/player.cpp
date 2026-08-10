@@ -1,8 +1,11 @@
 // player.cpp — GoldRush 2.0 现役冠军 + 三图指纹/慢开局 (2026-08-08)
 //
 // 战绩: P50 中位 200ns(读数 170-230) / P90 ~292 / 收入中位 ~1515
-//       对 Tiuntled-1 先手 85-96%; 指令 659/调用(map1 稳态); 演进史与判决见 CHANGELOG.md
-// 成本模型(设计新算法前必读): 见 INFRA.md —— 壳40ns + 载荷~2ns/条 + 指令×0.2ns
+//       对 Tiuntled-1 先手 85-96%; 演进史与判决见 CHANGELOG.md
+//       指令(perf 实测, tests/icount.cpp): map1/2/3 = 799/892/924 每调用; 本地 hot 约 208-238 cycles
+// 成本模型(设计新算法前必读): 见 INFRA.md —— 壳40ns + 载荷~2ns/条 + 指令×0.1454ns
+// ⚠ 0.1454 是全函数**平均**价, 不是删指令的**边际**价: 本函数受依赖链/访存约束(IPC~4),
+//   实测删 84 条只换回 5.6 cycles(≈0.025ns/条, 比均价低 6 倍)。删指令≠变快, 验收看 cycles。
 //
 // ============ 每轮决策 loop ============
 // 入口: moveDecision → try{ decide } catch{ SAFE_OUT }   (输出全路径可证合法, 无钳位)
@@ -409,7 +412,7 @@ GameOutput decide(const GameInput* in) {
             const __m256i vm3 = _mm256_set1_epi32(-3);
             int lsh = SCT.lsh[sc];
             uint32_t colv = SCT.colv[sc];
-            uint32_t bombm = 0;
+            uint32_t bslv[5];                    // 弹片按行暂存, 取代 bombm 的 15 位打包
             int cb = SCT.cb[sc];
             (void)0;                             // (弹片写已改行内 pop-loop, 见扫描尾)
 #pragma GCC unroll 5
@@ -430,16 +433,14 @@ GameOutput decide(const GameInput* in) {
 #endif
                 uint32_t rv = colv & rowok;
                 rowsel[i] = TT.bestrow[i][(((g8 << 2) >> lsh) & 31u) & rv];
-                bombm |= ((((b8 << 2) >> lsh) & 31u) & rv) << (i * 5);
+                bslv[i] = ((((b8 << 2) >> lsh) & 31u) & rv);
                 // 弹记全窗: LUT 一轮 3 步, ±1 行记法让第 2/3 步踩盲区雷(158287 烧 335 案)
             }
 #pragma GCC unroll 5
             for (int i = 0; i < 5; ++i) {        // 弹行片写(空片写=无操作, 零分支;
                 int rr = sr - 2 + i;             //  越界行 bsl 恒 0, 写进垫行无害免钳位)
-                int shl = sc - 1;
-                uint32_t bsl = (bombm >> (i * 5)) & 31u;
-                uint32_t bv = shl >= 0 ? (bsl << shl) : (bsl >> -shl);
-                g_s.bombbit[rr + 3] |= bv;
+                // 省掉 pack/unpack 的 <<(i*5) 与 >>(i*5)&31; 位移改 64 位消 cmov(等价性见 golf3)。
+                g_s.bombbit[rr + 3] |= (uint32_t)(((uint64_t)bslv[i] << (unsigned)sc) >> 1);
             }
         }
 #else
@@ -528,6 +529,11 @@ GameOutput decide(const GameInput* in) {
 }
 
 }  // namespace
+
+// 布局归一化死垫：本次改写缩小了 decide, 使 moveDecision 入口模 64 掉出已证最优档 0x10。
+// 四档扫描已证 0x20/0x30 各 +11.67ns, 故补 48B 永不执行的 nop 把入口移回 0x10 档,
+// 否则测到的 cycles 差会被布局税污染。改动 decide 体积后必须重新核对并调整垫长。
+asm(".space 48, 0x90");
 
 extern "C" GameOutput moveDecision(const GameInput* input) {
     try {
