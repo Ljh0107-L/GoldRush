@@ -1,5 +1,15 @@
 # Path harvesting: upper bound, verdict, and why it is not the lever
 
+> ## ⚠ SCOPE WARNING (added 8.10): the stock/flow discount holds only WITHOUT contention
+> The claim that 85-92% of the open-loop bound is timing double-count assumes we ourselves
+> eventually collect that cell. Supported uncontested: whole-board collected/generated 0.988,
+> centre 0.993. **Under contention the premise breaks** — NPCs eat 65.6% of map1, and after
+> losing a race the gap does not close within 5 rounds. So contention converts timing gold
+> fully into novel gold: **gold lost to a race is 100% novel and must not be discounted.**
+> The verdict below still stands on the closed-loop evidence, which was measured end to end
+> and is unaffected; only the stock/flow *discount* is scope-limited.
+
+
 > Round of 2026-08-09 late. **Zero platform games consumed.** `src/player.cpp` byte-identical to
 > `f18064c` throughout (`shasum -a 256` = `0ecce6fc…84fdd` = `git show f18064c:src/player.cpp`).
 > No behaviour was implemented; this is measurement and judgment only.
