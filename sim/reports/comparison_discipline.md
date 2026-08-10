@@ -5,6 +5,54 @@
 > `sim/reports/` because it is evidence-derived; the Master is relaying the rule itself into
 > `AGENT.md`, which this line does not own.
 
+## The unified diagnosis
+
+Every conclusion this project retracted in two days failed the same way, and it was **never**
+arithmetic:
+
+> **The number answered a different question from the one it was being used for.**
+
+| number | what it was read as | what it actually answered |
+|---|---|---|
+| `A = +1.244 > 0` | our collection beats theirs round-for-round | the value of the **first-mover slot** (our first-mover income vs their *second*-mover income) |
+| `36.0%` hit rate at the 28th percentile | our current build's standing in the field | a **different corpus** — our build played 0 of those 133 games |
+| `2.38×` order-sensitivity | we are abnormally fragile when moving second | **local situation difficulty** — bad situation makes us slow *and* poor (RD collapses it to 1.13×) |
+| oracle `+57.4` / `+0.34` | a priceable headroom | an **in-sample screening** value; out-of-sample it shrank 52% |
+| `ORT_A` at `(6,6)/(10,10)` | evidence for a diagonal camping split | the **opening baked-route endpoint**, on a route that is rarely completed, in rounds where we are already ahead |
+
+Five cases, five times "right quantity, wrong question". Classification rules cannot catch this,
+because each number is individually correct. Only one action catches it, and it is mechanical:
+
+## Delivery gate: write the condition sentence
+
+> **Any report containing a decomposition, an accounting identity, or a cross-group comparison must,
+> before delivery, carry one sentence per term naming the condition that term was measured under and
+> what it is compared against. A report without those sentences is returned unread.**
+
+This is a gate, not advice, and it is deliberately mechanical rather than a matter of judgement.
+Applied to the case that cost the most, the sentence for `A` reads: *"our income on rounds where we
+move first, minus their income on those same rounds, where they are therefore moving second."*
+**Written out, the mismatch is visible in the sentence itself.** It was never written out, and the
+error survived a review that verified closure, `f`, `A`, `B`, and seven holdout splits — all correct,
+because the arithmetic was never the problem.
+
+## Hypothesis generators are not evidence
+
+> **A coincidence may generate a hypothesis. It may never be converted into a prior.**
+
+Worked case: `(6,6)/(10,10)` is simultaneously the coverage-optimal static two-window placement
+*and* a stale constant in the opening baked route whose "correction" measured negative. The
+coincidence was **useful** — it is why that pair was examined at all. Its value stops there. The
+reason to test the pair is the coverage arithmetic, which is independent of the coincidence; the
+negative "fix" measures the opening route, which is a different quantity.
+
+Conflating the two is the entry point for using observation to *support* a hypothesis rather than to
+*test* it. Related and worth stating in the same breath: **"not identified" is different from
+"identified weakly."** When the corpus contains **zero** variation in the variable of interest — as
+it does for anchor column separation, since every game of the frozen build placed both units on
+column 8 — no additional sample can help, and only an intervention can answer. Weak identification
+tempts you to add data; non-identification must send you to an experiment.
+
 ## The rule
 
 > **Any comparison that enters a decision must first declare whether all six of these hold:
