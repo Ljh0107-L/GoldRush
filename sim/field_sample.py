@@ -40,6 +40,7 @@ Usage
 -----
     field_sample.py roster                 # draw and freeze the roster (once)
     field_sample.py show                    # print the frozen roster
+    field_sample.py reduce                  # cut to one game per team (roster untouched)
     field_sample.py submit --confirm        # submit pending games (quota-aware)
     field_sample.py collect                 # fetch logs + build the results table
     field_sample.py estimate                # stratified estimate + the pre-registered question
@@ -216,9 +217,70 @@ def cmd_show(_args: argparse.Namespace) -> int:
     return 0
 
 
+PLAN30 = ROOT / "sim" / "reports" / "field_sample_plan30.json"
+
+
+def cmd_reduce(args: argparse.Namespace) -> int:
+    """Cut the plan to one game per team without touching the frozen roster.
+
+    Why: precision here is dominated by BETWEEN-team spread, so a second and third
+    game against the same team buys almost nothing, while a second team buys a lot.
+    The frozen roster is 30 teams x 3 maps; this keeps all 30 teams and one map each.
+    Binomial SE at n=30 is about 9pp, and the batch only has to answer one binary
+    question -- are we above or below roughly 55% against the field -- so the extra
+    4pp that 90 games would buy changes no action.
+
+    The map is assigned by ROTATION over the roster's own team order, not chosen:
+    team index i takes map (i mod 3) + 1. That keeps all three maps represented
+    10/10/10, avoids binding any team to any map as a systematic bias, and is fully
+    determined by the frozen file, so no outcome can influence the selection. Nothing
+    has been played yet, so this cannot be cherry-picking either way.
+    """
+    data = load_roster()
+    strat = [e for e in data["entries"] if e["kind"] == "stratified"]
+    bench = [e for e in data["entries"] if e["kind"] == "purposive"]
+    teams: dict[int, list[dict]] = collections.OrderedDict()
+    for e in sorted(strat, key=lambda x: (x["stratum"], int(x["user_id"]), int(x["map_id"]))):
+        teams.setdefault(int(e["user_id"]), []).append(e)
+    chosen = []
+    for i, (_uid, rows) in enumerate(teams.items()):
+        want = (i % 3) + 1
+        pick = next((r for r in rows if int(r["map_id"]) == want), rows[0])
+        chosen.append(pick)
+    kept_bench = sorted(bench, key=lambda x: int(x["map_id"]))[:args.bench]
+    plan = {
+        "derived_from_roster_frozen_at": data["frozen_at_utc"],
+        "construct": data["construct"],
+        "reduced_at_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        "rule": ("keep all teams, one game each; map = (team_index mod 3) + 1 over the "
+                 "roster's own ordering; bench truncated to the first N by map_id"),
+        "rationale": ("precision is set by between-team spread, and the decision is the "
+                      "binary 'are we above or below ~55% against the field', which +-9pp "
+                      "at n=30 already answers"),
+        "strata": data["strata"],
+        "entries": chosen + kept_bench,
+    }
+    PLAN30.write_text(json.dumps(plan, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    bymap = collections.Counter(int(e["map_id"]) for e in chosen)
+    bystrat = collections.Counter(e["stratum"] for e in chosen)
+    print("wrote %s" % PLAN30.relative_to(ROOT))
+    print("  stratified: %d games over %d teams (one each)" % (len(chosen), len(teams)))
+    print("  map split : %s" % dict(sorted(bymap.items())))
+    print("  strata    : %s" % dict(sorted(bystrat.items())))
+    print("  bench     : %d (purposive, not pooled)" % len(kept_bench))
+    print("  roster file itself is UNCHANGED: %s" % ROSTER.relative_to(ROOT))
+    return 0
+
+
 def cmd_submit(args: argparse.Namespace) -> int:
     import arena
-    data = load_roster()
+    if PLAN30.exists():
+        data = json.loads(PLAN30.read_text(encoding="utf-8"))
+        print("PLAN: reduced one-game-per-team plan (%d entries) from %s"
+              % (len(data["entries"]), PLAN30.name))
+    else:
+        data = load_roster()
+        print("PLAN: full frozen roster (%d entries)" % len(data["entries"]))
     done = json.loads(RESULTS.read_text(encoding="utf-8")) if RESULTS.exists() else []
     submitted = collections.Counter((d["user_id"], d["map_id"], d["kind"]) for d in done)
     pending = []
@@ -412,6 +474,21 @@ def cmd_estimate(_args: argparse.Namespace) -> int:
     if withmech:
         print()
         print("=== PRE-REGISTERED CHECKS (written before the run; do not revise) ===")
+        n_strat = sum(1 for d in withmech if d["kind"] == "stratified")
+        underpowered = n_strat < 60
+        UP = "UNDERPOWERED (descriptive only at this n)"
+        if underpowered:
+            print("!! CORRELATION / MONOTONICITY PARTS ARE NOT ADJUDICABLE AT n=%d." % n_strat)
+            print("   The plan was cut to one game per team deliberately: precision is set by")
+            print("   between-team spread, and the decision this batch serves is the binary")
+            print("   'are we above or below roughly 55%% against the field', which +-9pp answers.")
+            print("   That trade costs the correlation tests their power -- the game-level floor")
+            print("   becomes |r| > %.3f and the per-stratum cells are about 12/8/5/5."
+                  % crit_r(max(3, n_strat)))
+            print("   P1/P2/P5 are therefore DESCRIPTIVE ONLY below. Reporting them as")
+            print("   HOLDS/FALSIFIED at this n would be the exact false confirmation that")
+            print("   rule 33 exists to prevent. The main criteria -- weighted win rate and")
+            print("   which stratum we start losing at -- remain usable.")
         order = [s["stratum"] for s in roster["strata"]]
         rates, burns = {}, {}
         for name in order:
@@ -424,7 +501,8 @@ def cmd_estimate(_args: argparse.Namespace) -> int:
         seq = [rates[n] for n in order if n in rates]
         print("P1 low strata win more, monotone decreasing: rates %s"
               % [round(x, 3) for x in seq])
-        print("   -> %s" % ("HOLDS (monotone non-increasing)"
+        print("   -> %s" % (UP if underpowered
+                            else "HOLDS (monotone non-increasing)"
                             if all(a >= b for a, b in zip(seq, seq[1:]))
                             else "FALSIFIED (not monotone)"))
         if len(rates) >= 3:
@@ -448,16 +526,26 @@ def cmd_estimate(_args: argparse.Namespace) -> int:
                 verdict = "FALSIFIED (significant in the WRONG direction)"
             else:
                 verdict = "INCONCLUSIVE (|r| below the n=%d significance floor)" % len(xs)
-            print("   -> %s" % verdict)
+            print("   -> %s" % (UP if underpowered else verdict))
         wins = [d for d in withmech if d["is_win"]]
         if wins:
             dg = statistics.fmean(d["mechanics"]["ours"]["gross"]
                                   - d["mechanics"]["theirs"]["gross"] for d in wins)
             db = statistics.fmean(d["mechanics"]["theirs"]["burn"]
                                   - d["mechanics"]["ours"]["burn"] for d in wins)
-            print("P3 in games we WIN, burn edge beats gross edge: "
-                  "d_gross=%+.4f (%+.0f gold)  d_burn=%+.4f (%+.0f gold)"
-                  % (dg, dg * 1000, db, db * 1000))
+            # SEs are required, not decorative: at ~15 winning games two bare mean
+            # differences will look decisive from noise alone. Same defect class as the
+            # old "r > 0" test and the un-barred confound gradient.
+            def sem(vals):
+                v = list(vals)
+                return (statistics.stdev(v) / len(v) ** 0.5) if len(v) > 1 else float("nan")
+            g_se = sem(d["mechanics"]["ours"]["gross"] - d["mechanics"]["theirs"]["gross"]
+                       for d in wins)
+            b_se = sem(d["mechanics"]["theirs"]["burn"] - d["mechanics"]["ours"]["burn"]
+                       for d in wins)
+            print("P3 in games we WIN (n=%d), burn edge beats gross edge: "
+                  "d_gross=%+.4f+-%.4f (%+.0f gold)  d_burn=%+.4f+-%.4f (%+.0f gold)"
+                  % (len(wins), dg, g_se, dg * 1000, db, b_se, db * 1000))
             if db <= 0 and dg <= 0:
                 p3 = ("FALSIFIED (neither edge is in our favour in games we win; comparing two"
                       " negative edges cannot show burn 'dominating')")
@@ -467,6 +555,14 @@ def cmd_estimate(_args: argparse.Namespace) -> int:
                 p3 = "FALSIFIED (gross edge dominates)"
             else:
                 p3 = "INCONCLUSIVE (mixed signs; state the split rather than a winner)"
+            # a verdict needs the winner to be distinguishable from the loser, not just
+            # numerically larger; require the gap to clear the combined error.
+            gap_se = (g_se ** 2 + b_se ** 2) ** 0.5
+            if underpowered or len(wins) < 8:
+                p3 = UP + (" -- only %d winning games" % len(wins))
+            elif gap_se == gap_se and abs(db - dg) <= 2 * gap_se:
+                p3 = ("INCONCLUSIVE (the two edges differ by %+.4f+-%.4f, within 2 SE, so which"
+                      " one dominates is not resolved)" % (db - dg, gap_se))
             print("   -> %s" % p3)
         # P5: stratum win rate should track opponent SLOWNESS (their P50) and our f
         def corr(xs, ys):
@@ -497,7 +593,7 @@ def cmd_estimate(_args: argparse.Namespace) -> int:
                 p5 = "FALSIFIED (significant in the WRONG direction)"
             else:
                 p5 = "INCONCLUSIVE (both below the n=%d significance floor)" % len(wr)
-            print("   -> %s" % p5)
+            print("   -> %s" % (UP if underpowered else p5))
             print("   P2 vs P4 vs P5 are competing; compare r(opponent burn) above with these.")
         fs = [d["mechanics"]["f"] for d in withmech if d["mechanics"].get("f") is not None]
         if fs:
@@ -719,6 +815,10 @@ def main() -> int:
     r = sub.add_parser("roster"); r.add_argument("--force", action="store_true")
     r.set_defaults(func=cmd_roster)
     sub.add_parser("show").set_defaults(func=cmd_show)
+    rd = sub.add_parser("reduce")
+    rd.add_argument("--bench", type=int, default=2,
+                    help="purposive benchmark games to keep (default 2)")
+    rd.set_defaults(func=cmd_reduce)
     s = sub.add_parser("submit")
     # Durable default. The five-gate-verified artifact was originally only in
     # /tmp, which macOS clears on reboot, so a batch scheduled hours later could
