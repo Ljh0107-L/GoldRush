@@ -661,6 +661,83 @@ def patch_trigger_e(text: str, level: str) -> str:
     return _sub(text, A_LOOP_TAIL, tail, "loop_tail")
 
 
+def patch_r1(text: str) -> str:
+    """R1 -- table RE-ENTRY: reallocate the budget without widening the LUT.
+
+    Reproduces ``sim/reports/r1_table_reentry.diff`` verbatim against the ``fd47ea6`` pin, so
+    that R1's income is measured on the same baseline as every other arm in this report.
+
+    Why it exists: the widened-LUT form (``cursor``/``nc``/``g5``) takes ``.rodata`` from 1360 to
+    1808 B, and an interleaved same-window **platform** control measured that at **+33 ns P50 and
+    +113 ns P90** mean across the three maps -- because an opponent plus seven NPCs execute
+    between our two decisions, so the table is cold every round and doubling the hot data
+    footprint costs a miss per round.  **No instrument in this report could see that**: the
+    simulator has no latency model, and the instruction count went *down* 42, so the cost proxy
+    pointed the wrong way.
+
+    R1 keeps ``fact[7][7][3]`` at width 3 and instead recomputes the target offset from the
+    position reached after three steps, then re-enters the *same narrow* table.  The tail is
+    therefore **fresh rather than stale**: the widened table's slots 4-6 were pre-stored against
+    the *original* offset and are wrong after three moves, whereas re-entry continues from where
+    the unit now stands.  So R1's income is a genuine unknown -- it can be higher or lower.
+
+    One faithful quirk of the source patch, reproduced rather than silently corrected: the
+    re-entry passability check reads ``blk``, which at the tail of the loop is **unit 1's**
+    blocked bitmap, while the producer may be unit 0.  The two differ only in the ``rich`` bomb
+    mask, so the check can be marginally wrong for a rich unit-0 producer.  Recorded because it
+    is a real semantic difference between R1 as patched and R1 as described.
+    """
+    text = _sub(text, A_LOOP_HEAD,
+                """    int cur = 3;                                 // k 当游标: 3 = 交付布局, 0/6 = 已重分配
+    int blind0 = 0;                              // u0 是否盲
+    int ok3[2] = {0, 0};                         // 该单位前 3 步是否走 LUT(尾段可续)
+    int pr3[2], pc3[2], tr3[2], tc3[2];          // 走完 3 步后的位置 + 其目标
+    for (int u = 0; u < 2; ++u) {
+        int sr = in->my_units[u].row, sc = in->my_units[u].col;
+        int* acts = out.actions + u * 3;
+        acts[0] = acts[1] = acts[2] = STAY;""", "loop_head")
+    text = _sub(text, A_ROUTE_OK,
+                """            if (ok) {
+                acts[0] = pa[0]; acts[1] = pa[1]; acts[2] = pa[2];
+                ok3[u] = 1;                      // 尾段可由"表重入"续写(不加宽 LUT)
+                pr3[u] = sr + xr[2]; pc3[u] = sc + xc[2];
+                tr3[u] = tgr; tc3[u] = tgc;
+            } else {""", "route_ok")
+    tail = """        g_s.last_r[u] = (int8_t)sr; g_s.last_c[u] = (int8_t)sc;
+        int bd = blind != 0;
+        if (u == 0) {
+            blind0 = bd;
+        } else if (bd != blind0) {               // 恰好一个盲 ⇒ 六步给能用的那个
+            int p = blind0 ? 1 : 0;              // 生产者
+            int t0 = STAY, t1 = STAY, t2 = STAY;
+            if (ok3[p]) {                        // 表重入: 用"走完 3 步后的位置"重算偏移
+                int dr1 = tr3[p] - pr3[p], dc1 = tc3[p] - pc3[p];
+                dr1 = dr1 < -3 ? -3 : (dr1 > 3 ? 3 : dr1);
+                dc1 = dc1 < -3 ? -3 : (dc1 > 3 ? 3 : dc1);
+                int jr = dr1 + 3, jc = dc1 + 3;
+                const uint8_t* qa = SL.fact[jr][jc];
+                const int8_t* yr = SL.pdr[jr][jc];
+                const int8_t* yc = SL.pdc[jr][jc];
+                int br = pr3[p], bc = pc3[p];
+                unsigned ok2 = (~(blk[br + yr[0] + 1] >> (bc + yc[0] + 1)) & 1u) &
+                               (~(blk[br + yr[1] + 1] >> (bc + yc[1] + 1)) & 1u) &
+                               (~(blk[br + yr[2] + 1] >> (bc + yc[2] + 1)) & 1u);
+                if (ok2) { t0 = qa[0]; t1 = qa[1]; t2 = qa[2]; }
+            }
+            if (blind0) {                        // u1 生产: 头段下移到跨度起点
+                out.actions[0] = out.actions[3];
+                out.actions[1] = out.actions[4];
+                out.actions[2] = out.actions[5];
+                cur = 0;
+            } else cur = 6;                      // u0 生产: 头段已在槽 0, 零搬移
+            out.actions[3] = t0; out.actions[4] = t1; out.actions[5] = t2;
+        }
+    }
+
+    out.k = cur;"""
+    return _sub(text, A_LOOP_TAIL, tail, "loop_tail")
+
+
 # ---------------------------------------------------------------------------
 # the registry
 # ---------------------------------------------------------------------------
@@ -728,6 +805,7 @@ _PATCHERS = {
     "D1": lambda x: patch_trigger(x, "D1"),
     "D2": lambda x: patch_trigger(x, "D2"),
     "D34": lambda x: patch_trigger(x, "D34"),
+    "r1": patch_r1,
     "E0": lambda x: patch_trigger_e(x, "E0"),
     "E1": lambda x: patch_trigger_e(x, "E1"),
     "E2": lambda x: patch_trigger_e(x, "E2"),
@@ -745,7 +823,7 @@ _PATCHERS = {
 # applied first (it consumes the three-way anchor) and nofold's fold removal after.
 PATCH_ORDER = ("safet2", "nofold", "nofoldpure", "colvedge", "cursor6", "cursor6v",
                "cursor4", "cursor5a", "D0", "D1", "D2", "D34",
-               "E0", "E1", "E2", "E34")
+               "E0", "E1", "E2", "E34", "r1")
 
 
 def compose(name: str, patches: Sequence[str]) -> Mapping[str, object]:
