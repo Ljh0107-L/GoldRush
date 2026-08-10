@@ -555,7 +555,36 @@ obtaining their licence. Any future analysis that reads the fog-filtered channel
 **put the ratio in the same table as the statistic, not in a caveats paragraph.** A statistic whose
 licence has to be looked up elsewhere is a statistic that will eventually be quoted without it.
 
-### 6.5 What this line is worth anyway
+**Generalised.** The licensing ratio is one instance of a rule worth stating once:
+
+> **Any quantity that holds only under preconditions must return those preconditions co-located with
+> it.** Not in the surrounding prose, not in the report header — in the same row, the same mapping,
+> the same record.
+
+Applied to this project's recurring failures, the preconditions that must travel with a number are:
+the **construct hash** it was measured on, the **action-order condition**, the **statistical window**,
+the **opponent identity**, and — for anything drawn from the trajectory channel — the **bias ratio**.
+Every mix-up recorded in this report and in the sessions preceding it was a number that had been
+separated from one of those five. Discipline held in a human's memory decays; discipline held in a
+function's return type does not.
+
+### 6.5a Errata found in the repository's own record
+
+Four times on this line the repository was wrong about itself, and in three of them the wrong record
+caused real work to be misdirected. Listed for the line that owns `src/`, since this line may not
+edit it:
+
+| location | what it says | what is true | consequence |
+|---|---|---|---|
+| `src/CHANGELOG.md` | "引擎硬编码 u0/u1 各消费 3 步" | the engine slices a six-step budget by `k`; the official sample itself ships `k=4` | an entire strategy axis was closed as "cancelled on cost" and never judged (§3.1) |
+| `src/player.cpp:41` | "bombm 15位(弹, 仅±1行)" | `:481-484` writes all five scan rows into `bombbit`; `:456` records that this replaced the 15-bit packing | a candidate was proposed to fix a limitation that had already been fixed three generations earlier (§6.7) |
+| burn figure 219.4 gold/game | current pool size | 138.6 gold/game on the current construct family, of which 41.1 is trample | the bomb pool was overstated by 58 % (§6.7) |
+| uncontested ceilings quoted from memory | 2476 / 2655 | 2476.4 ± 52.7 / 2654.8 ± 72.7 — the difference is `1.99σ`, **not adjudicable** | a "Tundra out-collects T-1" claim would have been made at below the 2σ gate (§6.3) |
+
+The pattern is that **a comment describing its own code is more dangerous than a wrong document**,
+because it is the first thing a reader trusts and the last thing anyone re-derives.
+
+### 6.5b What this line is worth anyway
 
 It closes two candidate directions with quantified reasons rather than leaving them as hopes:
 the step-budget axis (previously *cancelled, never judged*) and "learn collection from a
@@ -680,7 +709,60 @@ availability before relying on it.
 
 ---
 
-## 7. Pre-registration: 20 games of the current construct against `player47`
+## 7. Handed to the partition/coverage line: one premise correction and one exogenous target
+
+The only pool left open (item 1 of §6.2) is a coverage/positioning question, and another line is
+testing anchor partitions against it. Three measurements from this apparatus bear directly on it.
+Our own units are visible in 100 % of unit-observations, so none of this needs a licensing ratio.
+Reproduce with `python3 sim/analyze_rikka.py --map map1 coverage`.
+
+**(a) Premise correction: *realised* coverage is 80.2 %, not 55.6 %.** Over 20 map1 games of the
+current construct family (20 000 unit-rounds), **65 of the 81 central cells were occupied at least
+once**. The 55.6 % figure is a *static* number — which cells lie inside the two anchors' windows if
+neither unit ever moves — and units do move. **No central column is never occupied**: shares are
+col4 1.2 %, col5 3.7 %, col6 7.8 %, col7 14.5 %, **col8 48.4 %**, col9 12.2 %, col10 7.6 %,
+col11 3.6 %, col12 1.0 %. Occupying a cell implies seeing it, so "central columns 4/5/11/12 never
+entered vision" is false. A partition change therefore buys *1 % → x %*, not *0 % → x %*.
+
+**(b) Exogenous target: we are ~15× more concentrated than the gold gradient justifies.** The central
+generation gradient is known from full-information logs and is independent of our behaviour
+(`sim/GENERATION.md:106`, per-cell rate by column): 20.0 at col4, **56.3** at col8, 22.8 at col12 —
+a peak-to-edge ratio of **2.81×**. Our occupancy ratio col8/col4 is **41.2×**. Normalising:
+
+| column | our occupancy | generation share | over/under |
+|---:|---:|---:|---:|
+| 4 | 1.2 % | 5.7 % | **0.21×** |
+| 5 | 3.7 % | 9.5 % | 0.39× |
+| 6 | 7.8 % | 11.8 % | 0.66× |
+| 7 | 14.5 % | 15.1 % | 0.97× |
+| **8** | **48.4 %** | 16.0 % | **3.02×** |
+| 9 | 12.2 % | 14.4 % | 0.85× |
+| 10 | 7.6 % | 11.4 % | 0.67× |
+| 11 | 3.6 % | 9.6 % | 0.38× |
+| 12 | 1.0 % | 6.5 % | 0.16× |
+
+The two occupancy peaks are the two anchors themselves — `(6,8)` at 118.3 and `(11,8)` at 134.6 per
+thousand unit-rounds. This gives the one open pool a coherent, quantified mechanism:
+**over-concentration → local depletion → 53.4 % of unit-rounds have nothing worth moving to → the
+step budget is wasted.** It is the strongest independent support this line can offer the partition
+axis.
+
+⚠️ **Treat proportional-to-generation as a *benchmark*, not an optimum.** Gold is a stock: a cell
+left alone accumulates and retains 35 % when skipped, so the income-maximising occupancy distribution
+is legitimately *more* concentrated than the generation rates. **The 15× is an upper bound on
+over-concentration, not the amount to remove.**
+
+**(c) One tempting indicator I computed and then discarded as endogenous.** Mean observed gold on
+rarely-occupied central cells was 0.018 against 0.459 on often-occupied ones — a 25× ratio that reads
+as "the periphery has no gold, so wider coverage is pointless". **Discarded**: a cell becomes
+often-occupied *because* gold was seen on it, so occupancy is produced by the very quantity being
+compared. That is reverse causation, and the honest conclusion is that only the exogenous gradient in
+(b) may be used. Any similar "gold on covered versus uncovered cells" statistic computed by the
+partition line inherits the same defect.
+
+---
+
+## 8. Pre-registration: 20 games of the current construct against `player47`
 
 Approved by the owner line to settle the one question this report could not: **does `rikka`'s ladder
 model out-collect our current construct?** We have zero games between a current build and their
@@ -724,12 +806,23 @@ be written as such rather than replaced by the unrestricted number.
 §6.4 for both sides; vision spend; and the crowding coefficient of §6.6 for this pairing, since a
 non-zero value changes how the level comparison may be read.
 
+**Additional pre-committed measurement: the low-productivity share, per game, for BOTH sides.**
+Share of unit-rounds making at most two effective moves. Ours is **53.4 %** on map1 (`coverage`
+subcommand, 20 games). This turns the batch into an existence test for the one remaining open pool:
+if `player47`'s share is materially lower than ours, then that 53.4 % is *demonstrably compressible*
+and someone has already done it, which is more actionable than knowing whether we are level with them
+on income. If its share is comparable or higher while its income matches ours, the pool is a property
+of the map and the six-step budget rather than of our policy. ⚠️ `player47`'s share can only be read
+on visible unit-rounds, so it must be reported with its licensing ratio beside it — the ratio was
+1.00 for this construct in the historical corpus, but that must be re-checked on the new batch rather
+than assumed.
+
 **What this batch cannot settle.** It measures collection water level, not win rate. 20 games gives a
 Wilson interval on win rate roughly ±21 pp, so no win-rate claim should be made from it.
 
 ---
 
-## 8. Residual unknowns
+## 9. Residual unknowns
 
 1. **Our current build has never played `rikka`'s public slot.** The nearest proxies (`vsrikka`,
    `mR1`, 08-09) are n=2 at net `+25`. The parity claim in §4.2 rests on comparing our 1 map1 game
@@ -746,3 +839,10 @@ Wilson interval on win rate roughly ±21 pp, so no win-rate claim should be made
    for that gate.
 6. Any local A/B on this axis must report **both order arms**; every historical local A/B in this
    repository ran only the "we move first" condition, and our weakest condition is second.
+7. **Trample is the only loss item never examined.** 41.1 gold/game on our own units, 157 events over
+   51 games, attributed by `unit_owner` in `trample_events`; the penalty scales with the number of
+   NPCs sharing the destination cell. It is too small to pursue on its own — 13 % of the +318 target —
+   and it is not being proposed as a candidate. It is recorded here because, once the bomb side is
+   closed (§6.7) and if the partition axis also closes, **it is the only quantified loss left that
+   nobody has ever looked at.** Location, magnitude and the fact that it is unexamined are all now on
+   record so that a future line does not have to rediscover them.

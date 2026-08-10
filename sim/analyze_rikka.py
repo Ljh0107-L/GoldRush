@@ -831,6 +831,107 @@ def cmd_burn(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_coverage(args: argparse.Namespace) -> int:
+    """Realised central-9x9 occupancy of our own units, against the exogenous gradient.
+
+    Two distinct things get called "coverage" and they differ a lot:
+
+    * the *static* figure, i.e. which cells lie inside the two anchors' vision
+      windows if both units never move;
+    * the *realised* figure measured here, i.e. which cells a unit actually stood
+      on over a season of games.
+
+    Our own units are visible in 100% of unit-observations, so this needs no
+    licensing ratio.  The occupancy profile is then compared against the central
+    generation gradient from ``sim/GENERATION.md``, which was measured from
+    full-information logs and is therefore exogenous to our behaviour.
+
+    Deliberately NOT computed here: mean observed gold on rarely- versus
+    often-occupied cells.  That comparison is endogenous -- a cell becomes
+    often-occupied *because* gold was seen on it -- so it mostly measures reverse
+    causation and would overstate the case for staying put.
+    """
+    # sim/GENERATION.md:106, per-cell generation rate by column offset from 8.
+    COLUMN_RATE = {4: 20.0, 5: 33.3, 6: 41.6, 7: 52.9, 8: 56.3,
+                   9: 50.6, 10: 40.0, 11: 33.9, 12: 22.8}
+    index = load_roster(Path(args.index))
+    chosen: list[tuple[Path, int]] = []
+    for row in index:
+        if args.map and ("map%s" % row.get("map_id")) != args.map:
+            continue
+        for entry in row["players"]:
+            name = str(entry["model_name"])
+            current = (
+                (name == OUR_ACCOUNT and str(row.get("created_at", "")) >= PUBLISH_BOUNDARY)
+                or name.startswith("frTu") or name.startswith("t1f")
+            )
+            if not current:
+                continue
+            path = LOGS / ("game_%s.log" % row["id"])
+            if not path.is_file():
+                continue
+            head = header(path)
+            pid = (1 if str(head.get("player1")) == name
+                   else 2 if str(head.get("player2")) == name else None)
+            if pid:
+                chosen.append((path, pid))
+    if not chosen:
+        print("no archived games match")
+        return 0
+    occupancy: collections.Counter[tuple[int, int]] = collections.Counter()
+    unit_rounds = low_productivity = inside = 0
+    for path, pid in chosen:
+        for record in rounds(path):
+            if record is None:
+                continue
+            entry = player_of(record["end"], pid)
+            if entry is None:
+                continue
+            for unit in entry["units"]:
+                position, actions = unit.get("position"), unit.get("actions")
+                if position is None:
+                    continue
+                row_i, col_i = int(position[0]), int(position[1])
+                unit_rounds += 1
+                occupancy[(row_i, col_i)] += 1
+                if 4 <= row_i <= 12 and 4 <= col_i <= 12:
+                    inside += 1
+                if actions is not None and sum(1 for a in actions if int(a) != 4) <= 2:
+                    low_productivity += 1
+    central = [(r, c) for r in range(4, 13) for c in range(4, 13)]
+    touched = [cell for cell in central if occupancy[cell]]
+    print("current construct family, %s: %d games, %d unit-rounds"
+          % (args.map or "all maps", len(chosen), unit_rounds))
+    print("  REALISED central 9x9 coverage : %d/81 = %.1f%% of cells ever occupied"
+          % (len(touched), 100 * len(touched) / 81))
+    print("  unit-rounds spent inside the central 9x9 : %.1f%%" % (100 * inside / unit_rounds))
+    print("  low-productivity unit-rounds (<=2 effective moves) : %.1f%%"
+          % (100 * low_productivity / unit_rounds))
+    print()
+    print("central column occupancy against the exogenous generation gradient:")
+    print("  %-6s %12s %14s %12s" % ("column", "occupancy", "generation", "over/under"))
+    columns = {c: sum(occupancy[(r, c)] for r in range(4, 13)) for c in range(4, 13)}
+    total = sum(columns.values()) or 1
+    rate_total = sum(COLUMN_RATE.values())
+    for col in range(4, 13):
+        share = columns[col] / total
+        expected = COLUMN_RATE[col] / rate_total
+        print("  %-6d %11.1f%% %13.1f%% %11.2fx"
+              % (col, 100 * share, 100 * expected, share / expected))
+    edge = columns[4] / total
+    peak = columns[8] / total
+    gradient = COLUMN_RATE[8] / COLUMN_RATE[4]
+    print()
+    print("  occupancy ratio col8/col4 = %.1fx ; generation ratio = %.2fx"
+          % (peak / edge if edge else float("inf"), gradient))
+    if edge:
+        print("  => we are %.1fx more concentrated than the gold gradient alone justifies"
+              % ((peak / edge) / gradient))
+    print("  (gold is a stock, so the optimum is more concentrated than proportional;")
+    print("   this ratio bounds the over-concentration, it is not the amount to remove)")
+    return 0
+
+
 def cmd_roster(args: argparse.Namespace) -> int:
     games = _games(args)
     print("%-8s %-6s %-20s %-14s %-16s %8s %8s %6s %7s %s" % (
@@ -1004,6 +1105,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     for name, handler in (
         ("roster", cmd_roster), ("income", cmd_income), ("budget", cmd_budget),
         ("reach", cmd_reach), ("styles", cmd_styles), ("burn", cmd_burn),
+        ("coverage", cmd_coverage),
         ("selftest", cmd_selftest),
     ):
         sub = subparsers.add_parser(name)
