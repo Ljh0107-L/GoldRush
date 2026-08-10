@@ -261,6 +261,62 @@ def cmd_submit(args: argparse.Namespace) -> int:
     return 0
 
 
+def per_game_mechanics(game_id: int, our_model: str) -> dict:
+    """Download the log and derive f, burn and the gross/burn/mean split for both sides.
+
+    Net score alone is misleading here: the other line showed an action-order
+    advantage can mask the mechanism. So every game records the first-mover share
+    and both sides' burn, and the report gives the three-way split
+    ``mean = hit x yield - burn`` under a stated order condition.
+    """
+    import arena
+    path = ROOT / "logs" / ("game_%d.log" % game_id)
+    if not path.exists():
+        try:
+            text = arena.call("GET", "/api/user/get_game_log",
+                              params={"id": game_id}, raw=True)   # NOTE: 'id', not 'game_id'
+            if not text or len(text) < 1000:
+                return {}
+            path.write_text(text, encoding="utf-8")
+        except Exception:                                          # noqa: BLE001
+            return {}
+    lines = path.read_text(encoding="utf-8").splitlines()
+    if len(lines) < 3:
+        return {}
+    header = json.loads(lines[0])
+    our_pid = 1 if str(header.get("player1")) == our_model else 2
+    prev: dict[int, list[int]] = {}
+    delta = {our_pid: [], 3 - our_pid: []}
+    firsts = []
+    for line in lines[2:]:
+        if not line.strip():
+            continue
+        rec = json.loads(line)
+        if "end" not in rec:
+            prev = {}
+            continue
+        order = rec["end"].get("dispatch_order")
+        if order and int(rec["round"]) >= 4:
+            firsts.append(1 if int(order[0]) == our_pid else 0)
+        for entry in rec["end"]["players"]:
+            pid = int(entry["id"])
+            cur = [int(u["gold"]) for u in entry["units"]]
+            if pid in prev and len(prev[pid]) == len(cur):
+                delta[pid].extend(n - w for n, w in zip(cur, prev[pid]))
+            prev[pid] = cur
+    def split(values):
+        if not values:
+            return {}
+        gains = [v for v in values if v > 0]
+        hit = len(gains) / len(values)
+        yld = statistics.fmean(gains) if gains else 0.0
+        mean = statistics.fmean(values)
+        return {"unit_rounds": len(values), "hit": hit, "yield_per_hit": yld,
+                "mean": mean, "gross": hit * yld, "burn": hit * yld - mean}
+    return {"f": statistics.fmean(firsts) if firsts else None,
+            "ours": split(delta[our_pid]), "theirs": split(delta[3 - our_pid])}
+
+
 def cmd_collect(_args: argparse.Namespace) -> int:
     """Match submitted model names back to platform games and record outcomes."""
     if not RESULTS.exists():
@@ -278,6 +334,9 @@ def cmd_collect(_args: argparse.Namespace) -> int:
                     "our_net": int(mine[0].get("coin_num") or 0),
                     "their_net": int(theirs[0].get("coin_num") or 0) if theirs else None,
                     "error_msg": row.get("error_msg") or ""})
+        mech = per_game_mechanics(int(row["id"]), str(rec["model_name"]))
+        if mech:
+            rec["mechanics"] = mech
     RESULTS.write_text(json.dumps(done, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     resolved = sum(1 for d in done if "is_win" in d)
     print("resolved %d / %d submitted games" % (resolved, len(done)))
@@ -320,6 +379,55 @@ def cmd_estimate(_args: argparse.Namespace) -> int:
         print("  compare: platform 24h rolling win_rate is NOT comparable (91%% top-two mix);")
         print("  the standing to-be-verified baseline is the all-time passive rate")
         print("  68/133 = 0.511, biased by: old Aug-7 build, self-selected challengers, unstratified.")
+    # ---- pre-registered predictions P1/P2/P3 (docs/FIELD_SAMPLING_PLAN.md 5.5) ----
+    withmech = [d for d in done if d.get("mechanics", {}).get("ours")]
+    if withmech:
+        print()
+        print("=== PRE-REGISTERED CHECKS (written before the run; do not revise) ===")
+        order = [s["stratum"] for s in roster["strata"]]
+        rates, burns = {}, {}
+        for name in order:
+            sub = [d for d in withmech if d["stratum"] == name]
+            if not sub:
+                continue
+            rates[name] = statistics.fmean(d["is_win"] for d in sub)
+            burns[name] = statistics.fmean(d["mechanics"]["theirs"].get("burn", 0)
+                                           for d in sub if d["mechanics"].get("theirs"))
+        seq = [rates[n] for n in order if n in rates]
+        print("P1 low strata win more, monotone decreasing: rates %s"
+              % [round(x, 3) for x in seq])
+        print("   -> %s" % ("HOLDS (monotone non-increasing)"
+                            if all(a >= b for a, b in zip(seq, seq[1:]))
+                            else "FALSIFIED (not monotone)"))
+        if len(rates) >= 3:
+            xs = [burns[n] for n in order if n in rates]
+            ys = [rates[n] for n in order if n in rates]
+            mx, my = statistics.fmean(xs), statistics.fmean(ys)
+            cov = sum((a - mx) * (b - my) for a, b in zip(xs, ys))
+            vx = sum((a - mx) ** 2 for a in xs) ** 0.5
+            vy = sum((b - my) ** 2 for b in ys) ** 0.5
+            r = cov / (vx * vy) if vx and vy else float("nan")
+            print("P2 stratum win rate correlates POSITIVELY with opponent burn: r = %.3f" % r)
+            print("   -> %s" % ("HOLDS" if r > 0 else "FALSIFIED (sign wrong or null)"))
+        wins = [d for d in withmech if d["is_win"]]
+        if wins:
+            dg = statistics.fmean(d["mechanics"]["ours"]["gross"]
+                                  - d["mechanics"]["theirs"]["gross"] for d in wins)
+            db = statistics.fmean(d["mechanics"]["theirs"]["burn"]
+                                  - d["mechanics"]["ours"]["burn"] for d in wins)
+            print("P3 in games we WIN, burn edge beats gross edge: "
+                  "d_gross=%+.4f (%+.0f gold)  d_burn=%+.4f (%+.0f gold)"
+                  % (dg, dg * 1000, db, db * 1000))
+            print("   -> %s" % ("HOLDS (burn dominates)" if db > dg
+                                else "FALSIFIED (gross dominates)"))
+        fs = [d["mechanics"]["f"] for d in withmech if d["mechanics"].get("f") is not None]
+        if fs:
+            print("observed f: median %.3f  min %.3f  max %.3f  (f<0.95 in %d/%d games)"
+                  % (statistics.median(fs), min(fs), max(fs),
+                     sum(1 for x in fs if x < 0.95), len(fs)))
+            print("  reminder: first mover does NOT auto-convert (AGENT.md:57); f~1 is")
+            print("  necessary, not sufficient -- several older 230-260ns builds still lost.")
+
     bench = [d for d in done if d["kind"] == "purposive"]
     if bench:
         w = sum(d["is_win"] for d in bench)
