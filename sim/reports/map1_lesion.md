@@ -38,7 +38,24 @@
 > |---|---:|---:|---:|---:|
 > | **ours** | 4.0793 | **1.7128** | **2.38×** | **−58.0%** |
 > | T-1 / Tundra | 4.6740 | 2.8336 | 1.65× | −39.4% |
-> | Ausdroid | 4.5556 (n=9, unreliable) | 3.3166 | 1.37× | −27.2% |
+> | **field median (11 teams, 72,854 unit-rounds)** | — | — | **1.52×** | — |
+>
+> **We are ~91st percentile in order-sensitivity — of 11 field teams with both strata adequately
+> sampled, only 1 is more fragile than we are.** This is, per `sim/reports/caliber_alignment.md`, the
+> **only counterparty-free placement the corpus supports**: every other "where do we rank" figure
+> compares our strongest build against the two strongest teams while comparing the field against our
+> slowest defended build, with zero shared games to remove the confound.
+>
+> *(Correction to an earlier draft of this erratum: it quoted "Ausdroid 1.37×". That figure is
+> **unusable** — it rests on 18 unit-rounds, and Wilson95 on Ausdroid's first-mover hit is
+> [0.203, 0.614], so the ratio is consistent with anything from 0.7× to 2.5×. The field median of
+> 1.52× is the properly powered anchor and supersedes it. The conclusion is unaffected and in fact
+> strengthened.)*
+>
+> Sizing: closing our 2.38× to the field median 1.52× at fixed `f` = 0.568 is worth ≈ **+0.60
+> gold/round = +300 gold/game** on map1 — comparable to the entire −286 net deficit. **This is a
+> sizing of the gap, not a measured return on any mechanism**, and it is to be used as a ruler for
+> bounds, not as a position.
 >
 > We are ~1.44× more order-sensitive than the two strong opponents and the most fragile second mover
 > of the three. This is consistent with positional income: we camp the central generation peak, so an

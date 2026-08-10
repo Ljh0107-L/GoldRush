@@ -1,4 +1,4 @@
-# Comparison discipline: the five conditions, and the eight cases that forced them
+# Comparison discipline: the six conditions, and the eight cases that forced them
 
 > Written 2026-08-10 by the orchestrator at the Master's instruction, after the eighth
 > mixed-basis incident in two days. This is a methodology file, not a measurement. It belongs in
@@ -7,13 +7,32 @@
 
 ## The rule
 
-> **Any comparison that enters a decision must first declare whether all five of these hold:
-> same build, same opponent, same map, same action order, same time window. If any one fails,
-> the comparison is mixed-basis and may not be used to price or to target.**
+> **Any comparison that enters a decision must first declare whether all six of these hold:
+> same build, same opponent, same map, same action order, same time window, same corpus. If any one
+> fails, the comparison is mixed-basis and may not be used to price or to target.**
 
-The five are not equally likely to be violated. Ranked by observed frequency of failure:
-**build** (four cases), **action order** (two), **window** (one), **opponent** (one), **map** (zero
-so far, because map fingerprinting from log row 2 is cheap and was adopted early).
+The six are not equally likely to be violated. Ranked by observed frequency of failure:
+**build** (four cases), **action order** (two), **corpus** (one), **window** (one), **opponent**
+(one), **map** (zero so far, because map fingerprinting from log row 2 is cheap and was adopted
+early).
+
+### Why "same corpus" is a separate condition and not a special case of the others
+
+Case 8 below is the reason, and it is worth stating on its own because **no other check catches it**.
+`sim/analyze_field_profile.py` held a reference literal `REFERENCE["OURS frozen (map1)"] = 0.360`.
+That number is **correct** — it is `mean(0.36222, 0.35822)`, `f18064c`'s own map1 hit rate over 12
+games against Tundra and T-1 — and it was **correctly labelled**. The defect is that it was placed
+inside a distribution built from 133 passive games, and **`f18064c` played 0 of those 133 games**.
+
+Note what fails to catch this. A unit test does not: the arithmetic is right. **Re-verifying the
+number at source does not either** — re-sourcing confirms `0.360` is exactly what it claims to be.
+The only check that catches it is:
+
+> **A distribution and the point being placed inside it must be built from the same corpus.**
+
+Measured cost of this one: our own obsolete public slot scores **49.22%** on the same statistic in
+that corpus, which would place a three-generations-old build at the **90th percentile**. The artefact
+is **≥14.6pp**, roughly twice the 7.7pp gap that was being argued about.
 
 ## The eight cases
 
@@ -26,7 +45,7 @@ so far, because map fingerprinting from log row 2 is cheap and was adopted early
 | 5 | "Tundra map1 −35.4 ± 45.5" used as a control | a different window/version; **provably unreachable** in this corpus (best 20 of 90 games sum to −2234, needs −708) | a live verdict lost one of its two legs (same-window z = 0.20, not 3.74σ) |
 | 6 | "map1 is the double-kill battlefield, −274 / −219" | n=6 each; Tundra is really n=24 at −289.04 (5.29σ), T-1 is 1.83σ **undecidable** | understated one, overstated the other's certainty |
 | 7 | **"`A` > 0 ⇒ we out-collect them round-for-round"** | our **first**-mover income minus their **second**-mover income | inverted the map1 diagnosis; would have funded the wrong organ |
-| 8 | "our hit 36.0% = 28th percentile of the field" | our slot in those games was a ~3600ns build, **11× slower** than the frozen construct, and `f18064c` played **0** of them; the field figure was taken at f≈0.40 and ours at f≈0.57 | the same metric rates our obsolete slot **90th percentile**, which is the reductio |
+| 8 | "our hit 36.0% = 28th percentile of the field" | a **correct, correctly-labelled** figure for `f18064c` over 12 games vs the two strongest teams, placed inside a distribution built from 133 passive games that `f18064c` played **0** of; our actual slot there was a ~3600ns build, **11× slower**; field taken at f≈0.40 and ours at f≈0.57 | the same metric rates our obsolete slot **90th percentile** — the reductio. Artefact ≥14.6pp, ~2× the 7.7pp under debate |
 
 Five of the eight were committed by the Master, three by this line. The shape is identical every
 time: **an aggregate was substituted for a like-for-like pair.**
