@@ -462,9 +462,16 @@ def render(report: Mapping[str, Any]) -> None:
         print(f"  |mean margin| <= {thr:>3}: {v['count']}/{v['n_teams']} "
               f"Wilson95 [{100 * lo:.0f}, {100 * hi:.0f}]%  -- UNDECIDABLE, do not recalibrate on this")
     sd = report["within_team_single_game_sd"]
-    print(f"\n-- within-team single-game SD (pooled) = {sd['pooled']:.0f} gold --")
-    for thr in BAND_THRESHOLDS:
-        print(f"  the +/-{thr} band is {thr / sd['pooled']:.2f} pooled-sigma wide")
+    pooled_sd = sd["pooled"]
+    if pooled_sd == pooled_sd:  # not NaN
+        print(f"\n-- within-team single-game SD (pooled) = {pooled_sd:.0f} gold --")
+        for thr in BAND_THRESHOLDS:
+            print(f"  the +/-{thr} band is {thr / pooled_sd:.2f} pooled-sigma wide")
+    else:
+        print("\n-- within-team single-game SD: NOT MEASURABLE in this corpus --")
+        print("  (needs >=5 games against the same opponent; a one-game-per-team design")
+        print("   cannot estimate it, which is exactly why per-team band membership was")
+        print("   retired as an estimator and the per-GAME slope is used instead)")
     print("\n-- empirical dP(win)/d(margin) by counterfactual counting --")
     print(f"  {'shift':>6} {'pooled':>18} {'excl 2 strongest':>20} {'per-team equal wt':>20} {'pp/gold':>9}")
     for shift, v in report["slope"].items():
@@ -499,6 +506,49 @@ def render(report: Mapping[str, Any]) -> None:
             print(f"  gap {gap:.1f}pp via {label:24s}: {gap / ppg:7.0f} gold/game")
 
 
+def load_field_sample(results: Path) -> list[dict[str, Any]]:
+    """Rows from the field-sample batch, which records both nets directly.
+
+    ``sim/field_sample.py collect`` writes ``our_net`` and ``their_net`` per game, so the
+    margin needs no log parsing and no name-based side detection.  That matters: the
+    archive path infers our side from the ``player<digits>`` naming convention, which holds
+    for every opponent seen so far but is a convention rather than a guarantee.
+    """
+    payload = json.loads(results.read_text(encoding="utf-8"))
+    rows: list[dict[str, Any]] = []
+    for rec in payload:
+        if "our_net" not in rec or rec.get("their_net") is None:
+            continue
+        if rec.get("error_msg"):
+            continue
+        rows.append({
+            "game": rec.get("game_id"),
+            "opponent": rec.get("team") or rec.get("opponent") or str(rec.get("user_id")),
+            "our_build": rec.get("construct") or "fd47ea6",
+            "margin": int(rec["our_net"]) - int(rec["their_net"]),
+            "stratum": rec.get("stratum"),
+            "kind": rec.get("kind"),
+            "is_win": rec.get("is_win"),
+        })
+    return rows
+
+
+def check_win_consistency(rows: Sequence[Mapping[str, Any]]) -> tuple[int, int]:
+    """Cross-check the platform's own ``is_win`` against the sign of our margin.
+
+    If these disagree the margin definition is wrong somewhere, and every number in this
+    module would be quietly built on it.  Returns (checked, mismatches).
+    """
+    checked = mismatch = 0
+    for r in rows:
+        if r.get("is_win") is None:
+            continue
+        checked += 1
+        if bool(int(r["is_win"])) != (float(r["margin"]) > 0):
+            mismatch += 1
+    return checked, mismatch
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -507,10 +557,43 @@ def main(argv: Sequence[str] | None = None) -> int:
     run.add_argument("--logs", type=Path, default=DEFAULT_LOGS)
     run.add_argument("--output", type=Path, default=DEFAULT_JSON)
     run.add_argument("--no-write", action="store_true")
+    batch = sub.add_parser("batch", help="analyse the field-sample batch results")
+    batch.add_argument("--results", type=Path,
+                       default=ROOT / "sim" / "reports" / "field_sample.json")
+    batch.add_argument("--output", type=Path,
+                       default=ROOT / "sim" / "reports" / "margin_sensitivity_batch.json")
+    batch.add_argument("--no-write", action="store_true")
     args = parser.parse_args(argv)
 
     if args.cmd == "validate":
         return validate()
+
+    if args.cmd == "batch":
+        rows = load_field_sample(args.results)
+        if not rows:
+            print(f"no resolved games in {args.results}", file=sys.stderr)
+            return 2
+        checked, mismatch = check_win_consistency(rows)
+        print(f"win/margin sign consistency: {checked - mismatch}/{checked} agree "
+              f"({mismatch} mismatch)")
+        if mismatch:
+            print("  STOP: the platform's is_win disagrees with the sign of our margin, so the "
+                  "margin definition is wrong. Do not use any number below.", file=sys.stderr)
+            return 3
+        report = analyse(rows)
+        report["conditions"]["our_build"] = "fd47ea6 (single build)"
+        report["conditions"]["opponent_selection"] = (
+            "pre-registered stratified roster, one game per team; at one game per team the "
+            "pooled slope EQUALS the equal-weight-per-team slope, which is the round-robin "
+            "estimand")
+        report["conditions"]["corpus"] = f"field-sample batch from {args.results.name}"
+        report["win_margin_consistency"] = {"checked": checked, "mismatch": mismatch}
+        render(report)
+        if not args.no_write:
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(json.dumps(report, indent=1, sort_keys=True) + "\n")
+            print(f"\nwrote {args.output}")
+        return 0
 
     rows = collect(args.logs)
     if not rows:
