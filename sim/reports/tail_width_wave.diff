@@ -1,0 +1,40 @@
+--- a/src/player.cpp
++++ b/src/player.cpp
+@@ -268,11 +268,6 @@
+ }
+ 
+ __attribute__((noinline, cold))
+-void waveTick(const GameInput*) {                 // 炸弹每 20 轮整套重采样
+-    memset(g_s.bombbit, 0, sizeof(g_s.bombbit));
+-}
+-
+-__attribute__((noinline, cold))
+ void slowTick(const GameInput* in) {
+     int rad = g_s.vp_buy == 2 ? 4 : 2;           // 上轮买了 9×9 → 本轮窗口半径 4
+     g_s.vp_buy = 0;
+@@ -417,8 +412,14 @@
+         }
+     }
+     g_s.last_round = (int16_t)in->round;
+-    if (in->round % 20 == 0)                     // 炸弹波清 + 远征开拔/归队(骑同一位点)
+-        waveTick(in);
++    {   // 炸弹波清: 恒形掩码版。旧形式 `if(%20==0) waveTick()` 把 5% 的轮
++        // 推进尾部: 它只多跑 8 条指令却多花 54..81 TSC ticks(约基线单价的 20 倍),
++        // 因为代价不在指令而在跳入 .text.unlikely 的远调用 + 5% 分支的必然误预测。
++        // m==0 时 `&= m` 与 memset(bombbit,0,92) 逐位相同, m==~0 时是恒等 ⇒ 行为不变,
++        // 但每轮形状相同。代价是每轮白付约 12 条热指令(92B = 2 ymm + 尾)。
++        uint32_t wm = 0u - (uint32_t)(in->round % 20 != 0);
++        for (int i = 0; i < N + 6; ++i) g_s.bombbit[i] &= wm;
++    }
+ 
+     {   // 远征抵锚事件 → 冷推进(拔点链/车道切换/归队)。exc 期成段连续, 分支按段预测,
+         // 误预测只在段边界 ~10-20 次/局(谱系: v1 B端扎营/v2 回程扫空车道皆判负, 见 CHANGELOG)
+@@ -600,7 +601,7 @@
+ // 布局归一化死垫：本次改写缩小了 decide, 使 moveDecision 入口模 64 掉出已证最优档 0x10。
+ // 四档扫描已证 0x20/0x30 各 +11.67ns, 故补 48B 永不执行的 nop 把入口移回 0x10 档,
+ // 否则测到的 cycles 差会被布局税污染。改动 decide 体积后必须重新核对并调整垫长。
+-asm(".space 96, 0x90");
++asm(".space 112, 0x90");
+ 
+ extern "C" GameOutput moveDecision(const GameInput* input) {
+     try {

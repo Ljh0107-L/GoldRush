@@ -1,0 +1,250 @@
+{
+ "line": "tail_width-aab8",
+ "objective": {
+  "stated": "narrow P90 - P50 of decision latency from 100 ns to <= 70 ns, target P90 <= 260 ns",
+  "operative_target_after_orchestrator_revisions": "P90 down, measured in cycles under the code-only I-cache/BTB eviction condition; P50 budget <= +54 TSC ticks; instruction count uncapped; pair_diff 0/500 on three maps",
+  "verdict": "NEGATIVE on P90. No construct reached the -2 quantum (-54 tick) P90 bar on any map, and none improved P90 on all three. A real and reproducible narrowing of P90-P50 was found, but it is bought entirely by raising P50, which does not lower P90 and therefore does not serve a prize judged on tail latency."
+ },
+ "conditions": {
+  "baseline_commit": "b5de9ef",
+  "baseline_source_sha256": "3168589d4cb143c5938e00a1f86da585bc5b3c2c5caa175f5cbee8d7f83ca38b",
+  "baseline_text_sha256": "264d1ceb3cf81192acb185bf7577c29c468a17feb3d7ea21902969fd51aa989b",
+  "baseline_text_bytes": 5235,
+  "baseline_entry": "0x1a10",
+  "baseline_entry_mod64": "0x10",
+  "baseline_fp16_count": 0,
+  "build_machine": "quant-compiler (AMD EPYC 9T25, 64 logical CPUs, KVM guest), GCC 14.3.1",
+  "build_flags": "-std=c++17 -O3 -march=native -fPIC -Wall -Wextra -shared",
+  "isolated_build_dir": "~/goldrush/tw_aab8 (no other line writes here)",
+  "machine_load_during_measurement": "116-119 users, load average 63 at Step 1, 88-90 at the final A/B",
+  "pinned_cpu": 3,
+  "eviction_condition": {
+   "name": "code-only I-cache/BTB eviction",
+   "victim_functions": 600,
+   "victim_span_bytes": 38400,
+   "description": "600 64-byte-aligned functions, each containing one data-dependent conditional branch, walked in full before every timed call",
+   "record_correction": "the CHANGELOG's '68 KB I-cache/BTB eviction' is the SIZE OF THE bench_thrash BINARY (size -A Total = 69694 B), not the victim footprint; nm places thrashOne<0>..<599> 38400 B apart"
+  },
+  "rejected_condition": {
+   "name": "cold2 (16 MiB data write-through plus the code victim set)",
+   "why_rejected": "destroys the signal: path-selection variance share eta2 collapses from 0.62-0.68 to 0.10-0.21, within-path widths balloon from 27-54 to 216-243 ticks, and no-fallback rounds then supply 17-46% of the slowest decile"
+  },
+  "instrument": {
+   "protocol": "per-round minimum over 31 reps; reps interleaved across all .so inside one process; N independent runs; per-round median across runs where a consensus level is needed; steady rounds r>=20",
+   "primary_unit": "TSC ticks",
+   "tsc_quantum_ticks": 27,
+   "tsc_quantum_ns": 10.0,
+   "tsc_quantum_note": "this VM advances the guest TSC only in 27-tick steps at 2.699993 GHz, so 27 ticks = 10.00 ns exactly; the precedent escapeStep result of '-27 cycles' was therefore exactly ONE quantum, the instrument's minimum resolvable step",
+   "cross_check_unit": "rdpmc core cycles (PERF_COUNT_HW_CPU_CYCLES, exclude_kernel, read through the perf mmap page)",
+   "rdpmc_constant_overhead_cycles": "about 660-725, measured on a 6-instruction trivial player; irrelevant to P90-P50 because a constant cancels in a difference of quantiles",
+   "core_clock_over_tsc_ratio": 1.32,
+   "instrument_floor": {
+    "subject": "6-instruction trivial player, interleaved rep-by-rep in the same invocation",
+    "tsc_width_ticks": 0,
+    "tsc_p50_p90_p99_ticks": [54, 54, 54],
+    "rdpmc_width_cycles": 13
+   }
+  },
+  "streams": {
+   "175847": {"map": "map1", "walls": 40, "bin_sha256": "d773e06de311de9003f6d35604c276a0d923d956a0a29a652c7a2b78a03c2839"},
+   "176396": {"map": "map2", "walls": 24, "bin_sha256": "04da8666298bb6561af853b2468f03404d55131febdc60398459e689a50bdaaf"},
+   "176389": {"map": "map3", "walls": 78, "bin_sha256": "31f32360a9c74e3793af4dc094550fbc987ebb5b9038181be5e3e4b162b67d3d"}
+  },
+  "input_builder": "tests/dump_inputs.py at b5de9ef (snapshot field populated)"
+ },
+ "step1_baseline_tail_width": {
+  "unit": "TSC ticks, code-only 38400 B eviction, min over 31 reps, 5 runs",
+  "map1": {"p50": 324, "p90": 432, "width": 108, "width_run_sd": 0.0},
+  "map2": {"p50": 297, "p90": 405, "width": 108, "width_run_sd": 0.0},
+  "map3": {"p50": 297, "p90": 378, "width": 81, "width_run_sd": 0.0},
+  "rdpmc_width_cycles": {"map1": 132, "map2": 153, "map3": 116},
+  "hot_no_eviction_width_ticks": {"map1": 27, "map2": 27, "map3": 27},
+  "hot_note": "the entire hot-replay width is one quantum, which independently re-derives why the escapeStep precedent was invisible in ordinary hot replay",
+  "ceiling": {
+   "local_width_ns": "30-40",
+   "platform_width_ns": 100,
+   "statement": "the local instrument under the precedent's own eviction condition reproduces at most about one third of the platform tail; 'P90 - P50 <= 70 ns' is not verifiable on this machine in any unit, and no platform-width claim is made anywhere in this report"
+  }
+ },
+ "step1_path_attribution": {
+  "labels_from": "build derived from HEAD by sim/tail_trace_patch.py; pair_diff 0/500 vs baseline on three maps; label stream re-derived twice per map with 0 mismatches; the instrumented build is never timed",
+  "unit": "TSC ticks under the 38400 B code-only eviction",
+  "map1": {
+   "paths": {
+    "no-fallback": {"share_pct": 45.0, "p50": 270, "p90": 324, "within_width": 54, "slow_decile_share_pct": 0.0},
+    "fallback": {"share_pct": 31.7, "p50": 351, "p90": 405, "within_width": 54, "slow_decile_share_pct": 23.6},
+    "escape": {"share_pct": 18.1, "p50": 405, "p90": 459, "within_width": 54, "slow_decile_share_pct": 61.8},
+    "other_cold_layers": {"share_pct": 5.2, "p50": 405, "p90": 459, "within_width": 54, "slow_decile_share_pct": 14.6}
+   },
+   "eta2_path_selection": 0.677
+  },
+  "map2": {
+   "paths": {
+    "no-fallback": {"share_pct": 61.2, "p50": 270, "p90": 297, "within_width": 27, "slow_decile_share_pct": 0.0},
+    "fallback": {"share_pct": 25.2, "p50": 351, "p90": 405, "within_width": 54, "slow_decile_share_pct": 36.4},
+    "escape": {"share_pct": 8.1, "p50": 405, "p90": 459, "within_width": 54, "slow_decile_share_pct": 47.3},
+    "other_cold_layers": {"share_pct": 5.4, "p50": 351, "p90": 567, "within_width": 216, "slow_decile_share_pct": 16.4}
+   },
+   "eta2_path_selection": 0.658
+  },
+  "map3": {
+   "paths": {
+    "no-fallback": {"share_pct": 56.7, "p50": 270, "p90": 297, "within_width": 27, "slow_decile_share_pct": 0.0},
+    "fallback": {"share_pct": 35.6, "p50": 351, "p90": 378, "within_width": 27, "slow_decile_share_pct": 73.9},
+    "escape": {"share_pct": 2.7, "p50": 432, "p90": 459, "within_width": 27, "slow_decile_share_pct": 15.9},
+    "other_cold_layers": {"share_pct": 5.0, "p50": 324, "p90": 405, "within_width": 81, "slow_decile_share_pct": 10.1}
+   },
+   "eta2_path_selection": 0.620
+  },
+  "findings": [
+   "the slowest decile contains 0.0% no-fallback rounds on all three maps, on both counters",
+   "within-path width is 27-54 ticks (1-2 quanta) against an overall width of 81-108, so path selection rather than within-path variation dominates",
+   "path selection explains eta2 = 0.62-0.68 of round-to-round variance (0.57-0.64 on the rdpmc cross-check)",
+   "the archived hot path medians 216/243/270 are reproduced (243/243/270, span one quantum), but the span under eviction is 135-162 ticks, three times larger; hot replay prices only the work, eviction also prices the cold code the path drags in"
+  ],
+  "wave_share_of_slowest_decile_pct": {"map1": 12.7, "map2": 12.7, "map3": 10.1},
+  "wave_enrichment_vs_base_rate": {"map1": 2.5, "map2": 2.5, "map3": 2.0},
+  "wave_rounds_in_decile_fraction_pct": 29,
+  "wave_note": "71% of wave rounds never enter the tail, because +54..81 ticks on top of a no-fallback round lands at 324-351, still below the decile cut of 378-432; only wave rounds that are also blocked cross it"
+ },
+ "step1_work_decomposition": {
+  "unit": "exact instruction counts (rdpmc instructions, deterministic; zero run-to-run variation) paired with TSC ticks",
+  "baseline_no_fallback_round": {"instructions": 710, "ticks": 270, "ticks_per_instruction": 0.38},
+  "one_unit_blocked": {"d_instructions": "+76..79", "d_ticks": "+81", "ticks_per_instruction": 1.05},
+  "both_units_blocked": {"d_instructions": "+144..159", "d_ticks": "+108..162"},
+  "escape_one_unit": {"d_instructions": "+177..180", "d_ticks": "+108..162"},
+  "both_blocked_plus_escape": {"d_instructions": "+251..273", "d_ticks": "+162..189"},
+  "waveTick": {"d_instructions": "+8", "d_ticks": "+54..81", "ticks_per_instruction": "6.8-10"},
+  "ipc": {"no_fallback_path": 1.9, "escape_increment": 1.0}
+ },
+ "candidates": [
+  {
+   "name": "wave",
+   "knife": "the %20 bomb-memory clear moves from an out-of-line cold call to an inline MASKED clear executed every round: m = -(uint32_t)(round % 20 != 0) then bombbit[i] &= m",
+   "why_masked": "an UNCONDITIONAL clear, as first proposed upstream, destroys the cross-round bomb memory the rich-gate depends on and is a large behaviour change; the masked form reproduces the memset exactly when m==0 and is the identity when m==~0",
+   "text_sha256": "f542083ad4f3f147c8020be6ea5ae766072907d5cd3b7512a0e1663574ba69e1",
+   "text_bytes": 5363,
+   "pad": 112,
+   "entry_mod64": "0x10",
+   "fp16": 0,
+   "pair_diff": "0/500 on map1, map2, map3",
+   "d_instructions_p50": "+18 on every round; +10 on wave rounds (the 8-instruction cold call is deleted)",
+   "d_p90_tsc": {"map1": -27, "map2": 0, "map3": 0},
+   "d_p90_rdpmc_net_of_null": {"map1": -5, "map2": 1, "map3": -6},
+   "d_p50_tsc": {"map1": 0, "map2": 0, "map3": 0},
+   "d_width_tsc": {"map1": -27, "map2": 0, "map3": 0},
+   "d_width_rdpmc_net_of_null": {"map1": 1, "map2": -2, "map3": 6},
+   "targeted_round_effect": {
+    "wave_rounds_d_ticks": -54,
+    "wave_rounds_d_rdpmc_cycles": {"map1": -87, "map2": -72.5, "map3": -68.5},
+    "null_control_same_rounds_d_rdpmc_cycles": {"map1": -4, "map2": -5, "map3": -4},
+    "n_wave_rounds": 24
+   },
+   "verdict": "NEGATIVE on the global P90 statistic: the -27 tick median on map1 is one quantum and is NOT supported by the rdpmc cross-check (-5 net of null), and maps 2 and 3 are flat. POSITIVE and large on the rounds it targets, at 15-20x the null floor, with zero P50 cost. Correct but not sufficient."
+  },
+  {
+   "name": "blk",
+   "knife": "steerStep and escapeStep stop recomputing bpw | (rich & bombbit) per query and read the already-materialised blk[]; the two functions merge into one noinline cold function, removing the double inlining of the fallback layer into decide and the nested cold call from the tail path",
+   "proof_of_identity": "pass01(r,c,rich) = ~((bpw[r+1] | (rich & bombbit[r+3])) >> (c+1)) & 1 and blk[i] = bpw[i] | (rich & bombbit[i+2]), so blk[r+1] is the same word; the reachable domain is r in [-1,17] -> blk[0..18] and blk has 19 entries",
+   "text_sha256": "526e8e0db9d90c1e712941fa477a2785571a7c6cd51286a3bbda2d1984361657",
+   "text_bytes": 5052,
+   "pad": 112,
+   "entry_mod64": "0x10",
+   "fp16": 0,
+   "pair_diff": "0/500 on map1, map2, map3",
+   "d_instructions": "-9 on every round; -49 (map1) / -36 (map2) / -21 (map3) on escape rounds; instruction P90 -43 / -27 / -10",
+   "d_p90_tsc": {"map1": 0, "map2": 0, "map3": 0},
+   "d_p90_rdpmc_net_of_null": {"map1": -10, "map2": 14, "map3": -1},
+   "d_width_tsc": {"map1": 0, "map2": 0, "map3": 0},
+   "d_width_rdpmc_net_of_null": {"map1": -8, "map2": -23, "map3": 5},
+   "verdict": "NEGATIVE. A real instruction reduction that does not convert: sign is inconsistent across maps on the fine counter and the TSC statistic does not move at all. The -49 instruction saving on escape rounds converts to about -15 core cycles, which is the null floor."
+  },
+  {
+   "name": "both",
+   "knife": "wave + blk",
+   "text_sha256": "55ee7d372d09abedef0f0c0aa5f8137af39d28fb390580f8318bb1264eff8537",
+   "text_bytes": 5158,
+   "pad": 144,
+   "entry_mod64": "0x10",
+   "fp16": 0,
+   "pair_diff": "0/500 on map1, map2, map3",
+   "d_p90_tsc": {"map1": 0, "map2": 0, "map3": 0},
+   "d_p90_rdpmc_net_of_null": {"map1": -5, "map2": -1, "map3": 4},
+   "verdict": "NEGATIVE. The two knives do not add; their combination is inside the null floor on both counters."
+  },
+  {
+   "name": "cst",
+   "knife": "blk plus constant-shaping of the steering branch itself: blkStep is called unconditionally and its result selected with masks, so the 33-40% data-dependent branch disappears; blkStep loses its cold attribute because it is now on every round",
+   "text_sha256": "6afc1897425c7a0ae2c37e8b21e767cb8713f046ca31cc317e9ff3cca38a904e",
+   "text_bytes": 5196,
+   "pad": 128,
+   "entry_mod64": "0x10",
+   "fp16": 0,
+   "pair_diff": "0/500 on map1, map2, map3",
+   "d_instructions_p50": {"map1": 146, "map2": 192, "map3": 196},
+   "d_p50_tsc": {"map1": 54, "map2": 54, "map3": 54},
+   "d_p50_rdpmc": {"map1": 85, "map2": 120, "map3": 88},
+   "d_p90_tsc": {"map1": -27, "map2": 27, "map3": 0},
+   "d_p90_rdpmc_net_of_null": {"map1": 31, "map2": 57, "map3": 36},
+   "d_width_rdpmc_net_of_null": {"map1": -59, "map2": -63, "map3": -58},
+   "verdict": "REJECTED. P90 is WORSE on all three maps on the fine counter, and the P50 rise of +85..120 core cycles is over the +54 tick budget. It narrows the width only by lifting the floor."
+  },
+  {
+   "name": "all",
+   "knife": "wave + cst",
+   "text_sha256": "f317029208b3d4a3e9b2b193164d38d69386d3f766bf116d55422763af4f514c",
+   "text_bytes": 5304,
+   "pad": 144,
+   "entry_mod64": "0x10",
+   "fp16": 0,
+   "pair_diff": "0/500 on map1, map2, map3",
+   "d_instructions_p50": {"map1": 162, "map2": 208, "map3": 212},
+   "d_p50_tsc": {"map1": 27, "map2": 54, "map3": 27},
+   "d_p50_rdpmc": {"map1": 45, "map2": 73, "map3": 50},
+   "d_p90_tsc": {"map1": -27, "map2": 0, "map3": 0},
+   "d_p90_rdpmc_net_of_null": {"map1": -18, "map2": 1, "map3": -20},
+   "d_width_tsc": {"map1": -54, "map2": -54, "map3": -27},
+   "d_width_rdpmc_net_of_null": {"map1": -66, "map2": -76, "map3": -63},
+   "decile_relocation": "the slowest decile's no-fallback share rises from 0.0-2.0% to 26.7-47.2%, i.e. the 90th percentile relocated onto the raised floor rather than the tail coming down",
+   "verdict": "The ONLY construct with a large, reproducible, cross-counter-consistent narrowing of P90 - P50: -66 to -76 core cycles (about -50 TSC ticks, about -18.5 ns) on all three maps against a null floor of 0 to +7. But P90 itself falls only -18 / +1 / -20 core cycles, which is under one quantum on two maps and zero on the third, and it costs +45..73 core cycles of P50. It does not meet the -2 quantum P90 bar and is NOT recommended for landing."
+  }
+ ],
+ "zero_signal_control": {
+  "construct": "null.so, rebuilt from a byte-for-byte copy of the baseline source into a separate file, carried through the whole pipeline: build, .text extraction, alignment check, pair_diff, and every A/B invocation interleaved rep-by-rep with the candidates",
+  "text_sha256": "264d1ceb3cf81192acb185bf7577c29c468a17feb3d7ea21902969fd51aa989b",
+  "text_identical_to_baseline": true,
+  "tsc_d_p50_ticks": {"map1": 0, "map2": 0, "map3": 0},
+  "tsc_d_p90_ticks": {"map1": 0, "map2": 0, "map3": 0},
+  "tsc_d_width_ticks": {"map1": 0, "map2": 0, "map3": 0},
+  "tsc_d_p90_run_range": {"map1": [-27, 27], "map2": [0, 0], "map3": [-27, 27]},
+  "tsc_per_round_d": "exactly 0 on every path subset on every map",
+  "rdpmc_d_p50_cycles": {"map1": -11, "map2": -1, "map3": 0},
+  "rdpmc_d_p90_cycles": {"map1": -4, "map2": 4, "map3": -1},
+  "rdpmc_d_width_cycles": {"map1": 0, "map2": 7, "map3": -5},
+  "rdpmc_d_p90_run_range": {"map1": [-32, 9], "map2": [-15, 18], "map3": [-18, 13]},
+  "instruction_d": "0 on every round on every map",
+  "conclusion": "the control reports no change, and it reproduces the baseline's run-to-run fluctuation run for run, which is what licenses paired within-run differencing; the rdpmc dP90 floor of -4 to +4 with a per-run range up to +/-33 is the threshold every candidate figure in this report is judged against"
+ },
+ "why_the_objective_is_unreachable_by_this_route": {
+  "band_arithmetic": "P50 sits on the no-fallback band and P90 on the blocked band; the entire blocked-band excess is +81 ticks (3 quanta), so route (a), cheapening the blocked band, has a hard ceiling of 3 quanta and the target needed 2 of them",
+  "what_the_blocked_excess_is_made_of": "+76 instructions executing at IPC 1.0, i.e. the excess is the work itself and not a branch artefact; the provable redundancy inside it is 9 instructions on all rounds plus 40 more on escape rounds, which is about -15 core cycles, at the null floor",
+  "why_constant_shaping_cannot_substitute": "flattening moves the 90th percentile onto the raised floor instead of bringing the tail down; measured, the decile's no-fallback share goes from 0-2% to 27-47% and P90 does not fall",
+  "the_one_pure_footprint_source": "waveTick, at 8 instructions and +54..81 ticks, is the only cost in the function that is mispredict-and-cold-call rather than work; removing it is worth about one eighth of the tail because 71% of wave rounds are not in the tail",
+  "residual_hypotheses_not_reachable_locally": "60-70 ns of the platform's 100 ns width is not reproduced by any local cache condition tested, so it cannot be attributed or attacked from this machine"
+ },
+ "platform_verification": {
+  "statement": "a tail change cannot be confirmed on the board tonight. The cumulative cost statistic pools on the order of 443,000 samples from 886 games, so a single publish moves it by about 0.06% of its weight. Confirmation needs several hundred further games. Nobody should re-read the board in an hour and conclude a knife failed."
+ },
+ "artifacts": {
+  "harness": ["tests/tail_path_bench.cpp", "tests/tail_icache_thrash.cpp"],
+  "derivation": ["sim/tail_trace_patch.py", "sim/tail_candidates.py"],
+  "analysis": ["sim/analyze_tail_width.py", "sim/analyze_tail_ab.py"],
+  "diffs": ["sim/reports/tail_width_wave.diff", "sim/reports/tail_width_all.diff"],
+  "candidate_source_sha256": {
+   "wave": "c4f977f90f9b072796cc0969a23423bb7d67f73124a4f4278557a226b9af1183",
+   "blk": "3e814588cfb0f3f09efa3134b35501068bf37a848d8973d9d32ee6aadaf514d4",
+   "all": "2af65638e22cc4f3dd56f7a4b865379b6320555549a267b048986f2b086bf6ae"
+  },
+  "not_committed_to": "src/player.cpp (another line owns behaviour changes there)"
+ }
+}
