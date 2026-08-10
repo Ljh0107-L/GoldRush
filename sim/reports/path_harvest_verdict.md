@@ -15,7 +15,7 @@ about consequence*, and the implementation is *affordable but income-negative*.
 | 2. gross upper bound | raw open-loop **1003.8 / 1071.2 / 1158.4** gold/game (map1/2/3); tripwire fired; honest ceiling after removing stock double-count **119.0 / 144.8 / 78.0** |
 | 3. instruction budget | Master's 183-instruction figure is arithmetically right but rests on a wrong premise; the true budget is **49–91 instructions**, and the realizable budget is **≤ 0** |
 | 4. decomposition → route | 55% short-target filler, 25% wrong start target, 20% chainable; cheap version ≈ 40–90 instr, full version ≈ 400–800 instr |
-| 5. joint feasibility with IPC golf | **cost side feasible, income side negative → do not do it.** Bank the golf as pure latency instead |
+| 5. joint feasibility with IPC golf | **cost side feasible, income side negative → do not do it.** Bank the golf as pure latency instead (**120–200 gold**, not 144–256) |
 | 6. honest conclusion | the bound does not survive contact with the closed loop; the real deficit is hit rate, and it is positional, not path-shaped |
 
 ## 1. What was measured, and how the two routes divide
@@ -66,6 +66,14 @@ error that was live in the briefing.
 | `frTu3` | Tundra | map3 | 6 | 5 | +245.83 | +245.8 | `src/CHANGELOG.md` |
 | `t1f1` | T-1 | map1 | 6 | 1 | −274.33 | −274.3 | Master session log `ac33eaaa-180` |
 | `t1f2` | T-1 | map2 | 6 | 1 | −106.67 | −106.7 | Master session log `ac33eaaa-180` |
+
+> **map2 sample correction (Master, 8.10).** The n=6 figure above is what I could *identify*; the
+> better estimate is the n=12 top-up: **2 wins / 10 losses, −164.6 ± 61.6 SE (2.67σ, stable loss)**,
+> also from session log `ac33eaaa-180` and likewise never recorded in the repo until now. map3's
+> n=12 top-up is −102.9 ± 63.5 (1.62σ, undecidable), consistent with the identified −104.0.
+> **Use −164.6 (n=12) as the primary figure and −106.67 (n=6, identified) as the secondary.** The
+> consequence is material: at −165 rather than −107, map2 moves from "the golf budget flips it" to
+> "marginal". Archiving lesson: platform games whose results never reach the repo are games not run.
 | `t1f3` | T-1 | map3 | 6 | 1 | −104.00 | −104.0 | Master session log `ac33eaaa-180` |
 
 Provenance caveat per 军规 27: the three `frTu` anchors are repo-verifiable; the three `t1f`
@@ -221,9 +229,15 @@ target 10–20 = 13.1–23.3 ns = 144–256 gold).
 
 Zero latency cost multiplied by negative income is still negative. **The combination is therefore
 rejected, on income rather than on cost.** The correct use of the golf budget is to bank all of it
-as pure latency: 90–160 instructions ⇒ 144–256 gold/game at the crossover rate, with no behavioural
-risk and no `pair_diff` exposure. On the frozen build's own battlefields that is enough to flip
-T-1 map3 (−104.0) and T-1 map2 (−106.7), and not enough to flip either map1 (−274.3 / −219.2).
+as pure latency. **But discount the top of the range** (Master, 8.10): 11 gold/ns holds only inside
+the ±20ns crossover band, and 13.1–23.3ns pushes us from parity to the band edge, where the rate
+falls — exactly the `INFRA §2.6` ChV lesson. Linear extrapolation gives 144–256 gold; the honest
+figure is **120–200 gold/game**, and that is what should be quoted.
+
+Against the frozen build's own battlefields that flips T-1 map3 (−102.9 ± 63.5, n=12) comfortably,
+leaves T-1 map2 **marginal** (−164.6 ± 61.6, n=12 — not the −106.7 I first quoted), and flips
+neither map1 (−274.3 T-1 / −219.2 Tundra). So golf alone secures at most one battlefield and
+contests a second.
 
 ## 6. Corrections to the numbers used to commission this round (军规 27)
 
