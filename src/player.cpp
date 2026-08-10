@@ -19,7 +19,7 @@
 // 3. 对每个单位(双全管线, 无轮换):
 //    3.1 富度门: 持金≥100 才把炸弹并入阻挡(穷单位踩弹烧 10%×0=0, 弹透明)
 //    3.2 扫描: 5×5 窗口 5 行就地 AVX 载入 → goldm 25位(金) / bombm 15位(弹, 仅±1行)
-//    3.3 目标: goldm 按环距优先级 pext 重排 + ctz = 最近金格; 无金 → 中央生成峰双驻守
+//    3.3 目标: ≥3 金格按(金额, 环距)选最大、同额取最近; 无金 → 中央生成峰双驻守
 //    3.4 站金(d==0): 折返双吃 —— 出格再回格, 链式收 35% 残值
 //    3.5 行进: LUT 三步导向(constexpr 表, 早到折返已预折叠) + pass01 途经验证;
 //        受阻(三图实测 24.5%-37.3%) → 单步谨慎 + 下轮自愈; 逃逸四向掩码+ctz 恒形选首路
@@ -113,9 +113,10 @@ constexpr SctT SCT;
 struct TabsT {                                   // 表合一: 单基址消灭 xmm 指针停放(§3.4)
     int8_t rclv[21];                             // 行钳位
     int8_t d5[25], m5[25];                       // 除模5
-    uint8_t remap[26];                           // pext 环距重排
-    uint16_t bestrow[5][32];                     // 行级选择: 切片→(环距优先级<<5|窗位)
-    constexpr TabsT() : rclv(), d5(), m5(), remap(), bestrow() {
+    uint8_t remap[26];                           // 环距优先级→窗位
+    int8_t keybias[5][5][8];                     // 金额主键 + 环距次键的低位偏置
+    uint16_t bestrow[5][32];                     // 标量参考: 切片→(环距优先级<<5|窗位)
+    constexpr TabsT() : rclv(), d5(), m5(), remap(), keybias(), bestrow() {
         for (int x = 0; x < 21; ++x) { int t = x - 2; rclv[x] = (int8_t)(t < 0 ? 0 : (t > 16 ? 16 : t)); }
         for (int x = 0; x < 25; ++x) { d5[x] = (int8_t)(x / 5); m5[x] = (int8_t)(x % 5); }
         constexpr uint8_t rm[26] = {
@@ -123,6 +124,13 @@ struct TabsT {                                   // 表合一: 单基址消灭 x
         for (int x = 0; x < 26; ++x) remap[x] = rm[x];
         uint8_t prio[25] = {};
         for (int k = 0; k < 25; ++k) prio[rm[k]] = (uint8_t)k;
+        for (int sh = 0; sh < 5; ++sh)
+            for (int i = 0; i < 5; ++i)
+                for (int lane = 0; lane < 8; ++lane) {
+                    int j = lane + 2 - sh;
+                    keybias[sh][i][lane] =
+                        (int8_t)((unsigned)j < 5u ? 31 - prio[i * 5 + j] : 0);
+                }
         for (int i = 0; i < 5; ++i)
             for (int s = 0; s < 32; ++s) {
                 uint16_t best = 0xFFFF;
@@ -402,14 +410,17 @@ GameOutput decide(const GameInput* in) {
 
 
         // ---- 扫描: 5 行就地载入 + 行级 LUT 选择(pack→pext 串行链退役) ----
-        uint16_t rowsel[5];
+        uint16_t bv;
 #if defined(__AVX2__)
         {
-            const __m256i v2s = _mm256_set1_epi32(2);   // 挑食≥3；现构型简单降到≥2会按距离劫持高值靶，门B判负
+            const __m256i v2s = _mm256_set1_epi32(2);   // 挑食≥3；候选内金额最大，同额环距最近
             const __m256i vm3 = _mm256_set1_epi32(-3);
             int lsh = SCT.lsh[sc];
             uint32_t colv = SCT.colv[sc];
             uint32_t bombm = 0;
+            uint32_t rawv = (colv << lsh) >> 2;
+            unsigned anyg = 0;
+            __m256i vbest = _mm256_set1_epi32(INT32_MIN);
             int cb = SCT.cb[sc];
             (void)0;                             // (弹片写已改行内 pop-loop, 见扫描尾)
 #pragma GCC unroll 5
@@ -429,10 +440,23 @@ GameOutput decide(const GameInput* in) {
                     _mm256_cmpeq_epi32(vrow, vm3)));
 #endif
                 uint32_t rv = colv & rowok;
-                rowsel[i] = TT.bestrow[i][(((g8 << 2) >> lsh) & 31u) & rv];
+                uint32_t gm = g8 & rawv & rowok;
+                __m256i bias = _mm256_cvtepi8_epi32(
+                    _mm_loadl_epi64((const __m128i*)TT.keybias[lsh][i]));
+                __m256i key = _mm256_add_epi32(_mm256_slli_epi32(vrow, 5), bias);
+                vbest = _mm256_mask_max_epi32(vbest, (__mmask8)gm, vbest, key);
+                anyg |= gm;
                 bombm |= ((((b8 << 2) >> lsh) & 31u) & rv) << (i * 5);
                 // 弹记全窗: LUT 一轮 3 步, ±1 行记法让第 2/3 步踩盲区雷(158287 烧 335 案)
             }
+            __m128i mx = _mm_max_epi32(_mm256_castsi256_si128(vbest),
+                                       _mm256_extracti128_si256(vbest, 1));
+            mx = _mm_max_epi32(mx, _mm_shuffle_epi32(mx, 0x4e));
+            mx = _mm_max_epi32(mx, _mm_shuffle_epi32(mx, 0xb1));
+            int rank = 31 - (_mm_cvtsi128_si32(mx) & 31);
+            int anym = -(int)(anyg != 0);
+            rank &= anym;
+            bv = (uint16_t)((TT.remap[rank] & anym) | (0xFFFF & ~anym));
 #pragma GCC unroll 5
             for (int i = 0; i < 5; ++i) {        // 弹行片写(空片写=无操作, 零分支;
                 int rr = sr - 2 + i;             //  越界行 bsl 恒 0, 写进垫行无害免钳位)
@@ -443,7 +467,8 @@ GameOutput decide(const GameInput* in) {
             }
         }
 #else
-        rowsel[0] = rowsel[1] = rowsel[2] = rowsel[3] = rowsel[4] = 0xFFFF;
+        bv = 0xFFFF;
+        int maxg = 2;
         for (int i = 0; i < 5; ++i) {            // 标量参考(仅本机测试)
             int rr = sr - 2 + i;
             if ((unsigned)rr >= (unsigned)N) continue;
@@ -451,9 +476,10 @@ GameOutput decide(const GameInput* in) {
                 int cc = sc - 2 + j;
                 if ((unsigned)cc >= (unsigned)N) continue;
                 int v = in->grid[rr][cc];
-                if (v > 2) {
+                if (v > maxg) { maxg = v; bv = 0xFFFF; }
+                if (v == maxg && v > 2) {
                     uint16_t e = TT.bestrow[i][1u << j];
-                    if (e < rowsel[i]) rowsel[i] = e;
+                    if (e < bv) bv = e;
                 } else if (v == -3) g_s.bombbit[rr + 3] |= 1u << (cc + 1);
             }
         }
@@ -464,10 +490,6 @@ GameOutput decide(const GameInput* in) {
         int tgr, tgc;
         int blind;
         {
-            uint16_t b01 = rowsel[0] < rowsel[1] ? rowsel[0] : rowsel[1];
-            uint16_t b23 = rowsel[2] < rowsel[3] ? rowsel[2] : rowsel[3];
-            uint16_t b0123 = b01 < b23 ? b01 : b23;
-            uint16_t bv = b0123 < rowsel[4] ? b0123 : rowsel[4];
             int w = bv & 31;
             // 三路目标: 整格(≥3) > 站金残值(标量兜底, 折返双吃) > 锚点
             int has = -(int)(bv != 0xFFFF);
