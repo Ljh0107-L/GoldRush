@@ -123,8 +123,50 @@ def flips(margins: Sequence[float], shift: float) -> int:
     A margin of exactly 0 counts as a loss, so shifting -100 up by +100 lands on 0 and
     must NOT be counted as a flip.  That boundary is the off-by-one this function is most
     likely to get wrong, and ``validate`` pins it.
+
+    This is the EXACT estimand for a candidate worth ``shift`` gold of margin, not an
+    approximation: it counts precisely the games that change hands.
     """
     return sum(1 for m in margins if (m > 0) != ((m + shift) > 0))
+
+
+def band_density(margins: Sequence[float], half_width: float) -> Mapping[str, float]:
+    """Estimate the margin density at zero from a SYMMETRIC band, with its SE.
+
+    ``P(|margin| <= w) ~= 2*w*f(0)`` for small ``w``, so ``f(0) ~= share / (2w)``.  This is
+    a wider-bandwidth, lower-variance alternative to differentiating the flip count, and it
+    is what makes a 30-game batch usable at all: at one game per team, a +40 shift is
+    expected to flip well under one game, whereas the +/-200 band holds several.
+
+    Two properties the caller must respect:
+      * It is SYMMETRIC, so it averages the density just below and just above zero.  The
+        flip count for a positive shift samples only the interval ``(-shift, 0]``.  If the
+        margin distribution is denser just below zero than just above -- which is what a
+        team that loses more than it wins looks like -- then the flip count exceeds this
+        estimate, and this estimate UNDERSTATES the value of a positive-margin candidate.
+        ``analyse`` reports the ratio so the direction is never left implicit.
+      * It carries bandwidth bias: it is only equal to ``f(0)`` insofar as the density is
+        flat across the band.  Agreement across two half-widths is evidence of flatness.
+    """
+    n = len(margins)
+    if n == 0 or half_width <= 0:
+        return {"n": 0}
+    k = sum(1 for m in margins if abs(m) <= half_width)
+    share = k / n
+    se_share = math.sqrt(share * (1 - share) / n)
+    lo, hi = wilson(k, n)
+    return {
+        "n": n,
+        "half_width": half_width,
+        "count": k,
+        "share": share,
+        "wilson95_share": [lo, hi],
+        # pp of win rate per gold of margin
+        "pp_per_gold": 100.0 * share / (2.0 * half_width),
+        "pp_per_gold_se": 100.0 * se_share / (2.0 * half_width),
+        "pp_per_gold_wilson95": [100.0 * lo / (2.0 * half_width),
+                                 100.0 * hi / (2.0 * half_width)],
+    }
 
 
 def _summary(values: Sequence[float]) -> Mapping[str, float]:
@@ -348,6 +390,18 @@ def analyse(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
         entry["equal_weight_n_teams"] = s["n"]
         slope[str(shift)] = entry
 
+    # Density estimator: lower variance than differentiating the flip count, which is what
+    # makes a 30-game batch usable. Reported alongside the flip count with the direction of
+    # their disagreement made explicit.
+    density = {str(w): band_density(margins, w) for w in (100, 200, 400)}
+    ratio: dict[str, Any] = {}
+    for shift in SHIFTS:
+        flip_pp_per_gold = slope[str(shift)]["pp_per_gold"]
+        for w, dens in density.items():
+            key = f"flip{shift}_over_band{w}"
+            base = dens.get("pp_per_gold")
+            ratio[key] = (flip_pp_per_gold / base) if base else float("nan")
+
     return {
         "purpose": "measure dP(win)/d(margin) empirically so the admission gate is a "
                    "recalibratable quantity rather than a hard-coded constant",
@@ -378,6 +432,14 @@ def analyse(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
                     "is not well below it, one game per team cannot resolve band membership.",
         },
         "slope": slope,
+        "density_slope": density,
+        "flip_over_density_ratio": ratio,
+        "estimator_note": "the flip count is the EXACT gain for a candidate of that size; "
+                          "the symmetric band density is a lower-variance estimator of the "
+                          "same slope but averages both sides of zero. A ratio above 1 means "
+                          "the distribution is denser just BELOW zero than just above -- a "
+                          "queue of near-losses waiting to be converted -- and the band "
+                          "method therefore UNDERSTATES a positive-margin candidate.",
     }
 
 
@@ -414,6 +476,27 @@ def render(report: Mapping[str, Any]) -> None:
               f"{v['pp_per_gold']:9.4f}")
     print("\n  READ: if pp/gold is roughly constant across shifts, marginal gold is priced "
           "LINEARLY and no hard threshold gate is justified.")
+    print("\n-- density estimator (symmetric band; lower variance, usable at small n) --")
+    for w, d in report["density_slope"].items():
+        if not d.get("n"):
+            continue
+        lo, hi = d["pp_per_gold_wilson95"]
+        print(f"  +/-{w:>3}: {d['count']:4d}/{d['n']} in band -> {d['pp_per_gold']:.4f} pp/gold "
+              f"+-{d['pp_per_gold_se']:.4f}  Wilson95 [{lo:.4f}, {hi:.4f}]")
+    r = report["flip_over_density_ratio"]
+    key = "flip100_over_band200"
+    if key in r:
+        print(f"  flip(+100) / band(+/-200) = {r[key]:.2f}  "
+              f"({'flip is HIGHER: denser just below zero, band understates a gain' if r[key] > 1 else 'flip is lower'})")
+    print("\n-- gold required to close a given win-rate gap, under each estimator --")
+    for gap in (17.6,):
+        for label, ppg in (("flip(+100)", report["slope"]["100"]["pp_per_gold"]),
+                           ("band(+/-200)", report["density_slope"]["200"].get("pp_per_gold")),
+                           ("per-team equal wt(+100)",
+                            report["slope"]["100"]["equal_weight_per_team_pp"] / 100.0)):
+            if not ppg:
+                continue
+            print(f"  gap {gap:.1f}pp via {label:24s}: {gap / ppg:7.0f} gold/game")
 
 
 def main(argv: Sequence[str] | None = None) -> int:

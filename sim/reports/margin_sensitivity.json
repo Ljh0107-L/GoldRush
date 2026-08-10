@@ -14,6 +14,74 @@
   "our_build": "MIXED (~hundreds of builds) -- NOT the in-service build; usable for existence, not as any single build's distribution",
   "score_definition": "gross gold - vision spend, from the final end phase"
  },
+ "density_slope": {
+  "100": {
+   "count": 34,
+   "half_width": 100,
+   "n": 333,
+   "pp_per_gold": 0.05105105105105105,
+   "pp_per_gold_se": 0.008296190325097161,
+   "pp_per_gold_wilson95": [
+    0.03699403614328346,
+    0.06964599881676897
+   ],
+   "share": 0.1021021021021021,
+   "wilson95_share": [
+    0.07398807228656692,
+    0.13929199763353795
+   ]
+  },
+  "200": {
+   "count": 68,
+   "half_width": 200,
+   "n": 333,
+   "pp_per_gold": 0.05105105105105105,
+   "pp_per_gold_se": 0.005522694904396247,
+   "pp_per_gold_wilson95": [
+    0.041098848662535346,
+    0.06268999452072943
+   ],
+   "share": 0.2042042042042042,
+   "wilson95_share": [
+    0.16439539465014139,
+    0.2507599780829177
+   ]
+  },
+  "400": {
+   "count": 144,
+   "half_width": 400,
+   "n": 333,
+   "pp_per_gold": 0.05405405405405405,
+   "pp_per_gold_se": 0.00339356217793191,
+   "pp_per_gold_wilson95": [
+    0.04753633227791823,
+    0.060764423923216064
+   ],
+   "share": 0.43243243243243246,
+   "wilson95_share": [
+    0.3802906582233459,
+    0.4861153913857285
+   ]
+  }
+ },
+ "estimator_note": "the flip count is the EXACT gain for a candidate of that size; the symmetric band density is a lower-variance estimator of the same slope but averages both sides of zero. A ratio above 1 means the distribution is denser just BELOW zero than just above -- a queue of near-losses waiting to be converted -- and the band method therefore UNDERSTATES a positive-margin candidate.",
+ "flip_over_density_ratio": {
+  "flip100_over_band100": 1.0588235294117645,
+  "flip100_over_band200": 1.0588235294117645,
+  "flip100_over_band400": 1.0,
+  "flip150_over_band100": 1.215686274509804,
+  "flip150_over_band200": 1.215686274509804,
+  "flip150_over_band400": 1.1481481481481484,
+  "flip200_over_band100": 1.2058823529411764,
+  "flip200_over_band200": 1.2058823529411764,
+  "flip200_over_band400": 1.1388888888888888,
+  "flip400_over_band100": 1.4558823529411764,
+  "flip400_over_band200": 1.4558823529411764,
+  "flip400_over_band400": 1.3750000000000002,
+  "flip40_over_band100": 1.0294117647058825,
+  "flip40_over_band200": 1.0294117647058825,
+  "flip40_over_band400": 0.9722222222222223
+ },
  "games": 333,
  "histogram": {
   "counts": {
