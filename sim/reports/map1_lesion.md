@@ -1,4 +1,70 @@
-# map1's real lesion: the dispatch race, not the walls
+# map1's real lesion: collection quality and order-sensitivity (title corrected — see erratum)
+
+> ## 🔴 ERRATUM (orchestrator, same day, after 6 confirmatory platform games)
+>
+> **The headline causal claim of this report is WITHDRAWN. Every measurement in it is correct and
+> reproduces exactly; the *interpretation* of `A` is not.**
+>
+> `A` is defined as `(ours − theirs)` on rounds **we** move first — but on those rounds **they are
+> moving second**. So `A > 0` compares our first-mover income against their *second*-mover income:
+> it is largely the value of the first-mover slot itself, **not** a measure of collection skill. The
+> claim "`A > 0` … we do not collect badly, we just don't move first enough" **does not follow**.
+>
+> At *matched* action order, over the same 30 games / 14,970 rounds, they beat us in **both**
+> conditions:
+>
+> | condition | ours | theirs | gap |
+> |---|---:|---:|---:|
+> | both moving **first** | 4.0793/round | **4.6740** | theirs **+14.6%** |
+> | both moving **second** | 1.7128/round | **2.8336** | theirs **+65.4%** |
+>
+> The correct decomposition of the −286.1 is therefore:
+>
+> | term | gold/game |
+> |---|---:|
+> | pure **collection** deficit, action order held fixed | **−411.1** |
+> | our **action-order advantage** (`f` = 0.568 > 0.5) | **+124.4** |
+> | sum | −286.7 (observed −286.1) |
+>
+> **The conclusion inverts: our first-mover rate 56.8% is higher than the opponents' 43.2%, so the
+> race is a net *advantage* to us, and we lose anyway. The lesion is collection quality, partially
+> masked by that advantage.** `f* = 0.7036` remains arithmetically exact but frames a collection
+> problem as a race problem; its true meaning is "at this collection level we would need to win 70%
+> of races to break even".
+>
+> The sharper diagnosis the same data supports — **we are abnormally order-sensitive**:
+>
+> | entity | first-mover income | second-mover income | ratio | loss when second |
+> |---|---:|---:|---:|---:|
+> | **ours** | 4.0793 | **1.7128** | **2.38×** | **−58.0%** |
+> | T-1 / Tundra | 4.6740 | 2.8336 | 1.65× | −39.4% |
+> | Ausdroid | 4.5556 (n=9, unreliable) | 3.3166 | 1.37× | −27.2% |
+>
+> We are ~1.44× more order-sensitive than the two strong opponents and the most fragile second mover
+> of the three. This is consistent with positional income: we camp the central generation peak, so an
+> opponent moving first strips the peak cells before we arrive, whereas their chained motion depends
+> less on holding one spot. **The implied repair is target selection — avoid cells an opponent moving
+> first can take — not latency.**
+>
+> **Survives unchanged:** the localization (deficit accrues after round ~120), Lead A discarded, Lead
+> B discarded as supply, the stock/flow scope correction, the +40 ns fallback dose-response, the
+> 9.4–12.0 gold/ns dispatch transfer function, and the C1/C2 *gold values* (the measured marginal
+> value of flipping one round, 3.289 gold, stands). **Withdrawn:** "the lesion is the dispatch race",
+> and with it C1/C2's status — they are **compensation, not cure**, and buy ≈0 against the field,
+> where our `f` is already 0.997.
+>
+> Confirmed on 6 fresh platform games vs Ausdroid (`adf1a`..`adf1f`, ids 185257/185259/185262/
+> 185264/185266/185267, `f18064c` SHA256 `e88e5e80…395695dbad`, FP16=0): `f` = 0.9970, net
+> **+85.8 ± 64.5, 4W/2L** (1.33σ, undecidable). Also established there: the "1W-14L vs Ausdroid"
+> record is a **build-mixture artifact** — 14 old builds average −473.8 (1/13) while `f18064c`
+> averages +85.8 (4/2), a swing of **+559.6 gold/game**.
+>
+> Process note: the identity's arithmetic was verified (closure, `f`, `A`, `B`, all 7 holdout splits)
+> but its **semantics** were not — the exact failure this report itself warns about when it says an
+> accounting identity is algebra, not causality. The JSON already contained `our_income_when_first`
+> and `their_income_when_they_first`; subtracting them exposes it.
+>
+> ---
 
 > Round of 2026-08-10. **Zero platform games consumed** — this reads archived logs only.
 > Baseline pinned to **`f18064c`** (`git show f18064c:src/player.cpp`, `shasum -a 256` =
