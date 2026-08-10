@@ -86,6 +86,9 @@ constexpr uint32_t BAKED_W[3][N] = {
      0x00003de0u, 0x0000e038u, 0x0000e038u, 0x00000000u, 0x00000000u},
 };
 constexpr uint32_t INTERIOR = 0x0003FFFEu;       // bit 1..17 = c 0..16
+// 锁图后复核墙表的窗口长度。实测误锁矛盾在 round 3-4 被发现, 取 24 留 6 倍余量;
+// 超窗后 FAST 稳态只付 mode/round 两次比较, 不再载入 visited。
+constexpr int VERIFY_ROUNDS = 24;
 
 
 
@@ -250,23 +253,37 @@ void slowTick(const GameInput* in) {
     int rad = g_s.vp_buy == 2 ? 4 : 2;           // 上轮买了 9×9 → 本轮窗口半径 4
     g_s.vp_buy = 0;
     unsigned learned = 0;
-    if (g_s.map_id < 0) {                        // 未锁图才需要学(锁图后墙全知)
-        for (int u = 0; u < 2; ++u) {            // 站格单bit门控, 按单位各自判(站过⇒窗口已学)
-            int sr = in->my_units[u].row, sc = in->my_units[u].col;
-            if (g_s.visited[sr] >> (sc + 1) & 1u) continue;
-            learned = 1;
-            int r0 = sr - rad < 0 ? 0 : sr - rad, r1 = sr + rad > 16 ? 16 : sr + rad;
-            int c0 = sc - rad < 0 ? 0 : sc - rad, c1 = sc + rad > 16 ? 16 : sc + rad;
-            for (int r = r0; r <= r1; ++r)
-                for (int c = c0; c <= c1; ++c) {
-                    int v = in->grid[r][c];
-                    if (v != -5) {
-                        g_s.seen[r] |= 1u << (c + 1);
-                        if (v == -1) g_s.bpw[r + 1] |= 1u << (c + 1);
-                    }
+    unsigned conflict = 0;
+    for (int u = 0; u < 2; ++u) {                // 站格单bit门控, 按单位各自判(站过⇒窗口已学)
+        int sr = in->my_units[u].row, sc = in->my_units[u].col;
+        if (g_s.visited[sr] >> (sc + 1) & 1u) continue;
+        learned = 1;
+        int r0 = sr - rad < 0 ? 0 : sr - rad, r1 = sr + rad > 16 ? 16 : sr + rad;
+        int c0 = sc - rad < 0 ? 0 : sc - rad, c1 = sc + rad > 16 ? 16 : sc + rad;
+        for (int r = r0; r <= r1; ++r)
+            for (int c = c0; c <= c1; ++c) {
+                int v = in->grid[r][c];
+                if (v == -5) continue;           // 雾: 无信息
+                // grid 语义: -5雾 -3弹 -1墙 0空 >=1金。只有 -1 是墙; 炸弹/金币/空地
+                // 一律非墙 —— 若把弹或金误读成墙, 已知图上会每局误退, 比原病更糟。
+                unsigned isw = (unsigned)(v == -1);
+                if (g_s.map_id >= 0) {           // 已锁图: 只比对, 不改表
+                    conflict |= isw ^ ((g_s.bpw[r + 1] >> (c + 1)) & 1u);
+                } else {                         // 未锁图: 照旧学墙 + 记 seen
+                    g_s.seen[r] |= 1u << (c + 1);
+                    if (isw) g_s.bpw[r + 1] |= 1u << (c + 1);
                 }
-            g_s.visited[sr] |= 1u << (sc + 1);
+            }
+        g_s.visited[sr] |= 1u << (sc + 1);
+    }
+    if (__builtin_expect(conflict != 0, 0)) {    // 锁定表被实测否证 → 不可逆退回懒学习
+        g_s.map_id = -2; g_s.cand = 0; g_s.mode = 2;
+        for (int r = 0; r < N; ++r) {            // 清掉幻影墙: 挡住合法走位的才是有害的那半
+            g_s.bpw[r + 1] = 0xFFFC0001u;        // 只留边界哨兵, 与新局重置同形
+            g_s.seen[r] = 0; g_s.visited[r] = 0; // 重新观测, 保守假设「什么都还不知道」
         }
+        fixAnchor(0); fixAnchor(1);
+        return;                                  // 本轮不再走淘汰/退场逻辑
     }
     if (g_s.map_id == -1 && learned) {           // 指纹淘汰赛(seen 没变就不必重判)
         for (int m = 0; m < 3; ++m) {
@@ -388,12 +405,19 @@ GameOutput decide(const GameInput* in) {
         }
     }
 
-    if (__builtin_expect(g_s.mode != 0, 0)) {    // 慢开局层(学墙/指纹/锚点/vp)
-        if (g_s.mode == 1 ||                     // 懒学习长驻期: 站格门控内联, 静轮免调用
-            !(g_s.visited[in->my_units[0].row] >> (in->my_units[0].col + 1) & 1u) ||
-            !(g_s.visited[in->my_units[1].row] >> (in->my_units[1].col + 1) & 1u))
-            slowTick(in);
-    }
+    // 慢开局层(学墙/指纹/锚点/vp)。原门控为 `mode != 0` 外套站格门控, 故一旦锁图转 FAST,
+    // slowTick 再不被调用 —— 这正是误锁不可自愈的根因(实测 −689 金/局, 静默)。
+    // 现改为: mode==1 恒进; mode==2(陌生图懒学习)照旧按站格门控长驻; **FAST 只在开局
+    // VERIFY_ROUNDS 轮内**按站格门控进入, 用于复核锁定墙表。
+    // 为什么限窗: 误锁矛盾实测在 **round 3-4** 就被观测到(mimic1/2/3 × 5 seed 全部一致),
+    // 而不限窗会让已知图整局跑 ~90 次窗口扫描、白付约 21-24 cycles/调用(≈ −77 金)。
+    // 限窗后仍留 6 倍余量。漏报面是"仅在极少踏足的外围区域与烘焙表矛盾"的图 —— 而那种
+    // 矛盾本身几乎不产生损失(错墙只在我们实际经过的区域才挡路), 故这是与代价结构匹配的取舍。
+    if (__builtin_expect(g_s.mode == 1
+            || ((g_s.mode == 2 || in->round <= VERIFY_ROUNDS)
+                && (!(g_s.visited[in->my_units[0].row] >> (in->my_units[0].col + 1) & 1u)
+                 || !(g_s.visited[in->my_units[1].row] >> (in->my_units[1].col + 1) & 1u))), 0))
+        slowTick(in);
 
     GameOutput out;                              // 全字段必写, 免 SAFE_OUT 拷贝
 
@@ -533,7 +557,7 @@ GameOutput decide(const GameInput* in) {
 // 布局归一化死垫：本次改写缩小了 decide, 使 moveDecision 入口模 64 掉出已证最优档 0x10。
 // 四档扫描已证 0x20/0x30 各 +11.67ns, 故补 48B 永不执行的 nop 把入口移回 0x10 档,
 // 否则测到的 cycles 差会被布局税污染。改动 decide 体积后必须重新核对并调整垫长。
-asm(".space 48, 0x90");
+asm(".space 96, 0x90");
 
 extern "C" GameOutput moveDecision(const GameInput* input) {
     try {

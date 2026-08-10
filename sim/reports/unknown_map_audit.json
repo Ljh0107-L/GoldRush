@@ -1,0 +1,456 @@
+{
+  "alerts": [],
+  "hard_failures": [],
+  "known_map_net_mean": 1719.3333333333333,
+  "results": {
+    "anchorwall": {
+      "all_stay_rounds_mean": 0.0,
+      "fingerprint_verdict": null,
+      "net_mean": 1466.6666666666667,
+      "per_seed": [
+        {
+          "all_stay_rounds": 0,
+          "net_gold": 1500,
+          "pickup": 1596,
+          "rounds": 500,
+          "seed": "0",
+          "stay_or_blocked_steps": 686,
+          "steps": 3000
+        },
+        {
+          "all_stay_rounds": 0,
+          "net_gold": 1662,
+          "pickup": 1677,
+          "rounds": 500,
+          "seed": "1",
+          "stay_or_blocked_steps": 723,
+          "steps": 3000
+        },
+        {
+          "all_stay_rounds": 0,
+          "net_gold": 1238,
+          "pickup": 1296,
+          "rounds": 500,
+          "seed": "2",
+          "stay_or_blocked_steps": 841,
+          "steps": 3000
+        }
+      ],
+      "rounds_min": 500,
+      "stay_or_blocked_pct": 25.0,
+      "walls": 26
+    },
+    "asym": {
+      "all_stay_rounds_mean": 1.0,
+      "fingerprint_verdict": null,
+      "net_mean": 1728.0,
+      "per_seed": [
+        {
+          "all_stay_rounds": 0,
+          "net_gold": 1606,
+          "pickup": 1631,
+          "rounds": 500,
+          "seed": "0",
+          "stay_or_blocked_steps": 669,
+          "steps": 3000
+        },
+        {
+          "all_stay_rounds": 3,
+          "net_gold": 1703,
+          "pickup": 1769,
+          "rounds": 500,
+          "seed": "1",
+          "stay_or_blocked_steps": 668,
+          "steps": 3000
+        },
+        {
+          "all_stay_rounds": 0,
+          "net_gold": 1875,
+          "pickup": 1920,
+          "rounds": 500,
+          "seed": "2",
+          "stay_or_blocked_steps": 711,
+          "steps": 3000
+        }
+      ],
+      "rounds_min": 500,
+      "stay_or_blocked_pct": 22.755555555555556,
+      "walls": 27
+    },
+    "corridor": {
+      "all_stay_rounds_mean": 0.0,
+      "fingerprint_verdict": null,
+      "net_mean": 1715.3333333333333,
+      "per_seed": [
+        {
+          "all_stay_rounds": 0,
+          "net_gold": 1881,
+          "pickup": 2050,
+          "rounds": 500,
+          "seed": "0",
+          "stay_or_blocked_steps": 1021,
+          "steps": 3000
+        },
+        {
+          "all_stay_rounds": 0,
+          "net_gold": 1467,
+          "pickup": 1587,
+          "rounds": 500,
+          "seed": "1",
+          "stay_or_blocked_steps": 1136,
+          "steps": 3000
+        },
+        {
+          "all_stay_rounds": 0,
+          "net_gold": 1798,
+          "pickup": 1811,
+          "rounds": 500,
+          "seed": "2",
+          "stay_or_blocked_steps": 1186,
+          "steps": 3000
+        }
+      ],
+      "rounds_min": 500,
+      "stay_or_blocked_pct": 37.144444444444446,
+      "walls": 79
+    },
+    "dense": {
+      "all_stay_rounds_mean": 10.333333333333334,
+      "fingerprint_verdict": null,
+      "net_mean": 1337.6666666666667,
+      "per_seed": [
+        {
+          "all_stay_rounds": 2,
+          "net_gold": 1345,
+          "pickup": 1525,
+          "rounds": 500,
+          "seed": "0",
+          "stay_or_blocked_steps": 1145,
+          "steps": 3000
+        },
+        {
+          "all_stay_rounds": 24,
+          "net_gold": 1218,
+          "pickup": 1387,
+          "rounds": 500,
+          "seed": "1",
+          "stay_or_blocked_steps": 1360,
+          "steps": 3000
+        },
+        {
+          "all_stay_rounds": 5,
+          "net_gold": 1450,
+          "pickup": 1514,
+          "rounds": 500,
+          "seed": "2",
+          "stay_or_blocked_steps": 1202,
+          "steps": 3000
+        }
+      ],
+      "rounds_min": 500,
+      "stay_or_blocked_pct": 41.18888888888889,
+      "walls": 81
+    },
+    "map1": {
+      "all_stay_rounds_mean": 0.3333333333333333,
+      "fingerprint_verdict": null,
+      "net_mean": 1735.3333333333333,
+      "per_seed": [
+        {
+          "all_stay_rounds": 0,
+          "net_gold": 1699,
+          "pickup": 1781,
+          "rounds": 500,
+          "seed": "0",
+          "stay_or_blocked_steps": 739,
+          "steps": 3000
+        },
+        {
+          "all_stay_rounds": 0,
+          "net_gold": 1841,
+          "pickup": 1875,
+          "rounds": 500,
+          "seed": "1",
+          "stay_or_blocked_steps": 718,
+          "steps": 3000
+        },
+        {
+          "all_stay_rounds": 1,
+          "net_gold": 1666,
+          "pickup": 1926,
+          "rounds": 500,
+          "seed": "2",
+          "stay_or_blocked_steps": 796,
+          "steps": 3000
+        }
+      ],
+      "rounds_min": 500,
+      "stay_or_blocked_pct": 25.033333333333335,
+      "walls": 40
+    },
+    "map2": {
+      "all_stay_rounds_mean": 0.6666666666666666,
+      "fingerprint_verdict": null,
+      "net_mean": 1814.0,
+      "per_seed": [
+        {
+          "all_stay_rounds": 2,
+          "net_gold": 1954,
+          "pickup": 1992,
+          "rounds": 500,
+          "seed": "0",
+          "stay_or_blocked_steps": 602,
+          "steps": 3000
+        },
+        {
+          "all_stay_rounds": 0,
+          "net_gold": 1688,
+          "pickup": 1852,
+          "rounds": 500,
+          "seed": "1",
+          "stay_or_blocked_steps": 634,
+          "steps": 3000
+        },
+        {
+          "all_stay_rounds": 0,
+          "net_gold": 1800,
+          "pickup": 1831,
+          "rounds": 500,
+          "seed": "2",
+          "stay_or_blocked_steps": 718,
+          "steps": 3000
+        }
+      ],
+      "rounds_min": 500,
+      "stay_or_blocked_pct": 21.711111111111112,
+      "walls": 24
+    },
+    "map3": {
+      "all_stay_rounds_mean": 2.6666666666666665,
+      "fingerprint_verdict": null,
+      "net_mean": 1608.6666666666667,
+      "per_seed": [
+        {
+          "all_stay_rounds": 3,
+          "net_gold": 1361,
+          "pickup": 2011,
+          "rounds": 500,
+          "seed": "0",
+          "stay_or_blocked_steps": 979,
+          "steps": 3000
+        },
+        {
+          "all_stay_rounds": 1,
+          "net_gold": 1433,
+          "pickup": 2052,
+          "rounds": 500,
+          "seed": "1",
+          "stay_or_blocked_steps": 865,
+          "steps": 3000
+        },
+        {
+          "all_stay_rounds": 4,
+          "net_gold": 2032,
+          "pickup": 2118,
+          "rounds": 500,
+          "seed": "2",
+          "stay_or_blocked_steps": 886,
+          "steps": 3000
+        }
+      ],
+      "rounds_min": 500,
+      "stay_or_blocked_pct": 30.333333333333332,
+      "walls": 78
+    },
+    "mimic1": {
+      "all_stay_rounds_mean": 2.3333333333333335,
+      "fingerprint_verdict": null,
+      "net_mean": 1474.3333333333333,
+      "per_seed": [
+        {
+          "all_stay_rounds": 0,
+          "net_gold": 1604,
+          "pickup": 1687,
+          "rounds": 500,
+          "seed": "0",
+          "stay_or_blocked_steps": 764,
+          "steps": 3000
+        },
+        {
+          "all_stay_rounds": 6,
+          "net_gold": 1359,
+          "pickup": 1428,
+          "rounds": 500,
+          "seed": "1",
+          "stay_or_blocked_steps": 991,
+          "steps": 3000
+        },
+        {
+          "all_stay_rounds": 1,
+          "net_gold": 1460,
+          "pickup": 1558,
+          "rounds": 500,
+          "seed": "2",
+          "stay_or_blocked_steps": 851,
+          "steps": 3000
+        }
+      ],
+      "rounds_min": 500,
+      "stay_or_blocked_pct": 28.955555555555556,
+      "walls": 39
+    },
+    "mimic2": {
+      "all_stay_rounds_mean": 0.0,
+      "fingerprint_verdict": null,
+      "net_mean": 1510.6666666666667,
+      "per_seed": [
+        {
+          "all_stay_rounds": 0,
+          "net_gold": 1476,
+          "pickup": 1520,
+          "rounds": 500,
+          "seed": "0",
+          "stay_or_blocked_steps": 937,
+          "steps": 3000
+        },
+        {
+          "all_stay_rounds": 0,
+          "net_gold": 1447,
+          "pickup": 1551,
+          "rounds": 500,
+          "seed": "1",
+          "stay_or_blocked_steps": 901,
+          "steps": 3000
+        },
+        {
+          "all_stay_rounds": 0,
+          "net_gold": 1609,
+          "pickup": 1696,
+          "rounds": 500,
+          "seed": "2",
+          "stay_or_blocked_steps": 941,
+          "steps": 3000
+        }
+      ],
+      "rounds_min": 500,
+      "stay_or_blocked_pct": 30.877777777777776,
+      "walls": 29
+    },
+    "mimic3": {
+      "all_stay_rounds_mean": 9.666666666666666,
+      "fingerprint_verdict": null,
+      "net_mean": 1507.3333333333333,
+      "per_seed": [
+        {
+          "all_stay_rounds": 5,
+          "net_gold": 1397,
+          "pickup": 1470,
+          "rounds": 500,
+          "seed": "0",
+          "stay_or_blocked_steps": 1256,
+          "steps": 3000
+        },
+        {
+          "all_stay_rounds": 21,
+          "net_gold": 1463,
+          "pickup": 1567,
+          "rounds": 500,
+          "seed": "1",
+          "stay_or_blocked_steps": 1122,
+          "steps": 3000
+        },
+        {
+          "all_stay_rounds": 3,
+          "net_gold": 1662,
+          "pickup": 1769,
+          "rounds": 500,
+          "seed": "2",
+          "stay_or_blocked_steps": 983,
+          "steps": 3000
+        }
+      ],
+      "rounds_min": 500,
+      "stay_or_blocked_pct": 37.34444444444444,
+      "walls": 59
+    },
+    "sealed": {
+      "all_stay_rounds_mean": 0.0,
+      "fingerprint_verdict": null,
+      "net_mean": 1975.6666666666667,
+      "per_seed": [
+        {
+          "all_stay_rounds": 0,
+          "net_gold": 1753,
+          "pickup": 2101,
+          "rounds": 500,
+          "seed": "0",
+          "stay_or_blocked_steps": 547,
+          "steps": 3000
+        },
+        {
+          "all_stay_rounds": 0,
+          "net_gold": 2071,
+          "pickup": 2240,
+          "rounds": 500,
+          "seed": "1",
+          "stay_or_blocked_steps": 507,
+          "steps": 3000
+        },
+        {
+          "all_stay_rounds": 0,
+          "net_gold": 2103,
+          "pickup": 2145,
+          "rounds": 500,
+          "seed": "2",
+          "stay_or_blocked_steps": 505,
+          "steps": 3000
+        }
+      ],
+      "rounds_min": 500,
+      "stay_or_blocked_pct": 17.322222222222223,
+      "walls": 28
+    },
+    "sparse": {
+      "all_stay_rounds_mean": 0.0,
+      "fingerprint_verdict": null,
+      "net_mean": 1738.6666666666667,
+      "per_seed": [
+        {
+          "all_stay_rounds": 0,
+          "net_gold": 1679,
+          "pickup": 1812,
+          "rounds": 500,
+          "seed": "0",
+          "stay_or_blocked_steps": 601,
+          "steps": 3000
+        },
+        {
+          "all_stay_rounds": 0,
+          "net_gold": 1701,
+          "pickup": 1720,
+          "rounds": 500,
+          "seed": "1",
+          "stay_or_blocked_steps": 592,
+          "steps": 3000
+        },
+        {
+          "all_stay_rounds": 0,
+          "net_gold": 1836,
+          "pickup": 1954,
+          "rounds": 500,
+          "seed": "2",
+          "stay_or_blocked_steps": 577,
+          "steps": 3000
+        }
+      ],
+      "rounds_min": 500,
+      "stay_or_blocked_pct": 19.666666666666668,
+      "walls": 8
+    }
+  },
+  "seeds": [
+    "0",
+    "1",
+    "2"
+  ]
+}
