@@ -1013,24 +1013,200 @@ matches an independent rebuild by the owner.
 
 ---
 
-## 17. The single-paragraph close
+## 17. R1 — table re-entry: the same mechanism without widening the LUT
+
+### 17.1 Why this section exists: the widened-LUT artifact was reverted on platform latency
+
+`nc` was landed, passed an 11-game platform safety pass with zero illegal moves and zero forfeits,
+and was then **reverted** on an interleaved same-window platform control (base and `nc` submitted
+alternately against identical opponents and maps):
+
+| map | ΔP50 | ΔP90 |
+|---|---:|---:|
+| map1 | +60 ns | **+270 ns** |
+| map2 | +20 | +40 |
+| map3 | +20 | +30 |
+| **mean** | **+33** | **+113** |
+
+**Mechanism:** `SLW` 3 → 6 doubles `fact`/`pdr`/`pdc`, taking `.rodata` from **1360 → 1808 (+448 B)**.
+That table is read every round, and on the platform an opponent plus seven NPCs execute between our
+two decisions, so **our data is cold every round** — doubling the hot data footprint costs a cold miss
+per round. Priced with the measured flip rate against the benchmark opponent (λ ≈ 23 % at 33 ns) the
+artifact is **+112 field-wide but −86 against T-1**, and T-1 is the stated objective.
+
+> ⛔ **No instrument in this report could have caught that, and the reason is worth more than the
+> result.** The simulator has no latency model; `pair_diff`, alignment and ISA gates do not measure
+> time; and **the instruction count went DOWN 42, so the cost proxy pointed the wrong way by sign.**
+>
+> **My own latency reading could not have caught it either, and its failure is instructive: I
+> measured `latency_bench --mode hot` and reported base / `cursor` / `stack` as indistinguishable at
+> P50 110–120 ns with ±60 ns P90 scatter. That reading was correct as stated and useless as a
+> guard, because `--mode hot` deliberately does not evict — it measures the warm case, while the
+> platform's real condition is cold every round. A "hot" local reading cannot bound a cold-path
+> regression.**
+>
+> ⇒ **Corollary adopted: `.rodata` growth is a first-class cost signal in its own right, not a
+> footnote to the instruction count.** Every table in §4 reports `Δ.rodata`; from here it must be
+> read as a cost, not as bookkeeping.
+
+### 17.2 R1's construct gates, independently reproduced
+
+R1 keeps `fact[7][7][3]` at width 3 and, after the first three steps, **recomputes the target offset
+from the position the unit has reached and re-enters the same narrow table**, with the same
+three-waypoint `blk` check on the tail (tail stays STAY if it fails). Reproduced here as a
+`fd47ea6`-based rebake (`sim.highn_variants.patch_r1`) so its income lands on the same baseline as
+every other arm in this report.
+
+| check | value | cross-check |
+|---|---|---|
+| `.rodata` | **1360, `rodata_identical_to_base = True`** | byte-for-byte unchanged — the reverted arm's defect is absent by construction |
+| pad / entry / mod64 | **112 / 0x1a10 / `0x10`** | matches the owner's independent build exactly |
+| same-stream instructions | **869.938** | **matches the owner's 869.938 to six decimals** |
+| FP16 / build warnings | 0 / none | |
+| `.text` | 5731 (+464) | |
+| `.text` sha256 | `a5f00fdc638eefd577f4a4ac779402fa81da95e72d331b800a9a1a640d88e8c7` | |
+| source sha256 | `ee0711a70ead8131ae21a3c1b58310581862dbed34a213f5c73f24cff8f1272c` | |
+
+### 17.3 `r1n` — the variant that keeps the footprint *and* most of the cost saving
+
+| arm | same-stream instr | Δ vs base 802.804 | `.rodata` | Δ`.text` | pad | mod64 | FP16 |
+|---|---:|---:|---:|---:|---:|---|---:|
+| base `fd47ea6` | 802.804 | — | 1360 | — | 96 | 0x10 | 0 |
+| `r1` (the patch on file) | 869.938 | **+67.13** | **1360 unchanged** | +464 | 112 | 0x10 | 0 |
+| `r1p` = nofoldpure + R1 | 864.904 | +62.10 | **1360 unchanged** | +304 | 96 | 0x10 | 0 |
+| ⭐ **`r1n` = nofold + R1** | **814.476** | **+11.67** | **1360 unchanged** | +288 | 144 | 0x10 | 0 |
+| — the reverted `nc`, for contrast | 760.734 | −42.07 | **1808 (+448)** | +16 | 144 | 0x10 | 0 |
+
+`r1n` `.text` sha256 `d07c06b4f97dcf264cc38a423611f5cfdd9132bbe9f45246dd3bce010b6426a6`,
+source sha256 `11650b5e996926c924989f57783575bfa9fad30f557b0f3f8a39fa265de9c1d7`.
+
+⚠️ **+11.67 instructions does not license "no latency cost".** `.rodata` being byte-identical removes
+the *known* mechanism, not the unknown ones; `.text` still grows +288, and I-cache pressure is a
+separate channel from D-cache. The revert is precisely the case where the instruction proxy pointed
+the wrong way, so **neither the instruction count nor a hot-mode local timing may be used to infer
+R1's platform latency.** Only an interleaved same-window platform control settles it.
+
+### 17.4 A defect in the patch, reproduced rather than silently fixed
+
+The re-entry passability check reads `blk`, which at the tail of the unit loop holds **unit 1's**
+blocked bitmap, while the producer may be **unit 0**. The two differ only in the `rich` bomb term
+(`held >= 100`), so the tail check can be wrong for a rich unit-0 producer. It does not affect the
+head three steps.
+
+**Reproducing it was deliberate**: silently fixing it would mean measuring something other than the
+construct on file, and the income figure would then describe an artifact that does not exist — the
+same failure class as the build/run race in §15.6, where the loud version is survivable and the
+silent version corrupts the comparison. **The fix, recorded against the patch so nobody adopts it
+as-is: recompute the producer's `rich` mask and rebuild its `blk` row range, or hoist both units'
+masks before the loop.**
+
+### 17.5 Income
+
+**Measured on map2 first** — the only convertible line within reach, and the owner's stated
+sufficient scope. n = 75 tune seeds (3000–3074) + 75 disjoint out-of-sample seeds (7000–7074), both
+order arms, both field models, all arms sharing the identical baseline games; `nc` and `ncp` carried
+in the same run so the comparison is like-for-like rather than across runs.
+
+**Scope, stated before the numbers: this is a mechanism-SURVIVAL test, not a price.** The measured
+arm contains the `blk` aliasing defect of §17.4, so its margin cannot value the candidate. It can
+answer the weaker, decisive question — *is the reallocation mechanism still alive in the re-entry
+form at all?* — against thresholds fixed in advance: **≥ +100 ⇒ survives; < +50 ⇒ the axis closes.**
+
+| arm | mechanism | calibrated | SE | uniform | two-field | gate | m − gate | OOS | ours / theirs | our scoring Δ | class |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---|---:|---|
+| `null` | — | **+0.0** | **0.0** | +0.0 | 0.0 | 0.0 | +0.0 | +0.0 | 0 / 0 | 0 | 300/300 bit-identical |
+| **`r1`** | table re-entry | **−11.8** | 17.1 | +43.0 | −54.8 | 54.8 | −66.6 | +11.6 | +12.9 / **+24.7** | −6.3 | **ceding** |
+| **`r1n`** | nofold + re-entry | **+0.1** | 15.1 | +22.7 | −22.6 | 30.2 | −30.1 | +7.3 | +17.0 / +16.9 | −12.4 | co-gain |
+| `nc` | **widened LUT** | **+111.3** | 16.0 | +98.1 | +13.1 | 32.1 | **+79.2** | **+79.8** | +106.1 / **−5.2** | −14.9 | **joint move** |
+| `ncp` | widened LUT | +94.2 | 17.2 | +101.9 | −7.7 | 34.4 | +59.9 | +46.0 | +103.9 / +9.6 | −16.4 | co-gain |
+
+Condition and comparison, one sentence per row: all five arms ran in one job on map2 seeds 3000–3074
+(tune) and 7000–7074 (out-of-sample) with both order arms and both field models, **sharing the
+identical baseline games**, each compared against the unmodified `fd47ea6` on the same seed, order arm
+and field; the `null` row is this map's own zero-signal control.
+
+> 🔴 **`r1` = −11.8 and `r1n` = +0.1, both far below the +50 closing threshold. The mechanism does not
+> survive re-entry: income collapses from +111.3 to ≈ 0 while the trigger rate is unchanged.**
+>
+> **This is not a marginal call the `blk` defect could flip.** That defect mis-selects the `rich`
+> bomb term on the *tail* check for a *rich unit-0* producer only — a small subset of a subset. It
+> cannot convert +111.3 into +0.1. Both re-entry arms are ≈ 0 on tune and ≈ 0 on a disjoint OOS set;
+> the collapse is structural.
+
+### 17.6 Why it collapses — the widened table's slots 4-6 are a STATIONARY OSCILLATION, not a longer path
+
+`_build_slut` pre-folds early arrival: for a target at distance `d < SLW` it sets
+`fact[t] = fact[t−1] ^ 1` for every `t ≥ d`. So once the producer reaches its target, slots 4-6 are
+**step off, step back, step off** — repeatedly re-entering the same cell. Pickup is proportional
+(`ceil(0.65 v)` taken, `floor(0.35 v)` left), so that oscillation **re-mills the 35 % residue of the
+cell it has just harvested.** That is the mechanism already on record: value comes from **residue, not
+reach**.
+
+**Table re-entry destroys precisely that.** It recomputes `dr1 = tr3 − pr3`, `dc1 = tc3 − pc3` toward
+the *same* target; if the unit has arrived then `dr1 = dc1 = 0`, it indexes `SL.fact[3][3]`, and that
+entry has `d = 0` so **it is never folded and is all STAY**. In exactly the case that generated the
+income, re-entry emits **three STAYs where the widened table emitted the residue-milking
+oscillation.** The measurement agrees quantitatively: our own net delta is `nc` **+106.1** against
+`r1` **+12.9** and `r1n` **+17.0** — the re-entry arms capture ~15 % of the income at the same trigger
+rate.
+
+⇒ **So "re-entry is fresher, the widened table is stale after three moves" was the wrong frame.
+Slots 4-6 are not a stale continuation of a journey; they are a deliberate stationary oscillation,
+and the "staleness" is the feature.** The constraint for anyone revisiting this axis is therefore not
+"fix the defect" but: **a narrow table cannot express "oscillate on the cell you just ate" without an
+explicit `d == 0` special case — and that case is where the entire +111 lives.**
+
+### 17.7 The two cost proxies for `r1n` disagree by a factor of seventy
+
+| cost proxy for `r1n` | implied ns | implied gold at 11 gold/ns |
+|---|---:|---:|
+| same-stream instruction count: +11.67 instr at the measured marginal 0.025 ns/instr | **≈ +0.3** | ≈ −3 |
+| scaling from the reverted variant's **measured platform** footprint cost (+448 B `.rodata` ⇒ +33 ns P50 mean) onto `r1n`'s +288 B `.text` growth | **≈ +21** | ≈ −230 |
+| **ratio** | **≈ 70×** | |
+
+**Two proxies for one quantity disagreeing by seventy is the cleanest available argument that the
+interleaved same-window platform control is the only authority and cannot be inferred away** — and
+tonight already produced the *sign-error* version of the same failure (−42 instructions measured
+against +33 ns on the platform), so the direction of the error is not even predictable. **Neither
+proxy may be used to price latency.** Here it no longer matters: the income is zero, so no cost model
+is required.
+
+### 17.8 Sequencing consequence
+
+**The survival gate fails, so the chain stops at step 0.** The `blk` defect should not be fixed for
+this purpose, `r1n` should not be re-measured, and the 12 platform games should not be spent. The axis
+closes.
+
+
+---
+
+## 18. The single-paragraph close
 
 **The `+150` gate was killing a real mechanism, and moving acceptance into the simulator at high `n`
 recovered it — but the pool it was supposed to unlock does not exist.** Of five candidates, one is a
 no-op already banked (the pad), one is negative under a measured cost (`safe T2`), two are
 indistinguishable from zero in both directions on fresh seeds (`hot_colv_edge`, the stand-on-gold
 fold), and one is real: arm C's step reallocation. **Additivity is not the problem — interaction is
-indistinguishable from zero in six separate tests — the problem is that there was only ever one
-effect to add.** That one effect is now worth **+112 to +119 gold/game on map1 and map2 and +90 on
-map3, at 38 instructions and ~9 cycles below the delivered construct**, because the cursor form
-compressed the implementation from the 62–116 instructions that killed it to **+12.75**, and because
-`nofold` pays for even that. It clears `max(2SE, |calibrated − uniform|)` on every map with
-out-of-sample sign agreement, it is a **joint move** on both maps measured at high `n`, its donor
-never moves, its tail geometry is clean, and its zero-signal control is byte-identical on 300 of 300
-games. **And it does not draw level with T-1: the best crossing margin measured anywhere in this work
-is +4.3 ± 19.5 against map2's requirement, 0.22σ, which is "statistically indistinguishable from the
-line", not "past it" — and no amount of additional `n` changes that, because the effect, not the
-precision, is what is short.** The widened trigger that looked like 3.3× of headroom was measured and
-turns over immediately: gold per firing collapses 16× and the total falls monotonically from the
-shipped trigger onward, so **the blind trigger is the optimum and the +265 ceiling was an
-extrapolation from the zero-opportunity-cost extreme.** That is the honest end of this line.
+indistinguishable from zero in seven separate tests — the problem is that there was only ever one
+effect to add.** That one effect is worth **+111 to +119 gold/game on map1 and map2 and +90 on map3**,
+it clears `max(2SE, |calibrated − uniform|)` on every map with out-of-sample sign agreement, it is a
+**joint move**, its donor never moves, its tail geometry is clean, and its zero-signal control is
+byte-identical on 300 of 300 games. **The cursor form compressed its implementation from the 62–116
+instructions that killed it to +12.75, so it also looked free — and that is where this line's
+instruments ran out.** The widened LUT it needs takes `.rodata` from 1360 to 1808 B, and because an
+opponent plus seven NPCs execute between our two decisions the table is **cold every round**: an
+interleaved same-window platform control measured **+33 ns P50 and +113 ns P90**, the artifact was
+reverted, and **the instruction count had pointed the wrong way by sign.** The obvious repair —
+keep the table narrow and re-enter it — was then measured at n = 150 on shared baselines and returns
+**−11.8 and +0.1 against the widened form's +111.3**, because slots 4-6 were never a longer path:
+they are a **stationary oscillation** that re-mills the 35 % residue of the cell just harvested, and
+re-entry emits STAY exactly there. **So the honest end of this line is three closures and one
+constraint.** Closed: the small-candidate pool (one effect, not nine), the widened-trigger
+"free parameter" (gold per firing collapses 16×, the blind trigger is already the optimum, and the
++265 ceiling was an extrapolation from the zero-opportunity-cost extreme), and table re-entry as a
+footprint fix. The constraint, for whoever revisits it: **the income lives in the `d == 0` fold, so a
+narrow table must special-case it — and no local instrument in this repository can price the
+footprint, because a `--mode hot` reading cannot bound a cold-path regression and two cost proxies for
+the same variant disagree by a factor of seventy.** Best crossing margin measured anywhere in this
+work: **+4.3 ± 19.5 against map2's requirement, 0.22σ** — statistically indistinguishable from the
+line, not past it.
