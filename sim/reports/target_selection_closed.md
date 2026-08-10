@@ -112,6 +112,39 @@ raiding (median −477). Idle sweeps: two-point oscillation (−11.25), small ri
 target inertia. This round: `fold_never`, `fold_tour`, `fold_tour_cond`, `fold_seek`, and three
 contested-cell-avoidance arms.
 
+## Coverage-widening candidates must be judged on margin, not on net
+
+A separate, later result that belongs with this closure. Arm B2 (repositioning the two anchors to
+widen central coverage) produced, in same-seed self-play, **net +111.1 gold/game at 2.80σ but a
+margin — the change in `ours − theirs` — of only +14.5.** The opponent, which is the unmodified
+baseline, gained roughly **+97** at the same time.
+
+The mechanism is not subtle once seen: **on a shared board, spreading out is not zero-sum neutral,
+it is ceding ground.** Widening coverage means vacating the contested centre, and the opponent
+collects it. An uncontested ceiling measurement (`probeobs`-style) will happily report the +111,
+because there is nobody there to take the centre; a head-to-head margin reports +14.5.
+
+Two consequences worth carrying:
+
+1. **Any candidate of the "widen coverage / spread out / roam more" family must report `margin`.** A
+   rise in our own net may be entirely a transfer of contested ground. Precedent: B2 at net +111.1 /
+   margin +14.5, and earlier the `v>2 → v>0` gate at our +26.3 against the opponent's +101.7, i.e.
+   relative **−75.3**.
+2. **This is an independent reason the "map1 uncontested ≥ 2500" north star is a poor proxy for
+   ranking.** The other two reasons are that the ceiling does not order the ladder (Tundra's ceiling
+   is *higher* than T-1's, at 2654.8 versus 2476.4, yet Tundra sits 8th) and that ranking is a
+   round-robin win rate. This adds the mechanism: **the ceiling measures "how much can I take", the
+   ranking needs "how much more than him do I take", and coverage-type changes diverge between the
+   two.**
+
+The three B2 variants measured **−80.7 / −20.3 / +14.5** on margin, none within reach of the +150
+gate, so **static anchor rearrangement is closed.** Note the scope precisely: what is closed is
+*static constant repositioning*. An independent line has since shown that the field's strongest team
+does have two units that **avoid each other** (occupancy overlap z < −2 in 4 of 5 games) while having
+**no fixed dividing axis** (best axis only 0.574–0.630 accurate, winning axis and sign varying per
+game). **So "the two units are differentiated" is a real phenomenon; it simply is not implemented by
+static constants.** Do not cite B2's margin to close *differentiation* as a mechanism.
+
 ## What would legitimately reopen this family
 
 Not a new scoring rule, not a new threshold, and not more vision. Only one of these:
