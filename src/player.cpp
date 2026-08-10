@@ -405,7 +405,7 @@ GameOutput decide(const GameInput* in) {
         uint16_t rowsel[5];
 #if defined(__AVX2__)
         {
-            const __m256i v2s = _mm256_set1_epi32(2);   // 挑食: 只标 ≥3 整格(≥2 版判负: 1184视2388)
+            const __m256i v2s = _mm256_set1_epi32(2);   // 挑食≥3；现构型简单降到≥2会按距离劫持高值靶，门B判负
             const __m256i vm3 = _mm256_set1_epi32(-3);
             int lsh = SCT.lsh[sc];
             uint32_t colv = SCT.colv[sc];
