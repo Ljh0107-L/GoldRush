@@ -1,0 +1,24 @@
+[
+  {
+    "captured_at_utc": "2026-08-10T08:24:51.916312+00:00",
+    "external_games": 817,
+    "external_wins": 235,
+    "frozen_lineage_games": 36,
+    "frozen_lineage_opponents": {
+      "Tiuntled-1": 18,
+      "Tundra-wawa": 18
+    },
+    "game_counts": {
+      "active": 684,
+      "passive": 133,
+      "self": 832
+    },
+    "note": "closing baseline: public slot switched from Aug-7 build to fd47ea6 at 2026-08-10T08:20:18Z",
+    "platform_p90_ns": 300,
+    "platform_win_rate": "0.2314",
+    "public_model": {
+      "id": 278135,
+      "updated_at": "2026-08-10T08:20:18.000Z"
+    }
+  }
+]
