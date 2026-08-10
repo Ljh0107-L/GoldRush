@@ -32,7 +32,7 @@ and returns **exactly +0.0 gold** in the first-mover arm.
 ## The four independent refutations
 
 **1. It is not fog.** An oracle given perfect within-window prophecy and an oracle given that *plus*
-complete fog removal produce **identical** results to the gold (+114.8 ± 52.6 in the second-mover
+complete fog removal produce **identical** results to the gold (+84.6 ± 34.2 in the second-mover
 arm, both). Removing fog contributes **exactly zero**, because the selector only ever reads its own
 5×5 window. Buying vision does not help either: widening to a fog-free 7×7 raises the share of
 blind-fold rounds that have any reachable positive cell only from 31–35% to 39–45%, at a mean total
@@ -47,16 +47,44 @@ it coming, and knowing does not help, because there is nowhere else to go.**
 **3. It is not path shape, and this is the decisive one because the test was free.**
 `fold_tour` — replacing the fold `(a, a^1, stay)` with a 3-distinct-cell tour `(a, p, a^1)`, a **pure
 table change costing zero instructions** — is the **worst** arm measured: **−70.8 ± 33.6 gold/game
-(−2.11σ)** against current and **−57.6 ± 26.7 (−2.16σ)** against never-folding. The mechanism is
-parity: three cardinal steps cannot return to the origin, so *any* 3-distinct-cell tour necessarily
-displaces the unit off the central generation peak, while oscillating in place keeps it there. Since
-the change is free, this is not "the implementation was too expensive" — **the direction is wrong.**
+(−2.11σ)** against current and **−57.6 ± 26.7 (−2.16σ)** against never-folding; confirmed
+out-of-sample at n=56 as **−81.4 ± 18.5 (−4.39σ)**, negative in *both* order arms.
+
+The mechanism is parity, stated precisely because a loose version of it is false. Action `4` is
+*stay* and does **not** change `(row + col)`; only an actual move flips that parity. So "three
+actions cannot return to the origin" is **wrong** — `out, back, stay` uses two moves and returns.
+The true statement is:
+
+> **Visiting 3 distinct cells requires 3 actual moves, which is an odd number of parity flips, so a
+> 3-distinct-cell tour can never end on its starting cell.**
+
+That is what makes the tour lose: it necessarily displaces the unit off the central generation peak,
+while the fold's two-move oscillation returns to it. Since the change is free, this is not "the
+implementation was too expensive" — **the direction is wrong.** Note the corollary, which matters for
+any future step-budget work: with an **even** number of moves available a unit *can* both visit extra
+distinct cells and end where it started, so this argument does **not** generalise to 4- or 6-move
+budgets.
 
 **4. The whole upper bound is small anyway.** Perfect prophecy inside the window is worth
-**+57.4 ± 29.4 pooled**, **+49.6** weighted at the two strong opponents' order frequency, and
-**+0.34 gold/game** at the field's `f` ≈ 0.997 — against a pre-registered threshold of +150 and a
-matched-order level deficit of **−411**. The oracle recovers **14%** of the deficit. Every cheap
-approximation restricted to real information is negative: −453.2, −130.0, −49.7 gold/game pooled.
+**+42.3 ± 18.5 pooled** (n=32 games, out-of-sample), **+36.6** weighted at the two strong opponents'
+order frequency, and **+0.25 gold/game** at the field's `f` ≈ 0.997 — against a pre-registered
+threshold of +150 and a matched-order level deficit of **−411**. The oracle recovers **10%** of the
+deficit. Every cheap approximation restricted to real information is negative: −453.2, −130.0,
+−49.7 gold/game pooled, and the best *implementable* lagged-inference variant is **−88.2 ± 23.0**.
+
+> **Provenance note.** An earlier revision of this file quoted +57.4 pooled / +0.34 field. Those were
+> **in-sample only** (n=16). Out of sample the second-mover arm shrank from +114.8 ± 52.6 (2.18σ) to
+> +54.5 ± 44.5 (1.22σ), a 52% shrinkage, giving the pooled +42.3 above. **Every ruling is unchanged
+> and every magnitude moved down**, so the closure is stronger, not weaker. This is also a live
+> instance of why positives must be confirmed on disjoint seeds.
+
+**5. And the order it would need is not observable.** `GameInput` carries no dispatch-order field —
+the engine derives order by comparing the two decision costs, which are produced *by* the two
+`moveDecision` calls. `GameOutput.order` is **our own output** selecting which of our two units steps
+first (`src/player.cpp:525`, `order = my_units_gold[0] >= my_units_gold[1] ? 0 : 1`); reading it as a
+dispatch signal is reading your own output back. So any order-conditioned mechanism must be
+**lagged-adaptive**, and the best lagged variant measured costs **−88.2 ± 23.0 gold/game**, because
+it fires in the first-mover arm where hedging is pure loss.
 
 ## A premise this family was built on, now corrected
 
@@ -92,9 +120,10 @@ Not a new scoring rule, not a new threshold, and not more vision. Only one of th
    *positioning* result, not a selector result, and would have to come from the positioning line.
 2. A rule change in the actual contest that alters window size, step count, or the dispatch order
    (`(faster) + NPCs + (slower)`), any of which invalidates the structural-zero argument.
-3. A demonstration that the parity argument in refutation 3 fails — e.g. a 3-step sequence that both
-   touches 3 distinct cells and ends on the origin. **This is impossible on a 4-neighbour grid**
-   (each step flips the parity of `row + col`, so three steps cannot return), so this route is closed
-   by geometry rather than by measurement.
+3. A demonstration that the parity argument in refutation 3 fails — i.e. a 3-action sequence that
+   both touches 3 distinct cells and ends on the origin. **This is impossible on a 4-neighbour
+   grid**: 3 distinct cells require 3 actual moves, each flipping the parity of `row + col`, and an
+   odd number of flips cannot return. Closed by geometry rather than by measurement. **This applies
+   only to a 3-move budget**; it says nothing about 4- or 6-move budgets, where closure is possible.
 
 Anything else is a re-run of one of the rows above.

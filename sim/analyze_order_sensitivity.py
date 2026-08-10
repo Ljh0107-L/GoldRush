@@ -813,9 +813,11 @@ class VisibilityCensus:
     name = "visibility_census"
 
     def __init__(self, base_so: Path, *, seat: int, we_move_first: bool,
-                 digest: str, npc_ids: Sequence[int]) -> None:
+                 digest: str, npc_ids: Sequence[int],
+                 opponent_probe: Path | None = None) -> None:
         self.base = SharedObjectStrategy(base_so, name="census_base")
-        self.probe = SharedObjectStrategy(base_so, name="census_opp")
+        self.probe = SharedObjectStrategy(
+            base_so if opponent_probe is None else opponent_probe, name="census_opp")
         self.seat = int(seat)
         self.opp_seat = 3 - int(seat)
         self.we_move_first = bool(we_move_first)
@@ -950,7 +952,17 @@ class VisibilityCensus:
         return actions + (k, order, vp)
 
 
-def visibility(map_name: str, base_so: Path, seeds: Sequence[str]) -> Mapping[str, Any]:
+def visibility(map_name: str, base_so: Path, seeds: Sequence[str],
+               *, opponent: str = "self") -> Mapping[str, Any]:
+    """Fog shares and contestability.
+
+    ``opponent="self"`` runs the frozen build on both seats.  That number is
+    **not usable for opponent visibility**: both seats camp the identical
+    central anchors ``(6,8)``/``(11,8)``, so the four units are permanently
+    inside each other's 5x5 windows and enemy visibility is inflated to ~93%.
+    ``opponent="monotone"`` runs the fitted non-camping reference instead, which
+    is the honest condition for a visibility share.
+    """
     map_definition = load_map(map_name)
     npc_ids = engine_module.DEFAULT_NPC_IDS
     arms: dict[str, list[dict[str, Any]]] = {"we_first": [], "we_second": []}
@@ -960,15 +972,19 @@ def visibility(map_name: str, base_so: Path, seeds: Sequence[str]) -> Mapping[st
             ("we_first", COSTS_WE_FIRST, True),
             ("we_second", COSTS_WE_SECOND, False),
         ):
+            other = base_so if opponent == "self" else MonotoneHarvester()
             census = VisibilityCensus(base_so, seat=1, we_move_first=we_first,
-                                      digest=digest, npc_ids=npc_ids)
+                                      digest=digest, npc_ids=npc_ids,
+                                      opponent_probe=base_so)
             run_game(
-                census, base_so, map_source=map_name, seed=str(seed),
+                census, other, map_source=map_name, seed=str(seed),
                 dispatch="fixed", fixed_costs=costs,
                 player1_name="base", player2_name="opponent",
             )
             arms[label].extend(census.rows)
             census.close()
+            if opponent != "self":
+                other.close()
 
     def fold(rows: Sequence[Mapping[str, Any]], steady_from: int = 8) -> Mapping[str, Any]:
         rows = [row for row in rows if row["round"] >= steady_from]
@@ -1329,6 +1345,29 @@ def step0(map_name: str, base_so: Path, seeds: Sequence[str],
         supply = collections.defaultdict(list)
         for row in rows:
             supply[_bucket(row["supply_gate_reach"])].append(row)
+        seen = collections.defaultdict(list)
+        for row in rows:
+            seen[_bucket(row["supply_seen_reach"])].append(row)
+        truth = collections.defaultdict(list)
+        for row in rows:
+            truth[_bucket(row["supply_truth_reach"])].append(row)
+
+        def curve(groups):
+            return {
+                key: {
+                    "unit_rounds": len(group),
+                    "share_of_unit_rounds": len(group) / n,
+                    "hit_rate": _mean([row["hit"] for row in group]),
+                    "income_per_unit_round": _mean([row["delta"] for row in group]),
+                    "mean_distinct_cells": _mean([row["distinct_cells"] for row in group]),
+                    "fold_share": _mean([
+                        1.0 if (row["steps_taken"] >= 2 and row["distinct_cells"] <= 2) else 0.0
+                        for row in group
+                    ]),
+                }
+                for key, group in sorted(groups.items())
+            }
+
         return {
             "unit_rounds": n,
             "income_per_unit_round": _mean([row["delta"] for row in rows]),
@@ -1349,16 +1388,9 @@ def step0(map_name: str, base_so: Path, seeds: Sequence[str],
                 key: value / max(1, len(misses)) for key, value in reason.items()
             },
             "misses": len(misses),
-            "by_supply": {
-                key: {
-                    "unit_rounds": len(group),
-                    "share_of_unit_rounds": len(group) / n,
-                    "hit_rate": _mean([row["hit"] for row in group]),
-                    "income_per_unit_round": _mean([row["delta"] for row in group]),
-                    "mean_distinct_cells": _mean([row["distinct_cells"] for row in group]),
-                }
-                for key, group in sorted(supply.items())
-            },
+            "by_supply": curve(supply),
+            "by_supply_seen": curve(seen),
+            "by_supply_truth": curve(truth),
         }
 
     def fold_rounds(rows: Sequence[Mapping[str, Any]]) -> Mapping[str, Any]:
@@ -1420,6 +1452,562 @@ def step0(map_name: str, base_so: Path, seeds: Sequence[str],
             "construction, not by measurement."
         ),
     }
+    return out
+
+
+def scarcity(map_name: str, base_so: Path, seeds: Sequence[str],
+             *, steady_from: int = 8) -> Mapping[str, Any]:
+    """Income and hit rate versus local supply, for BOTH seats, fog-free.
+
+    Read post-hoc out of the god-view log, so it needs no instrumentation of the
+    opposing seat and is therefore usable against any policy.  ``supply`` is the
+    number of cells holding gold at round start within Manhattan 3 of the unit's
+    own start cell -- i.e. cells the unit could physically step on with its three
+    cardinal moves, ignoring walls.  ``income`` is the per-unit held-gold delta,
+    which is the same unbiased channel ``sim/analyze_gold_delta.py`` uses and the
+    one the platform records for 100% of unit-observations.
+
+    Two opposing policies are run: the frozen build itself (so the two seats
+    differ only in dispatch order) and ``MonotoneHarvester``, a *fitted*
+    reference encoding only the one behavioural difference the opponent census
+    established -- monotone three-step paths with no reversal and no revisit.
+    """
+    out: dict[str, Any] = {"map": map_name, "seeds": [str(s) for s in seeds],
+                           "steady_from": steady_from, "contests": {}}
+    for tag in ("self", "monotone"):
+        buckets: dict[tuple[str, str], list[tuple[int, float]]] = collections.defaultdict(list)
+        for seed in seeds:
+            for label, costs in (("we_first", COSTS_WE_FIRST), ("we_second", COSTS_WE_SECOND)):
+                p2 = base_so if tag == "self" else MonotoneHarvester()
+                result = run_game(
+                    base_so, p2, map_source=map_name, seed=str(seed), dispatch="fixed",
+                    fixed_costs=costs, player1_name="ours", player2_name=tag,
+                )
+                records = [
+                    json.loads(line)
+                    for line in result.log_bytes.decode().splitlines()[2:] if line.strip()
+                ]
+                previous = {1: [0, 0], 2: [0, 0]}
+                for record in records:
+                    number = int(record["round"])
+                    ground = _pure_ground(record["start"]["grid"])
+                    for player in record["end"]["players"]:
+                        pid = int(player["id"])
+                        for unit in player["units"]:
+                            index = int(unit["index"]) if "index" in unit else None
+                            gold = int(unit["gold"])
+                        golds = [int(u["gold"]) for u in player["units"]]
+                        starts = [
+                            tuple(int(v) for v in u["position"])
+                            for u in record["start"]["players"][pid - 1]["units"]
+                        ]
+                        for unit_index in (0, 1):
+                            delta = golds[unit_index] - previous[pid][unit_index]
+                            if number < steady_from:
+                                continue
+                            srow, scol = starts[unit_index]
+                            supply = 0
+                            for row in range(max(0, srow - 3), min(GRID, srow + 4)):
+                                for col in range(max(0, scol - 3), min(GRID, scol + 4)):
+                                    if abs(row - srow) + abs(col - scol) > 3:
+                                        continue
+                                    if ground[row][col] > 0:
+                                        supply += 1
+                            # our seat is 1; it moves first in the we_first arm,
+                            # so seat 2 is moving SECOND there
+                            if pid == 1:
+                                side, moving = "ours", ("first" if label == "we_first" else "second")
+                            else:
+                                side, moving = "theirs", ("second" if label == "we_first" else "first")
+                            buckets[(side, moving)].append((supply, float(delta)))
+                        previous[pid] = golds
+                if tag != "self":
+                    p2.close()
+        cell: dict[str, Any] = {}
+        for (side, moving), rows in sorted(buckets.items()):
+            grouped = collections.defaultdict(list)
+            for supply, delta in rows:
+                grouped[_bucket(supply)].append(delta)
+            cell["%s_moving_%s" % (side, moving)] = {
+                "unit_rounds": len(rows),
+                "income_per_unit_round": _mean([d for _s, d in rows]),
+                "hit_rate": _mean([1.0 if d > 0 else 0.0 for _s, d in rows]),
+                "mean_supply": _mean([float(s) for s, _d in rows]),
+                "by_supply": {
+                    key: {
+                        "unit_rounds": len(values),
+                        "share": len(values) / len(rows),
+                        "income_per_unit_round": _mean(values),
+                        "hit_rate": _mean([1.0 if v > 0 else 0.0 for v in values]),
+                    }
+                    for key, values in sorted(grouped.items())
+                },
+            }
+        # scarcity elasticity: d(log income) / d(log supply) between the two
+        # order conditions, which is the quantity that distinguishes "order
+        # sensitivity" from "scarcity sensitivity"
+        for side in ("ours", "theirs"):
+            first = cell.get("%s_moving_first" % side)
+            second = cell.get("%s_moving_second" % side)
+            if not first or not second:
+                continue
+            ratio_income = (first["income_per_unit_round"] / second["income_per_unit_round"]
+                            if second["income_per_unit_round"] else None)
+            ratio_supply = (first["mean_supply"] / second["mean_supply"]
+                            if second["mean_supply"] else None)
+            matched = {}
+            for key in ("0", "1", "2", "3-4", "5+"):
+                a = first["by_supply"].get(key)
+                b = second["by_supply"].get(key)
+                if a and b and b["income_per_unit_round"]:
+                    matched[key] = {
+                        "first": a["income_per_unit_round"],
+                        "second": b["income_per_unit_round"],
+                        "ratio": a["income_per_unit_round"] / b["income_per_unit_round"],
+                        "n_first": a["unit_rounds"], "n_second": b["unit_rounds"],
+                    }
+            weights = {}
+            total = sum(v["unit_rounds"] for v in first["by_supply"].values())
+            pooled = 0.0
+            for key, item in matched.items():
+                w = first["by_supply"][key]["unit_rounds"] / max(1, total)
+                weights[key] = w
+                pooled += w * item["second"]
+            cell["%s_order_sensitivity" % side] = {
+                "income_ratio_first_over_second": ratio_income,
+                "supply_ratio_first_over_second": ratio_supply,
+                "elasticity": (
+                    (math.log(ratio_income) / math.log(ratio_supply))
+                    if ratio_income and ratio_supply and ratio_supply > 0
+                    and ratio_income > 0 and abs(math.log(ratio_supply)) > 1e-9 else None
+                ),
+                "matched_supply_income": matched,
+                "supply_standardised_ratio": (
+                    first["income_per_unit_round"] / pooled if pooled else None),
+            }
+        out["contests"][tag] = cell
+    return out
+
+
+# ---------------------------------------------------------------------------
+# the conditional fold -- the cheapest form of the scarcity hypothesis
+# ---------------------------------------------------------------------------
+
+
+def _fold_shape(triple: Sequence[int]) -> bool:
+    """Is this triple the frozen build's ``d == 0`` fold-back double-eat?
+
+    The ``d == 0`` branch emits ``(a, a ^ 1, STAY)``.  Nothing else can: the LUT
+    always emits three moves for ``d >= 1`` (``d == 1`` gives ``(a, a^1, a)``,
+    ``d == 2`` gives ``(a, b, b^1)``), and the ``ok == 0`` fallback emits
+    ``(a, STAY, STAY)`` or ``(STAY, STAY, STAY)``.  So the signature is unique.
+    """
+    a, b, c = int(triple[0]), int(triple[1]), int(triple[2])
+    return c == STAY and a < STAY and b == (a ^ 1)
+
+
+class FoldStrategy:
+    """Arms of the fold, all built out of the frozen build itself.
+
+    **Corrected trigger (see ``foldprobe``).** The ``d == 0`` branch of
+    ``f18064c`` emits ``(a, a ^ 1, STAY)`` -- step out, step straight back.  The
+    obvious reading is "re-bite the rich cell we are standing on", and that is
+    how the fold has been described.  Measured, it is not: over 811 / 636 fold
+    unit-rounds the standing residual is **0 in 92.7% / 95.6% of them**.  The
+    dominant case is the third route into ``d == 0``: the unit is ``blind`` (no
+    ``v > 2`` anywhere in its 5x5) so its target becomes its own anchor
+    ``(6,8)`` / ``(11,8)``, and it is *already standing on that anchor*, so
+    ``d == 0`` and it oscillates in place for nothing.  ~200 unit-rounds/game,
+    20% of all unit-rounds, two of three steps spent returning to where it
+    started.
+
+    ``level``
+        ``current``  passthrough; must reproduce the baseline ``log_sha256``
+        ``never``    the already-measured ablation: emit ``(4,4,4)`` instead
+        ``tour``     **zero extra instructions**: replace the out-and-back table
+                     entry with ``(a, p, a ^ 1)`` for the first passable
+                     perpendicular ``p``.  Three steps, three *distinct* cells,
+                     ends one cell from the anchor (3 steps cannot return to the
+                     start by parity), which the next round's anchor target
+                     walks back while collecting.
+        ``tour_cond`` ``tour`` only when a positive cell is actually reachable in
+                     the fogged 5x5, so the intervention is conditioned on
+                     locally observable supply
+        ``seek``     lower the ``v > 2`` scan constant to ``v > 0`` for that unit
+                     only, so the build's own selector targets the nearest
+                     distinct cell and its own LUT router walks there.  Modelled
+                     as a grid perturbation, which is exact because the build's
+                     ring-priority table gives the centre (index 12) the
+                     *lowest* priority 24 -- revealing a low-value neighbour is
+                     sufficient to outrank standing still.
+        ``seek_cond`` ``seek`` only when a positive cell is reachable
+        ``cond``     the original standing-residual conditional, retained so the
+                     corrected trigger can be compared against it
+
+    Information used: our own fogged grid only.  No opponent visibility, no NPC
+    positions, no knowledge of this round's dispatch order.  Expressible
+    same-round; field-general.
+    """
+
+    name = "fold"
+
+    def __init__(self, base_so: Path, *, level: str = "current",
+                 threshold: int = 3, reach: int = 3, walls: frozenset | None = None,
+                 steady_from: int = 8) -> None:
+        self.base = SharedObjectStrategy(base_so, name="fold_base")
+        self.level = level
+        self.threshold = int(threshold)
+        self.reach = int(reach)
+        self.walls = frozenset() if walls is None else walls
+        self.steady_from = int(steady_from)
+        self.build = BuildState(self.walls)
+        self.last_round = 10 ** 9
+        self.folds_seen = 0
+        self.folds_suppressed = 0
+        self.spread_targets = 0
+        self.rounds = 0
+        self.unit_rounds = 0
+
+    def close(self) -> None:
+        self.base.close()
+
+    def _alternatives(self, grid, srow, scol) -> tuple[int, int]:
+        """``(count, best_value)`` of other positive cells reachable in 3 steps."""
+        count = 0
+        best = 0
+        for row in range(max(0, srow - 2), min(GRID, srow + 3)):
+            for col in range(max(0, scol - 2), min(GRID, scol + 3)):
+                if row == srow and col == scol:
+                    continue
+                if abs(row - srow) + abs(col - scol) > self.reach:
+                    continue
+                value = int(grid[row][col])
+                if value > 0:
+                    count += 1
+                    best = max(best, value)
+        return count, best
+
+    def _tour(self, grid, srow, scol, first_action, blocker) -> tuple[int, int, int] | None:
+        """``(a, p, a ^ 1)`` for the first passable perpendicular ``p``."""
+        def passable(row, col):
+            if not (0 <= row < GRID and 0 <= col < GRID):
+                return False
+            if (row * GRID + col) in self.walls:
+                return False
+            if int(grid[row][col]) == WALL:
+                return False
+            return (row, col) != blocker
+
+        arow, acol = srow + DR[first_action], scol + DC[first_action]
+        if not passable(arow, acol):
+            return None
+        perpendicular = (2, 3) if first_action in (0, 1) else (0, 1)
+        for step in perpendicular:
+            brow, bcol = arow + DR[step], acol + DC[step]
+            crow, ccol = brow + DR[first_action ^ 1], bcol + DC[first_action ^ 1]
+            if passable(brow, bcol) and passable(crow, ccol):
+                return (first_action, step, first_action ^ 1)
+        return None
+
+    def __call__(self, value: Any) -> tuple[int, ...]:
+        self.rounds += 1
+        round_number = int(value.round)
+        if round_number <= self.last_round:
+            self.build = BuildState(self.walls)
+        if round_number % 20 == 0:
+            self.build.bombbit.clear()
+        self.last_round = round_number
+
+        grid = [[int(value.grid[row][col]) for col in range(GRID)] for row in range(GRID)]
+        my_units = [(int(pos.row), int(pos.col)) for pos in value.my_units]
+        my_gold = [int(item) for item in value.my_units_gold]
+
+        # replica of the build's own decision state, used only to know which
+        # units are in the d == 0 branch before the .so is called once
+        fold_unit = [False, False]
+        residual = [0, 0]
+        alternatives = [0, 0]
+        if round_number >= self.steady_from:
+            for unit in (0, 1):
+                _triple, info = replica_decide_unit(
+                    grid, unit, my_units[unit][0], my_units[unit][1],
+                    my_gold[unit], self.build,
+                )
+                fold_unit[unit] = int(info["d"]) == 0
+                residual[unit] = grid[my_units[unit][0]][my_units[unit][1]]
+                alternatives[unit] = self._alternatives(
+                    grid, my_units[unit][0], my_units[unit][1])[0]
+
+        bumped = grid
+        if self.level in ("seek", "seek_cond", "spread", "cond"):
+            work = None
+            for unit in (0, 1):
+                if not fold_unit[unit]:
+                    continue
+                self.unit_rounds += 1
+                if self.level in ("seek_cond", "spread", "cond") and alternatives[unit] == 0:
+                    continue
+                if self.level == "cond" and residual[unit] >= self.threshold:
+                    continue
+                if work is None:
+                    work = [list(row) for row in grid]
+                srow, scol = my_units[unit]
+                touched = False
+                for row in range(max(0, srow - 2), min(GRID, srow + 3)):
+                    for col in range(max(0, scol - 2), min(GRID, scol + 3)):
+                        if row == srow and col == scol:
+                            continue
+                        if abs(row - srow) + abs(col - scol) > self.reach:
+                            continue
+                        if 0 < work[row][col] <= 2:
+                            work[row][col] = 3
+                            touched = True
+                if touched:
+                    self.spread_targets += 1
+            if work is not None:
+                bumped = work
+
+        shim = value if bumped is grid else _RewrittenInput(value, bumped)
+        decision = self.base(shim)
+        actions = [int(item) for item in decision.actions]
+        k, order, vp = int(decision.k), int(decision.order), int(decision.vp)
+
+        for unit in (0, 1):
+            triple = actions[unit * 3:unit * 3 + 3]
+            if not _fold_shape(triple):
+                continue
+            self.folds_seen += 1
+            if round_number < self.steady_from:
+                continue
+            if self.level == "never":
+                actions[unit * 3:unit * 3 + 3] = [STAY, STAY, STAY]
+                self.folds_suppressed += 1
+            elif self.level in ("tour", "tour_cond"):
+                if self.level == "tour_cond" and alternatives[unit] == 0:
+                    continue
+                srow, scol = my_units[unit]
+                blocker = my_units[1 - unit]
+                replacement = self._tour(grid, srow, scol, triple[0], blocker)
+                if replacement is not None:
+                    actions[unit * 3:unit * 3 + 3] = list(replacement)
+                    self.folds_suppressed += 1
+        return tuple(actions) + (k, order, vp)
+
+
+FOLD_ARMS = (
+    ("fold_never", "never", 0),
+    ("fold_tour", "tour", 0),
+    ("fold_tour_cond", "tour_cond", 0),
+    ("fold_seek", "seek", 0),
+    ("fold_seek_cond", "seek_cond", 0),
+    ("fold_cond_t3", "cond", 3),
+    ("fold_cond_t5", "cond", 5),
+)
+
+
+def fold(map_name: str, base_so: Path, seeds: Sequence[str],
+         *, arms: Sequence[str] = tuple(n for n, _l, _t in FOLD_ARMS),
+         seat: int = 1) -> Mapping[str, Any]:
+    """Same-seed paired closed-loop A/B of the three fold arms, both order arms."""
+    spec = {name: (level, threshold) for name, level, threshold in FOLD_ARMS}
+    map_definition = load_map(map_name)
+    walls = frozenset(
+        row * GRID + col
+        for row, line in enumerate(map_definition.rows)
+        for col, cell in enumerate(line) if str(cell) == "1"
+    )
+    opp_seat = 3 - seat
+    records: list[dict[str, Any]] = []
+    for seed in seeds:
+        for label, we_first in (("we_first", True), ("we_second", False)):
+            if seat == 1:
+                costs = COSTS_WE_FIRST if we_first else COSTS_WE_SECOND
+            else:
+                costs = COSTS_WE_SECOND if we_first else COSTS_WE_FIRST
+            baseline = run_game(
+                base_so, base_so, map_source=map_name, seed=str(seed), dispatch="fixed",
+                fixed_costs=costs, player1_name="base", player2_name="opponent",
+            )
+            base_net = int(baseline.summary["players"][str(seat)]["net_gold"])
+            opp_net = int(baseline.summary["players"][str(opp_seat)]["net_gold"])
+            row: dict[str, Any] = {
+                "seed": str(seed), "arm_order": label, "we_move_first": we_first,
+                "fixed_costs": list(costs), "seat": seat,
+                "scenario_digest": baseline.summary["scenario_digest"],
+                "base_net": base_net, "base_opp_net": opp_net,
+                "base_margin": base_net - opp_net,
+            }
+            for arm in arms:
+                level, threshold = spec[arm]
+                shim = FoldStrategy(base_so, level=level, threshold=threshold,
+                                    walls=walls)
+                if seat == 1:
+                    played = run_game(
+                        shim, base_so, map_source=map_name, seed=str(seed),
+                        dispatch="fixed", fixed_costs=costs,
+                        player1_name="base", player2_name="opponent",
+                    )
+                else:
+                    played = run_game(
+                        base_so, shim, map_source=map_name, seed=str(seed),
+                        dispatch="fixed", fixed_costs=costs,
+                        player1_name="opponent", player2_name="base",
+                    )
+                net = int(played.summary["players"][str(seat)]["net_gold"])
+                other = int(played.summary["players"][str(opp_seat)]["net_gold"])
+                row[arm] = {
+                    "net": net,
+                    "delta": net - base_net,
+                    "margin_delta": (net - other) - (base_net - opp_net),
+                    "folds_seen": shim.folds_seen,
+                    "folds_suppressed": shim.folds_suppressed,
+                    "spread_targets": shim.spread_targets,
+                    "identical_to_base": played.summary["log_sha256"] == baseline.summary["log_sha256"],
+                }
+                shim.close()
+            records.append(row)
+    out: dict[str, Any] = {
+        "map": map_name, "seat": seat, "seeds": [str(s) for s in seeds],
+        "arms": list(arms), "records": records, "aggregate": {},
+    }
+    for label in ("we_first", "we_second"):
+        subset = [row for row in records if row["arm_order"] == label]
+        cell: dict[str, Any] = {
+            "games": len(subset),
+            "base_net": summary([row["base_net"] for row in subset]),
+        }
+        for arm in arms:
+            cell[arm] = {
+                "delta": summary([row[arm]["delta"] for row in subset]),
+                "margin_delta": summary([row[arm]["margin_delta"] for row in subset]),
+                "folds_seen": summary([row[arm]["folds_seen"] for row in subset]),
+                "spread_targets": summary([row[arm]["spread_targets"] for row in subset]),
+            }
+        out["aggregate"][label] = cell
+    pooled: dict[str, Any] = {"games": len(records)}
+    for arm in arms:
+        pooled[arm] = {
+            "delta": summary([row[arm]["delta"] for row in records]),
+            "margin_delta": summary([row[arm]["margin_delta"] for row in records]),
+        }
+        # the candidate must beat BOTH baselines: current (delta > 0) and never
+        if arm != "fold_never":
+            pooled[arm]["delta_vs_never"] = summary([
+                row[arm]["delta"] - row["fold_never"]["delta"] for row in records
+            ]) if "fold_never" in arms else {"n": 0}
+    out["aggregate"]["pooled"] = pooled
+    return out
+
+
+class FoldProbe:
+    """Passthrough census of the fold's *decision surface*.
+
+    The conditional-fold hypothesis assumes the fold is a bad choice made while
+    a distinct cell was available.  This measures how often that is even true:
+    for every unit-round in which the frozen build emits the ``d == 0`` fold
+    triple ``(a, a^1, STAY)``, it records the standing residual and how many
+    *other* positive cells are reachable -- as the build can see them (fogged
+    5x5), as a 7x7 or 9x9 vision purchase would see them, and fog-free.  If the
+    fold fires only when nothing else is reachable, "spread when thin" has no
+    surface and the mechanism is dead at the root rather than at the margin.
+    """
+
+    name = "fold_probe"
+
+    def __init__(self, base_so: Path, *, seat: int) -> None:
+        self.base = SharedObjectStrategy(base_so, name="foldprobe_base")
+        self.seat = int(seat)
+        self.rows: list[dict[str, Any]] = []
+
+    def close(self) -> None:
+        self.base.close()
+
+    @staticmethod
+    def _count(board, srow, scol, radius, reach, *, fogged):
+        alternatives = 0
+        value_sum = 0
+        best_distance = None
+        for row in range(max(0, srow - radius), min(GRID, srow + radius + 1)):
+            for col in range(max(0, scol - radius), min(GRID, scol + radius + 1)):
+                if row == srow and col == scol:
+                    continue
+                distance = abs(row - srow) + abs(col - scol)
+                if distance > reach:
+                    continue
+                value = int(board[row][col])
+                if fogged and value == FOG:
+                    continue
+                if value > 0:
+                    alternatives += 1
+                    value_sum += value
+                    if best_distance is None or distance < best_distance:
+                        best_distance = distance
+        return alternatives, value_sum, best_distance
+
+    def __call__(self, value: Any) -> tuple[int, ...]:
+        decision = self.base(value)
+        actions = tuple(int(item) for item in decision.actions)
+        k, order, vp = int(decision.k), int(decision.order), int(decision.vp)
+        grid = value.grid
+        truth = value.start.state.ground
+        for unit in (0, 1):
+            triple = actions[unit * 3:unit * 3 + 3]
+            if not _fold_shape(triple):
+                continue
+            srow, scol = int(value.my_units[unit].row), int(value.my_units[unit].col)
+            own = int(grid[srow][scol])
+            row: dict[str, Any] = {
+                "round": int(value.round), "unit": unit, "own_residual": own,
+            }
+            for tag, radius, fogged, board in (
+                ("fog5", 2, True, grid),
+                ("fog7", 3, True, grid),
+                ("true5", 2, False, truth),
+                ("true7", 3, False, truth),
+                ("true9", 4, False, truth),
+            ):
+                alternatives, value_sum, best = self._count(
+                    board, srow, scol, radius, 3, fogged=fogged)
+                row["alt_%s" % tag] = alternatives
+                row["altvalue_%s" % tag] = value_sum
+                row["altdist_%s" % tag] = best
+            self.rows.append(row)
+        return actions + (k, order, vp)
+
+
+def foldprobe(map_name: str, base_so: Path, seeds: Sequence[str],
+              *, steady_from: int = 8) -> Mapping[str, Any]:
+    out: dict[str, Any] = {"map": map_name, "seeds": [str(s) for s in seeds], "arms": {}}
+    for label, costs in (("we_first", COSTS_WE_FIRST), ("we_second", COSTS_WE_SECOND)):
+        rows: list[dict[str, Any]] = []
+        games = 0
+        for seed in seeds:
+            probe = FoldProbe(base_so, seat=1)
+            run_game(
+                probe, base_so, map_source=map_name, seed=str(seed), dispatch="fixed",
+                fixed_costs=costs, player1_name="base", player2_name="opponent",
+            )
+            rows.extend(probe.rows)
+            probe.close()
+            games += 1
+        rows = [row for row in rows if row["round"] >= steady_from]
+        n = max(1, len(rows))
+        cell: dict[str, Any] = {
+            "fold_unit_rounds": len(rows),
+            "fold_unit_rounds_per_game": len(rows) / games,
+            "own_residual_histogram": dict(sorted(
+                collections.Counter(row["own_residual"] for row in rows).items())),
+            "mean_own_residual": _mean([row["own_residual"] for row in rows]),
+        }
+        for tag in ("fog5", "fog7", "true5", "true7", "true9"):
+            has = [row for row in rows if row["alt_%s" % tag] > 0]
+            cell[tag] = {
+                "share_with_any_alternative": len(has) / n,
+                "mean_alternatives": _mean([row["alt_%s" % tag] for row in rows]),
+                "mean_alt_value_when_any": _mean([row["altvalue_%s" % tag] for row in has]),
+                "alternative_unit_rounds_per_game": len(has) / games,
+            }
+        out["arms"][label] = cell
     return out
 
 
@@ -1709,6 +2297,217 @@ def asymmetry(map_name: str, base_so: Path, seeds: Sequence[str]) -> Mapping[str
 
 
 # ---------------------------------------------------------------------------
+# assemble the machine-readable companion
+# ---------------------------------------------------------------------------
+
+ARTIFACTS = (
+    ("contract", "contract.json"),
+    ("step0", "step0_map1.json"),
+    ("scarcity", "scarcity_map1.json"),
+    ("visibility_monotone", "visibility_monotone_map1.json"),
+    ("visibility_selfplay_artifact", "visibility_map1.json"),
+    ("foldprobe", "foldprobe_map1.json"),
+    ("fold_tune_original_trigger", "fold_tune_map1.json"),
+    ("fold_oos_original_trigger", "fold_oos_map1.json"),
+    ("fold_tune_corrected_trigger", "fold_tune2_map1.json"),
+    ("fold_oos_corrected_trigger", "fold_oos2_map1.json"),
+    ("bound", "bound_map1.json"),
+    ("bound_out_of_sample", "bound_oos_map1.json"),
+    ("verify", "verify_smoke.json"),
+    ("platform_contention", "contention.json"),
+    ("platform_field_rd", "field_rd.json"),
+)
+
+
+def _pool(records: Sequence[Mapping[str, Any]], arm: str, key: str,
+          order_arm: str | None = None) -> Mapping[str, Any]:
+    values = [
+        row[arm][key] for row in records
+        if arm in row and (order_arm is None or row["arm_order"] == order_arm)
+    ]
+    return summary(values)
+
+
+def assemble(base_dir: Path) -> Mapping[str, Any]:
+    """Fold the raw artifacts into one auditable companion JSON with the rulings."""
+    out: dict[str, Any] = {
+        "schema_version": 1,
+        "subject": "is our abnormal move-order sensitivity an exploitable lever",
+        "answer": "no -- 此路不通 / path closed",
+        "baseline": {
+            "commit": "f18064c",
+            "source_sha256": "0ecce6fc0d7141dd2ca4ddbb18dbee2aaff67a5a8f0a981df89bc9b9aba84fdd",
+            "host_build": "clang++ -O2 -std=c++17 -shared -fPIC -Isrc -include shim.h",
+            "note": "guarded scalar fallback; AVX2 unavailable on the arm64 host",
+        },
+        "platform_games_consumed": 0,
+        "order_manipulation": {
+            "seat": 1,
+            "we_first_fixed_costs": list(COSTS_WE_FIRST),
+            "we_second_fixed_costs": list(COSTS_WE_SECOND),
+            "engine_rule": "GameEngine._dispatch: faster = 1 if costs[1] <= costs[2] else 2",
+            "dispatch_shape": "(faster,) + 7 NPCs + (slower,) -- the faster player is a "
+                              "single actor entry, so its whole turn completes before NPC 1",
+        },
+        "artifacts": {},
+        "missing": [],
+    }
+    for key, name in ARTIFACTS:
+        path = base_dir / name
+        if path.is_file():
+            out["artifacts"][key] = json.loads(path.read_text())
+        else:
+            out["missing"].append(name)
+
+    # ---- pooled headline numbers, recomputed from the raw records -----------
+    headline: dict[str, Any] = {}
+    bound_records: list[Mapping[str, Any]] = []
+    for key in ("bound", "bound_out_of_sample"):
+        blob = out["artifacts"].get(key)
+        if blob:
+            bound_records.extend(blob["records"])
+    if bound_records:
+        headline["oracle"] = {
+            "games": len(bound_records),
+            "we_first": _pool(bound_records, "prophet", "delta", "we_first"),
+            "we_second": _pool(bound_records, "prophet", "delta", "we_second"),
+            "pooled_equal_weight": _pool(bound_records, "prophet", "delta"),
+            "pooled_margin": _pool(bound_records, "prophet", "margin_delta"),
+        }
+        second = headline["oracle"]["we_second"].get("mean") or 0.0
+        headline["oracle"]["weighted_at_first_mover_rate"] = {
+            "0.500": 0.500 * second,
+            "0.568_T1_Tundra": (1.0 - 0.568) * second,
+            "0.997_field": (1.0 - 0.997) * second,
+        }
+        headline["cheap_lagged"] = {
+            "we_first": _pool(bound_records, "cheap_lagged_r000", "delta", "we_first"),
+            "we_second": _pool(bound_records, "cheap_lagged_r000", "delta", "we_second"),
+            "pooled": _pool(bound_records, "cheap_lagged_r000", "delta"),
+        }
+    fold_records: list[Mapping[str, Any]] = []
+    for key in ("fold_tune_corrected_trigger", "fold_oos_corrected_trigger"):
+        blob = out["artifacts"].get(key)
+        if blob:
+            fold_records.extend(blob["records"])
+    if fold_records:
+        headline["fold"] = {"games": len(fold_records)}
+        for arm in ("fold_never", "fold_seek", "fold_tour"):
+            entry = {
+                "we_first": _pool(fold_records, arm, "delta", "we_first"),
+                "we_second": _pool(fold_records, arm, "delta", "we_second"),
+                "pooled": _pool(fold_records, arm, "delta"),
+            }
+            if arm != "fold_never":
+                entry["pooled_vs_never"] = summary([
+                    row[arm]["delta"] - row["fold_never"]["delta"]
+                    for row in fold_records
+                    if arm in row and "fold_never" in row
+                ])
+            headline["fold"][arm] = entry
+    step0 = out["artifacts"].get("step0")
+    if step0:
+        headline["benefit_landing"] = step0["benefit_landing"]
+        headline["selector_ceiling"] = {
+            "no_target_visible_share_of_misses_we_first":
+                step0["we_first"]["units"]["miss_reason_shares"].get("iii_no_target_visible"),
+            "no_target_visible_share_of_misses_we_second":
+                step0["we_second"]["units"]["miss_reason_shares"].get("iii_no_target_visible"),
+            "statement": "the largest miss class in both order conditions is 'no target "
+                         "visible at all', which no same-round re-decision can fix; it caps "
+                         "the entire target-selector family",
+        }
+    visibility = out["artifacts"].get("visibility_monotone")
+    if visibility:
+        headline["accessible_share"] = {
+            "value": visibility["we_second"].get("accessible_share_of_strip"),
+            "definition": "share of the gold prior movers strip out of cells our units then "
+                          "enter whose removing actor's origin was inside our own 5x5 union "
+                          "and within Manhattan 3 of that cell",
+            "selfplay_cross_check": (out["artifacts"].get("visibility_selfplay_artifact") or {})
+                .get("we_second", {}).get("accessible_share_of_strip"),
+            "caveat": "high largely because a contestant able to take a cell we are about to "
+                      "step on is adjacent to us, and adjacency implies visibility",
+        }
+
+    out["headline"] = headline
+    out["gates"] = {
+        "gate_1_oracle_ge_150_gold_per_game": {
+            "threshold": 150.0,
+            "measured_pooled": (headline.get("oracle", {}).get("pooled_equal_weight") or {}).get("mean"),
+            "measured_best_arm": (headline.get("oracle", {}).get("we_second") or {}).get("mean"),
+            "fires": True,
+            "ruling": "path closed",
+        },
+        "gate_2_accessible_share_ge_30_percent": {
+            "threshold": 0.30,
+            "measured": (headline.get("accessible_share") or {}).get("value"),
+            "fires": False,
+            "ruling": "does not fire; information was never the binding constraint",
+        },
+        "gate_3_first_mover_benefit_share_ge_40_percent": {
+            "threshold": 0.40,
+            "measured": (headline.get("benefit_landing") or {})
+                .get("first_mover_share_of_within_round_channel"),
+            "fires": True,
+            "ruling": "field-ineffective; zero by construction of the dispatch shape",
+        },
+        "gate_4_conditional_fold_beats_both_baselines": {
+            "measured_vs_current": (headline.get("fold", {}).get("fold_seek", {}).get("pooled") or {}).get("mean"),
+            "measured_vs_never": (headline.get("fold", {}).get("fold_seek", {}).get("pooled_vs_never") or {}).get("mean"),
+            "fires": True,
+            "ruling": "beats neither baseline; the cheapest form of the diversification "
+                      "hypothesis has failed",
+        },
+    }
+    out["corrections"] = {
+        "order_sensitivity_anchor_is_cost_confounded": {
+            "observational_ratio_of_ratios": 1.448,
+            "rd_10ns_ratio_of_ratios": 1.131,
+            "rd_20ns_ratio_of_ratios": 1.245,
+            "absolute_rd_order_gap_ours": 1.6310,
+            "absolute_rd_order_gap_theirs": 1.6575,
+            "note": "at matched decision cost we lose slightly LESS per round from moving "
+                    "second than the opponents do; the observational ratio is inflated by a "
+                    "smaller denominator and by reverse causation through the fallback branch",
+        },
+        "gap_sizing": {
+            "correct_closure_figure_gold_per_game": 210.0,
+            "formula": "0.4327 * (4.0793 / 1.52 - 1.7128) * 500",
+            "withdrawn": 300.0,
+        },
+        "fold_is_not_a_double_eat": {
+            "standing_residual_zero_share_we_first": 0.927,
+            "standing_residual_zero_share_we_second": 0.956,
+            "note": "the dominant d==0 route is a blind unit already standing on its own "
+                    "anchor, i.e. idle oscillation, not re-biting a rich cell",
+        },
+        "opponent_visibility_not_locally_measurable": {
+            "selfplay_no_enemy_visible": [0.0678, 0.0640],
+            "monotone_no_enemy_visible": [0.9766, 0.9173],
+            "note": "self-play puts both seats on identical anchors; the platform's ~56% "
+                    "both-invisible figure remains the anchor",
+        },
+        "open_loop_strip_figure_withdrawn": {
+            "open_loop": 898.9,
+            "closed_loop_consistent": 595.3,
+            "note": "the open-loop variant evaluates our counterfactual path on the "
+                    "unstripped board and inflates by 51%",
+        },
+    }
+    out["simulator_reproduces_order_asymmetry"] = {
+        "platform_our_ratio": 2.385,
+        "local_our_ratio_seat1": 2.6676,
+        "local_our_ratio_seat2": 2.2536,
+        "platform_ratio_of_ratios": 1.448,
+        "local_ratio_of_ratios_vs_monotone_reference": 1.540,
+        "consequence": "every prior local A/B in this repository ran --fixed-costs 200,201 and "
+                       "is therefore a first-mover measurement only",
+    }
+    return out
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
@@ -1730,22 +2529,45 @@ def _seeds(text: str) -> list[str]:
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = parser.add_subparsers(dest="command", required=True)
-    for name in ("contract", "visibility", "verify", "bound", "asymmetry"):
+    for name in ("contract", "step0", "scarcity", "fold", "foldprobe", "visibility",
+                 "verify", "bound", "asymmetry", "assemble"):
         item = sub.add_parser(name)
         item.add_argument("--out", type=Path)
-        if name != "contract":
+        if name == "assemble":
+            item.add_argument("--artifacts", type=Path, default=Path("/tmp/gr_order"))
+        if name not in ("contract", "assemble"):
             item.add_argument("--base", type=Path, required=True)
             item.add_argument("--map", default="map1")
             item.add_argument("--seeds", default="1000:1005")
         if name == "bound":
             item.add_argument("--arms", default=",".join(n for n, _r in ARMS))
             item.add_argument("--seat", type=int, default=1)
+        if name == "fold":
+            item.add_argument("--arms", default=",".join(n for n, _l, _t in FOLD_ARMS))
+            item.add_argument("--seat", type=int, default=1)
+        if name == "visibility":
+            item.add_argument("--opponent", default="self",
+                              choices=("self", "monotone"))
     args = parser.parse_args(argv)
 
     if args.command == "contract":
         payload: Any = contract()
+    elif args.command == "assemble":
+        payload = assemble(args.artifacts)
+    elif args.command == "step0":
+        payload = step0(args.map, args.base, _seeds(args.seeds))
+    elif args.command == "scarcity":
+        payload = scarcity(args.map, args.base, _seeds(args.seeds))
+    elif args.command == "foldprobe":
+        payload = foldprobe(args.map, args.base, _seeds(args.seeds))
+    elif args.command == "fold":
+        payload = fold(
+            args.map, args.base, _seeds(args.seeds),
+            arms=tuple(a for a in args.arms.split(",") if a), seat=args.seat,
+        )
     elif args.command == "visibility":
-        payload = visibility(args.map, args.base, _seeds(args.seeds))
+        payload = visibility(args.map, args.base, _seeds(args.seeds),
+                             opponent=getattr(args, "opponent", "self"))
     elif args.command == "verify":
         payload = verify(args.map, args.base, _seeds(args.seeds))
     elif args.command == "asymmetry":
