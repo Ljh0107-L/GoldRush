@@ -503,15 +503,13 @@ Ranked by ceiling, from my own measurements unless marked otherwise:
 | # | residual candidate | measured pool | ceiling | status |
 |---|---|---|---:|---|
 | 1 | **The low-productivity unit-round population.** 52.3 % of our unit-rounds make ≤2 effective moves and earn `0.085`; the 47.7 % that make three earn `3.451`. | 1 566 of 2 994 unit-rounds | `0.523 × (3.451 − 0.085) × 1000` ≈ **+1760** nominal | **open, but attacked once and failed.** The wall-detour prototypes cut fallback 37.3 %→20.7 % and recovered 427/960 blocked decisions, yet measured `−373` (unsafe, more bomb burn) and `−51.5 ± 94` (safe, not adjudicable, pickup *down*). The pool is real and is the only one of the right order of magnitude; the two known attacks on it both failed on burn and on cycles, not on the size of the pool. |
-| 2 | **Bomb burn.** 219.4 gold/game, 99.4 % of it on miss unit-rounds, and the richness gate never binds — mean purse at detonation ≈198 against a 100-gold gate. | 219.4 gold/game | **+219** if eliminated | **open, but needs a new mechanism.** Threshold tuning is already judged dead (always-true vs current: `−8±23`, `+6±13`, `+38±26`, all consistent with zero), while always-false is `+344/+374/+212`, so the organ is valuable and the *knob* is not the lever. |
+| 2 | **Bomb burn and trample.** Repriced and partitioned in §6.7 below. | 138.6 gold/game total | **+138.6** absolute ceiling | **effectively closed.** 96.3 % of bomb burn is on bombs we *could see*, i.e. a deliberate gate trade already at a flat optimum; nothing is recoverable by seeing more. |
 | 3 | Order-conditioned second-mover deficit | 38.5 % of unit-rounds at `0.913` vs `1.944` | ≤ +400 nominal | **mostly illusory.** §4.2b shows it collapses to `0.74σ` in the identified stratum; the residual causal part is small and it is the same anchor already retired once. |
-| 4 | Variable `k` | 148 free steps/game | +83…106 | **closed here** (§5.2) |
+| 4 | Variable `k` | 148 free steps/game | +83…106 | **closed here** (§5.2, §6.8) |
 
-Items 1 and 2 together have a nominal ceiling far above +318; every other measured axis is at or
-below ±106. **So the honest answer is: yes, there is still enough nominal headroom for +318, but all
-of it sits in the two pools that have already resisted one attack each, and neither failed because
-the pool was too small — they failed on burn and on cycles.** That is a materially different
-situation from "no candidates remain".
+Item 1 is the only pool left whose nominal ceiling exceeds +318, and it has already resisted one
+attack. **Item 2 was repriced downward and closed during this report** — see §6.7. So the candidate
+pool is narrower than my first pass suggested: **one open pool, not two.**
 
 ### 6.3 ⚠️ The 2500 objective may itself be misspecified
 
@@ -548,6 +546,15 @@ In this report the ratio was 1.00 for our own side and for `rikka`'s public slot
 number I had already computed** (§3.4). Computing the ratio *before* using the channel, rather than
 after being surprised, is the cheap habit that caught it.
 
+**Executable form, so it cannot degrade into advice.** The rule is enforced structurally rather than
+remembered: `sim/analyze_rikka.py styles` emits `bias` as a **mandatory column beside every
+trajectory statistic it prints**, computed on the same games, and `playstyle_summary` returns
+`bias_ratio` in the same mapping as `distinct_cells_per_unit_round`, `effective_steps_per_unit_round`
+and `gross_per_effective_step` — so a caller cannot obtain the trajectory numbers without also
+obtaining their licence. Any future analysis that reads the fog-filtered channel should do the same:
+**put the ratio in the same table as the statistic, not in a caveats paragraph.** A statistic whose
+licence has to be looked up elsewhere is a statistic that will eventually be quoted without it.
+
 ### 6.5 What this line is worth anyway
 
 It closes two candidate directions with quantified reasons rather than leaving them as hopes:
@@ -579,7 +586,150 @@ owner of the standard re-derive it within a single construct before changing any
 
 ---
 
-## 7. Residual unknowns
+### 6.7 Bomb burn: repriced from 219.4 to 138.6, partitioned, and closed
+
+The archived figure of 219.4 gold/game belongs to a different construct and corpus. Measured here
+over **51 games of the current construct family** (`fd47ea6` post-boundary defence plus `f18064c`
+`frTu*`/`t1f*`, all three maps, 25 500 rounds, 345 unit-rounds with a gold decrease):
+
+| component | gold/game | share |
+|---|---:|---:|
+| **bomb burn** | **97.5** | 70.3 % |
+| — on a bomb *visible* as `-3` in the round-start grid, inside the unit's own 5×5 scan | **93.9** | 96.3 % of bomb burn |
+| — walked into fog (`-5`) | 8.5 | 8.7 % of bomb burn |
+| — residual after removing category overlap | −5.0 | (a unit-round can carry both a bomb and a trample) |
+| **trample** (own units, 157 events, `unit_owner` attributed) | **41.1** | 29.7 % |
+| **total gold destroyed on our side** | **138.6** | 100 % |
+
+Two structural facts settle the axis:
+
+* **Chebyshev distance of every known-bomb cell from that unit's round-start position: `d=1` in 265
+  cells, `d=2` in 30 cells, `d=3` in ZERO.** A three-step walk can only reach `d=3` by taking three
+  collinear steps, and it essentially never detonates one there. **So a wider scan window recovers
+  nothing on the bomb axis** — the 7×7 upgrade costed at +196 instructions ≈314 gold/game has no
+  bomb-side credit to offset it.
+* **The `±1`-row bomb-record limitation no longer exists.** `src/player.cpp:481-484` writes all five
+  rows of the scan window into `bombbit` (`for (int i = 0; i < 5; ++i)`), and `:456` records that the
+  row-wise staging *replaced* the old 15-bit `bombm` packing. The comment at `:478` is the fix note
+  citing case `158287`. ⚠️ The header comment at `:41` still describes the superseded `±1` behaviour
+  and is **stale** — a fourth instance today of the repository's own record being wrong about itself.
+
+Hence the 93.9 gold/game is not a blindness loss: it is a bomb we saw and stepped on anyway, because
+the richness gate makes bombs near-transparent to a poor unit (55.9 % of these hits had
+`held < 100`; median `held` 93). And that gate is already at a flat optimum — moving it to
+always-avoid measures `−8±23 / +6±13 / +38±26`, all consistent with zero
+(`sim/reports/subsystem_value_audit.md`). **This finally explains *why* the threshold family failed:
+the burn was never a knowledge deficit, it is a deliberate trade whose two sides cancel at the
+margin.** Avoiding those bombs costs as much in forgone pickups as it saves in burn.
+
+**Verdict: absolute ceiling +138.6 gold/game, of which 93.9 is an already-optimised trade, 8.5 is
+fog, and 41.1 is trample (an untouched but small mechanism). Even total elimination falls short of
++318.** The axis should not be opened on the bomb side. Trample at 41.1 gold/game is the only part
+never examined, and it is too small to matter alone.
+
+### 6.8 🧱 Structural cap: variable `k` above 4 is economically impossible
+
+Stated as an explicit cap, to stand alongside the target-selection cap:
+
+> The scan is a **5×5 window** (`rowsel[5]`; row loops at `src/player.cpp:460/481/489`), and the
+> target offset is clamped to `[-3,3]` (`:529-530`). Every gold cell the player can see therefore
+> satisfies `|dr|,|dc| ≤ 2`. **`k = 4` is the largest step allocation that can be aimed at
+> scanner-visible gold.** Steps 5 and 6 can only oscillate between already-visited cells
+> (`:230-239`, an organ measured at `−36/−5/−4` gold) or walk blind past the target.
+>
+> Making steps 5–6 gold-directed requires a 7×7 scan: **+196 instructions/call ≈ 314 gold/game**,
+> plus 1 472 B of `.rodata`. The entire prize available to step reallocation is **+83…106 gold/game**
+> (148 zero-opportunity-cost steps). **Cost exceeds the whole prize by ≈3×, before any income risk.**
+> §6.7 additionally removes the bomb-side credit that a wider scan might have earned.
+>
+> ⇒ **`k > 4` is capped by architecture, not by evidence.** Only `k ∈ {2,3,4}` on the existing offset
+> domain is even economically discussable, at +27…46 instructions (20–91 gold/game all-in) against a
+> prize bounded by the same 148 steps, with a `±97.5` gold unsigned burn-concentration term on top.
+
+On that last term — the "sign undetermined" caveat, clarified since it was queried: it refers **only
+to variable `k`'s side effect on burn**, not to any bomb-visibility work. A bomb charges 10 % of the
+*hitting* unit's purse, so a `k` rule that concentrates movement in the rich unit roughly doubles
+bomb burn while one that concentrates it in the poor unit nearly removes it. With burn repriced from
+219.4 to 97.5 gold/game the term shrinks to **±97.5**, but it remains the same order as the entire
+`k` prize, and its sign is fixed only once a concrete rule exists. **Extending bomb visibility, by
+contrast, would have had a determined positive sign — it is simply aimed at an empty pool.**
+
+### 6.9 Fixed benchmark anchor (replaces the uncontested 2500 proxy for candidate screening)
+
+The uncontested `probeobs` ceiling cannot distinguish the ladder's #1 from its #8 (§6.3), so it is a
+weak proxy. These three games are proposed instead, and their conditions are written down so the
+comparison stays valid:
+
+| field | value |
+|---|---|
+| games | `185615` (map1), `185688` (map2), `185763` (map3) |
+| our side | `fd47ea6`, public defence slot, P50 **200 ns** |
+| opponent | `g47v220m1/m2/m3` — `rikka` bespoke, 7.5–11.0 ms/round, variable `k`, buys vision |
+| **action order** | **we move first in 1500 / 1500 scored rounds (`f = 1.000`)** — order confound eliminated by construction |
+| current result | 0W 3L, net **−541 / −315 / −322**, mean **−392.7** |
+| our income | 1.689 ± 0.067 gold/unit-round; theirs 2.154 ± 0.129 |
+| screening question | does a candidate narrow **−392.7**? |
+
+Why this anchor: it is contested (unlike `probeobs`), its order condition is pinned at the *favourable*
+extreme so any residual deficit is pure collection water level, it spans all three maps, and the
+opponent is fixed and reproducible. Its weakness is n=1 per map, so it screens rather than adjudicates —
+a candidate that fails here is suspect, a candidate that passes still needs a proper paired A/B.
+
+⚠️ The opponent is a challenge-path build, so it may stop being reachable if `rikka` retires it. Re-check
+availability before relying on it.
+
+---
+
+## 7. Pre-registration: 20 games of the current construct against `player47`
+
+Approved by the owner line to settle the one question this report could not: **does `rikka`'s ladder
+model out-collect our current construct?** We have zero games between a current build and their
+public slot, so every comparison in §4.2b is confounded by construct, order mix, or opponent identity.
+Registered before any game is played.
+
+**Design.** 20 games, our current public defence artefact versus `model_id 51256` (`player47`),
+**all on map1**. Rationale for a single map: §2.1 shows the between-map spread (−541 / −315 / −322) is
+comparable to the effect being measured, so pooling maps would spend the sample on map variance. map1
+is also where all 18 historical `player47` games and the 99/90 `T-1`/`Tundra` reference games sit, so
+the new batch is directly comparable to existing corpora.
+
+**Quota.** Must run after the UTC 16:00 reset; the current window has 30 of 500 remaining, which is
+insufficient. Reserve at least 20 unused after the batch.
+
+**Primary judgement — same-order water level.** Compare each side's mean per-unit-round income *within
+the same games*, split by who actually moved first that round:
+* `H0`: our income while moving first equals theirs while moving first.
+* Adjudicate at **2 SE**. Report both order arms separately. **Never** subtract our first-mover income
+  from their second-mover income.
+
+**Secondary judgement — identified stratum.** Repeat the above restricted to rounds with
+`|Δcost| ≤ 10 ns`, the one stratum where who moves first is approximately random. `f` is endogenous
+(our cost is produced by our own branch behaviour, and a blocked position is both slow and poor), so
+the unrestricted split is not identification. **Both the unrestricted and the near-tie estimate must be
+reported; their difference is the confounding magnitude.** Expect the near-tie arm to carry roughly
+`n/20` of the rounds, so it may well return "not adjudicable" — that is an acceptable outcome and must
+be written as such rather than replaced by the unrestricted number.
+
+**Falsification conditions, stated in advance.**
+* If our same-order income is **below** theirs by more than 2 SE in the near-tie stratum ⇒ `rikka`'s
+  ladder model does out-collect us, and "nothing to learn" is **refuted**; the collection axis reopens
+  and their 56.8 %-move / 3.136-per-move operating point becomes worth dissecting.
+* If the difference is **within** 2 SE ⇒ the strategic conclusion stands as *not contradicted*, and the
+  owner's original hypothesis is answered in the negative with a real sample behind it.
+* If our income is **above** theirs by more than 2 SE ⇒ we are ahead of a 67 % ladder team on
+  collection, which would make the ladder gap attributable to something other than collection and
+  should trigger a separate investigation rather than celebration.
+
+**Pre-committed nuisance reporting.** Both sides' P50/P90 cost; our realised `f`; the bias ratio of
+§6.4 for both sides; vision spend; and the crowding coefficient of §6.6 for this pairing, since a
+non-zero value changes how the level comparison may be read.
+
+**What this batch cannot settle.** It measures collection water level, not win rate. 20 games gives a
+Wilson interval on win rate roughly ±21 pp, so no win-rate claim should be made from it.
+
+---
+
+## 8. Residual unknowns
 
 1. **Our current build has never played `rikka`'s public slot.** The nearest proxies (`vsrikka`,
    `mR1`, 08-09) are n=2 at net `+25`. The parity claim in §4.2 rests on comparing our 1 map1 game

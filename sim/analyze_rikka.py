@@ -676,6 +676,161 @@ def cmd_styles(args: argparse.Namespace) -> int:
     return 0
 
 
+def burn_partition(path: Path, pid: int) -> Mapping[str, Any]:
+    """Partition one side's destroyed gold into bomb-on-a-seen-cell, fog, and trample.
+
+    Why the partition matters: a burn caused by a bomb the player *could see* is a
+    deliberate trade made by the richness gate, whereas a burn on an unseen bomb
+    would be a knowledge deficit that a wider scan could repair.  The two call for
+    completely different work, and only the second would justify a scan upgrade.
+
+    The classifier walks each unit forward from its round-start position through
+    its effective actions and reads the round-start grid, which is what the
+    decision actually saw.  ``-3`` is a bomb, ``-5`` is fog.  Chebyshev distance
+    from the unit's own start cell decides whether the cell was inside that unit's
+    5x5 scan window at all; anything at distance 3 was invisible to it even if
+    another unit could see it.
+
+    Categories can overlap when one unit-round carries both a bomb and a trample,
+    so ``residual`` is reported rather than forced to zero.
+    """
+    previous: dict[int, int] = {}
+    lost = bomb_seen = fog_walk = other = 0
+    trample_ours = trample_theirs = 0
+    distances: collections.Counter[int] = collections.Counter()
+    held_at_hit: list[int] = []
+    for record in rounds(path):
+        if record is None:
+            previous = {}
+            continue
+        start, end = record.get("start"), record["end"]
+        entry, start_entry = player_of(end, pid), player_of(start, pid) if start else None
+        for event in end.get("trample_events") or []:
+            penalty = int(event.get("penalty") or 0)
+            if int(event.get("unit_owner", -1)) == pid:
+                trample_ours += penalty
+            else:
+                trample_theirs += penalty
+        if entry is None or start_entry is None:
+            continue
+        grid = start.get("grid")
+        for index, unit in enumerate(entry["units"]):
+            gold = int(unit["gold"])
+            earlier = previous.get(index)
+            actions = unit.get("actions")
+            start_pos = start_entry["units"][index].get("position")
+            if earlier is None or actions is None or start_pos is None or grid is None:
+                previous[index] = gold
+                continue
+            delta = gold - earlier
+            if delta < 0:
+                row, col = int(start_pos[0]), int(start_pos[1])
+                seen_bomb = walked_fog = False
+                for action in actions:
+                    step = ACTION_DELTAS[int(action)]
+                    row, col = row + step[0], col + step[1]
+                    if not (0 <= row < 17 and 0 <= col < 17):
+                        continue
+                    value = grid[row][col]
+                    if value == -3:
+                        seen_bomb = True
+                        distances[max(abs(row - int(start_pos[0])),
+                                      abs(col - int(start_pos[1])))] += 1
+                    elif value == -5:
+                        walked_fog = True
+                lost += -delta
+                if seen_bomb:
+                    bomb_seen += -delta
+                    held_at_hit.append(earlier)
+                elif walked_fog:
+                    fog_walk += -delta
+                else:
+                    other += -delta
+            previous[index] = gold
+    return {
+        "gold_lost": lost,
+        "on_a_seen_bomb": bomb_seen,
+        "walked_into_fog": fog_walk,
+        "neither": other,
+        "trample_ours": trample_ours,
+        "trample_theirs": trample_theirs,
+        "bomb_only": lost - trample_ours,
+        "residual_after_trample": other - trample_ours,
+        "seen_bomb_cheb_distance": dict(sorted(distances.items())),
+        "held_before_hit_median": statistics.median(held_at_hit) if held_at_hit else None,
+        "share_held_below_gate": (
+            sum(1 for value in held_at_hit if value < 100) / len(held_at_hit)
+            if held_at_hit else None
+        ),
+    }
+
+
+def cmd_burn(args: argparse.Namespace) -> int:
+    """Reprice and partition our own destroyed gold over the current construct family.
+
+    Runs over every archived game of the live artefact plus the frozen build it
+    descends from, on all maps, because the question is mechanical rather than
+    map-specific.  Our own side is 100% visible, so this measurement carries no
+    selection bias and needs no licensing ratio.
+    """
+    index = load_roster(Path(args.index))
+    chosen: list[tuple[Path, int]] = []
+    for row in index:
+        for entry in row["players"]:
+            name = str(entry["model_name"])
+            current = (
+                (name == OUR_ACCOUNT and str(row.get("created_at", "")) >= PUBLISH_BOUNDARY)
+                or name.startswith("frTu") or name.startswith("t1f")
+            )
+            if not current:
+                continue
+            path = LOGS / ("game_%s.log" % row["id"])
+            if not path.is_file():
+                continue
+            head = header(path)
+            pid = (1 if str(head.get("player1")) == name
+                   else 2 if str(head.get("player2")) == name else None)
+            if pid:
+                chosen.append((path, pid))
+    if not chosen:
+        print("no games of the current construct family are archived")
+        return 0
+    totals: collections.Counter[str] = collections.Counter()
+    distances: collections.Counter[int] = collections.Counter()
+    held: list[int] = []
+    for path, pid in chosen:
+        found = burn_partition(path, pid)
+        for key in ("gold_lost", "on_a_seen_bomb", "walked_into_fog", "neither",
+                    "trample_ours", "trample_theirs"):
+            totals[key] += found[key]
+        for distance, count in found["seen_bomb_cheb_distance"].items():
+            distances[int(distance)] += count
+        if found["held_before_hit_median"] is not None:
+            held.append(found["held_before_hit_median"])
+    games = len(chosen)
+    print("current construct family: %d archived games, all maps" % games)
+    print("%-46s %10s %12s" % ("component", "total", "gold/game"))
+    for label, key in (
+        ("gold destroyed on our side (all causes)", "gold_lost"),
+        ("  on a bomb VISIBLE in the round-start grid", "on_a_seen_bomb"),
+        ("  walked into fog", "walked_into_fog"),
+        ("  neither (includes trample)", "neither"),
+        ("trample penalty, our units", "trample_ours"),
+        ("trample penalty, their units", "trample_theirs"),
+    ):
+        print("%-46s %10d %12.1f" % (label, totals[key], totals[key] / games))
+    bomb_only = totals["gold_lost"] - totals["trample_ours"]
+    print("%-46s %10d %12.1f" % ("=> bomb burn (total minus own trample)", bomb_only, bomb_only / games))
+    print()
+    print("Chebyshev distance of seen-bomb cells from the unit's round-start cell")
+    print("(<=2 is inside that unit's own 5x5 scan; 3 would be invisible to it):")
+    for distance in sorted(distances):
+        print("   d=%d : %d cells" % (distance, distances[distance]))
+    if not any(d >= 3 for d in distances):
+        print("   -> no detonation beyond the scan window: a wider scan recovers nothing here")
+    return 0
+
+
 def cmd_roster(args: argparse.Namespace) -> int:
     games = _games(args)
     print("%-8s %-6s %-20s %-14s %-16s %8s %8s %6s %7s %s" % (
@@ -848,7 +1003,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     subparsers = parser.add_subparsers(dest="command", required=True)
     for name, handler in (
         ("roster", cmd_roster), ("income", cmd_income), ("budget", cmd_budget),
-        ("reach", cmd_reach), ("styles", cmd_styles), ("selftest", cmd_selftest),
+        ("reach", cmd_reach), ("styles", cmd_styles), ("burn", cmd_burn),
+        ("selftest", cmd_selftest),
     ):
         sub = subparsers.add_parser(name)
         sub.set_defaults(handler=handler)
