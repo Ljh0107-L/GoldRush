@@ -241,3 +241,50 @@ map1 自博弈，基线 `f18064c`(gpA*) 与候选(gpB*) 同局对打。**前 4 �
 
 配合边际价重估（0.025ns/条），整条延迟路线剩余空间是个位数金量级，**在 −104 ~ −274 的缺口面前
 期望值不足**。建议把工程量投向命中率/站位（已由并行 Worker 承接）。
+
+---
+
+# 附录 C：死垫护栏 `tests/verify_construct.sh`（含负路径实测）
+
+死垫是仓库里唯一的**活雷**：垫长与 `decide` 体积耦合，踩雷代价 −128 金是埋雷收益 +23 金的 5.5 倍，
+且 `pair_diff`／体积／指令数**全部不会告警**。护栏脚本把四项断言固化，失败退出码 = 失败项数。
+
+## C.1 正路径（赛事机 quant-compiler，当前 HEAD）
+
+```
+PASS  entry mod64 = 0x10 at 0x1990 (the only proven-good bucket)
+PASS  AVX512-FP16 instruction count = 0
+PASS  artifact SHA256 matches the CHANGELOG registration (c7a1fd5ff45ec0f1...)
+PASS  pair_diff 0/500 on all 3 maps
+ALL CHECKS PASSED
+```
+
+三图自动按第 2 行墙 token 数去重挑选，避免误传三份同图日志而得到假通过；不足 3 张图即失败。
+
+## C.2 负路径 —— 每一项都实测触发过（脚本不能只见过绿灯）
+
+| 注入的故障 | 脚本反应 | 退出码 |
+|---|---|---:|
+| 删掉 `asm(".space 48, 0x90")` | `FAIL entry mod64 = 0x20 at 0x1960, want 0x10` + **准确建议补 48 字节** | 2 |
+| 注入 `vmovw %eax, %xmm0` | `FAIL found 1 AVX512-FP16 instructions … will SIGILL` + 打印越界助记符 + 指向编译机 | 3 |
+| 挑食阈值 `2 → 1`（真行为改动） | `FAIL pair_diff found divergences`：三图 119/173/98，并打印首例分歧回合与两侧动作 | 2 |
+| 源码改动导致 SHA 不匹配 | `FAIL artifact SHA256 does not match`，并分类「预期改动 → 去更新登记」/「未登记漂移 → 不许提交」 | 计入 |
+| 在非 x86_64 机器上运行 | `FAIL arch is arm64 … artifact is NOT submittable`，引用 8.9 的 SIGILL 判例 | 计入 |
+| 构建失败 / 缺 baseline / 缺日志 | `fatal:` 并退出 99，附可执行修复动作 | 99 |
+
+**一处方法学自查**：第一次写 FP16 负路径测试时我用 `%%eax` 注入，basic `asm` 不做 `%` 转义，
+汇编器直接报错；脚本正确地在构建阶段就 `fatal` 退出，而我的测试外壳把 `$?` 读成了管道里 `sed`
+的状态，看起来像「检查没反应」。**改用 `%eax` 后确认检查生效。教训：验证护栏时，退出码必须直接
+读脚本本身，不能读管道尾。** 这与本轮那次槽位假警报是同一类错误——**测量装置本身也要被测量。**
+
+## C.3 用法
+
+```sh
+# 赛事机（唯一有效的构建环境）
+./tests/verify_construct.sh --baseline-so /tmp/base.so          # 常用：基线已构建好
+./tests/verify_construct.sh --baseline-commit f18064c           # 需在 git 仓库内
+./tests/verify_construct.sh --src /tmp/cand --skip-pair-diff    # 故意改行为时只查前三项
+```
+`--skip-pair-diff` 只在**刻意的行为改动**时合法；此时等价门不适用，改由 head-to-head 收入批量
+承担（≥3 对同窗交错，见 `INFRA §4`）。脚本末尾固定提醒：四门全过只证明**构型合法且行为等价，
+不证明更快**——更快必须由 perf `cycles`（门 2′）证明。

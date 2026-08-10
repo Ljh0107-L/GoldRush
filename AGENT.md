@@ -96,8 +96,16 @@ ssh Ubiquant220@8.153.76.120 'cd ~/goldrush/src && g++ -std=c++17 -O3 -march=nat
 
 ## 4. 纪律
 
-- 成本与验收协议全在 **INFRA.md**：等价重构零局数（perf+pair_diff），行为变更 ≥3 对同窗批量，
-  里程碑 6+6；单局 A/B 无判别力。
+- **改过 `decide` / `moveDecision` 之后，先跑护栏再谈别的**：
+  `ssh Ubiquant220@8.153.76.120 'cd ~/goldrush && ./tests/verify_construct.sh --baseline-so /tmp/base.so'`
+  （断言入口 mod64==0x10、FP16==0、SHA 与 CHANGELOG 登记一致、三图 pair_diff 0/500；
+  退出码 = 失败项数）。`src/player.cpp` 里的 `asm(".space 48, 0x90")` 死垫把入口锁在唯一
+  已证最优的 mod64 档，**垫长与 `decide` 体积耦合**；改 `decide` 不重算垫长会白付 11.67ns
+  ≈ −128 金，而 `pair_diff`/体积/指令数**全都不会告警**。
+- 成本与验收协议全在 **INFRA.md**：等价重构零局数，**验收量是 perf `cycles`（门 2′）而不是指令数**
+  ——指令数下降 −42 而 cycles +15~18 的判例见 CHANGELOG 军规 30；行为变更 ≥3 对同窗批量，
+  里程碑 6+6；单局 A/B 无判别力。**自博弈延迟 A/B 必须成对换座**（槽位效应 P90 ±20ns，
+  与真实回归同阶，军规 32）。
 - 场次花在硬对手与探针上；纯等价改动禁止烧局。负结果照常入册（CHANGELOG 军规节）。
 - 陪练基线 `~/goldrush/cpp1.so`；指令基线 `~/goldrush/ptrivial.so`（均在开发机）。
 
