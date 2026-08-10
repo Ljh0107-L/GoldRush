@@ -115,11 +115,18 @@ def window_start() -> datetime.datetime:
     return boundary
 
 
-def games_used_this_window(rows: list[dict]) -> int:
-    start = window_start()
-    def ts(row):
-        return datetime.datetime.fromisoformat(str(row["created_at"]).replace("Z", "+00:00"))
-    return sum(1 for r in rows if ts(r) >= start)
+def quota_state() -> tuple[int, int]:
+    """Authoritative quota from the platform, not inferred from the game list.
+
+    ``get_user_info`` reports ``today_initiated`` and ``daily_initiate_limit``
+    directly. Counting rows in the game list OVERCOUNTS, because games where other
+    teams challenge us do not consume quota (``docs/FAQ.md:366``) yet still appear
+    in the list. Measured on 2026-08-10: 498 rows in the window against 470
+    initiated, the difference being exactly the passive challenges.
+    """
+    info = api("/api/user/get_user_info")
+    return (int(info.get("today_initiated") or 0),
+            int(info.get("daily_initiate_limit") or DAILY_QUOTA))
 
 
 def cmd_roster(args: argparse.Namespace) -> int:
@@ -225,9 +232,10 @@ def cmd_submit(args: argparse.Namespace) -> int:
     if not pending:
         print("nothing pending; roster fully submitted")
         return 0
-    used = games_used_this_window(all_games())
-    remaining = DAILY_QUOTA - used
-    print("quota window: used %d / %d  -> remaining %d" % (used, DAILY_QUOTA, remaining))
+    used, limit = quota_state()
+    remaining = limit - used
+    print("quota (platform-reported today_initiated): used %d / %d -> remaining %d"
+          % (used, limit, remaining))
     print("pending in roster: %d" % len(pending))
     batch = pending[:min(len(pending), max(0, remaining - args.reserve))]
     if not batch:

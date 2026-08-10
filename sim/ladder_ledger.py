@@ -72,12 +72,28 @@ def api_rows() -> list[dict]:
     return rows
 
 
+LADDER_VISIBLE_CAP = 100          # get_rank_list_1 hard-truncates; paging is ignored
+
+
 def api_rank() -> dict:
+    """Our ladder row, plus our ordinal position and a cap flag.
+
+    ``get_rank_list_1`` returns at most ``LADDER_VISIBLE_CAP`` rows and ignores
+    ``page``/``page_size`` entirely (``page=2`` is byte-identical to ``page=1``).
+    So a missing row means "ranked below the visible cap", NOT "no data" and NOT an
+    error. We sat at #92 of 100 on 8.10, eight places from vanishing from this view,
+    so the distinction is recorded explicitly rather than left as a silent ``{}``.
+    """
     import arena
-    for row in arena.call("GET", "/api/user/get_rank_list_1").get("list", []):
+    rows = arena.call("GET", "/api/user/get_rank_list_1").get("list", [])
+    for i, row in enumerate(rows):
         if int(row.get("user_id", -1)) == US_USER_ID:
-            return row
-    return {}
+            out = dict(row)
+            out["_ladder_rank"] = i + 1
+            out["_below_visible_cap"] = False
+            return out
+    return {"_ladder_rank": None, "_below_visible_cap": True,
+            "_visible_rows": len(rows)}
 
 
 def api_public_model() -> dict:
@@ -152,6 +168,8 @@ def collect() -> dict:
         "captured_at_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "platform_win_rate": rank.get("win_rate"),
         "platform_p90_ns": rank.get("user_cost1"),
+        "ladder_rank": rank.get("_ladder_rank"),
+        "ladder_below_visible_cap": rank.get("_below_visible_cap"),
         "public_model": {"id": model.get("id"), "updated_at": model.get("updated_at")},
         "game_counts": dict(buckets),
         "external_games": len(ext),
@@ -253,6 +271,78 @@ def cmd_report(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_stages(_args: argparse.Namespace) -> int:
+    """Detect whether a new competition stage has opened (mock race / preliminary).
+
+    Why this exists: the calendar lists a mock race on 8.15-8.16 but no document
+    states how one participates, and missing it would mean entering the
+    preliminary with no rehearsal. The platform gives an indirect but reliable
+    signal: staged endpoints already exist and are EMPTY.
+
+    Observed 2026-08-10: ``get_rank_list_2`` and ``get_game_list_2`` both respond
+    with zero rows, ``_3``/``_4`` variants 404, only ``get_model_list_4`` exists,
+    and ``get_user_info`` carries ``cost1``/``cost2``/``cost3`` with only ``cost1``
+    populated. So stage 1 is the public ladder and stage 2 is provisioned but not
+    started. When stage 2 starts carrying rows, the next phase has begun.
+    """
+    import arena
+    print("stage probe at %s" % datetime.datetime.now(datetime.timezone.utc).isoformat())
+    changed = False
+    for name, path in (("rank_list_2", "/api/user/get_rank_list_2"),
+                       ("game_list_2", "/api/user/get_game_list_2")):
+        try:
+            payload = arena.call("GET", path, params={"page": 1, "page_size": 5})
+            rows = payload.get("list", []) if isinstance(payload, dict) else []
+            total = payload.get("total") if isinstance(payload, dict) else None
+            if rows or total:
+                changed = True
+                print("  %-12s HAS DATA (%s rows, total=%s)" % (name, len(rows), total))
+            else:
+                print("  %-12s EMPTY" % name)
+        except Exception as exc:                                   # noqa: BLE001
+            print("  %-12s absent (%s)" % (name, str(exc)[:40]))
+
+    # rank_list_3 is a 16->8 knockout bracket that is ALREADY populated, so its mere
+    # non-emptiness is not a stage signal. It is a static fixture: 10 of its 16 teams
+    # own neither a ladder position nor a registered model, i.e. they are not in the
+    # public test at all, and we are not in it. Only a CHANGE to it is informative.
+    BRACKET_FIXTURE = ("16_8/1:90,158|16_8/2:117,159|16_8/3:41,156|16_8/4:76,187|"
+                       "16_8/5:33,82|16_8/6:23,64|16_8/7:96,202|16_8/8:71,193")
+    try:
+        br = arena.call("GET", "/api/user/get_rank_list_3").get("list", {})
+        sig = "|".join("%s:%s" % (k, ",".join(str(p["user_id"]) for p in v))
+                       for k, v in sorted(br.items()))
+        played = sum(1 for v in br.values() for p in v if p.get("has_game"))
+        if sig != BRACKET_FIXTURE:
+            changed = True
+            print("  bracket      CHANGED from the recorded fixture -> reseeded; inspect")
+        elif played:
+            changed = True
+            print("  bracket      unchanged seeding but %d slots now have games" % played)
+        else:
+            print("  bracket      unchanged static fixture (16 teams, no games, we are absent)")
+    except Exception as exc:                                       # noqa: BLE001
+        print("  bracket      absent (%s)" % str(exc)[:40])
+    info = arena.call("GET", "/api/user/get_user_info")
+    costs = [info.get("cost%d" % i) for i in (1, 2, 3)]
+    print("  user cost1/2/3 = %s  (a non-zero cost2 or cost3 also signals a new stage)" % costs)
+    if any(costs[1:]):
+        changed = True
+    models = arena.call("GET", "/api/user/get_model_list_4").get("list", [])
+    ours = [m for m in models if int(m.get("user_id", -1)) == US_USER_ID]
+    print("  our public slot: id=%s updated_at=%s"
+          % (ours[0].get("id") if ours else None, ours[0].get("updated_at") if ours else None))
+    print()
+    if changed:
+        print("*** A NEW STAGE APPEARS TO HAVE OPENED — investigate immediately. ***")
+        print("Conservative handling: the public slot (stage 4) is the only code registry that")
+        print("exists, and 'the engine aggregates code' is documented, so a mock race most")
+        print("likely uses it. Keep that slot at our best deliverable at all times.")
+        return 1
+    print("no new stage yet; stage 2 provisioned but empty (as of the last check)")
+    return 0
+
+
 def cmd_power(args: argparse.Namespace) -> int:
     baseline = args.baseline
     print("baseline = %.4f" % baseline)
@@ -270,6 +360,7 @@ def main() -> int:
     snap.set_defaults(func=cmd_snapshot)
     rep = sub.add_parser("report"); rep.add_argument("--cutover", default="")
     rep.set_defaults(func=cmd_report)
+    sub.add_parser("stages").set_defaults(func=cmd_stages)
     pw = sub.add_parser("power"); pw.add_argument("--baseline", type=float, default=0.2314)
     pw.set_defaults(func=cmd_power)
     args = parser.parse_args()

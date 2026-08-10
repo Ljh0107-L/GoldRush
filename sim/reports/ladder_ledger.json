@@ -20,5 +20,28 @@
       "id": 278135,
       "updated_at": "2026-08-10T08:20:18.000Z"
     }
+  },
+  {
+    "captured_at_utc": "2026-08-10T09:43:11.089095+00:00",
+    "external_games": 827,
+    "external_wins": 240,
+    "frozen_lineage_games": 36,
+    "frozen_lineage_opponents": {
+      "Tiuntled-1": 18,
+      "Tundra-wawa": 18
+    },
+    "game_counts": {
+      "active": 690,
+      "passive": 137,
+      "self": 832
+    },
+    "ladder_below_visible_cap": false,
+    "ladder_rank": 93,
+    "platform_p90_ns": 300,
+    "platform_win_rate": "0.2414",
+    "public_model": {
+      "id": 278135,
+      "updated_at": "2026-08-10T08:20:18.000Z"
+    }
   }
 ]
