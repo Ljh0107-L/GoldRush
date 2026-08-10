@@ -1,0 +1,1186 @@
+[
+  {
+    "board_win_rate": 0.2595,
+    "error_msg": "",
+    "game_id": 191662,
+    "is_win": 0,
+    "kind": "stratified",
+    "map_id": 1,
+    "mechanics": {
+      "f": 1.0,
+      "our_p50_ns": 1650,
+      "ours": {
+        "burn": 0.02605210420841675,
+        "gross": 1.5761523046092183,
+        "hit": 0.31162324649298595,
+        "mean": 1.5501002004008015,
+        "unit_rounds": 998,
+        "yield_per_hit": 5.057877813504823
+      },
+      "their_p50_ns": 32167801,
+      "theirs": {
+        "burn": 0.10921843687374722,
+        "gross": 2.3987975951903806,
+        "hit": 0.42384769539078154,
+        "mean": 2.2895791583166334,
+        "unit_rounds": 998,
+        "yield_per_hit": 5.659574468085107
+      }
+    },
+    "model_id": 49565,
+    "model_name": "fs1001",
+    "our_net": 1547,
+    "stratum": "S1",
+    "submitted_at_utc": "2026-08-10T16:10:03.801933+00:00",
+    "team": "1",
+    "their_net": 2285,
+    "user_id": 5
+  },
+  {
+    "board_win_rate": 0.2778,
+    "error_msg": "",
+    "game_id": 191663,
+    "is_win": 1,
+    "kind": "stratified",
+    "map_id": 2,
+    "mechanics": {
+      "f": 1.0,
+      "our_p50_ns": 200,
+      "ours": {
+        "burn": 0.14629258517034094,
+        "gross": 2.150300601202405,
+        "hit": 0.4348697394789579,
+        "mean": 2.004008016032064,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.944700460829493
+      },
+      "their_p50_ns": 9110,
+      "theirs": {
+        "burn": 0.0420841683366735,
+        "gross": 1.7535070140280562,
+        "hit": 0.41583166332665333,
+        "mean": 1.7114228456913827,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.216867469879518
+      }
+    },
+    "model_id": 359358,
+    "model_name": "fs1012",
+    "our_net": 1997,
+    "stratum": "S1",
+    "submitted_at_utc": "2026-08-10T16:10:03.930822+00:00",
+    "team": "IKUN",
+    "their_net": 1510,
+    "user_id": 34
+  },
+  {
+    "board_win_rate": 0.3333,
+    "error_msg": "",
+    "game_id": 191664,
+    "is_win": 1,
+    "kind": "stratified",
+    "map_id": 3,
+    "mechanics": {
+      "f": 1.0,
+      "our_p50_ns": 530,
+      "ours": {
+        "burn": 0.15030060120240485,
+        "gross": 1.5400801603206413,
+        "hit": 0.32665330661322645,
+        "mean": 1.3897795591182365,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.714723926380368
+      },
+      "their_p50_ns": 14743363,
+      "theirs": {
+        "burn": 0.012024048096192175,
+        "gross": 1.065130260521042,
+        "hit": 0.20641282565130262,
+        "mean": 1.0531062124248498,
+        "unit_rounds": 998,
+        "yield_per_hit": 5.160194174757281
+      }
+    },
+    "model_id": 65228,
+    "model_name": "fs1023",
+    "our_net": 1384,
+    "stratum": "S1",
+    "submitted_at_utc": "2026-08-10T16:10:04.309754+00:00",
+    "team": "WjJjPQ==",
+    "their_net": 853,
+    "user_id": 61
+  },
+  {
+    "board_win_rate": 0.4145,
+    "error_msg": "",
+    "game_id": 191665,
+    "is_win": 1,
+    "kind": "stratified",
+    "map_id": 1,
+    "mechanics": {
+      "f": 1.0,
+      "our_p50_ns": 220,
+      "ours": {
+        "burn": 0.03306613226452915,
+        "gross": 1.8927855711422847,
+        "hit": 0.3837675350701403,
+        "mean": 1.8597194388777556,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.932114882506528
+      },
+      "their_p50_ns": 13290,
+      "theirs": {
+        "burn": 0.2174348697394788,
+        "gross": 1.8807615230460921,
+        "hit": 0.4248496993987976,
+        "mean": 1.6633266533066133,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.42688679245283
+      }
+    },
+    "model_id": 327730,
+    "model_name": "fs1031",
+    "our_net": 1856,
+    "stratum": "S1",
+    "submitted_at_utc": "2026-08-10T16:10:04.444602+00:00",
+    "team": "\u5c01\u5355\u8d85\u5927",
+    "their_net": 1643,
+    "user_id": 79
+  },
+  {
+    "board_win_rate": 0.3491,
+    "error_msg": "",
+    "game_id": 191666,
+    "is_win": 1,
+    "kind": "stratified",
+    "map_id": 2,
+    "mechanics": {
+      "f": 1.0,
+      "our_p50_ns": 970,
+      "ours": {
+        "burn": 0.2645290581162323,
+        "gross": 2.4488977955911824,
+        "hit": 0.48897795591182364,
+        "mean": 2.18436873747495,
+        "unit_rounds": 998,
+        "yield_per_hit": 5.008196721311475
+      },
+      "their_p50_ns": 3168740,
+      "theirs": {
+        "burn": 0.3637274549098197,
+        "gross": 2.2625250501002006,
+        "hit": 0.40180360721442887,
+        "mean": 1.8987975951903808,
+        "unit_rounds": 998,
+        "yield_per_hit": 5.630922693266833
+      }
+    },
+    "model_id": 70407,
+    "model_name": "fs1042",
+    "our_net": 2177,
+    "stratum": "S1",
+    "submitted_at_utc": "2026-08-10T16:10:04.592016+00:00",
+    "team": "\u541b\u306e\u4eff\u74f7",
+    "their_net": 1802,
+    "user_id": 86
+  },
+  {
+    "board_win_rate": 0.4124,
+    "error_msg": "",
+    "game_id": 191668,
+    "is_win": 1,
+    "kind": "stratified",
+    "map_id": 3,
+    "mechanics": {
+      "f": 0.9959677419354839,
+      "our_p50_ns": 810,
+      "ours": {
+        "burn": 0.09018036072144286,
+        "gross": 1.3286573146292584,
+        "hit": 0.26753507014028055,
+        "mean": 1.2384769539078155,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.966292134831461
+      },
+      "their_p50_ns": 17880,
+      "theirs": {
+        "burn": 0.20741482965931862,
+        "gross": 0.627254509018036,
+        "hit": 0.12625250501002003,
+        "mean": 0.4198396793587174,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.968253968253968
+      }
+    },
+    "model_id": 15497,
+    "model_name": "fs1053",
+    "our_net": 1233,
+    "stratum": "S1",
+    "submitted_at_utc": "2026-08-10T16:10:04.712228+00:00",
+    "team": "Controlvector",
+    "their_net": 419,
+    "user_id": 114
+  },
+  {
+    "board_win_rate": 0.3333,
+    "error_msg": "",
+    "game_id": 191669,
+    "is_win": 0,
+    "kind": "stratified",
+    "map_id": 1,
+    "mechanics": {
+      "f": 0.9979838709677419,
+      "our_p50_ns": 990,
+      "ours": {
+        "burn": 0.23747494989979967,
+        "gross": 1.74749498997996,
+        "hit": 0.3486973947895792,
+        "mean": 1.5100200400801602,
+        "unit_rounds": 998,
+        "yield_per_hit": 5.011494252873563
+      },
+      "their_p50_ns": 15570,
+      "theirs": {
+        "burn": 0.0010020040080158665,
+        "gross": 1.7154308617234468,
+        "hit": 0.40180360721442887,
+        "mean": 1.714428857715431,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.26932668329177
+      }
+    },
+    "model_id": 12216,
+    "model_name": "fs1061",
+    "our_net": 1507,
+    "stratum": "S1",
+    "submitted_at_utc": "2026-08-10T16:10:04.888116+00:00",
+    "team": "\u5510\u4eba\u8857",
+    "their_net": 1633,
+    "user_id": 124
+  },
+  {
+    "board_win_rate": 0.3367,
+    "error_msg": "",
+    "game_id": 191670,
+    "is_win": 1,
+    "kind": "stratified",
+    "map_id": 2,
+    "mechanics": {
+      "f": 0.7318548387096774,
+      "our_p50_ns": 910,
+      "ours": {
+        "burn": 4.440892098500626e-16,
+        "gross": 2.213426853707415,
+        "hit": 0.43587174348697394,
+        "mean": 2.2134268537074147,
+        "unit_rounds": 998,
+        "yield_per_hit": 5.07816091954023
+      },
+      "their_p50_ns": 1110,
+      "theirs": {
+        "burn": 0.0631262525050098,
+        "gross": 1.9338677354709417,
+        "hit": 0.5090180360721442,
+        "mean": 1.870741482965932,
+        "unit_rounds": 998,
+        "yield_per_hit": 3.7992125984251968
+      }
+    },
+    "model_id": 42311,
+    "model_name": "fs1072",
+    "our_net": 2206,
+    "stratum": "S1",
+    "submitted_at_utc": "2026-08-10T16:10:05.031449+00:00",
+    "team": "\u515c\u515c\u662f\u5927\u5934\u9e1f",
+    "their_net": 1867,
+    "user_id": 138
+  },
+  {
+    "board_win_rate": 0.2813,
+    "error_msg": "",
+    "game_id": 191672,
+    "is_win": 0,
+    "kind": "stratified",
+    "map_id": 3,
+    "mechanics": {
+      "f": 0.9919354838709677,
+      "our_p50_ns": 820,
+      "ours": {
+        "burn": 0.1342685370741482,
+        "gross": 1.0250501002004007,
+        "hit": 0.2124248496993988,
+        "mean": 0.8907815631262525,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.8254716981132075
+      },
+      "their_p50_ns": 8620,
+      "theirs": {
+        "burn": 0.07915831663326656,
+        "gross": 1.3006012024048097,
+        "hit": 0.20440881763527055,
+        "mean": 1.2214428857715431,
+        "unit_rounds": 998,
+        "yield_per_hit": 6.362745098039215
+      }
+    },
+    "model_id": 176268,
+    "model_name": "fs1083",
+    "our_net": 886,
+    "stratum": "S1",
+    "submitted_at_utc": "2026-08-10T16:10:05.172406+00:00",
+    "team": "yx255",
+    "their_net": 1156,
+    "user_id": 151
+  },
+  {
+    "board_win_rate": 0.3133,
+    "error_msg": "",
+    "game_id": 191674,
+    "is_win": 1,
+    "kind": "stratified",
+    "map_id": 1,
+    "mechanics": {
+      "f": 1.0,
+      "our_p50_ns": 950,
+      "ours": {
+        "burn": 0.14929859719438854,
+        "gross": 1.5250501002004007,
+        "hit": 0.32064128256513025,
+        "mean": 1.3757515030060121,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.75625
+      },
+      "their_p50_ns": 13230,
+      "theirs": {
+        "burn": 0.19138276553106204,
+        "gross": 1.685370741482966,
+        "hit": 0.45090180360721444,
+        "mean": 1.493987975951904,
+        "unit_rounds": 998,
+        "yield_per_hit": 3.7377777777777776
+      }
+    },
+    "model_id": 125810,
+    "model_name": "fs1091",
+    "our_net": 1373,
+    "stratum": "S1",
+    "submitted_at_utc": "2026-08-10T16:10:06.965244+00:00",
+    "team": "\u4f60\u770b\u5230\u4eba\u7c7b\u4e86\u5417",
+    "their_net": 1293,
+    "user_id": 173
+  },
+  {
+    "board_win_rate": 0.2,
+    "error_msg": "",
+    "game_id": 191675,
+    "is_win": 1,
+    "kind": "stratified",
+    "map_id": 2,
+    "mechanics": {
+      "f": 0.9959677419354839,
+      "our_p50_ns": 690,
+      "ours": {
+        "burn": 0.16132264529058116,
+        "gross": 2.5100200400801604,
+        "hit": 0.48597194388777554,
+        "mean": 2.3486973947895793,
+        "unit_rounds": 998,
+        "yield_per_hit": 5.164948453608248
+      },
+      "their_p50_ns": 33860,
+      "theirs": {
+        "burn": 0.12024048096192352,
+        "gross": 1.975951903807615,
+        "hit": 0.4348697394789579,
+        "mean": 1.8557114228456915,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.543778801843318
+      }
+    },
+    "model_id": 369705,
+    "model_name": "fs1102",
+    "our_net": 2341,
+    "stratum": "S1",
+    "submitted_at_utc": "2026-08-10T16:10:07.093772+00:00",
+    "team": "\u90b1\u53d4\u53d4\u4e0e\u8d75\u53d4\u53d4vamos\u961f",
+    "their_net": 1826,
+    "user_id": 195
+  },
+  {
+    "board_win_rate": 0.2105,
+    "error_msg": "",
+    "game_id": 191676,
+    "is_win": 1,
+    "kind": "stratified",
+    "map_id": 3,
+    "mechanics": {
+      "f": 0.9778225806451613,
+      "our_p50_ns": 810,
+      "ours": {
+        "burn": 0.34368737474949884,
+        "gross": 1.1513026052104207,
+        "hit": 0.24749498997995992,
+        "mean": 0.8076152304609219,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.651821862348178
+      },
+      "their_p50_ns": 3090,
+      "theirs": {
+        "burn": 0.21543086172344683,
+        "gross": 0.8336673346693386,
+        "hit": 0.22545090180360722,
+        "mean": 0.6182364729458918,
+        "unit_rounds": 998,
+        "yield_per_hit": 3.6977777777777776
+      }
+    },
+    "model_id": 297600,
+    "model_name": "fs1113",
+    "our_net": 803,
+    "stratum": "S1",
+    "submitted_at_utc": "2026-08-10T16:10:07.223934+00:00",
+    "team": "icu\u5c0f\u961f",
+    "their_net": 590,
+    "user_id": 216
+  },
+  {
+    "board_win_rate": 0.4786,
+    "error_msg": "",
+    "game_id": 191677,
+    "is_win": 1,
+    "kind": "stratified",
+    "map_id": 1,
+    "mechanics": {
+      "f": 1.0,
+      "our_p50_ns": 820,
+      "ours": {
+        "burn": 0.033066132264528925,
+        "gross": 1.6953907815631262,
+        "hit": 0.3336673346693387,
+        "mean": 1.6623246492985972,
+        "unit_rounds": 998,
+        "yield_per_hit": 5.081081081081081
+      },
+      "their_p50_ns": 128690,
+      "theirs": {
+        "burn": 0.19038076152304606,
+        "gross": 0.7334669338677354,
+        "hit": 0.156312625250501,
+        "mean": 0.5430861723446894,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.6923076923076925
+      }
+    },
+    "model_id": 338303,
+    "model_name": "fs2121",
+    "our_net": 1659,
+    "stratum": "S2",
+    "submitted_at_utc": "2026-08-10T16:10:07.358795+00:00",
+    "team": ".gitignore",
+    "their_net": 542,
+    "user_id": 7
+  },
+  {
+    "board_win_rate": 0.4691,
+    "error_msg": "",
+    "game_id": 191678,
+    "is_win": 1,
+    "kind": "stratified",
+    "map_id": 2,
+    "mechanics": {
+      "f": 1.0,
+      "our_p50_ns": 910,
+      "ours": {
+        "burn": 0.30961923847695383,
+        "gross": 2.439879759519038,
+        "hit": 0.48396793587174347,
+        "mean": 2.130260521042084,
+        "unit_rounds": 998,
+        "yield_per_hit": 5.041407867494824
+      },
+      "their_p50_ns": 13609060,
+      "theirs": {
+        "burn": 0.30360721442885774,
+        "gross": 1.8827655310621243,
+        "hit": 0.5460921843687375,
+        "mean": 1.5791583166332666,
+        "unit_rounds": 998,
+        "yield_per_hit": 3.4477064220183484
+      }
+    },
+    "model_id": 489,
+    "model_name": "fs2132",
+    "our_net": 2123,
+    "stratum": "S2",
+    "submitted_at_utc": "2026-08-10T16:10:07.491506+00:00",
+    "team": "cununn",
+    "their_net": 1528,
+    "user_id": 20
+  },
+  {
+    "board_win_rate": 0.5398,
+    "error_msg": "",
+    "game_id": 191679,
+    "is_win": 1,
+    "kind": "stratified",
+    "map_id": 3,
+    "mechanics": {
+      "f": 0.9959677419354839,
+      "our_p50_ns": 910,
+      "ours": {
+        "burn": 0.12625250501002006,
+        "gross": 1.1683366733466933,
+        "hit": 0.24048096192384769,
+        "mean": 1.0420841683366733,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.858333333333333
+      },
+      "their_p50_ns": 14260,
+      "theirs": {
+        "burn": 0.36272545090180364,
+        "gross": 0.8697394789579158,
+        "hit": 0.19238476953907815,
+        "mean": 0.5070140280561122,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.520833333333333
+      }
+    },
+    "model_id": 566,
+    "model_name": "fs2143",
+    "our_net": 1037,
+    "stratum": "S2",
+    "submitted_at_utc": "2026-08-10T16:10:07.701381+00:00",
+    "team": "LeapTech",
+    "their_net": 397,
+    "user_id": 38
+  },
+  {
+    "board_win_rate": 0.5504,
+    "error_msg": "",
+    "game_id": 191680,
+    "is_win": 1,
+    "kind": "stratified",
+    "map_id": 1,
+    "mechanics": {
+      "f": 1.0,
+      "our_p50_ns": 820,
+      "ours": {
+        "burn": 0.16933867735470942,
+        "gross": 1.8997995991983967,
+        "hit": 0.374749498997996,
+        "mean": 1.7304609218436873,
+        "unit_rounds": 998,
+        "yield_per_hit": 5.06951871657754
+      },
+      "their_p50_ns": 19510,
+      "theirs": {
+        "burn": 0.046092184368737854,
+        "gross": 2.2294589178356716,
+        "hit": 0.36072144288577157,
+        "mean": 2.1833667334669338,
+        "unit_rounds": 998,
+        "yield_per_hit": 6.180555555555555
+      }
+    },
+    "model_id": 41147,
+    "model_name": "fs2151",
+    "our_net": 1727,
+    "stratum": "S2",
+    "submitted_at_utc": "2026-08-10T16:10:07.934870+00:00",
+    "team": "\u8d2a\u5a6a\u6398\u91d1\u8005",
+    "their_net": 1678,
+    "user_id": 98
+  },
+  {
+    "board_win_rate": 0.4851,
+    "error_msg": "",
+    "game_id": 191681,
+    "is_win": 1,
+    "kind": "stratified",
+    "map_id": 2,
+    "mechanics": {
+      "f": 0.9758064516129032,
+      "our_p50_ns": 970,
+      "ours": {
+        "burn": 0.16733466933867724,
+        "gross": 2.2575150300601203,
+        "hit": 0.46893787575150303,
+        "mean": 2.090180360721443,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.814102564102564
+      },
+      "their_p50_ns": 2930,
+      "theirs": {
+        "burn": 0.005010020040080221,
+        "gross": 1.843687374749499,
+        "hit": 0.40681362725450904,
+        "mean": 1.8386773547094188,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.532019704433497
+      }
+    },
+    "model_id": 82304,
+    "model_name": "fs2162",
+    "our_net": 2083,
+    "stratum": "S2",
+    "submitted_at_utc": "2026-08-10T16:10:08.069703+00:00",
+    "team": "\u6398\u91d1",
+    "their_net": 1835,
+    "user_id": 123
+  },
+  {
+    "board_win_rate": 0.5833,
+    "error_msg": "",
+    "game_id": 191682,
+    "is_win": 1,
+    "kind": "stratified",
+    "map_id": 3,
+    "mechanics": {
+      "f": 1.0,
+      "our_p50_ns": 750,
+      "ours": {
+        "burn": 0.03607214428857719,
+        "gross": 1.1162324649298598,
+        "hit": 0.23346693386773548,
+        "mean": 1.0801603206412826,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.781115879828326
+      },
+      "their_p50_ns": 9510,
+      "theirs": {
+        "burn": 0.08717434869739493,
+        "gross": 0.6793587174348699,
+        "hit": 0.1462925851703407,
+        "mean": 0.5921843687374749,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.6438356164383565
+      }
+    },
+    "model_id": 88704,
+    "model_name": "fs2173",
+    "our_net": 1075,
+    "stratum": "S2",
+    "submitted_at_utc": "2026-08-10T16:10:08.198946+00:00",
+    "team": "jtubbme",
+    "their_net": 431,
+    "user_id": 141
+  },
+  {
+    "board_win_rate": 0.5643,
+    "error_msg": "",
+    "game_id": 191683,
+    "is_win": 1,
+    "kind": "stratified",
+    "map_id": 1,
+    "mechanics": {
+      "f": 0.9959677419354839,
+      "our_p50_ns": 760,
+      "ours": {
+        "burn": 0.12224448897795592,
+        "gross": 1.8847695390781563,
+        "hit": 0.38877755511022044,
+        "mean": 1.7625250501002003,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.847938144329897
+      },
+      "their_p50_ns": 17490,
+      "theirs": {
+        "burn": 0.14328657314629267,
+        "gross": 1.6663326653306614,
+        "hit": 0.4619238476953908,
+        "mean": 1.5230460921843687,
+        "unit_rounds": 998,
+        "yield_per_hit": 3.6073752711496745
+      }
+    },
+    "model_id": 261787,
+    "model_name": "fs2181",
+    "our_net": 1759,
+    "stratum": "S2",
+    "submitted_at_utc": "2026-08-10T16:10:08.327969+00:00",
+    "team": "\u5e93\u73c0\u961f",
+    "their_net": 1512,
+    "user_id": 184
+  },
+  {
+    "board_win_rate": 0.4982,
+    "error_msg": "",
+    "game_id": 191684,
+    "is_win": 1,
+    "kind": "stratified",
+    "map_id": 2,
+    "mechanics": {
+      "f": 1.0,
+      "our_p50_ns": 880,
+      "ours": {
+        "burn": 0.29158316633266534,
+        "gross": 2.2074148296593186,
+        "hit": 0.45691382765531063,
+        "mean": 1.9158316633266532,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.831140350877193
+      },
+      "their_p50_ns": 220520,
+      "theirs": {
+        "burn": 0.29759519038076143,
+        "gross": 2.253507014028056,
+        "hit": 0.3967935871743487,
+        "mean": 1.9559118236472945,
+        "unit_rounds": 998,
+        "yield_per_hit": 5.679292929292929
+      }
+    },
+    "model_id": 301103,
+    "model_name": "fs2192",
+    "our_net": 1909,
+    "stratum": "S2",
+    "submitted_at_utc": "2026-08-10T16:10:08.440462+00:00",
+    "team": "\u6fc0\u6602\u72c2\u4eba",
+    "their_net": 1904,
+    "user_id": 209
+  },
+  {
+    "board_win_rate": 0.7491,
+    "error_msg": "",
+    "game_id": 191685,
+    "is_win": 1,
+    "kind": "stratified",
+    "map_id": 3,
+    "mechanics": {
+      "f": 0.9919354838709677,
+      "our_p50_ns": 770,
+      "ours": {
+        "burn": 0.09018036072144286,
+        "gross": 1.0861723446893787,
+        "hit": 0.22845691382765532,
+        "mean": 0.9959919839679359,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.754385964912281
+      },
+      "their_p50_ns": 11690,
+      "theirs": {
+        "burn": 0.02605210420841686,
+        "gross": 0.6342685370741483,
+        "hit": 0.21142284569138275,
+        "mean": 0.6082164328657315,
+        "unit_rounds": 998,
+        "yield_per_hit": 3.0
+      }
+    },
+    "model_id": 59138,
+    "model_name": "fs3203",
+    "our_net": 991,
+    "stratum": "S3",
+    "submitted_at_utc": "2026-08-10T16:10:08.569479+00:00",
+    "team": "DeepAlpha",
+    "their_net": 607,
+    "user_id": 23
+  },
+  {
+    "board_win_rate": 0.7143,
+    "error_msg": "",
+    "game_id": 191686,
+    "is_win": 1,
+    "kind": "stratified",
+    "map_id": 1,
+    "mechanics": {
+      "f": 0.9838709677419355,
+      "our_p50_ns": 880,
+      "ours": {
+        "burn": 0.02104208416833675,
+        "gross": 1.776553106212425,
+        "hit": 0.3587174348697395,
+        "mean": 1.7555110220440882,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.9525139664804465
+      },
+      "their_p50_ns": 3570,
+      "theirs": {
+        "burn": 0.05811623246492981,
+        "gross": 1.4248496993987976,
+        "hit": 0.35370741482965934,
+        "mean": 1.3667334669338678,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.028328611898017
+      }
+    },
+    "model_id": 128235,
+    "model_name": "fs3211",
+    "our_net": 1752,
+    "stratum": "S3",
+    "submitted_at_utc": "2026-08-10T16:10:08.739444+00:00",
+    "team": "\u529b\u884c",
+    "their_net": 1364,
+    "user_id": 134
+  },
+  {
+    "board_win_rate": 0.6696,
+    "error_msg": "",
+    "game_id": 191687,
+    "is_win": 1,
+    "kind": "stratified",
+    "map_id": 2,
+    "mechanics": {
+      "f": 0.9717741935483871,
+      "our_p50_ns": 840,
+      "ours": {
+        "burn": 0.2935871743486973,
+        "gross": 2.3977955911823647,
+        "hit": 0.48396793587174347,
+        "mean": 2.1042084168336674,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.954451345755694
+      },
+      "their_p50_ns": 2000,
+      "theirs": {
+        "burn": 0.13627254509018027,
+        "gross": 1.6332665330661322,
+        "hit": 0.42384769539078154,
+        "mean": 1.496993987975952,
+        "unit_rounds": 998,
+        "yield_per_hit": 3.8534278959810875
+      }
+    },
+    "model_id": 70768,
+    "model_name": "fs3222",
+    "our_net": 2097,
+    "stratum": "S3",
+    "submitted_at_utc": "2026-08-10T16:10:08.917533+00:00",
+    "team": "counterfactual",
+    "their_net": 1494,
+    "user_id": 137
+  },
+  {
+    "board_win_rate": 0.6815,
+    "error_msg": "",
+    "game_id": 191688,
+    "is_win": 1,
+    "kind": "stratified",
+    "map_id": 3,
+    "mechanics": {
+      "f": 0.9858870967741935,
+      "our_p50_ns": 770,
+      "ours": {
+        "burn": 0.10320641282565135,
+        "gross": 1.1452905811623246,
+        "hit": 0.24048096192384769,
+        "mean": 1.0420841683366733,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.7625
+      },
+      "their_p50_ns": 2180,
+      "theirs": {
+        "burn": 0.12525050100200408,
+        "gross": 0.8276553106212425,
+        "hit": 0.19438877755511022,
+        "mean": 0.7024048096192385,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.257731958762887
+      }
+    },
+    "model_id": 162580,
+    "model_name": "fs3233",
+    "our_net": 1037,
+    "stratum": "S3",
+    "submitted_at_utc": "2026-08-10T16:10:09.048503+00:00",
+    "team": "Ausdroid",
+    "their_net": 701,
+    "user_id": 167
+  },
+  {
+    "board_win_rate": 0.7326,
+    "error_msg": "",
+    "game_id": 191689,
+    "is_win": 1,
+    "kind": "stratified",
+    "map_id": 1,
+    "mechanics": {
+      "f": 0.75,
+      "our_p50_ns": 890,
+      "ours": {
+        "burn": 0.11523046092184375,
+        "gross": 1.9899799599198398,
+        "hit": 0.40981963927855714,
+        "mean": 1.874749498997996,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.8557457212713935
+      },
+      "their_p50_ns": 1200,
+      "theirs": {
+        "burn": 0.0,
+        "gross": 1.6713426853707414,
+        "hit": 0.38276553106212424,
+        "mean": 1.6713426853707414,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.366492146596858
+      }
+    },
+    "model_id": 199610,
+    "model_name": "fs3241",
+    "our_net": 1871,
+    "stratum": "S3",
+    "submitted_at_utc": "2026-08-10T16:10:09.176346+00:00",
+    "team": "\u82e5\u53f6\u7766\u7684\u72d72.0",
+    "their_net": 1611,
+    "user_id": 186
+  },
+  {
+    "board_win_rate": 0.8102,
+    "error_msg": "",
+    "game_id": 191690,
+    "is_win": 1,
+    "kind": "stratified",
+    "map_id": 2,
+    "mechanics": {
+      "f": 0.9838709677419355,
+      "our_p50_ns": 950,
+      "ours": {
+        "burn": 0.2645290581162323,
+        "gross": 2.5931863727454907,
+        "hit": 0.5170340681362725,
+        "mean": 2.3286573146292584,
+        "unit_rounds": 998,
+        "yield_per_hit": 5.015503875968992
+      },
+      "their_p50_ns": 5220,
+      "theirs": {
+        "burn": 0.060120240480962206,
+        "gross": 1.9368737474949902,
+        "hit": 0.4348697394789579,
+        "mean": 1.876753507014028,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.453917050691245
+      }
+    },
+    "model_id": 8419,
+    "model_name": "fs4252",
+    "our_net": 2321,
+    "stratum": "S4",
+    "submitted_at_utc": "2026-08-10T16:10:09.306067+00:00",
+    "team": "Binomial",
+    "their_net": 1801,
+    "user_id": 13
+  },
+  {
+    "board_win_rate": 0.8173,
+    "error_msg": "",
+    "game_id": 191691,
+    "is_win": 1,
+    "kind": "stratified",
+    "map_id": 3,
+    "mechanics": {
+      "f": 0.8366935483870968,
+      "our_p50_ns": 730,
+      "ours": {
+        "burn": 0.11022044088176353,
+        "gross": 1.1643286573146292,
+        "hit": 0.24448897795591182,
+        "mean": 1.0541082164328657,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.762295081967213
+      },
+      "their_p50_ns": 1100,
+      "theirs": {
+        "burn": 0.03607214428857719,
+        "gross": 0.5981963927855711,
+        "hit": 0.21342685370741482,
+        "mean": 0.5621242484969939,
+        "unit_rounds": 998,
+        "yield_per_hit": 2.8028169014084505
+      }
+    },
+    "model_id": 51256,
+    "model_name": "fs4263",
+    "our_net": 1049,
+    "stratum": "S4",
+    "submitted_at_utc": "2026-08-10T16:10:09.439328+00:00",
+    "team": "rikka",
+    "their_net": 561,
+    "user_id": 47
+  },
+  {
+    "board_win_rate": 0.8082,
+    "error_msg": "",
+    "game_id": 191692,
+    "is_win": 1,
+    "kind": "stratified",
+    "map_id": 1,
+    "mechanics": {
+      "f": 0.9879032258064516,
+      "our_p50_ns": 860,
+      "ours": {
+        "burn": 0.03106212424849719,
+        "gross": 2.4248496993987976,
+        "hit": 0.45490981963927857,
+        "mean": 2.3937875751503004,
+        "unit_rounds": 998,
+        "yield_per_hit": 5.330396475770925
+      },
+      "their_p50_ns": 5550,
+      "theirs": {
+        "burn": 0.0,
+        "gross": 0.004008016032064128,
+        "hit": 0.003006012024048096,
+        "mean": 0.004008016032064128,
+        "unit_rounds": 998,
+        "yield_per_hit": 1.3333333333333333
+      }
+    },
+    "model_id": 43116,
+    "model_name": "fs4271",
+    "our_net": 2389,
+    "stratum": "S4",
+    "submitted_at_utc": "2026-08-10T16:10:09.585992+00:00",
+    "team": "Tundra-wawa",
+    "their_net": -1496,
+    "user_id": 57
+  },
+  {
+    "board_win_rate": 0.8005,
+    "error_msg": "",
+    "game_id": 191693,
+    "is_win": 1,
+    "kind": "stratified",
+    "map_id": 2,
+    "mechanics": {
+      "f": 0.8729838709677419,
+      "our_p50_ns": 690,
+      "ours": {
+        "burn": 0.03106212424849719,
+        "gross": 2.1713426853707416,
+        "hit": 0.437875751503006,
+        "mean": 2.1402805611222444,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.9588100686498855
+      },
+      "their_p50_ns": 1240,
+      "theirs": {
+        "burn": 0.13727454909819636,
+        "gross": 1.907815631262525,
+        "hit": 0.5040080160320641,
+        "mean": 1.7705410821643286,
+        "unit_rounds": 998,
+        "yield_per_hit": 3.7852882703777335
+      }
+    },
+    "model_id": 72594,
+    "model_name": "fs4282",
+    "our_net": 2133,
+    "stratum": "S4",
+    "submitted_at_utc": "2026-08-10T16:10:10.055014+00:00",
+    "team": "\u6570\u5b66\u5206\u6790",
+    "their_net": 1767,
+    "user_id": 148
+  },
+  {
+    "board_win_rate": 0.8289,
+    "error_msg": "",
+    "game_id": 191694,
+    "is_win": 0,
+    "kind": "stratified",
+    "map_id": 3,
+    "mechanics": {
+      "f": 0.9455645161290323,
+      "our_p50_ns": 630,
+      "ours": {
+        "burn": 0.28456913827655295,
+        "gross": 1.3006012024048095,
+        "hit": 0.26753507014028055,
+        "mean": 1.0160320641282565,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.861423220973783
+      },
+      "their_p50_ns": 1330,
+      "theirs": {
+        "burn": 0.0,
+        "gross": 1.216432865731463,
+        "hit": 0.2094188376753507,
+        "mean": 1.216432865731463,
+        "unit_rounds": 998,
+        "yield_per_hit": 5.8086124401913874
+      }
+    },
+    "model_id": 161565,
+    "model_name": "fs4293",
+    "our_net": 1011,
+    "stratum": "S4",
+    "submitted_at_utc": "2026-08-10T16:10:10.202265+00:00",
+    "team": "\u91cf\u8861\u91cf\u5316",
+    "their_net": 1214,
+    "user_id": 182
+  },
+  {
+    "board_win_rate": 0.6815,
+    "error_msg": "",
+    "game_id": 191695,
+    "is_win": 1,
+    "kind": "purposive",
+    "map_id": 1,
+    "mechanics": {
+      "f": 0.9879032258064516,
+      "our_p50_ns": 230,
+      "ours": {
+        "burn": 0.13627254509018027,
+        "gross": 1.9278557114228456,
+        "hit": 0.3837675350701403,
+        "mean": 1.7915831663326653,
+        "unit_rounds": 998,
+        "yield_per_hit": 5.023498694516971
+      },
+      "their_p50_ns": 880,
+      "theirs": {
+        "burn": 0.2715430861723447,
+        "gross": 1.8837675350701402,
+        "hit": 0.38577154308617234,
+        "mean": 1.6122244488977955,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.883116883116883
+      }
+    },
+    "model_id": 162580,
+    "model_name": "fsB301",
+    "our_net": 1788,
+    "stratum": "BENCH",
+    "submitted_at_utc": "2026-08-10T16:10:10.337169+00:00",
+    "team": "Ausdroid",
+    "their_net": 1609,
+    "user_id": 167
+  },
+  {
+    "board_win_rate": 0.6815,
+    "error_msg": "",
+    "game_id": 191696,
+    "is_win": 1,
+    "kind": "purposive",
+    "map_id": 1,
+    "mechanics": {
+      "f": 0.9818548387096774,
+      "our_p50_ns": 250,
+      "ours": {
+        "burn": 0.021042084168336528,
+        "gross": 1.844689378757515,
+        "hit": 0.34769539078156314,
+        "mean": 1.8236472945891784,
+        "unit_rounds": 998,
+        "yield_per_hit": 5.305475504322766
+      },
+      "their_p50_ns": 1030,
+      "theirs": {
+        "burn": 0.0,
+        "gross": 1.783567134268537,
+        "hit": 0.38577154308617234,
+        "mean": 1.783567134268537,
+        "unit_rounds": 998,
+        "yield_per_hit": 4.623376623376624
+      }
+    },
+    "model_id": 162580,
+    "model_name": "fsB311",
+    "our_net": 1820,
+    "stratum": "BENCH",
+    "submitted_at_utc": "2026-08-10T16:10:10.466366+00:00",
+    "team": "Ausdroid",
+    "their_net": 1780,
+    "user_id": 167
+  }
+]
