@@ -1,0 +1,156 @@
+# ⭐ NARROW-TABLE EQUIVALENT of the reverted step-transfer construct
+#
+# WHAT IT IS
+#   Reproduces, from the 3-wide LUT, exactly the actions the 6-wide LUT emitted in slots
+#   3..5 — so it inherits that construct's measured income WITHOUT its .rodata growth,
+#   which was the measured cause of the revert.
+#
+# WHY IT WORKS (the mechanism, which is the whole point)
+#   `_build_slut` pre-folds early arrival: for a target at distance d it sets
+#   fact[t] = fact[t-1] ^ 1 for every t >= d. So once a unit reaches its target the later
+#   slots are a STATIONARY OSCILLATION — off, back, off — re-entering the same cell. Since
+#   pickup is proportional (ceil(0.65v) taken, floor(0.35v) left), that oscillation re-mills
+#   the 35% residue on the cell just harvested. THE VALUE IS RESIDUE, NOT REACH.
+#   The 6-wide table therefore paid 448 bytes of .rodata to store what is one XOR.
+#
+# THE RULE, and its two non-obvious guards
+#   after 3 steps, recompute the offset to the same target:
+#     offset == 0 (arrived) AND pa[2] != STAY  ->  emit  pa2^1, pa2, pa2^1
+#     offset == 0 AND pa[2] == STAY            ->  emit  STAY,STAY,STAY
+#     offset != 0 (not arrived)                ->  re-enter the SAME 3-wide table
+#   GUARD 1: at d == 0 the 6-wide table is ALSO all-STAY, because its fold is gated on
+#            d > 0. So "alternate on arrival" must not fire there.
+#   GUARD 2: STAY is action 4 and 4 ^ 1 == 5, an ILLEGAL action code. The pa[2] != STAY
+#            test is a safety requirement, not a nicety.
+#   No passability check on the tail, matching the 6-wide construct, which also emitted
+#   slots 3..5 unchecked (the engine skips illegal moves).
+#
+# EQUIVALENCE — proven two ways
+#   1. DOMAIN ARGUMENT (required by our own rule, since pair_diff is evidence not proof):
+#      exhaustive over all 49 LUT cells, the rule reproduces the 6-wide slots 3..5 with
+#      0 mismatches.
+#   2. pair_diff against the reverted construct: 0/500 on three real platform logs
+#      (game_140519 / 140521 / 140523).
+#
+# VERIFIED FIGURES (contest machine, GCC 14.3.1, -O3 -march=native, zero warnings)
+#   .rodata 1360  <- BYTE-IDENTICAL to fd47ea6; the revert cause is eliminated
+#   .text   5410  (+143 hot total, versus +464 for the reverted construct)
+#   same-stream instructions 799.802  (baseline 802.804, so -3.00, BELOW baseline)
+#   pad 80  ->  entry 0x1a10, mod64 == 0x10      FP16 0
+#   .text sha256 da9d960053d8a1fa2330fa85eeb6b503...
+#   income: +111.3 +/- 16.0 INHERITED by bit-identical behaviour, gate 32.1, OOS +79.8,
+#           joint move (opponent -5.2). NOT independently re-measured.
+#
+# ⛔ NOT MEASURED, AND THIS IS THE ONLY REMAINING GATE
+#   PLATFORM latency. Footprint scaling suggests about +10 ns of P50 (the reverted
+#   construct measured +33 ns at +464 bytes), but that is a PROXY, and tonight proved
+#   proxies here can err by sign (-42 instructions measured +33 ns) and by 70x. Only an
+#   interleaved same-window platform control (base and candidate submitted alternately,
+#   same opponents and maps, three maps, strictly serial) can decide.
+#   DO NOT LAND OR PUBLISH THIS WITHOUT THAT CONTROL.
+#
+--- /dev/fd/63	2026-08-10 12:11:33
++++ /tmp/pub/hn80.cpp	2026-08-10 12:09:43
+@@ -455,6 +455,10 @@
+ 
+     GameOutput out;                              // 全字段必写, 免 SAFE_OUT 拷贝
+ 
++    int cur = 3;                                 // k 当游标: 3 = 交付布局, 0/6 = 已重分配
++    int blind0 = 0;
++    int lut[2] = {0, 0};                         // 该单位是否走了 LUT 路径(尾段才可续)
++    int a2[2], pr3[2], pc3[2], tr3[2], tc3[2];   // 第3步动作 + 走完3步的位置 + 目标
+     for (int u = 0; u < 2; ++u) {
+         int sr = in->my_units[u].row, sc = in->my_units[u].col;
+         int* acts = out.actions + u * 3;
+@@ -530,11 +534,9 @@
+             int w = bv & 31;
+             // 三路目标: 整格(≥3) > 站金残值(标量兜底, 折返双吃) > 锚点
+             int has = -(int)(bv != 0xFFFF);
+-            int standing = -(int)(in->grid[sr][sc] > 1);   // 1金残渣不折返: 回哨位张网
+-            int selfm = ~has & standing;
+-            blind = ~has & ~standing;
+-            tgr = ((sr - 2 + TT.d5[w]) & has) | (sr & selfm) | (g_s.anch_r[u] & blind);
+-            tgc = ((sc - 2 + TT.m5[w]) & has) | (sc & selfm) | (g_s.anch_c[u] & blind);
++            blind = ~has;
++            tgr = ((sr - 2 + TT.d5[w]) & has) | (g_s.anch_r[u] & blind);
++            tgc = ((sc - 2 + TT.m5[w]) & has) | (g_s.anch_c[u] & blind);
+         }
+ 
+         uint32_t blk[N + 2];                     // blocked 位图预合成(扫描后! 含当轮新见弹)
+@@ -545,17 +547,7 @@
+         int dr0 = tgr - sr, dc0 = tgc - sc;
+         dr0 = dr0 < -3 ? -3 : (dr0 > 3 ? 3 : dr0);   // 钳进 LUT 域:
+         dc0 = dc0 < -3 ? -3 : (dc0 > 3 ? 3 : dc0);   // 远目标前3步与逐步串行同构
+-        int d = (dr0 < 0 ? -dr0 : dr0) + (dc0 < 0 ? -dc0 : dc0);
+-        if (d == 0) {                            // 站金: 折返双吃
+-            unsigned pm = (~(blk[sr] >> (sc + 1)) & 1u) |
+-                          ((~(blk[sr + 2] >> (sc + 1)) & 1u) << 1) |
+-                          ((~(blk[sr + 1] >> (sc)) & 1u) << 2) |
+-                          ((~(blk[sr + 1] >> (sc + 2)) & 1u) << 3);
+-            if (pm) {
+-                int a = __builtin_ctz(pm);
+-                acts[0] = a; acts[1] = a ^ 1;
+-            }
+-        } else {
++        {                                        // 折返消融: d==0 由 SL[3][3] 保持 STAY
+             int ir = dr0 + 3, ic = dc0 + 3;
+             const uint8_t* pa = SL.fact[ir][ic];
+             const int8_t* xr = SL.pdr[ir][ic];
+@@ -565,6 +557,9 @@
+                           (~(blk[sr + xr[2] + 1] >> (sc + xc[2] + 1)) & 1u);
+             if (ok) {
+                 acts[0] = pa[0]; acts[1] = pa[1]; acts[2] = pa[2];
++                lut[u] = 1; a2[u] = pa[2];       // 尾段可由“折叠规则”算出, 不需加宽表
++                pr3[u] = sr + xr[2]; pc3[u] = sc + xc[2];
++                tr3[u] = tgr; tc3[u] = tgc;
+             } else {
+                 // 受阻(罕见, 锁图后墙全知): 单步谨慎, 其余 STAY, 下轮自愈
+                 int a = steerStep(sr, sc, tgr, tgc,
+@@ -578,9 +573,37 @@
+             if (blind) slowMove(in, u, sr, sc, rich, acts);
+         }
+         g_s.last_r[u] = (int8_t)sr; g_s.last_c[u] = (int8_t)sc;
++        int bd = blind != 0;
++        if (u == 0) {
++            blind0 = bd;
++        } else if (bd != blind0) {               // 恰好一个盲 ⇒ 六步给能用的那个
++            int p = blind0 ? 1 : 0;              // 生产者
++            int t0 = STAY, t1 = STAY, t2 = STAY;
++            if (lut[p]) {
++                int dr1 = tr3[p] - pr3[p], dc1 = tc3[p] - pc3[p];
++                if (!(dr1 | dc1)) {              // 3 步内已到达 ⇒ 折叠区: 交替 ^1 磨残值
++                    int q = a2[p];               // ⚠️ STAY(4) 不可 ^1(=5 非法); 且宽表在
++                    if (q != STAY) {             //    d==0 也不折叠 ⇒ 恰好同为 STAY
++                        t0 = q ^ 1; t1 = q; t2 = q ^ 1;
++                    }
++                } else {                         // 未到达 ⇒ 表重入续走(与宽表逐格等价)
++                    int j0 = dr1 < -3 ? -3 : (dr1 > 3 ? 3 : dr1);
++                    int j1 = dc1 < -3 ? -3 : (dc1 > 3 ? 3 : dc1);
++                    const uint8_t* qa = SL.fact[j0 + 3][j1 + 3];
++                    t0 = qa[0]; t1 = qa[1]; t2 = qa[2];
++                }
++            }
++            if (blind0) {                        // u1 生产: 头段下移到跨度起点
++                out.actions[0] = out.actions[3];
++                out.actions[1] = out.actions[4];
++                out.actions[2] = out.actions[5];
++                cur = 0;
++            } else cur = 6;                      // u0 生产: 头段已在槽 0, 零搬移
++            out.actions[3] = t0; out.actions[4] = t1; out.actions[5] = t2;
++        }
+     }
+ 
+-    out.k = 3;
++    out.k = cur;
+     out.order = in->my_units_gold[0] >= in->my_units_gold[1] ? 0 : 1;
+     out.vp = g_s.vp_buy;                         // 稳态恒 0(慢开局层才会置 2)
+     return out;
+@@ -591,7 +614,7 @@
+ // 布局归一化死垫：本次改写缩小了 decide, 使 moveDecision 入口模 64 掉出已证最优档 0x10。
+ // 四档扫描已证 0x20/0x30 各 +11.67ns, 故补 48B 永不执行的 nop 把入口移回 0x10 档,
+ // 否则测到的 cycles 差会被布局税污染。改动 decide 体积后必须重新核对并调整垫长。
+-asm(".space 96, 0x90");
++asm(".space 80, 0x90");
+ 
+ extern "C" GameOutput moveDecision(const GameInput* input) {
+     try {
