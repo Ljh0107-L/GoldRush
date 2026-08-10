@@ -532,11 +532,9 @@ GameOutput decide(const GameInput* in) {
             int w = bv & 31;
             // 三路目标: 整格(≥3) > 站金残值(标量兜底, 折返双吃) > 锚点
             int has = -(int)(bv != 0xFFFF);
-            int standing = -(int)(in->grid[sr][sc] > 1);   // 1金残渣不折返: 回哨位张网
-            int selfm = ~has & standing;
-            blind = ~has & ~standing;
-            tgr = ((sr - 2 + TT.d5[w]) & has) | (sr & selfm) | (g_s.anch_r[u] & blind);
-            tgc = ((sc - 2 + TT.m5[w]) & has) | (sc & selfm) | (g_s.anch_c[u] & blind);
+            blind = ~has;
+            tgr = ((sr - 2 + TT.d5[w]) & has) | (g_s.anch_r[u] & blind);
+            tgc = ((sc - 2 + TT.m5[w]) & has) | (g_s.anch_c[u] & blind);
         }
 
         uint32_t blk[N + 2];                     // blocked 位图预合成(扫描后! 含当轮新见弹)
@@ -600,7 +598,7 @@ GameOutput decide(const GameInput* in) {
 // 布局归一化死垫：本次改写缩小了 decide, 使 moveDecision 入口模 64 掉出已证最优档 0x10。
 // 四档扫描已证 0x20/0x30 各 +11.67ns, 故补 48B 永不执行的 nop 把入口移回 0x10 档,
 // 否则测到的 cycles 差会被布局税污染。改动 decide 体积后必须重新核对并调整垫长。
-asm(".space 96, 0x90");
+asm(".space 144, 0x90");
 
 extern "C" GameOutput moveDecision(const GameInput* input) {
     try {
