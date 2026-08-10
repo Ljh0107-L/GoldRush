@@ -443,12 +443,40 @@ def crit_r(n: int) -> float:
     return t / (t * t + df) ** 0.5
 
 
+def is_contest(rec: dict) -> bool:
+    """False when the opponent's slot FAILED rather than lost.
+
+    A negative final net score means the opponent spent more on vision than it ever
+    collected: a broken configuration, not a defeat. Counting those as wins inflates every
+    win-rate estimate built on them. This is not a rare event -- two separate opponents have
+    produced it (``QuantLK`` in four passive games at -742/-339/-210/-255, and
+    ``Tundra-wawa`` at -1496 while collecting 4 gold across 998 unit-rounds) -- so the
+    filter is standing, not ad hoc. Excluding them moved the post-changeover passive win
+    rate from 21/31 to 17/27, i.e. from above the front-16 threshold to below it, which is
+    exactly the kind of swing that must not ride on an opponent's malfunction.
+
+    Callers must print how many were excluded; a silent filter is how a corpus quietly
+    stops meaning what its label says.
+    """
+    theirs = rec.get("their_net")
+    return theirs is None or int(theirs) >= 0
+
+
 def cmd_estimate(_args: argparse.Namespace) -> int:
     roster = load_roster()
     if not RESULTS.exists():
         print("no results yet", file=sys.stderr)
         return 2
-    done = [d for d in json.loads(RESULTS.read_text(encoding="utf-8")) if "is_win" in d]
+    resolved = [d for d in json.loads(RESULTS.read_text(encoding="utf-8")) if "is_win" in d]
+    done = [d for d in resolved if is_contest(d)]
+    dropped = [d for d in resolved if not is_contest(d)]
+    if dropped:
+        print("excluded %d game(s) where the opponent finished on a NEGATIVE net score"
+              " (broken slot, not a contest):" % len(dropped))
+        for d in dropped:
+            print("  %s  their_net=%s  game %s"
+                  % (d.get("team"), d.get("their_net"), d.get("game_id")))
+        print()
     weights = {s["stratum"]: s["weight"] for s in roster["strata"]}
     print("%-6s %6s %6s %8s %-18s %s" % ("strat", "n", "W", "rate", "Wilson95", "weight"))
     total, wsum = 0.0, 0.0
