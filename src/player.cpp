@@ -218,13 +218,14 @@ int steerStep(int r, int c, int gr, int gc, int pr, int pc, unsigned rich) {
 // LUT 导向: (dr,dc)∈[-3,3]² 行优先无阻挡模拟
 // fact = 动作序列(早到折返 d<3 已预折叠); pdr/pdc = 逐步累计位移(途经验证用)
 struct SLut {
-    uint8_t fact[7][7][3];
-    int8_t  pdr[7][7][3], pdc[7][7][3];
+    static constexpr int SLW = 6;
+    uint8_t fact[7][7][SLW];
+    int8_t  pdr[7][7][SLW], pdc[7][7][SLW];
     constexpr SLut() : fact(), pdr(), pdc() {
         for (int dr = -3; dr <= 3; ++dr)
             for (int dc = -3; dc <= 3; ++dc) {
                 int r = 0, c = 0;
-                for (int i = 0; i < 3; ++i) {
+                for (int i = 0; i < SLW; ++i) {
                     int rr = dr - r, cc = dc - c;
                     int adr = rr < 0 ? -rr : rr, adc = cc < 0 ? -cc : cc;
                     uint8_t a = STAY;
@@ -238,13 +239,10 @@ struct SLut {
                 }
                 {   // 早到折返预折叠(语义与旧运行时 fold 块逐位一致)
                     int d = (dr < 0 ? -dr : dr) + (dc < 0 ? -dc : dc);
-                    if (d > 0 && d < 3) {
-                        fact[dr + 3][dc + 3][d] =
-                            (uint8_t)(fact[dr + 3][dc + 3][d - 1] ^ 1);
-                        if (d == 1)
-                            fact[dr + 3][dc + 3][2] =
-                                (uint8_t)(fact[dr + 3][dc + 3][1] ^ 1);
-                    }
+                    if (d > 0 && d < SLW)
+                        for (int t = d; t < SLW; ++t)
+                            fact[dr + 3][dc + 3][t] =
+                                (uint8_t)(fact[dr + 3][dc + 3][t - 1] ^ 1);
                 }
             }
     }
@@ -455,10 +453,14 @@ GameOutput decide(const GameInput* in) {
 
     GameOutput out;                              // 全字段必写, 免 SAFE_OUT 拷贝
 
+    int cur = 3;                                 // k 当游标: 3 = 交付布局, 0/6 = 已重分配
+    int blind0 = 0;                              // u0 是否盲(u1 的尾块要读)
+    const uint8_t* ext0 = nullptr;               // u0 的 LUT 计划; 非空才可续写尾段
     for (int u = 0; u < 2; ++u) {
         int sr = in->my_units[u].row, sc = in->my_units[u].col;
         int* acts = out.actions + u * 3;
         acts[0] = acts[1] = acts[2] = STAY;
+        const uint8_t* pext = nullptr;
         unsigned rich = 0u - (unsigned)(in->my_units_gold[u] >= 100);
 
 
@@ -545,17 +547,7 @@ GameOutput decide(const GameInput* in) {
         int dr0 = tgr - sr, dc0 = tgc - sc;
         dr0 = dr0 < -3 ? -3 : (dr0 > 3 ? 3 : dr0);   // 钳进 LUT 域:
         dc0 = dc0 < -3 ? -3 : (dc0 > 3 ? 3 : dc0);   // 远目标前3步与逐步串行同构
-        int d = (dr0 < 0 ? -dr0 : dr0) + (dc0 < 0 ? -dc0 : dc0);
-        if (d == 0) {                            // 站金: 折返双吃
-            unsigned pm = (~(blk[sr] >> (sc + 1)) & 1u) |
-                          ((~(blk[sr + 2] >> (sc + 1)) & 1u) << 1) |
-                          ((~(blk[sr + 1] >> (sc)) & 1u) << 2) |
-                          ((~(blk[sr + 1] >> (sc + 2)) & 1u) << 3);
-            if (pm) {
-                int a = __builtin_ctz(pm);
-                acts[0] = a; acts[1] = a ^ 1;
-            }
-        } else {
+        {                                        // 折返消融: d==0 由 SL[3][3] 保持 STAY
             int ir = dr0 + 3, ic = dc0 + 3;
             const uint8_t* pa = SL.fact[ir][ic];
             const int8_t* xr = SL.pdr[ir][ic];
@@ -565,6 +557,7 @@ GameOutput decide(const GameInput* in) {
                           (~(blk[sr + xr[2] + 1] >> (sc + xc[2] + 1)) & 1u);
             if (ok) {
                 acts[0] = pa[0]; acts[1] = pa[1]; acts[2] = pa[2];
+                pext = pa;                       // 可续写: 尾段与本段同表同目标
             } else {
                 // 受阻(罕见, 锁图后墙全知): 单步谨慎, 其余 STAY, 下轮自愈
                 int a = steerStep(sr, sc, tgr, tgc,
@@ -578,9 +571,25 @@ GameOutput decide(const GameInput* in) {
             if (blind) slowMove(in, u, sr, sc, rich, acts);
         }
         g_s.last_r[u] = (int8_t)sr; g_s.last_c[u] = (int8_t)sc;
+        int bd = blind != 0;
+        if (u == 0) {
+            blind0 = bd; ext0 = pext;
+        } else if (bd != blind0) {                // 恰好一个盲 ⇒ 把预算给能用的那个
+            const uint8_t* pe = blind0 ? pext : ext0;
+            if (!pe) pe = SL.fact[3][3];          // 非 LUT 路径: 六格恒 STAY 的表项
+            if (blind0) {                         // u1 是生产者: 头段下移到跨度起点
+                out.actions[0] = out.actions[3];
+                out.actions[1] = out.actions[4];
+                out.actions[2] = out.actions[5];
+                cur = 0;
+            } else cur = 6;                       // u0 是生产者: 头段已在槽 0, 零搬移
+            out.actions[3] = pe[3];
+            out.actions[4] = pe[4];
+            out.actions[5] = pe[5];
+        }
     }
 
-    out.k = 3;
+    out.k = cur;
     out.order = in->my_units_gold[0] >= in->my_units_gold[1] ? 0 : 1;
     out.vp = g_s.vp_buy;                         // 稳态恒 0(慢开局层才会置 2)
     return out;
