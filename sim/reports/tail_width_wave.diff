@@ -1,3 +1,35 @@
+# ⭐ VERIFIED, NOT LANDED — free option on the latency tail
+#
+# WHAT: replaces the periodic bomb-memory clear (a cold out-of-line call firing on the
+#   round%20 boundary) with a MASKED clear executed every round:
+#     m = -(uint32_t)(round % 20 != 0);  for i: bombbit[i] &= m;
+#   m == 0 reproduces the memset exactly; m == ~0 is the identity. Same insertion point,
+#   so ordering against the scan's bombbit writes is unchanged.
+#   NOTE: making the clear UNCONDITIONAL instead would DESTROY the cross-round bomb memory
+#   the richness gate depends on, and fails pair_diff on every map. The mask is required.
+#
+# WHY IT IS A REAL EFFECT: the cost of that call is NOT the memset. It is +8 instructions
+#   but +54..81 TSC ticks, i.e. 6.8-10 ticks per instruction against a baseline of 0.38 --
+#   twenty times the baseline rate. The cost is a mispredicted branch plus a cold
+#   out-of-line call. Measured in instructions this tail source is invisible.
+#
+# MEASURED (contest machine, 38,400 B code-only eviction, min over 31 reps, 15 runs,
+#   pinned CPU, byte-identical null control reading zero):
+#     on the 24 rounds it targets: -54 TSC ticks, -87 / -72.5 / -68.5 core cycles,
+#     against a null of -4/-5/-4 on the same rounds -- 15-20x the noise floor
+#     dP50 = 0 ticks on all three maps
+#     pair_diff 0/500 on all three maps
+#
+# ⛔ WHY NOT LANDED: its GLOBAL P90 leverage is too small to resolve. Periodic rounds are
+#   5% of the game and supply only about an eighth of the slowest decile, because most of
+#   them are not in the tail at all -- their extra cost on a fast round still lands below
+#   the decile cut. Only periodic rounds that ALSO hit blocked routing cross it, and that
+#   joint cell is thin (0 of 11/16/17 periodic-and-fast rounds are in any map's decile).
+#
+# ⇒ It is free, behaviour-identical, and does exactly what it was designed to do. Take it
+#   if a tail-latency objective is ever adopted; it needs a rebase onto current HEAD and a
+#   pad re-tune (verify mod64 == 0x10 with nm, one step, since pad 64 is a bad bucket).
+#
 --- a/src/player.cpp
 +++ b/src/player.cpp
 @@ -268,11 +268,6 @@
