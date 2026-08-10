@@ -540,6 +540,55 @@ def cmd_estimate(_args: argparse.Namespace) -> int:
                        "not significant")
                 print("  %s vs win: r = %+.3f  (%s)" % (label, rr, tag))
 
+        # ---- adjudicate claim B: do we actually burn less than the field? ----
+        # Claim A ("the bomb-avoidance organ is worth keeping") rests on a clean
+        # same-seed paired ablation and is settled. Claim B ("our surplus against the
+        # FIELD comes from burning less") only ever had cross-team comparisons, and the
+        # two that exist point in OPPOSITE directions: against Ausdroid theirs was 3.0x
+        # ours, while in game 185976 ours was 55% higher than theirs. This block decides
+        # B on 90 games. Note B being false does not weaken A.
+        bb = [d for d in withmech if d["kind"] == "stratified"
+              and d["mechanics"].get("ours") and d["mechanics"].get("theirs")]
+        if len(bb) >= 10:
+            def quart(vals):
+                v = sorted(vals)
+                return (v[len(v) // 4], statistics.median(v), v[(3 * len(v)) // 4])
+            ours_b = [d["mechanics"]["ours"].get("burn", 0.0) for d in bb]
+            thrs_b = [d["mechanics"]["theirs"].get("burn", 0.0) for d in bb]
+            lower = sum(1 for d in bb
+                        if d["mechanics"]["ours"].get("burn", 0.0)
+                        < d["mechanics"]["theirs"].get("burn", 0.0))
+            lo, hi = wilson(lower, len(bb))
+            print()
+            print("--- claim B: is our burn lower than the opponent's? (n=%d) ---" % len(bb))
+            print("  our burn    Q1/med/Q3 = %.4f / %.4f / %.4f" % quart(ours_b))
+            print("  their burn  Q1/med/Q3 = %.4f / %.4f / %.4f" % quart(thrs_b))
+            print("  games where OUR burn is lower: %d/%d = %.3f  Wilson95 [%.3f, %.3f]"
+                  % (lower, len(bb), lower / len(bb), lo, hi))
+            if lo > 0.5:
+                verdict = "HOLDS (significantly more than half)"
+            elif hi < 0.5:
+                verdict = "FALSIFIED IN REVERSE (we burn MORE than the field)"
+            else:
+                verdict = ("FALSIFIED as stated (not significantly more than half; keep only"
+                           " claim A -- the organ is worth keeping -- and drop the claim that"
+                           " avoidance is our surplus source)")
+            print("  -> %s" % verdict)
+            print("  per stratum (B may hold only where opponents are slow):")
+            for name in order:
+                sub = [d for d in bb if d["stratum"] == name]
+                if not sub:
+                    continue
+                sl = sum(1 for d in sub if d["mechanics"]["ours"].get("burn", 0.0)
+                         < d["mechanics"]["theirs"].get("burn", 0.0))
+                print("    %-5s %2d games, our burn lower in %2d (%.2f), their median burn %.4f"
+                      % (name, len(sub), sl, sl / len(sub),
+                         statistics.median([d["mechanics"]["theirs"].get("burn", 0.0)
+                                            for d in sub])))
+            print("  if B holds only in some strata it MUST be stated per stratum; S1+S2 are")
+            print("  71 of 88 teams, so a stratum-limited B still matters but must not be")
+            print("  generalised to the whole field.")
+
         # ---- middle link of the scarcity causal chain (no extra quota, one more column) ----
         # The other line's hypothesis is that our income is scarcity-sensitive and moving
         # second is merely one way the board gets thin. That chain needs three links:
