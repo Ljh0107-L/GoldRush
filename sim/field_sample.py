@@ -485,7 +485,15 @@ def main() -> int:
     r.set_defaults(func=cmd_roster)
     sub.add_parser("show").set_defaults(func=cmd_show)
     s = sub.add_parser("submit")
-    s.add_argument("--so", default="/tmp/gr_fix/plat_fix.so")
+    # Durable default. The five-gate-verified artifact was originally only in
+    # /tmp, which macOS clears on reboot, so a batch scheduled hours later could
+    # have found it missing. ./player_current.so is inside the repo but matched by
+    # the *.so gitignore rule, so it survives reboots without entering git.
+    # sha256 f66471636a528d33c2cfa16e1187a8fc91023ddb7eceed3061df156b0db1c7bd
+    # ROOT-anchored, because arena._spec() opens the path relative to the current
+    # working directory; a bare relative default would break under cron or from a
+    # subdirectory.
+    s.add_argument("--so", default=str(ROOT / "player_current.so"))
     s.add_argument("--confirm", action="store_true")
     s.add_argument("--reserve", type=int, default=20,
                    help="games to leave unspent in the current window. Defaults to 20 so an "
