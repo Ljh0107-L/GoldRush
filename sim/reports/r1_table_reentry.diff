@@ -1,0 +1,73 @@
+diff --git a/src/player.cpp b/src/player.cpp
+index 1cea7a2..f81f925 100644
+--- a/src/player.cpp
++++ b/src/player.cpp
+@@ -455,6 +455,10 @@ GameOutput decide(const GameInput* in) {
+ 
+     GameOutput out;                              // 全字段必写, 免 SAFE_OUT 拷贝
+ 
++    int cur = 3;                                 // k 当游标: 3 = 交付布局, 0/6 = 已重分配
++    int blind0 = 0;                              // u0 是否盲
++    int ok3[2] = {0, 0};                         // 该单位前 3 步是否走 LUT(尾段可续)
++    int pr3[2], pc3[2], tr3[2], tc3[2];          // 走完 3 步后的位置 + 其目标
+     for (int u = 0; u < 2; ++u) {
+         int sr = in->my_units[u].row, sc = in->my_units[u].col;
+         int* acts = out.actions + u * 3;
+@@ -565,6 +569,9 @@ GameOutput decide(const GameInput* in) {
+                           (~(blk[sr + xr[2] + 1] >> (sc + xc[2] + 1)) & 1u);
+             if (ok) {
+                 acts[0] = pa[0]; acts[1] = pa[1]; acts[2] = pa[2];
++                ok3[u] = 1;                      // 尾段可由“表重入”续写(不加宽 LUT)
++                pr3[u] = sr + xr[2]; pc3[u] = sc + xc[2];
++                tr3[u] = tgr; tc3[u] = tgc;
+             } else {
+                 // 受阻(罕见, 锁图后墙全知): 单步谨慎, 其余 STAY, 下轮自愈
+                 int a = steerStep(sr, sc, tgr, tgc,
+@@ -578,9 +585,37 @@ GameOutput decide(const GameInput* in) {
+             if (blind) slowMove(in, u, sr, sc, rich, acts);
+         }
+         g_s.last_r[u] = (int8_t)sr; g_s.last_c[u] = (int8_t)sc;
++        int bd = blind != 0;
++        if (u == 0) {
++            blind0 = bd;
++        } else if (bd != blind0) {               // 恰好一个盲 ⇒ 六步给能用的那个
++            int p = blind0 ? 1 : 0;              // 生产者
++            int t0 = STAY, t1 = STAY, t2 = STAY;
++            if (ok3[p]) {                        // 表重入: 用“走完 3 步后的位置”重算偏移
++                int dr1 = tr3[p] - pr3[p], dc1 = tc3[p] - pc3[p];
++                dr1 = dr1 < -3 ? -3 : (dr1 > 3 ? 3 : dr1);
++                dc1 = dc1 < -3 ? -3 : (dc1 > 3 ? 3 : dc1);
++                int jr = dr1 + 3, jc = dc1 + 3;
++                const uint8_t* qa = SL.fact[jr][jc];
++                const int8_t* yr = SL.pdr[jr][jc];
++                const int8_t* yc = SL.pdc[jr][jc];
++                int br = pr3[p], bc = pc3[p];
++                unsigned ok2 = (~(blk[br + yr[0] + 1] >> (bc + yc[0] + 1)) & 1u) &
++                               (~(blk[br + yr[1] + 1] >> (bc + yc[1] + 1)) & 1u) &
++                               (~(blk[br + yr[2] + 1] >> (bc + yc[2] + 1)) & 1u);
++                if (ok2) { t0 = qa[0]; t1 = qa[1]; t2 = qa[2]; }
++            }
++            if (blind0) {                        // u1 生产: 头段下移到跨度起点
++                out.actions[0] = out.actions[3];
++                out.actions[1] = out.actions[4];
++                out.actions[2] = out.actions[5];
++                cur = 0;
++            } else cur = 6;                      // u0 生产: 头段已在槽 0, 零搬移
++            out.actions[3] = t0; out.actions[4] = t1; out.actions[5] = t2;
++        }
+     }
+ 
+-    out.k = 3;
++    out.k = cur;
+     out.order = in->my_units_gold[0] >= in->my_units_gold[1] ? 0 : 1;
+     out.vp = g_s.vp_buy;                         // 稳态恒 0(慢开局层才会置 2)
+     return out;
+@@ -591,7 +626,7 @@ GameOutput decide(const GameInput* in) {
+ // 布局归一化死垫：本次改写缩小了 decide, 使 moveDecision 入口模 64 掉出已证最优档 0x10。
+ // 四档扫描已证 0x20/0x30 各 +11.67ns, 故补 48B 永不执行的 nop 把入口移回 0x10 档,
+ // 否则测到的 cycles 差会被布局税污染。改动 decide 体积后必须重新核对并调整垫长。
+-asm(".space 96, 0x90");
++asm(".space 112, 0x90");
+ 
+ extern "C" GameOutput moveDecision(const GameInput* input) {
+     try {
