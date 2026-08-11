@@ -683,8 +683,15 @@ GameOutput decide(const GameInput* in) {
 
 // 布局归一化死垫：入口模 64 必须落在已证最优档 0x10。四档扫描已证 0x20/0x30 各 +11.67ns,
 // 故用永不执行的 nop 把 moveDecision 入口移回 0x10 档, 否则测到的 cycles 差会被布局税污染。
-// **改动 decide 体积后必须重新核对并调整垫长**(核对法: objdump -d | grep moveDecision)。
-asm(".space 176, 0x90");
+// **改动 decide 体积(含任何 PV_* 开关)后必须重新核对并调整垫长**: objdump -d | grep moveDecision,
+// 取入口地址 mod 64, 用 PV_PAD 补到 0x10。⚠ 做消融 A/B 时**两臂都要各自校到 0x10**,
+// 否则 ±11.67ns 的布局税会冒充成效应本身(而它与座位效应同量级)。
+#ifndef PV_PAD
+#define PV_PAD 176       // 默认值对应 PV_ACTOR=3 + PV_RTAB=1 (落库构型), 实测入口 0x1950
+#endif
+#define PV_STR2(x) #x
+#define PV_STR(x) PV_STR2(x)
+asm(".space " PV_STR(PV_PAD) ", 0x90");
 
 extern "C" GameOutput moveDecision(const GameInput* input) {
     try {
