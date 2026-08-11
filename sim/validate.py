@@ -551,7 +551,17 @@ class ValidationSuite:
         registry = _json_load(self.args.maps)
         results: dict[str, Any] = {}
         passed = True
-        for name in ("map1", "map2"):
+        # map3 used to be checked as a deliberately crippled entry: limited, with
+        # ``outer_hotspot_cells is None``, on the belief that only walls were
+        # recoverable.  That belief was refuted -- line 2 of any platform
+        # full-information log is the raw token grid, and 18 zero-quota
+        # full-vision probe games supplied it for all three maps.  map3 is now a
+        # complete definition, so it is held to the same expectations as map1 and
+        # map2, and those expectations are the truth's own counts rather than
+        # relaxed ones: 78 walls, 20 token-2 cells, 191 open cells.  The walls
+        # did not move -- walls_sha256 is byte-identical to the BAKED_W-decoded
+        # era -- so this is strictly an addition of previously missing metadata.
+        for name in ("map1", "map2", "map3"):
             definition = MapDefinition.from_json_file(self.args.maps, name)
             expected = registry["maps"][name]
             asset_fingerprint = hashlib.sha256("".join(definition.rows).encode("ascii")).hexdigest()
@@ -574,25 +584,47 @@ class ValidationSuite:
             passed &= item["exact"]
             results[name] = item
 
+        # Every official arm carries exactly five hotspots.  map3's hotspot
+        # geometry is structurally unlike map1/map2 -- four runs of five at the
+        # edge midpoints instead of mirrored perimeter pairs -- so this is a real
+        # constraint on the new asset, not a restatement of it.
+        per_arm: dict[str, dict[int, int]] = {}
+        for name in ("map1", "map2", "map3"):
+            definition = MapDefinition.from_json_file(self.args.maps, name)
+            counts = {region: 0 for region in range(1, 6)}
+            for cell in definition.outer_hotspot_cells or ():
+                counts[region_id(*cell)] += 1
+            per_arm[name] = counts
+        arms_ok = all(
+            counts[1] == 0 and all(counts[region] == 5 for region in (2, 3, 4, 5))
+            for counts in per_arm.values()
+        )
+        results["hotspots_per_windmill_arm"] = {
+            "per_map": {name: dict(sorted(counts.items())) for name, counts in per_arm.items()},
+            "five_per_outer_arm_none_central": arms_ok,
+        }
+        passed &= arms_ok
+
         map3 = MapDefinition.from_json_file(self.args.maps, "map3")
         scenario3 = ScenarioGenerator(map3, "map3-runnable")
         events3 = scenario3.resolve_round(0, SpawnState())
         map3_ok = (
-            map3.limited
-            and map3.outer_hotspot_cells is None
+            not map3.limited
+            and map3.outer_hotspot_cells is not None
+            and len(map3.outer_hotspot_cells) == 20
             and len(map3.walls) == registry["maps"]["map3"]["counts"]["walls"]
             and all(addition.cell in map3.traversable for addition in events3.gold_additions)
             and events3.bomb_refresh is not None
             and set(events3.bomb_refresh) <= set(map3.traversable)
         )
-        results["map3"] = {
+        results["map3_runnable"] = {
             "limited": map3.limited,
             "walls": len(map3.walls),
-            "hotspot_metadata": None,
+            "hotspot_metadata": len(map3.outer_hotspot_cells or ()),
             "scenario_rounds": len(scenario3.rounds),
             "round0_resolved_gold": len(events3.gold_additions),
             "round0_resolved_bombs": len(events3.bomb_refresh or ()),
-            "runnable_and_limited": map3_ok,
+            "runnable_and_complete": map3_ok,
         }
         passed &= map3_ok
 
@@ -841,7 +873,9 @@ class ValidationSuite:
         empirical = 618 / 1142
         return {
             "classification": "fitted_warning",
-            "claim": "Sampler hotspot weighting is a descriptive fit, not exact mechanics.",
+            "claim": "Hotspot share is now an emergent prediction of the structural rule "
+                     "(rich values only on the rich arm's hotspots, ordinary values only on "
+                     "the other three arms), not a tuned sampler weight.",
             "seeds": seeds,
             "generated_hotspot_cells": hotspot_count,
             "generated_outer_cells": outer_count,

@@ -733,6 +733,15 @@ def install_field(model: str) -> None:
     ``sim/scenario.py`` is shared with a concurrently running sibling worker and is never
     written.  ``uniform`` is the repo default and restores the stock class, which matters
     because a pool worker is reused across tasks with different field models.
+
+    STALE AS OF 2026-08-11.  This experiment predates the central-law fix.  Two things
+    broke it: the repo default central law is no longer spatially uniform (it is the
+    separable centripetal law over the whole 9x9 with wall rejection), and
+    ``_make_central`` no longer routes through ``_uniform_order``, so the override below
+    is never called.  Both arms therefore now run the same law and this comparison is a
+    null.  Its finding -- that a uniform central field biases the simulator against a
+    hot-field knife -- is superseded by ``GENERATION.md`` 3.4; do not re-quote its
+    numbers without re-running against the current generator.
     """
     import sim.runner as runner
     from sim.scenario import ScenarioGenerator, region_id

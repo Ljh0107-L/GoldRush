@@ -1,0 +1,104 @@
+{
+ "schema_version": 1,
+ "provenance": {
+  "what": "The three official maps' raw token grids, as the platform itself reports them.",
+  "channel": "line 2 (zero-based index 1) of an official full-information game log is the raw token grid: json.loads(lines[1]) yields 17 rows of 17 single-character token strings, '0' open, '1' wall, '2' outer-gold hotspot.  This asset stores each row joined into one 17-character string, the same shape sim/maps.json uses, so the two can be compared byte for byte.",
+  "extracted_from": "18 zero-quota self-play probe games run on the platform 2026-08-11: a full-vision probe (vp=2, i.e. 9x9 sight, both units walked to fixed anchors and then stood still) against an 'idle' sparring partner. 6 games per official map; three anchor groups whose union covers all 289 cells.",
+  "line2_is_constant_per_map": "the 6 logs of each map carry byte-identical line 2",
+  "line2_sha256": {
+   "1": "fe78abc41407f4eb139b38459e14fba3a51b98630d15d7d88b45105c202392d7",
+   "2": "f7e71baff509f95cc681d0828b317362b103a228da5c9b9600fa732d4c0ac0ec",
+   "3": "42f7d2245ccda6364a09b0e572f4a31e148a886097acf83e01c6fb4d54edee29"
+  },
+  "logs": {
+   "1": [
+    "gA1_map1_214391.log",
+    "gA1_map1_214400.log",
+    "gA2_map1_214392.log",
+    "gA2_map1_214401.log",
+    "gA3_map1_214393.log",
+    "gA3_map1_214402.log"
+   ],
+   "2": [
+    "gB1_map2_214394.log",
+    "gB1_map2_214404.log",
+    "gB2_map2_214395.log",
+    "gB2_map2_214405.log",
+    "gB3_map2_214396.log",
+    "gB3_map2_214406.log"
+   ],
+   "3": [
+    "gC1_map3_214397.log",
+    "gC1_map3_214407.log",
+    "gC2_map3_214398.log",
+    "gC2_map3_214409.log",
+    "gC3_map3_214399.log",
+    "gC3_map3_214410.log"
+   ]
+  },
+  "cross_checks": [
+   "map1 and map2 token rows are byte-identical to the pre-existing sim/maps.json 'rows', which were built from a different set of 142 and 45 local logs -> the extraction channel reproduces two known maps with zero error.",
+   "map3 walls are cell-identical to the pre-existing sim/maps.json 'wall_rows', which were decoded from src/player.cpp BAKED_W[2]; the walls_sha256 c5c432003c7a2e4cd3cbc2928a2cd132bed831dc91e126ffc1123af5df2e54ec is unchanged by adding the token-2 markers.",
+   "each map has exactly 20 token-2 cells and exactly 5 of them per windmill region (region_id 2,3,4,5) -- including map3, whose token-2 geometry is otherwise structurally unlike map1/map2."
+  ],
+  "refutes": "the former sim/maps.json map3 note 'Only walls are recoverable from BAKED_W; no log-line-2 bomb-candidate definition is available.' -- line 2 of any platform log carries it.",
+  "map3_geometry": "map3's 20 token-2 cells are four runs of five at the edge midpoints: (0,6..10), (16,6..10), (6..10,0), (6..10,16). map1 and map2 instead scatter mirrored pairs around the perimeter."
+ },
+ "1": [
+  "00012200000021000",
+  "00000020002000000",
+  "01100000000000110",
+  "10010000000001001",
+  "00001000000010000",
+  "20000100000100002",
+  "00010000000001000",
+  "02000001010000020",
+  "00001010001010000",
+  "00200001010000200",
+  "00010000000001000",
+  "20000100000100002",
+  "00021000000012000",
+  "10010000000001001",
+  "01100000000000110",
+  "00000020002000000",
+  "00012200000021000"
+ ],
+ "2": [
+  "00002000200000000",
+  "00000020000020000",
+  "00100010001000100",
+  "00000000002000000",
+  "00001000100010000",
+  "20000000000000002",
+  "00100010001000100",
+  "00200000000000200",
+  "00001000000010000",
+  "02000000000000020",
+  "00100010001000100",
+  "00020000000002000",
+  "20001000100010002",
+  "00000000002000000",
+  "00100010001000100",
+  "00000020000020000",
+  "00002000200000000"
+ ],
+ "3": [
+  "00000022222000000",
+  "00000000000000000",
+  "00111000000011100",
+  "00111000000011100",
+  "00001111011110000",
+  "00001111011110000",
+  "20001111011110002",
+  "20000000000000002",
+  "20001110001110002",
+  "20000000000000002",
+  "20001111011110002",
+  "00001111011110000",
+  "00001111011110000",
+  "00111000000011100",
+  "00111000000011100",
+  "00000000000000000",
+  "00000022222000000"
+ ]
+}

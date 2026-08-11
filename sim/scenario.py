@@ -8,25 +8,40 @@ before a strategy can run, and resolving an intent never consumes randomness.
 
 Calibration status
 ------------------
-The following are descriptive fits to the three 500-round logs summarized by
-``reports/generation.json``; they are not published game constants:
+The following are descriptive fits, not published game constants:
 
-* central count: Poisson mean 1.744; central values: uniform integers 1..10;
+* central attempts: Poisson mean ``CENTRAL_ATTEMPT_MEAN`` over the whole 9x9,
+  positioned by a separable centripetal law, an attempt that lands on a wall
+  produces nothing; central values: uniform integers 1..11;
 * outer renewal wait: uniform integers 8..16; rich region: uniform 2..5;
 * outer event shapes and values: empirical categorical distributions;
 * bomb waves: rounds 0, 20, ..., 480, with independent eligible-cell
   Bernoulli probability 0.0789.
 
+Outer coordinates marked ``2`` on official log line 2 are the rich arm's
+hotspots: a rich event puts its high values on the picked arm's own token-2
+cells and nowhere else, while the ordinary low values are spread uniformly over
+the traversable cells of the other three arms, hotspot or not.  These markers do
+not define or restrict bomb eligibility: bomb trials cover every traversable
+non-wall cell.  All three official maps carry exactly 20 token-2 cells, exactly
+five per windmill arm.  A map with no hotspot metadata falls back to uniform
+placement inside the rich arm, which keeps such maps runnable but loses the
+spatial concentration.
+
+Two independent measurement channels disagree about the low-value law and the
+disagreement is recorded rather than resolved; see ``GENERATION.md`` section 3.2.
+The latent placement records of three full-information logs give uniform 1..10
+(n=2611).  The grid-increment channel -- 18 full-vision platform probe games,
+which is the channel a strategy and every simulator reading actually consume --
+gives a flat 1..11 (n=6607 central events, chi-square 8.84 on 10 degrees of
+freedom against uniform 1..11, and a cliff rather than a tail above 11, which
+rules out same-round stacking as the explanation).  This module follows the grid
+channel because the grid is what the engine shows and what the acceptance
+measurement reads.
+
 The opening round's latent decomposition is unknown.  This scenario applies
 the fitted regular central law to every round and does not invent a separate
-opening seeding rule.  Outer coordinates marked ``2`` on official log line 2
-are treated as an empirically fitted outer-gold hotspot.  The observed share is
-618/1142 (54.1%): its raw per-cell rate ratio is 9.67, while the sampler-specific
-weighted-without-replacement fit used here is approximately 11.336.  These
-markers do not define or restrict bomb eligibility: bomb trials cover every
-traversable non-wall cell.  Map 3 has recoverable walls but
-no line-2 hotspot metadata, so its outer coordinate model necessarily falls
-back to uniform weights; central and bomb generation remain available.
+opening seeding rule.
 
 Generation locations can depend on actor and board state that cannot be known
 at materialization time.  A ``RoundIntent`` consequently stores deterministic
@@ -50,12 +65,47 @@ from typing import Any, FrozenSet, Iterable, Mapping, Optional, Sequence, Tuple,
 GRID_SIZE = 17
 ROUND_COUNT = 500
 BOMB_PERIOD = 20
+# Historical constant, kept for provenance and for readers of the old reports:
+# the latent-channel mean of *placed* central cells per round on map1 (n=1500).
+# It is a post-rejection quantity and therefore map specific, which is exactly
+# why it cannot be the sampler's input; see CENTRAL_ATTEMPT_MEAN.
 CENTRAL_POISSON_MEAN = 1.744
+# Sampler input: attempts per round over the whole central 9x9, walls included.
+# One global constant; every per-map difference comes out of the geometry, so no
+# map is special-cased anywhere.  Derivation, in two steps that are both stated
+# because the second one is a calibration and not a measurement:
+#   1. the platform's measured per-game central gold pooled over the three maps
+#      (14043 gold, loose per-cell caliber) divided by 500 rounds, the 6.0 mean
+#      value and the summed open-weight shares 0.8073+0.8873+0.4261, gives 2.2073
+#      placements per round of *open* weight;
+#   2. an attempt is also lost when the cell is occupied, and the simulator's own
+#      grid puts that at about 11% of central cell-rounds (bombs plus npcs), so
+#      the attempt rate is 2.2073 / 0.889.
+# Residual after one pass: the simulator's measured central gold is 0.95 / 1.00 /
+# 0.95 of the platform's on map1 / map2 / map3, i.e. 2.8% low pooled.  Left as is
+# rather than rescaled again, because a second pass would only trade map1 and
+# map3's -5% for map2's +3%.
+CENTRAL_ATTEMPT_MEAN = 2.4829
+# Grid-increment channel, 18 full-vision platform probe games, n=6607 central
+# events pooled over the three maps: 611 602 557 587 597 638 601 602 596 580 636
+# for values 1..11, chi-square 8.84 on df=10 against uniform, mean 6.0285.
+CENTRAL_VALUE_MAX = 11
+# Separable centripetal position law for the central 9x9, from GENERATION.md 3.3
+# (row and column marginals of the per-cell placement frequency).  Indices are
+# offsets from the top-left of the central square, i.e. rows and columns 4..12.
+# A cell's weight is row weight times column weight; the population includes
+# walls, and an attempt that lands on a wall is dropped rather than relocated.
+CENTRAL_ROW_WEIGHTS = (22.3, 38.0, 41.9, 46.0, 65.2, 47.4, 43.9, 36.9, 25.6)
+CENTRAL_COL_WEIGHTS = (20.0, 33.3, 41.6, 52.9, 56.3, 50.6, 40.0, 33.9, 22.8)
 BOMB_PROBABILITY = 0.0789
 OUTER_HOTSPOT_EMPIRICAL_SHARE = 618.0 / 1142.0
 OUTER_HOTSPOT_RAW_CELL_RATE_RATIO = (618.0 / 20.0) / (524.0 / 164.0)
-# Expected-count fit for this module's exponential-race weighted-without-
-# replacement sampler, using each observed event/region population and count.
+# Retired.  This was an expected-count fit for a weighted-without-replacement
+# sampler that put a hotspot bonus on all four arms at once, which diluted rich
+# values onto ordinary cells and ordinary values onto hotspots.  The structural
+# rule replaced it: rich values go only to the rich arm's hotspots, ordinary
+# values only to the other three arms.  Kept as a constant because published
+# reports quote it; no sampler reads it any more.
 OUTER_HOTSPOT_WEIGHT = 11.33648734667453
 DEFAULT_MAPS_PATH = Path(__file__).with_name("maps.json")
 
@@ -77,6 +127,21 @@ RICH_TOTAL_HISTOGRAM = (
     (112, 2),
 )
 ORDINARY_OUTER_VALUE_HISTOGRAM = (
+    (1, 162), (2, 166), (3, 140), (4, 130), (5, 132), (6, 98),
+    (7, 122), (8, 95), (9, 95), (10, 110), (11, 93), (12, 1),
+    (16, 1), (19, 1),
+)
+# Superseded by the histogram above, kept so both channels stay visible.  It is
+# the latent placement record of three full-information logs (n=595, mean 4.947);
+# the active histogram is the grid-increment channel of 18 full-vision platform
+# probe games (n=1346, mean 5.4391), measured on outer token-0 cells only, i.e.
+# exactly the population the ordinary stream is allowed to land on.  The two
+# agree on the declining shape and differ by one extra value bucket, the same
+# 1..10 versus 1..11 disagreement seen in the central stream.  The three high
+# outliers are kept because the platform shows the same 0.2 percent leak of a
+# high value onto an ordinary cell (GENERATION.md 4.3 reports 547/548 = 99.82%
+# of high placements on token-2 cells).
+ORDINARY_OUTER_VALUE_HISTOGRAM_LATENT_CHANNEL = (
     (1, 81), (2, 75), (3, 58), (4, 68), (5, 60), (6, 64),
     (7, 53), (8, 57), (9, 40), (10, 38), (15, 1),
 )
@@ -304,11 +369,22 @@ class MapDefinition:
 
 @dataclass(frozen=True)
 class GoldPlacementIntent:
-    """A value intended for one cell in a particular windmill region."""
+    """A value intended for one cell in a particular windmill region.
+
+    ``cell`` is the coordinate the generator actually drew.  A bound placement
+    is all-or-nothing: if that cell is unavailable at resolve time the value is
+    not placed anywhere.  ``cell is None`` selects the legacy behaviour, where
+    the value walks the region's ranked ``cell_orders`` until it finds a free
+    coordinate.  The distinction is not cosmetic -- it is the difference between
+    a wall or an actor destroying gold and a wall or an actor merely displacing
+    it, and the platform's per-map central totals only match the first reading
+    (GENERATION.md 3.4).
+    """
 
     source: str
     region: int
     value: int
+    cell: Optional[Cell] = None
 
 
 @dataclass(frozen=True)
@@ -319,6 +395,7 @@ class GoldIntent:
     placements: Tuple[GoldPlacementIntent, ...]
     cell_orders: Tuple[Tuple[int, Tuple[Cell, ...]], ...]
     rich_region: Optional[int] = None
+    rich_degraded: bool = False
 
     def order_for(self, region: int) -> Tuple[Cell, ...]:
         for candidate_region, cells in self.cell_orders:
@@ -526,6 +603,24 @@ class ScenarioGenerator:
             cursors = {region: 0 for region, _ in gold_intent.cell_orders}
             orders = dict(gold_intent.cell_orders)
             for placement in gold_intent.placements:
+                if placement.cell is not None:
+                    # Bound placement: the coordinate was drawn at materialization
+                    # time, so an unavailable cell destroys the value instead of
+                    # displacing it onto a neighbour.
+                    candidate = placement.cell
+                    if candidate in gold_blocked or candidate in used:
+                        unplaced.append(UnplacedGold(
+                            source=placement.source, region=placement.region,
+                            value=placement.value,
+                        ))
+                    else:
+                        used.add(candidate)
+                        additions.append(GoldAddition(
+                            row=candidate[0], col=candidate[1],
+                            value=placement.value, source=placement.source,
+                            region=placement.region,
+                        ))
+                    continue
                 order = orders.get(placement.region, ())
                 cursor = cursors.get(placement.region, 0)
                 selected: Optional[Cell] = None
@@ -605,20 +700,19 @@ class ScenarioGenerator:
         rng.shuffle(cells)
         return tuple(cells)
 
-    def _outer_weighted_order(
-        self, rng: random.Random, region: int
+    @staticmethod
+    def _race_order(
+        rng: random.Random, weighted_cells: Sequence[Tuple[Cell, float]]
     ) -> Tuple[Cell, ...]:
-        cells = sorted(cell for cell in self.map.traversable if region_id(*cell) == region)
-        hotspots = self.map.outer_hotspot_cells
-        if hotspots is None or not hotspots:
-            rng.shuffle(cells)
-            return tuple(cells)
+        """Weighted sampling without replacement, materialized as a full order.
 
-        # Exponential-race ordering is weighted sampling without replacement.
-        # All keys are materialized now; runtime filtering merely skips cells.
+        An exponential race: the cell with the smallest ``-log(U)/weight`` is the
+        first draw, and truncating the order at *k* is a weighted draw of *k*
+        distinct cells.  Every call consumes exactly one uniform per candidate,
+        so the stream position does not depend on how many cells are kept.
+        """
         keyed = []
-        for cell in cells:
-            weight = OUTER_HOTSPOT_WEIGHT if cell in hotspots else 1.0
+        for cell, weight in weighted_cells:
             uniform = rng.random()
             while uniform == 0.0:  # Random.random currently excludes 0 rarely, not contractually.
                 uniform = rng.random()
@@ -626,16 +720,49 @@ class ScenarioGenerator:
         keyed.sort()
         return tuple(cell for _, cell in keyed)
 
+    def _central_candidate_order(self, rng: random.Random) -> Tuple[Cell, ...]:
+        """Order all 81 central coordinates, walls included, by the position law.
+
+        Walls stay in the population on purpose.  An attempt that draws a wall is
+        dropped, which is what makes the per-map central yield fall with the
+        walled-off share of the central square instead of being pushed onto the
+        surviving cells.
+        """
+        weighted = [
+            ((row, col), CENTRAL_ROW_WEIGHTS[row - 4] * CENTRAL_COL_WEIGHTS[col - 4])
+            for row in range(4, 13)
+            for col in range(4, 13)
+        ]
+        return self._race_order(rng, weighted)
+
+    def _uniform_sample(
+        self, rng: random.Random, pool: Sequence[Cell], count: int
+    ) -> Tuple[Cell, ...]:
+        cells = list(pool)
+        rng.shuffle(cells)
+        return tuple(cells[:count])
+
+    def _region_hotspots(self, region: int) -> Tuple[Cell, ...]:
+        hotspots = self.map.outer_hotspot_cells or frozenset()
+        return tuple(sorted(cell for cell in hotspots if region_id(*cell) == region))
+
+    def _region_traversable(self, region: int) -> Tuple[Cell, ...]:
+        return tuple(sorted(
+            cell for cell in self.map.traversable if region_id(*cell) == region
+        ))
+
     def _make_central(self, rng: random.Random) -> GoldIntent:
-        count = self._poisson(rng, CENTRAL_POISSON_MEAN)
+        attempts = self._poisson(rng, CENTRAL_ATTEMPT_MEAN)
+        order = self._central_candidate_order(rng)
+        # Values are drawn for every attempt, including the ones that will be
+        # dropped on a wall, so the value stream stays independent of terrain.
+        values = [rng.randint(1, CENTRAL_VALUE_MAX) for _ in range(attempts)]
         placements = tuple(
-            GoldPlacementIntent("central", 1, rng.randint(1, 10))
-            for _ in range(count)
+            GoldPlacementIntent("central", 1, value, cell)
+            for value, cell in zip(values, order[:attempts])
+            if cell not in self.map.walls
         )
-        return GoldIntent(
-            source="central", placements=placements,
-            cell_orders=((1, self._uniform_order(rng, 1)),),
-        )
+        return GoldIntent(source="central", placements=placements, cell_orders=())
 
     def _make_outer(self, rng: random.Random) -> GoldIntent:
         rich_region = rng.randint(2, 5)
@@ -661,29 +788,37 @@ class ScenarioGenerator:
             for _ in range(ordinary_count)
         ]
 
-        # Assign ordinary values to the other regions by least accumulated
-        # value.  This preserves the empirically identified rich region while
-        # retaining every sampled ordinary value.
-        other_regions = [region for region in range(2, 6) if region != rich_region]
-        rng.shuffle(other_regions)
-        totals = {region: 0 for region in other_regions}
-        ordinary_placements = []
-        for value in ordinary_values:
-            region = min(other_regions, key=lambda item: (totals[item], other_regions.index(item)))
-            totals[region] += value
-            ordinary_placements.append(GoldPlacementIntent("outer-ordinary", region, value))
+        # The rich arm spends its high values on its own token-2 cells and
+        # nowhere else; 547 of 548 observed high outer placements sat on a
+        # token-2 cell (GENERATION.md 4.3).  A map with no hotspot metadata has
+        # no such cells, so it degrades to uniform placement inside the arm --
+        # runnable, but with the spatial concentration lost.
+        rich_pool = self._region_hotspots(rich_region)
+        rich_degraded = not rich_pool
+        if rich_degraded:
+            rich_pool = self._region_traversable(rich_region)
+        rich_cells = self._uniform_sample(rng, rich_pool, rich_count)
+
+        # Ordinary values never touch the rich arm (594 of 594 observed) and are
+        # uniform over the other three arms including their hotspot cells: the
+        # platform puts 71 of 594 = 12.0% of ordinary placements on a token-2
+        # cell, against a 10.2-11.4% token-2 share of those arms' floor.
+        ordinary_pool = [
+            cell for cell in sorted(self.map.traversable)
+            if region_id(*cell) not in (1, rich_region)
+        ]
+        ordinary_cells = self._uniform_sample(rng, ordinary_pool, ordinary_count)
 
         placements = tuple(
-            GoldPlacementIntent("outer-rich", rich_region, value)
-            for value in rich_values
-        ) + tuple(ordinary_placements)
-        orders = tuple(
-            (region, self._outer_weighted_order(rng, region))
-            for region in range(2, 6)
+            GoldPlacementIntent("outer-rich", rich_region, value, cell)
+            for value, cell in zip(rich_values, rich_cells)
+        ) + tuple(
+            GoldPlacementIntent("outer-ordinary", region_id(*cell), value, cell)
+            for value, cell in zip(ordinary_values, ordinary_cells)
         )
         return GoldIntent(
-            source="outer", placements=placements, cell_orders=orders,
-            rich_region=rich_region,
+            source="outer", placements=placements, cell_orders=(),
+            rich_region=rich_region, rich_degraded=rich_degraded,
         )
 
     def _materialize(self, rng: random.Random) -> Tuple[RoundIntent, ...]:
@@ -717,8 +852,13 @@ class ScenarioGenerator:
         return {
             "source": intent.source,
             "rich_region": intent.rich_region,
+            "rich_degraded": intent.rich_degraded,
             "placements": [
-                {"region": item.region, "source": item.source, "value": item.value}
+                {
+                    "region": item.region, "source": item.source,
+                    "value": item.value,
+                    "cell": None if item.cell is None else list(item.cell),
+                }
                 for item in intent.placements
             ],
             "cell_orders": {
@@ -739,16 +879,23 @@ class ScenarioGenerator:
             "round_count": ROUND_COUNT,
             "model": {
                 "status": "descriptive fits, not official constants",
-                "central_poisson_mean": CENTRAL_POISSON_MEAN,
-                "central_value_uniform": [1, 10],
+                "central_attempt_mean": CENTRAL_ATTEMPT_MEAN,
+                "central_attempt_population": "all 81 cells of the central 9x9, walls included",
+                "central_position_law": "separable centripetal row x column marginals",
+                "central_wall_attempt": "dropped, never relocated",
+                "central_value_uniform": [1, CENTRAL_VALUE_MAX],
+                "central_value_channel": "grid increments of 18 full-vision platform probe games",
+                "central_placed_mean_latent_channel_map1": CENTRAL_POISSON_MEAN,
                 "opening_rule": "unknown; regular central fit applied",
                 "outer_wait_uniform": [8, 16],
                 "outer_rich_region_uniform": [2, 5],
+                "outer_rich_target": "the rich arm's own token-2 cells only",
+                "outer_ordinary_target": "uniform over the other three arms' floor, hotspots included",
                 "outer_hotspot_empirical_share": OUTER_HOTSPOT_EMPIRICAL_SHARE,
                 "outer_hotspot_raw_cell_rate_ratio": OUTER_HOTSPOT_RAW_CELL_RATE_RATIO,
-                "outer_hotspot_weight": OUTER_HOTSPOT_WEIGHT,
-                "outer_hotspot_weight_fit": "approximate, sampler-specific expected-count fit",
-                "outer_hotspot_role": "outer-gold coordinate weight, never bomb eligibility",
+                "outer_hotspot_weight": None,
+                "outer_hotspot_weight_retired": OUTER_HOTSPOT_WEIGHT,
+                "outer_hotspot_role": "outer-gold coordinate target, never bomb eligibility",
                 "bomb_period": BOMB_PERIOD,
                 "bomb_probability": BOMB_PROBABILITY,
                 "bomb_population": "all traversable cells before runtime exclusions",
@@ -833,7 +980,9 @@ def hotspot_fit_sanity(
 
 
 __all__ = [
-    "BOMB_PERIOD", "BOMB_PROBABILITY", "CENTRAL_POISSON_MEAN",
+    "BOMB_PERIOD", "BOMB_PROBABILITY", "CENTRAL_ATTEMPT_MEAN",
+    "CENTRAL_COL_WEIGHTS", "CENTRAL_POISSON_MEAN", "CENTRAL_ROW_WEIGHTS",
+    "CENTRAL_VALUE_MAX",
     "DEFAULT_MAPS_PATH", "GRID_SIZE", "OUTER_HOTSPOT_EMPIRICAL_SHARE",
     "OUTER_HOTSPOT_RAW_CELL_RATE_RATIO", "OUTER_HOTSPOT_WEIGHT",
     "ROUND_COUNT", "GoldAddition", "GoldIntent", "GoldPlacementIntent",

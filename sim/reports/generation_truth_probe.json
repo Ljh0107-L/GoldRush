@@ -1,0 +1,3154 @@
+{
+ "acceptance_after": {
+  "loose": {
+   "checks": [
+    {
+     "band": [
+      0.9,
+      1.1
+     ],
+     "check": "token-2 single-event mean",
+     "map": 1,
+     "note": "",
+     "passed": true,
+     "platform": 19.882883,
+     "ratio": 0.981269,
+     "sim": 19.510451
+    },
+    {
+     "band": [
+      0.9,
+      1.1
+     ],
+     "check": "token-0 single-event mean",
+     "map": 1,
+     "note": "",
+     "passed": true,
+     "platform": 5.959082,
+     "ratio": 0.992036,
+     "sim": 5.911622
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold CTR",
+     "map": 1,
+     "note": "",
+     "passed": true,
+     "platform": 5488.279302,
+     "ratio": 0.951594,
+     "sim": 5222.61189
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold OUT0",
+     "map": 1,
+     "note": "",
+     "passed": true,
+     "platform": 943.414914,
+     "ratio": 0.946954,
+     "sim": 893.370073
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold OUT2",
+     "map": 1,
+     "note": "",
+     "passed": true,
+     "platform": 4131.32124,
+     "ratio": 0.896129,
+     "sim": 3702.196059
+    },
+    {
+     "band": [
+      0.9,
+      1.1
+     ],
+     "check": "token-2 single-event mean",
+     "map": 2,
+     "note": "",
+     "passed": true,
+     "platform": 19.452727,
+     "ratio": 1.022012,
+     "sim": 19.880915
+    },
+    {
+     "band": [
+      0.9,
+      1.1
+     ],
+     "check": "token-0 single-event mean",
+     "map": 2,
+     "note": "",
+     "passed": true,
+     "platform": 5.945601,
+     "ratio": 0.997221,
+     "sim": 5.929079
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold CTR",
+     "map": 2,
+     "note": "",
+     "passed": true,
+     "platform": 5807.630137,
+     "ratio": 0.999846,
+     "sim": 5806.738477
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold OUT0",
+     "map": 2,
+     "note": "",
+     "passed": true,
+     "platform": 900.98804,
+     "ratio": 1.020182,
+     "sim": 919.171677
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold OUT2",
+     "map": 2,
+     "note": "",
+     "passed": true,
+     "platform": 4074.570488,
+     "ratio": 0.908344,
+     "sim": 3701.110554
+    },
+    {
+     "band": [
+      0.9,
+      1.1
+     ],
+     "check": "token-2 single-event mean",
+     "map": 3,
+     "note": "",
+     "passed": true,
+     "platform": 20.746914,
+     "ratio": 0.939267,
+     "sim": 19.4869
+    },
+    {
+     "band": [
+      0.9,
+      1.1
+     ],
+     "check": "token-0 single-event mean",
+     "map": 3,
+     "note": "",
+     "passed": true,
+     "platform": 5.837134,
+     "ratio": 1.007454,
+     "sim": 5.880643
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold CTR",
+     "map": 3,
+     "note": "",
+     "passed": true,
+     "platform": 2747.145764,
+     "ratio": 0.953987,
+     "sim": 2620.741483
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold OUT0",
+     "map": 3,
+     "note": "",
+     "passed": true,
+     "platform": 876.554658,
+     "ratio": 1.067623,
+     "sim": 935.829993
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold OUT2",
+     "map": 3,
+     "note": "",
+     "passed": false,
+     "platform": 4400.25176,
+     "ratio": 0.846816,
+     "sim": 3726.202405
+    }
+   ],
+   "passed": false
+  },
+  "strict": {
+   "checks": [
+    {
+     "band": [
+      0.9,
+      1.1
+     ],
+     "check": "token-2 single-event mean",
+     "map": 1,
+     "note": "",
+     "passed": true,
+     "platform": 19.853526,
+     "ratio": 0.98272,
+     "sim": 19.510451
+    },
+    {
+     "band": [
+      0.9,
+      1.1
+     ],
+     "check": "token-0 single-event mean",
+     "map": 1,
+     "note": "",
+     "passed": true,
+     "platform": 5.961132,
+     "ratio": 0.991695,
+     "sim": 5.911622
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold CTR",
+     "map": 1,
+     "note": "",
+     "passed": true,
+     "platform": 5763.813271,
+     "ratio": 1.033931,
+     "sim": 5959.384165
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold OUT0",
+     "map": 1,
+     "note": "",
+     "passed": true,
+     "platform": 1005.83881,
+     "ratio": 0.975129,
+     "sim": 980.822627
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold OUT2",
+     "map": 1,
+     "note": "",
+     "passed": true,
+     "platform": 4368.185211,
+     "ratio": 0.925778,
+     "sim": 4043.969103
+    },
+    {
+     "band": [
+      0.9,
+      1.1
+     ],
+     "check": "token-2 single-event mean",
+     "map": 2,
+     "note": "",
+     "passed": true,
+     "platform": 19.452727,
+     "ratio": 1.022012,
+     "sim": 19.880915
+    },
+    {
+     "band": [
+      0.9,
+      1.1
+     ],
+     "check": "token-0 single-event mean",
+     "map": 2,
+     "note": "",
+     "passed": true,
+     "platform": 5.939819,
+     "ratio": 0.998192,
+     "sim": 5.929079
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold CTR",
+     "map": 2,
+     "note": "",
+     "passed": true,
+     "platform": 6108.609014,
+     "ratio": 1.078762,
+     "sim": 6589.734452
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold OUT0",
+     "map": 2,
+     "note": "",
+     "passed": true,
+     "platform": 969.844159,
+     "ratio": 1.043199,
+     "sim": 1011.740918
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold OUT2",
+     "map": 2,
+     "note": "",
+     "passed": true,
+     "platform": 4278.585136,
+     "ratio": 0.94726,
+     "sim": 4052.932298
+    },
+    {
+     "band": [
+      0.9,
+      1.1
+     ],
+     "check": "token-2 single-event mean",
+     "map": 3,
+     "note": "",
+     "passed": true,
+     "platform": 20.748454,
+     "ratio": 0.939198,
+     "sim": 19.4869
+    },
+    {
+     "band": [
+      0.9,
+      1.1
+     ],
+     "check": "token-0 single-event mean",
+     "map": 3,
+     "note": "",
+     "passed": true,
+     "platform": 5.837255,
+     "ratio": 1.007433,
+     "sim": 5.880643
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold CTR",
+     "map": 3,
+     "note": "",
+     "passed": true,
+     "platform": 2891.262804,
+     "ratio": 1.079103,
+     "sim": 3119.971259
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold OUT0",
+     "map": 3,
+     "note": "",
+     "passed": true,
+     "platform": 932.965799,
+     "ratio": 1.103982,
+     "sim": 1029.977805
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold OUT2",
+     "map": 3,
+     "note": "",
+     "passed": true,
+     "platform": 4658.58818,
+     "ratio": 0.881316,
+     "sim": 4105.689345
+    }
+   ],
+   "passed": true
+  }
+ },
+ "acceptance_before": {
+  "loose": {
+   "checks": [
+    {
+     "band": [
+      0.9,
+      1.1
+     ],
+     "check": "token-2 single-event mean",
+     "map": 1,
+     "note": "",
+     "passed": false,
+     "platform": 19.882883,
+     "ratio": 0.611236,
+     "sim": 12.153132
+    },
+    {
+     "band": [
+      0.9,
+      1.1
+     ],
+     "check": "token-0 single-event mean",
+     "map": 1,
+     "note": "",
+     "passed": false,
+     "platform": 5.959082,
+     "ratio": 1.132207,
+     "sim": 6.746913
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold CTR",
+     "map": 1,
+     "note": "",
+     "passed": true,
+     "platform": 5488.279302,
+     "ratio": 0.865024,
+     "sim": 4747.49499
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold OUT0",
+     "map": 1,
+     "note": "",
+     "passed": false,
+     "platform": 943.414914,
+     "ratio": 2.414338,
+     "sim": 2277.722111
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold OUT2",
+     "map": 1,
+     "note": "",
+     "passed": false,
+     "platform": 4131.32124,
+     "ratio": 0.635208,
+     "sim": 2624.248497
+    },
+    {
+     "band": [
+      0.9,
+      1.1
+     ],
+     "check": "token-2 single-event mean",
+     "map": 2,
+     "note": "",
+     "passed": false,
+     "platform": 19.452727,
+     "ratio": 0.638405,
+     "sim": 12.418719
+    },
+    {
+     "band": [
+      0.9,
+      1.1
+     ],
+     "check": "token-0 single-event mean",
+     "map": 2,
+     "note": "",
+     "passed": false,
+     "platform": 5.945601,
+     "ratio": 1.145261,
+     "sim": 6.809266
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold CTR",
+     "map": 2,
+     "note": "",
+     "passed": false,
+     "platform": 5807.630137,
+     "ratio": 0.821513,
+     "sim": 4771.042084
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold OUT0",
+     "map": 2,
+     "note": "",
+     "passed": false,
+     "platform": 900.98804,
+     "ratio": 2.63201,
+     "sim": 2371.409486
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold OUT2",
+     "map": 2,
+     "note": "",
+     "passed": false,
+     "platform": 4074.570488,
+     "ratio": 0.619955,
+     "sim": 2526.052104
+    },
+    {
+     "band": [
+      0.9,
+      1.1
+     ],
+     "check": "token-2 single-event mean",
+     "map": 3,
+     "note": "ratio undefined: the sim side has no such cell or no event there",
+     "passed": false,
+     "platform": 20.746914,
+     "ratio": null,
+     "sim": null
+    },
+    {
+     "band": [
+      0.9,
+      1.1
+     ],
+     "check": "token-0 single-event mean",
+     "map": 3,
+     "note": "",
+     "passed": false,
+     "platform": 5.837134,
+     "ratio": 1.322578,
+     "sim": 7.720064
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold CTR",
+     "map": 3,
+     "note": "",
+     "passed": false,
+     "platform": 2747.145764,
+     "ratio": 1.73314,
+     "sim": 4761.189045
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold OUT0",
+     "map": 3,
+     "note": "",
+     "passed": false,
+     "platform": 876.554658,
+     "ratio": 5.62299,
+     "sim": 4928.857715
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold OUT2",
+     "map": 3,
+     "note": "ratio undefined: the sim side has no such cell or no event there",
+     "passed": false,
+     "platform": 4400.25176,
+     "ratio": null,
+     "sim": null
+    }
+   ],
+   "passed": false
+  },
+  "strict": {
+   "checks": [
+    {
+     "band": [
+      0.9,
+      1.1
+     ],
+     "check": "token-2 single-event mean",
+     "map": 1,
+     "note": "",
+     "passed": false,
+     "platform": 19.853526,
+     "ratio": 0.61214,
+     "sim": 12.153132
+    },
+    {
+     "band": [
+      0.9,
+      1.1
+     ],
+     "check": "token-0 single-event mean",
+     "map": 1,
+     "note": "",
+     "passed": false,
+     "platform": 5.961132,
+     "ratio": 1.131817,
+     "sim": 6.746913
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold CTR",
+     "map": 1,
+     "note": "",
+     "passed": true,
+     "platform": 5763.813271,
+     "ratio": 0.92954,
+     "sim": 5357.693446
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold OUT0",
+     "map": 1,
+     "note": "",
+     "passed": false,
+     "platform": 1005.83881,
+     "ratio": 2.501932,
+     "sim": 2516.540408
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold OUT2",
+     "map": 1,
+     "note": "",
+     "passed": false,
+     "platform": 4368.185211,
+     "ratio": 0.652098,
+     "sim": 2848.486197
+    },
+    {
+     "band": [
+      0.9,
+      1.1
+     ],
+     "check": "token-2 single-event mean",
+     "map": 2,
+     "note": "",
+     "passed": false,
+     "platform": 19.452727,
+     "ratio": 0.638405,
+     "sim": 12.418719
+    },
+    {
+     "band": [
+      0.9,
+      1.1
+     ],
+     "check": "token-0 single-event mean",
+     "map": 2,
+     "note": "",
+     "passed": false,
+     "platform": 5.939819,
+     "ratio": 1.146376,
+     "sim": 6.809266
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold CTR",
+     "map": 2,
+     "note": "",
+     "passed": true,
+     "platform": 6108.609014,
+     "ratio": 0.88445,
+     "sim": 5402.760381
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold OUT0",
+     "map": 2,
+     "note": "",
+     "passed": false,
+     "platform": 969.844159,
+     "ratio": 2.693347,
+     "sim": 2612.126647
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold OUT2",
+     "map": 2,
+     "note": "",
+     "passed": false,
+     "platform": 4278.585136,
+     "ratio": 0.643974,
+     "sim": 2755.297367
+    },
+    {
+     "band": [
+      0.9,
+      1.1
+     ],
+     "check": "token-2 single-event mean",
+     "map": 3,
+     "note": "ratio undefined: the sim side has no such cell or no event there",
+     "passed": false,
+     "platform": 20.748454,
+     "ratio": null,
+     "sim": null
+    },
+    {
+     "band": [
+      0.9,
+      1.1
+     ],
+     "check": "token-0 single-event mean",
+     "map": 3,
+     "note": "",
+     "passed": false,
+     "platform": 5.837255,
+     "ratio": 1.32255,
+     "sim": 7.720064
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold CTR",
+     "map": 3,
+     "note": "",
+     "passed": false,
+     "platform": 2891.262804,
+     "ratio": 1.922095,
+     "sim": 5557.280482
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold OUT0",
+     "map": 3,
+     "note": "",
+     "passed": false,
+     "platform": 932.965799,
+     "ratio": 5.817363,
+     "sim": 5427.40062
+    },
+    {
+     "band": [
+      0.85,
+      1.15
+     ],
+     "check": "per-game gold OUT2",
+     "map": 3,
+     "note": "ratio undefined: the sim side has no such cell or no event there",
+     "passed": false,
+     "platform": 4658.58818,
+     "ratio": null,
+     "sim": null
+    }
+   ],
+   "passed": false
+  }
+ },
+ "buckets_after": {
+  "loose": {
+   "1": {
+    "CTR": {
+     "platform": {
+      "amount": 16420,
+      "cells": 65,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 27.56803,
+      "events": 2709,
+      "mean_amount": 6.061277,
+      "obs": 98266,
+      "obs_max": 2974,
+      "obs_min": 990,
+      "per_cell_game_gold": 5488.279302,
+      "pooled_game_gold": 5430.667779,
+      "pooled_rate_per_1000": 167.09747
+     },
+     "ratios": {
+      "event_rate": 0.971013,
+      "mean_amount": 0.990397,
+      "per_cell_game_gold": 0.951594,
+      "pooled_game_gold": 0.961689,
+      "pooled_rate": 0.961689
+     },
+     "sim": {
+      "amount": 125092,
+      "cells": 65,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 26.768922,
+      "events": 20838,
+      "mean_amount": 6.003071,
+      "obs": 778440,
+      "obs_max": 11976,
+      "obs_min": 11976,
+      "per_cell_game_gold": 5222.61189,
+      "pooled_game_gold": 5222.61189,
+      "pooled_rate_per_1000": 160.69575
+     }
+    },
+    "OUT0": {
+     "platform": {
+      "amount": 2804,
+      "cells": 164,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 2.177631,
+      "events": 517,
+      "mean_amount": 5.423598,
+      "obs": 237414,
+      "obs_max": 2972,
+      "obs_min": 2,
+      "per_cell_game_gold": 943.414914,
+      "pooled_game_gold": 968.468582,
+      "pooled_rate_per_1000": 11.810592
+     },
+     "ratios": {
+      "event_rate": 0.921673,
+      "mean_amount": 1.00085,
+      "per_cell_game_gold": 0.946954,
+      "pooled_game_gold": 0.922456,
+      "pooled_rate": 0.922456
+     },
+     "sim": {
+      "amount": 21398,
+      "cells": 164,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 2.007063,
+      "events": 3942,
+      "mean_amount": 5.428209,
+      "obs": 1964064,
+      "obs_max": 11976,
+      "obs_min": 11976,
+      "per_cell_game_gold": 893.370073,
+      "pooled_game_gold": 893.370073,
+      "pooled_rate_per_1000": 10.894757
+     }
+    },
+    "OUT2": {
+     "platform": {
+      "amount": 11035,
+      "cells": 20,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 20.863093,
+      "events": 555,
+      "mean_amount": 19.882883,
+      "obs": 26602,
+      "obs_max": 2002,
+      "obs_min": 508,
+      "per_cell_game_gold": 4131.32124,
+      "pooled_game_gold": 4148.184347,
+      "pooled_rate_per_1000": 414.818435
+     },
+     "ratios": {
+      "event_rate": 0.909522,
+      "mean_amount": 0.981269,
+      "per_cell_game_gold": 0.896129,
+      "pooled_game_gold": 0.892486,
+      "pooled_rate": 0.892486
+     },
+     "sim": {
+      "amount": 88675,
+      "cells": 20,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 18.975451,
+      "events": 4545,
+      "mean_amount": 19.510451,
+      "obs": 239520,
+      "obs_max": 11976,
+      "obs_min": 11976,
+      "per_cell_game_gold": 3702.196059,
+      "pooled_game_gold": 3702.196059,
+      "pooled_rate_per_1000": 370.219606
+     }
+    }
+   },
+   "2": {
+    "CTR": {
+     "platform": {
+      "amount": 16631,
+      "cells": 69,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 28.164117,
+      "events": 2754,
+      "mean_amount": 6.038853,
+      "obs": 97784,
+      "obs_max": 2982,
+      "obs_min": 990,
+      "per_cell_game_gold": 5807.630137,
+      "pooled_game_gold": 5867.723758,
+      "pooled_rate_per_1000": 170.07895
+     },
+     "ratios": {
+      "event_rate": 0.995735,
+      "mean_amount": 0.993845,
+      "per_cell_game_gold": 0.999846,
+      "pooled_game_gold": 0.989607,
+      "pooled_rate": 0.989607
+     },
+     "sim": {
+      "amount": 139083,
+      "cells": 69,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 28.044011,
+      "events": 23174,
+      "mean_amount": 6.001683,
+      "obs": 826344,
+      "obs_max": 11976,
+      "obs_min": 11976,
+      "per_cell_game_gold": 5806.738477,
+      "pooled_game_gold": 5806.738477,
+      "pooled_rate_per_1000": 168.31126
+     }
+    },
+    "OUT0": {
+     "platform": {
+      "amount": 2496,
+      "cells": 176,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 1.881655,
+      "events": 463,
+      "mean_amount": 5.390929,
+      "obs": 246060,
+      "obs_max": 2982,
+      "obs_min": 986,
+      "per_cell_game_gold": 900.98804,
+      "pooled_game_gold": 892.660327,
+      "pooled_rate_per_1000": 10.143867
+     },
+     "ratios": {
+      "event_rate": 1.007789,
+      "mean_amount": 1.021741,
+      "per_cell_game_gold": 1.020182,
+      "pooled_game_gold": 1.029699,
+      "pooled_rate": 1.029699
+     },
+     "sim": {
+      "amount": 22016,
+      "cells": 176,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 1.896312,
+      "events": 3997,
+      "mean_amount": 5.508131,
+      "obs": 2107776,
+      "obs_max": 11976,
+      "obs_min": 11976,
+      "per_cell_game_gold": 919.171677,
+      "pooled_game_gold": 919.171677,
+      "pooled_rate_per_1000": 10.445133
+     }
+    },
+    "OUT2": {
+     "platform": {
+      "amount": 10699,
+      "cells": 20,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 21.232242,
+      "events": 550,
+      "mean_amount": 19.452727,
+      "obs": 25904,
+      "obs_max": 2000,
+      "obs_min": 986,
+      "per_cell_game_gold": 4074.570488,
+      "pooled_game_gold": 4130.250154,
+      "pooled_rate_per_1000": 413.025015
+     },
+     "ratios": {
+      "event_rate": 0.876799,
+      "mean_amount": 1.022012,
+      "per_cell_game_gold": 0.908344,
+      "pooled_game_gold": 0.896098,
+      "pooled_rate": 0.896098
+     },
+     "sim": {
+      "amount": 88649,
+      "cells": 20,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 18.616399,
+      "events": 4459,
+      "mean_amount": 19.880915,
+      "obs": 239520,
+      "obs_max": 11976,
+      "obs_min": 11976,
+      "per_cell_game_gold": 3701.110554,
+      "pooled_game_gold": 3701.110554,
+      "pooled_rate_per_1000": 370.111055
+     }
+    }
+   },
+   "3": {
+    "CTR": {
+     "platform": {
+      "amount": 6874,
+      "cells": 27,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 33.294997,
+      "events": 1158,
+      "mean_amount": 5.936097,
+      "obs": 34780,
+      "obs_max": 1992,
+      "obs_min": 992,
+      "per_cell_game_gold": 2747.145764,
+      "pooled_game_gold": 2668.171363,
+      "pooled_rate_per_1000": 197.642323
+     },
+     "ratios": {
+      "event_rate": 0.975385,
+      "mean_amount": 1.007011,
+      "per_cell_game_gold": 0.953987,
+      "pooled_game_gold": 0.982224,
+      "pooled_rate": 0.982224
+     },
+     "sim": {
+      "amount": 62772,
+      "cells": 27,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 32.475445,
+      "events": 10501,
+      "mean_amount": 5.977716,
+      "obs": 323352,
+      "obs_max": 11976,
+      "obs_min": 11976,
+      "per_cell_game_gold": 2620.741483,
+      "pooled_game_gold": 2620.741483,
+      "pooled_rate_per_1000": 194.128999
+     }
+    },
+    "OUT0": {
+     "platform": {
+      "amount": 2086,
+      "cells": 164,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 1.882459,
+      "events": 377,
+      "mean_amount": 5.533156,
+      "obs": 200270,
+      "obs_max": 2000,
+      "obs_min": 990,
+      "per_cell_game_gold": 876.554658,
+      "pooled_game_gold": 854.106956,
+      "pooled_rate_per_1000": 10.415938
+     },
+     "ratios": {
+      "event_rate": 1.077822,
+      "mean_amount": 1.01657,
+      "per_cell_game_gold": 1.067623,
+      "pooled_game_gold": 1.095682,
+      "pooled_rate": 1.095682
+     },
+     "sim": {
+      "amount": 22415,
+      "cells": 164,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 2.028956,
+      "events": 3985,
+      "mean_amount": 5.624843,
+      "obs": 1964064,
+      "obs_max": 11976,
+      "obs_min": 11976,
+      "per_cell_game_gold": 935.829993,
+      "pooled_game_gold": 935.829993,
+      "pooled_rate_per_1000": 11.412561
+     }
+    },
+    "OUT2": {
+     "platform": {
+      "amount": 10083,
+      "cells": 20,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 21.202338,
+      "events": 486,
+      "mean_amount": 20.746914,
+      "obs": 22922,
+      "obs_max": 1992,
+      "obs_min": 994,
+      "per_cell_game_gold": 4400.25176,
+      "pooled_game_gold": 4398.830818,
+      "pooled_rate_per_1000": 439.883082
+     },
+     "ratios": {
+      "event_rate": 0.901862,
+      "mean_amount": 0.939267,
+      "per_cell_game_gold": 0.846816,
+      "pooled_game_gold": 0.847089,
+      "pooled_rate": 0.847089
+     },
+     "sim": {
+      "amount": 89250,
+      "cells": 20,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 19.121576,
+      "events": 4580,
+      "mean_amount": 19.4869,
+      "obs": 239520,
+      "obs_max": 11976,
+      "obs_min": 11976,
+      "per_cell_game_gold": 3726.202405,
+      "pooled_game_gold": 3726.202405,
+      "pooled_rate_per_1000": 372.62024
+     }
+    }
+   }
+  },
+  "strict": {
+   "1": {
+    "CTR": {
+     "platform": {
+      "amount": 16384,
+      "cells": 65,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 28.937564,
+      "events": 2703,
+      "mean_amount": 6.061413,
+      "obs": 93408,
+      "obs_max": 2830,
+      "obs_min": 870,
+      "per_cell_game_gold": 5763.813271,
+      "pooled_game_gold": 5700.582391,
+      "pooled_rate_per_1000": 175.402535
+     },
+     "ratios": {
+      "event_rate": 1.049604,
+      "mean_amount": 0.990375,
+      "per_cell_game_gold": 1.033931,
+      "pooled_game_gold": 1.039502,
+      "pooled_rate": 1.039502
+     },
+     "sim": {
+      "amount": 125092,
+      "cells": 65,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 30.372994,
+      "events": 20838,
+      "mean_amount": 6.003071,
+      "obs": 686070,
+      "obs_max": 11059,
+      "obs_min": 9520,
+      "per_cell_game_gold": 5959.384165,
+      "pooled_game_gold": 5925.765592,
+      "pooled_rate_per_1000": 182.331249
+     }
+    },
+    "OUT0": {
+     "platform": {
+      "amount": 2787,
+      "cells": 164,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 2.322623,
+      "events": 513,
+      "mean_amount": 5.432749,
+      "obs": 220871,
+      "obs_max": 2814,
+      "obs_min": 1,
+      "per_cell_game_gold": 1005.83881,
+      "pooled_game_gold": 1034.69446,
+      "pooled_rate_per_1000": 12.618225
+     },
+     "ratios": {
+      "event_rate": 0.97297,
+      "mean_amount": 0.999164,
+      "per_cell_game_gold": 0.975129,
+      "pooled_game_gold": 0.972157,
+      "pooled_rate": 0.972157
+     },
+     "sim": {
+      "amount": 21398,
+      "cells": 164,
+      "cells_unobserved": 4,
+      "event_rate_per_1000": 2.259843,
+      "events": 3942,
+      "mean_amount": 5.428209,
+      "obs": 1744369,
+      "obs_max": 11374,
+      "obs_min": 0,
+      "per_cell_game_gold": 980.822627,
+      "pooled_game_gold": 1005.885796,
+      "pooled_rate_per_1000": 12.2669
+     }
+    },
+    "OUT2": {
+     "platform": {
+      "amount": 10979,
+      "cells": 20,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 22.026607,
+      "events": 553,
+      "mean_amount": 19.853526,
+      "obs": 25106,
+      "obs_max": 1977,
+      "obs_min": 458,
+      "per_cell_game_gold": 4368.185211,
+      "pooled_game_gold": 4373.058233,
+      "pooled_rate_per_1000": 437.305823
+     },
+     "ratios": {
+      "event_rate": 0.940845,
+      "mean_amount": 0.98272,
+      "per_cell_game_gold": 0.925778,
+      "pooled_game_gold": 0.924587,
+      "pooled_rate": 0.924587
+     },
+     "sim": {
+      "amount": 88675,
+      "cells": 20,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 20.723617,
+      "events": 4545,
+      "mean_amount": 19.510451,
+      "obs": 219315,
+      "obs_max": 11279,
+      "obs_min": 10657,
+      "per_cell_game_gold": 4043.969103,
+      "pooled_game_gold": 4043.271094,
+      "pooled_rate_per_1000": 404.327109
+     }
+    }
+   },
+   "2": {
+    "CTR": {
+     "platform": {
+      "amount": 16575,
+      "cells": 69,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 29.789726,
+      "events": 2747,
+      "mean_amount": 6.033855,
+      "obs": 92213,
+      "obs_max": 2892,
+      "obs_min": 866,
+      "per_cell_game_gold": 6108.609014,
+      "pooled_game_gold": 6201.267717,
+      "pooled_rate_per_1000": 179.74689
+     },
+     "ratios": {
+      "event_rate": 1.062653,
+      "mean_amount": 0.994668,
+      "per_cell_game_gold": 1.078762,
+      "pooled_game_gold": 1.056987,
+      "pooled_rate": 1.056987
+     },
+     "sim": {
+      "amount": 139083,
+      "cells": 69,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 31.656135,
+      "events": 23174,
+      "mean_amount": 6.001683,
+      "obs": 732054,
+      "obs_max": 11036,
+      "obs_min": 10254,
+      "per_cell_game_gold": 6589.734452,
+      "pooled_game_gold": 6554.657853,
+      "pooled_rate_per_1000": 189.990083
+     }
+    },
+    "OUT0": {
+     "platform": {
+      "amount": 2474,
+      "cells": 176,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 2.032098,
+      "events": 460,
+      "mean_amount": 5.378261,
+      "obs": 226367,
+      "obs_max": 2806,
+      "obs_min": 808,
+      "per_cell_game_gold": 969.844159,
+      "pooled_game_gold": 961.765628,
+      "pooled_rate_per_1000": 10.929155
+     },
+     "ratios": {
+      "event_rate": 1.05083,
+      "mean_amount": 1.024147,
+      "per_cell_game_gold": 1.043199,
+      "pooled_game_gold": 1.076204,
+      "pooled_rate": 1.076204
+     },
+     "sim": {
+      "amount": 22016,
+      "cells": 176,
+      "cells_unobserved": 4,
+      "event_rate_per_1000": 2.135389,
+      "events": 3997,
+      "mean_amount": 5.508131,
+      "obs": 1871790,
+      "obs_max": 11273,
+      "obs_min": 0,
+      "per_cell_game_gold": 1011.740918,
+      "pooled_game_gold": 1035.056283,
+      "pooled_rate_per_1000": 11.762003
+     }
+    },
+    "OUT2": {
+     "platform": {
+      "amount": 10699,
+      "cells": 20,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 22.300612,
+      "events": 550,
+      "mean_amount": 19.452727,
+      "obs": 24663,
+      "obs_max": 1912,
+      "obs_min": 872,
+      "per_cell_game_gold": 4278.585136,
+      "pooled_game_gold": 4338.077282,
+      "pooled_rate_per_1000": 433.807728
+     },
+     "ratios": {
+      "event_rate": 0.913884,
+      "mean_amount": 1.022012,
+      "per_cell_game_gold": 0.94726,
+      "pooled_game_gold": 0.934,
+      "pooled_rate": 0.934
+     },
+     "sim": {
+      "amount": 88649,
+      "cells": 20,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 20.38018,
+      "events": 4459,
+      "mean_amount": 19.880915,
+      "obs": 218791,
+      "obs_max": 11281,
+      "obs_min": 10681,
+      "per_cell_game_gold": 4052.932298,
+      "pooled_game_gold": 4051.766298,
+      "pooled_rate_per_1000": 405.17663
+     }
+    }
+   },
+   "3": {
+    "CTR": {
+     "platform": {
+      "amount": 6871,
+      "cells": 27,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 35.10209,
+      "events": 1157,
+      "mean_amount": 5.938634,
+      "obs": 32961,
+      "obs_max": 1968,
+      "obs_min": 892,
+      "per_cell_game_gold": 2891.262804,
+      "pooled_game_gold": 2814.189497,
+      "pooled_rate_per_1000": 208.458481
+     },
+     "ratios": {
+      "event_rate": 1.090882,
+      "mean_amount": 1.006581,
+      "per_cell_game_gold": 1.079103,
+      "pooled_game_gold": 1.098062,
+      "pooled_rate": 1.098062
+     },
+     "sim": {
+      "amount": 62772,
+      "cells": 27,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 38.292255,
+      "events": 10501,
+      "mean_amount": 5.977716,
+      "obs": 274233,
+      "obs_max": 10601,
+      "obs_min": 9144,
+      "per_cell_game_gold": 3119.971259,
+      "pooled_game_gold": 3090.153264,
+      "pooled_rate_per_1000": 228.900242
+     }
+    },
+    "OUT0": {
+     "platform": {
+      "amount": 2060,
+      "cells": 164,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 2.008973,
+      "events": 373,
+      "mean_amount": 5.522788,
+      "obs": 185667,
+      "obs_max": 1952,
+      "obs_min": 805,
+      "per_cell_game_gold": 932.965799,
+      "pooled_game_gold": 909.80088,
+      "pooled_rate_per_1000": 11.095133
+     },
+     "ratios": {
+      "event_rate": 1.139994,
+      "mean_amount": 1.018479,
+      "per_cell_game_gold": 1.103982,
+      "pooled_game_gold": 1.16106,
+      "pooled_rate": 1.16106
+     },
+     "sim": {
+      "amount": 22415,
+      "cells": 164,
+      "cells_unobserved": 4,
+      "event_rate_per_1000": 2.290217,
+      "events": 3985,
+      "mean_amount": 5.624843,
+      "obs": 1740010,
+      "obs_max": 11248,
+      "obs_min": 0,
+      "per_cell_game_gold": 1029.977805,
+      "pooled_game_gold": 1056.33301,
+      "pooled_rate_per_1000": 12.88211
+     }
+    },
+    "OUT2": {
+     "platform": {
+      "amount": 10063,
+      "cells": 20,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 22.474513,
+      "events": 485,
+      "mean_amount": 20.748454,
+      "obs": 21580,
+      "obs_max": 1889,
+      "obs_min": 869,
+      "per_cell_game_gold": 4658.58818,
+      "pooled_game_gold": 4663.113994,
+      "pooled_rate_per_1000": 466.311399
+     },
+     "ratios": {
+      "event_rate": 0.937186,
+      "mean_amount": 0.939198,
+      "per_cell_game_gold": 0.881316,
+      "pooled_game_gold": 0.880203,
+      "pooled_rate": 0.880203
+     },
+     "sim": {
+      "amount": 89250,
+      "cells": 20,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 21.062797,
+      "events": 4580,
+      "mean_amount": 19.4869,
+      "obs": 217445,
+      "obs_max": 11104,
+      "obs_min": 10561,
+      "per_cell_game_gold": 4105.689345,
+      "pooled_game_gold": 4104.486192,
+      "pooled_rate_per_1000": 410.448619
+     }
+    }
+   }
+  }
+ },
+ "caliber": {
+  "aggregations": {
+   "per_cell": "sum over cells of (cell amount / cell obs) * 500; coverage-free, primary",
+   "pooled": "1000 * sum(amount) / sum(obs); coverage-weighted, original number"
+  },
+  "buckets": {
+   "CTR": "chebyshev((8,8)) <= 4, walls excluded",
+   "OUT0": "chebyshev >= 5 and token '0'",
+   "OUT2": "chebyshev >= 5 and token '2'"
+  },
+  "cross_map_pooling": "not offered; the maps differ in walls and hotspot placement",
+  "event": "positive increment of ground gold, negative codes read as zero",
+  "filters": {
+   "loose": "drop the pair if either side is -5 (fog) or -1 (wall)",
+   "strict": "loose, plus both sides must be >= 0 (no actor/bomb marker)"
+  },
+  "known_bias": "the 4 cells held by the two probe units and the two sparring units never generate, so rates run 2-3% low; single-event amounts are unbiased",
+  "observation_unit": "(cell, round-transition) pair, end.grid[r] -> start.grid[r+1]",
+  "per_cell_bias": "cells with zero observations contribute zero (see cells_unobserved)",
+  "rounds_per_game": 500
+ },
+ "central_position_law_audit": {
+  "gate_a_contrast": {
+   "map1": {
+    "difference": 0.005855267997113778,
+    "platform_z": 0.7919948472046309,
+    "se": 0.37033966771064386,
+    "sigma": 0.015810534240930013,
+    "sim_z": 0.7861395792075171
+   },
+   "map2": {
+    "difference": 0.6202683617630211,
+    "platform_z": 0.4423768942090554,
+    "se": 0.37796447300922725,
+    "sigma": 1.641075831346399,
+    "sim_z": -0.17789146755396568
+   },
+   "map3": {
+    "difference": -1.3683607015083892,
+    "platform_z": -0.8721585518393186,
+    "se": 1.1547005383792515,
+    "sigma": -1.1850351290465606,
+    "sim_z": 0.4962021496690707
+   },
+   "pooled": {
+    "difference": 0.2232732777214114,
+    "se": 0.25784495004719443,
+    "sigma": 0.8659206925733653
+   }
+  },
+  "gate_a_platform": {
+   "map1": {
+    "observed_events": 2709,
+    "open_central_cells": 65,
+    "sigma": 3.024385319483304,
+    "strata": [
+     {
+      "cells_adjacent": 8,
+      "cells_not_adjacent": 6,
+      "ring": 2,
+      "z_not_adjacent": 0.26104488461645886,
+      "z_wall_adjacent": 2.1254552754895983
+     },
+     {
+      "cells_adjacent": 10,
+      "cells_not_adjacent": 10,
+      "ring": 3,
+      "z_not_adjacent": -0.32958148485212757,
+      "z_wall_adjacent": -0.07542748381053509
+     },
+     {
+      "cells_adjacent": 16,
+      "cells_not_adjacent": 10,
+      "ring": 4,
+      "z_not_adjacent": -1.130576910950405,
+      "z_wall_adjacent": -0.49907503628218874
+     }
+    ],
+    "z_difference": 0.7919948472046309,
+    "z_difference_se": 0.26186969038056895
+   },
+   "map2": {
+    "observed_events": 2754,
+    "open_central_cells": 69,
+    "sigma": 1.6552227739554264,
+    "strata": [
+     {
+      "cells_adjacent": 8,
+      "cells_not_adjacent": 4,
+      "ring": 2,
+      "z_not_adjacent": 0.13262386637809764,
+      "z_wall_adjacent": 1.5100854311667822
+     },
+     {
+      "cells_adjacent": 12,
+      "cells_not_adjacent": 12,
+      "ring": 3,
+      "z_not_adjacent": -0.35889026602951307,
+      "z_wall_adjacent": -0.27965404777582686
+     },
+     {
+      "cells_adjacent": 16,
+      "cells_not_adjacent": 8,
+      "ring": 4,
+      "z_not_adjacent": -1.211728137541913,
+      "z_wall_adjacent": -0.828360318172882
+     }
+    ],
+    "z_difference": 0.4423768942090554,
+    "z_difference_se": 0.2672612419124244
+   },
+   "map3": {
+    "observed_events": 1158,
+    "open_central_cells": 27,
+    "sigma": -1.0681717134055209,
+    "strata": [
+     {
+      "cells_adjacent": 6,
+      "cells_not_adjacent": 2,
+      "ring": 1,
+      "z_not_adjacent": 1.3795379137976507,
+      "z_wall_adjacent": 0.5073793619583321
+     }
+    ],
+    "z_difference": -0.8721585518393186,
+    "z_difference_se": 0.816496580927726
+   }
+  },
+  "gate_a_sim": {
+   "map1": {
+    "observed_events": 20838,
+    "open_central_cells": 65,
+    "sigma": 3.0020258475314163,
+    "strata": [
+     {
+      "cells_adjacent": 8,
+      "cells_not_adjacent": 6,
+      "ring": 2,
+      "z_not_adjacent": -0.509995387448699,
+      "z_wall_adjacent": 0.27242240069486917
+     },
+     {
+      "cells_adjacent": 10,
+      "cells_not_adjacent": 10,
+      "ring": 3,
+      "z_not_adjacent": -0.4946933728901411,
+      "z_wall_adjacent": 0.7172191826537552
+     },
+     {
+      "cells_adjacent": 16,
+      "cells_not_adjacent": 10,
+      "ring": 4,
+      "z_not_adjacent": 0.036472085878529806,
+      "z_wall_adjacent": 0.4787446911197964
+     }
+    ],
+    "z_difference": 0.7861395792075171,
+    "z_difference_se": 0.26186969038056895
+   },
+   "map2": {
+    "observed_events": 23174,
+    "open_central_cells": 69,
+    "sigma": -0.6656089236173526,
+    "strata": [
+     {
+      "cells_adjacent": 8,
+      "cells_not_adjacent": 4,
+      "ring": 2,
+      "z_not_adjacent": -0.212214000941648,
+      "z_wall_adjacent": -0.1612865535170535
+     },
+     {
+      "cells_adjacent": 12,
+      "cells_not_adjacent": 12,
+      "ring": 3,
+      "z_not_adjacent": 0.3213254626852997,
+      "z_wall_adjacent": 0.22554245644502402
+     },
+     {
+      "cells_adjacent": 16,
+      "cells_not_adjacent": 8,
+      "ring": 4,
+      "z_not_adjacent": 0.9820729161472166,
+      "z_wall_adjacent": 0.5973999721260697
+     }
+    ],
+    "z_difference": -0.17789146755396568,
+    "z_difference_se": 0.2672612419124244
+   },
+   "map3": {
+    "observed_events": 10501,
+    "open_central_cells": 27,
+    "sigma": 0.607721037980676,
+    "strata": [
+     {
+      "cells_adjacent": 6,
+      "cells_not_adjacent": 2,
+      "ring": 1,
+      "z_not_adjacent": -1.3434041482688888,
+      "z_wall_adjacent": -0.847201998599818
+     }
+    ],
+    "z_difference": 0.4962021496690707,
+    "z_difference_se": 0.816496580927726
+   }
+  },
+  "gate_b": {
+   "map1": {
+    "0": {
+     "cells": 1,
+     "platform_events_per_kcr": 52.715654952076676,
+     "platform_gold_per_kcr": 364.21725239616615,
+     "sim_events_per_kcr": 56.195724782899134,
+     "sim_gold_per_kcr": 344.6058784235137
+    },
+    "1": {
+     "cells": 4,
+     "platform_events_per_kcr": 57.04594511255011,
+     "platform_gold_per_kcr": 331.02065988282453,
+     "sim_events_per_kcr": 48.91032064128257,
+     "sim_gold_per_kcr": 296.2383099532398
+    },
+    "2": {
+     "cells": 14,
+     "platform_events_per_kcr": 40.590590590590594,
+     "platform_gold_per_kcr": 251.1011011011011,
+     "sim_events_per_kcr": 33.6983490791106,
+     "sim_gold_per_kcr": 200.8421605114992
+    },
+    "3": {
+     "cells": 20,
+     "platform_events_per_kcr": 28.81239026837221,
+     "platform_gold_per_kcr": 174.0030097817908,
+     "sim_events_per_kcr": 28.94121576486306,
+     "sim_gold_per_kcr": 173.9938209752839
+    },
+    "4": {
+     "cells": 26,
+     "platform_events_per_kcr": 14.048432163924247,
+     "platform_gold_per_kcr": 84.08361792404015,
+     "sim_events_per_kcr": 16.828528852576948,
+     "sim_gold_per_kcr": 100.92299984584554
+    },
+    "5+": {
+     "cells": 184,
+     "platform_events_per_kcr": 4.060359978183141,
+     "platform_gold_per_kcr": 52.41727774074298,
+     "sim_events_per_kcr": 3.851452905811623,
+     "sim_gold_per_kcr": 49.95180578548401
+    },
+    "5+tok0": {
+     "cells": 164,
+     "platform_events_per_kcr": 2.177630636777949,
+     "platform_gold_per_kcr": 11.810592467167059,
+     "sim_events_per_kcr": 2.0070629063004057,
+     "sim_gold_per_kcr": 10.89475699366212
+    },
+    "5+tok2": {
+     "cells": 20,
+     "platform_events_per_kcr": 20.863093000526277,
+     "platform_gold_per_kcr": 414.8184347041576,
+     "sim_events_per_kcr": 18.975450901803608,
+     "sim_gold_per_kcr": 370.2196058784235
+    }
+   },
+   "map2": {
+    "0": {
+     "cells": 1,
+     "platform_events_per_kcr": 59.880239520958085,
+     "platform_gold_per_kcr": 364.27145708582833,
+     "sim_events_per_kcr": 59.535738142952574,
+     "sim_gold_per_kcr": 344.27187708750836
+    },
+    "1": {
+     "cells": 8,
+     "platform_events_per_kcr": 52.46913580246913,
+     "platform_gold_per_kcr": 309.3093093093093,
+     "sim_events_per_kcr": 42.92960921843687,
+     "sim_gold_per_kcr": 257.5567802271209
+    },
+    "2": {
+     "cells": 12,
+     "platform_events_per_kcr": 42.367219686003786,
+     "platform_gold_per_kcr": 261.7191849459971,
+     "sim_events_per_kcr": 37.21331551992875,
+     "sim_gold_per_kcr": 221.33155199287464
+    },
+    "3": {
+     "cells": 24,
+     "platform_events_per_kcr": 26.51400109336087,
+     "platform_gold_per_kcr": 161.87815100528456,
+     "sim_events_per_kcr": 28.191800267201067,
+     "sim_gold_per_kcr": 170.63293253173012
+    },
+    "4": {
+     "cells": 24,
+     "platform_events_per_kcr": 12.711614463516781,
+     "platform_gold_per_kcr": 74.52958178493482,
+     "sim_events_per_kcr": 17.037547316855935,
+     "sim_gold_per_kcr": 102.39924293030505
+    },
+    "5+": {
+     "cells": 196,
+     "platform_events_per_kcr": 3.724757688517598,
+     "platform_gold_per_kcr": 48.51745083908164,
+     "sim_events_per_kcr": 3.6024429812004963,
+     "sim_gold_per_kcr": 47.14573705233597
+    },
+    "5+tok0": {
+     "cells": 176,
+     "platform_events_per_kcr": 1.881654880923352,
+     "platform_gold_per_kcr": 10.14386734942697,
+     "sim_events_per_kcr": 1.8963115625189773,
+     "sim_gold_per_kcr": 10.445132689621667
+    },
+    "5+tok2": {
+     "cells": 20,
+     "platform_events_per_kcr": 21.232242124768376,
+     "platform_gold_per_kcr": 413.0250154416306,
+     "sim_events_per_kcr": 18.616399465597862,
+     "sim_gold_per_kcr": 370.1110554442218
+    }
+   },
+   "map3": {
+    "0": {
+     "cells": 1,
+     "platform_events_per_kcr": 51.41129032258065,
+     "platform_gold_per_kcr": 309.4758064516129,
+     "sim_events_per_kcr": 55.27722110888443,
+     "sim_gold_per_kcr": 331.07882431529725
+    },
+    "1": {
+     "cells": 8,
+     "platform_events_per_kcr": 49.17372027408303,
+     "platform_gold_per_kcr": 283.65578395808143,
+     "sim_events_per_kcr": 41.36397795591182,
+     "sim_gold_per_kcr": 248.24649298597194
+    },
+    "2": {
+     "cells": 6,
+     "platform_events_per_kcr": 39.3904542840713,
+     "platform_gold_per_kcr": 235.19263944795858,
+     "sim_events_per_kcr": 33.78980182587397,
+     "sim_gold_per_kcr": 201.11055444221776
+    },
+    "3": {
+     "cells": 6,
+     "platform_events_per_kcr": 25.150905432595575,
+     "platform_gold_per_kcr": 158.32494969818913,
+     "sim_events_per_kcr": 29.252950345134714,
+     "sim_gold_per_kcr": 173.98686261411711
+    },
+    "4": {
+     "cells": 6,
+     "platform_events_per_kcr": 16.190263510495758,
+     "platform_gold_per_kcr": 95.6900401965163,
+     "sim_events_per_kcr": 18.731908260966378,
+     "sim_gold_per_kcr": 112.30794923179693
+    },
+    "5+": {
+     "cells": 184,
+     "platform_events_per_kcr": 3.8666260439442275,
+     "platform_gold_per_kcr": 54.522563532743106,
+     "sim_events_per_kcr": 3.886849786529581,
+     "sim_gold_per_kcr": 50.67426519706079
+    },
+    "5+tok0": {
+     "cells": 164,
+     "platform_events_per_kcr": 1.8824586807809458,
+     "platform_gold_per_kcr": 10.415938483047885,
+     "sim_events_per_kcr": 2.0289562865568533,
+     "sim_gold_per_kcr": 11.412560894146015
+    },
+    "5+tok2": {
+     "cells": 20,
+     "platform_events_per_kcr": 21.202338364889627,
+     "platform_gold_per_kcr": 439.88308175551873,
+     "sim_events_per_kcr": 19.121576486305944,
+     "sim_gold_per_kcr": 372.6202404809619
+    }
+   }
+  },
+  "platform_logs": [
+   "/tmp/master/plogs/gA1_map1_214391.log",
+   "/tmp/master/plogs/gA1_map1_214400.log",
+   "/tmp/master/plogs/gA2_map1_214392.log",
+   "/tmp/master/plogs/gA2_map1_214401.log",
+   "/tmp/master/plogs/gA3_map1_214393.log",
+   "/tmp/master/plogs/gA3_map1_214402.log",
+   "/tmp/master/plogs/gB1_map2_214394.log",
+   "/tmp/master/plogs/gB1_map2_214404.log",
+   "/tmp/master/plogs/gB2_map2_214395.log",
+   "/tmp/master/plogs/gB2_map2_214405.log",
+   "/tmp/master/plogs/gB3_map2_214396.log",
+   "/tmp/master/plogs/gB3_map2_214406.log",
+   "/tmp/master/plogs/gC1_map3_214397.log",
+   "/tmp/master/plogs/gC1_map3_214407.log",
+   "/tmp/master/plogs/gC2_map3_214398.log",
+   "/tmp/master/plogs/gC2_map3_214409.log",
+   "/tmp/master/plogs/gC3_map3_214399.log",
+   "/tmp/master/plogs/gC3_map3_214410.log"
+  ],
+  "sim_logs": [
+   "/tmp/master/simfix/map1/game_0000.log",
+   "/tmp/master/simfix/map1/game_0001.log",
+   "/tmp/master/simfix/map1/game_0002.log",
+   "/tmp/master/simfix/map1/game_0003.log",
+   "/tmp/master/simfix/map1/game_0004.log",
+   "/tmp/master/simfix/map1/game_0005.log",
+   "/tmp/master/simfix/map1/game_0006.log",
+   "/tmp/master/simfix/map1/game_0007.log",
+   "/tmp/master/simfix/map1/game_0008.log",
+   "/tmp/master/simfix/map1/game_0009.log",
+   "/tmp/master/simfix/map1/game_0010.log",
+   "/tmp/master/simfix/map1/game_0011.log",
+   "/tmp/master/simfix/map1/game_0012.log",
+   "/tmp/master/simfix/map1/game_0013.log",
+   "/tmp/master/simfix/map1/game_0014.log",
+   "/tmp/master/simfix/map1/game_0015.log",
+   "/tmp/master/simfix/map1/game_0016.log",
+   "/tmp/master/simfix/map1/game_0017.log",
+   "/tmp/master/simfix/map1/game_0018.log",
+   "/tmp/master/simfix/map1/game_0019.log",
+   "/tmp/master/simfix/map1/game_0020.log",
+   "/tmp/master/simfix/map1/game_0021.log",
+   "/tmp/master/simfix/map1/game_0022.log",
+   "/tmp/master/simfix/map1/game_0023.log",
+   "/tmp/master/simfix/map2/game_0000.log",
+   "/tmp/master/simfix/map2/game_0001.log",
+   "/tmp/master/simfix/map2/game_0002.log",
+   "/tmp/master/simfix/map2/game_0003.log",
+   "/tmp/master/simfix/map2/game_0004.log",
+   "/tmp/master/simfix/map2/game_0005.log",
+   "/tmp/master/simfix/map2/game_0006.log",
+   "/tmp/master/simfix/map2/game_0007.log",
+   "/tmp/master/simfix/map2/game_0008.log",
+   "/tmp/master/simfix/map2/game_0009.log",
+   "/tmp/master/simfix/map2/game_0010.log",
+   "/tmp/master/simfix/map2/game_0011.log",
+   "/tmp/master/simfix/map2/game_0012.log",
+   "/tmp/master/simfix/map2/game_0013.log",
+   "/tmp/master/simfix/map2/game_0014.log",
+   "/tmp/master/simfix/map2/game_0015.log",
+   "/tmp/master/simfix/map2/game_0016.log",
+   "/tmp/master/simfix/map2/game_0017.log",
+   "/tmp/master/simfix/map2/game_0018.log",
+   "/tmp/master/simfix/map2/game_0019.log",
+   "/tmp/master/simfix/map2/game_0020.log",
+   "/tmp/master/simfix/map2/game_0021.log",
+   "/tmp/master/simfix/map2/game_0022.log",
+   "/tmp/master/simfix/map2/game_0023.log",
+   "/tmp/master/simfix/map3/game_0000.log",
+   "/tmp/master/simfix/map3/game_0001.log",
+   "/tmp/master/simfix/map3/game_0002.log",
+   "/tmp/master/simfix/map3/game_0003.log",
+   "/tmp/master/simfix/map3/game_0004.log",
+   "/tmp/master/simfix/map3/game_0005.log",
+   "/tmp/master/simfix/map3/game_0006.log",
+   "/tmp/master/simfix/map3/game_0007.log",
+   "/tmp/master/simfix/map3/game_0008.log",
+   "/tmp/master/simfix/map3/game_0009.log",
+   "/tmp/master/simfix/map3/game_0010.log",
+   "/tmp/master/simfix/map3/game_0011.log",
+   "/tmp/master/simfix/map3/game_0012.log",
+   "/tmp/master/simfix/map3/game_0013.log",
+   "/tmp/master/simfix/map3/game_0014.log",
+   "/tmp/master/simfix/map3/game_0015.log",
+   "/tmp/master/simfix/map3/game_0016.log",
+   "/tmp/master/simfix/map3/game_0017.log",
+   "/tmp/master/simfix/map3/game_0018.log",
+   "/tmp/master/simfix/map3/game_0019.log",
+   "/tmp/master/simfix/map3/game_0020.log",
+   "/tmp/master/simfix/map3/game_0021.log",
+   "/tmp/master/simfix/map3/game_0022.log",
+   "/tmp/master/simfix/map3/game_0023.log"
+  ]
+ },
+ "inputs_after": {
+  "filter_modes": [
+   "loose",
+   "strict"
+  ],
+  "platform": {
+   "files": [
+    "/tmp/master/plogs/gA1_map1_214391.log",
+    "/tmp/master/plogs/gA1_map1_214400.log",
+    "/tmp/master/plogs/gA2_map1_214392.log",
+    "/tmp/master/plogs/gA2_map1_214401.log",
+    "/tmp/master/plogs/gA3_map1_214393.log",
+    "/tmp/master/plogs/gA3_map1_214402.log",
+    "/tmp/master/plogs/gB1_map2_214394.log",
+    "/tmp/master/plogs/gB1_map2_214404.log",
+    "/tmp/master/plogs/gB2_map2_214395.log",
+    "/tmp/master/plogs/gB2_map2_214405.log",
+    "/tmp/master/plogs/gB3_map2_214396.log",
+    "/tmp/master/plogs/gB3_map2_214406.log",
+    "/tmp/master/plogs/gC1_map3_214397.log",
+    "/tmp/master/plogs/gC1_map3_214407.log",
+    "/tmp/master/plogs/gC2_map3_214398.log",
+    "/tmp/master/plogs/gC2_map3_214409.log",
+    "/tmp/master/plogs/gC3_map3_214399.log",
+    "/tmp/master/plogs/gC3_map3_214410.log"
+   ],
+   "games_per_map": {
+    "1": 6,
+    "2": 6,
+    "3": 6
+   },
+   "skipped_transitions": 0,
+   "specs": [
+    "/tmp/master/plogs/*.log"
+   ],
+   "strict_dropped_events": 28,
+   "strict_dropped_obs": 67166,
+   "transitions_per_map": {
+    "1": 2994,
+    "2": 2994,
+    "3": 2994
+   },
+   "wall_token_observations": 0
+  },
+  "sim": {
+   "files": [
+    "/tmp/master/simfix/map1/game_0000.log",
+    "/tmp/master/simfix/map1/game_0001.log",
+    "/tmp/master/simfix/map1/game_0002.log",
+    "/tmp/master/simfix/map1/game_0003.log",
+    "/tmp/master/simfix/map1/game_0004.log",
+    "/tmp/master/simfix/map1/game_0005.log",
+    "/tmp/master/simfix/map1/game_0006.log",
+    "/tmp/master/simfix/map1/game_0007.log",
+    "/tmp/master/simfix/map1/game_0008.log",
+    "/tmp/master/simfix/map1/game_0009.log",
+    "/tmp/master/simfix/map1/game_0010.log",
+    "/tmp/master/simfix/map1/game_0011.log",
+    "/tmp/master/simfix/map1/game_0012.log",
+    "/tmp/master/simfix/map1/game_0013.log",
+    "/tmp/master/simfix/map1/game_0014.log",
+    "/tmp/master/simfix/map1/game_0015.log",
+    "/tmp/master/simfix/map1/game_0016.log",
+    "/tmp/master/simfix/map1/game_0017.log",
+    "/tmp/master/simfix/map1/game_0018.log",
+    "/tmp/master/simfix/map1/game_0019.log",
+    "/tmp/master/simfix/map1/game_0020.log",
+    "/tmp/master/simfix/map1/game_0021.log",
+    "/tmp/master/simfix/map1/game_0022.log",
+    "/tmp/master/simfix/map1/game_0023.log",
+    "/tmp/master/simfix/map2/game_0000.log",
+    "/tmp/master/simfix/map2/game_0001.log",
+    "/tmp/master/simfix/map2/game_0002.log",
+    "/tmp/master/simfix/map2/game_0003.log",
+    "/tmp/master/simfix/map2/game_0004.log",
+    "/tmp/master/simfix/map2/game_0005.log",
+    "/tmp/master/simfix/map2/game_0006.log",
+    "/tmp/master/simfix/map2/game_0007.log",
+    "/tmp/master/simfix/map2/game_0008.log",
+    "/tmp/master/simfix/map2/game_0009.log",
+    "/tmp/master/simfix/map2/game_0010.log",
+    "/tmp/master/simfix/map2/game_0011.log",
+    "/tmp/master/simfix/map2/game_0012.log",
+    "/tmp/master/simfix/map2/game_0013.log",
+    "/tmp/master/simfix/map2/game_0014.log",
+    "/tmp/master/simfix/map2/game_0015.log",
+    "/tmp/master/simfix/map2/game_0016.log",
+    "/tmp/master/simfix/map2/game_0017.log",
+    "/tmp/master/simfix/map2/game_0018.log",
+    "/tmp/master/simfix/map2/game_0019.log",
+    "/tmp/master/simfix/map2/game_0020.log",
+    "/tmp/master/simfix/map2/game_0021.log",
+    "/tmp/master/simfix/map2/game_0022.log",
+    "/tmp/master/simfix/map2/game_0023.log",
+    "/tmp/master/simfix/map3/game_0000.log",
+    "/tmp/master/simfix/map3/game_0001.log",
+    "/tmp/master/simfix/map3/game_0002.log",
+    "/tmp/master/simfix/map3/game_0003.log",
+    "/tmp/master/simfix/map3/game_0004.log",
+    "/tmp/master/simfix/map3/game_0005.log",
+    "/tmp/master/simfix/map3/game_0006.log",
+    "/tmp/master/simfix/map3/game_0007.log",
+    "/tmp/master/simfix/map3/game_0008.log",
+    "/tmp/master/simfix/map3/game_0009.log",
+    "/tmp/master/simfix/map3/game_0010.log",
+    "/tmp/master/simfix/map3/game_0011.log",
+    "/tmp/master/simfix/map3/game_0012.log",
+    "/tmp/master/simfix/map3/game_0013.log",
+    "/tmp/master/simfix/map3/game_0014.log",
+    "/tmp/master/simfix/map3/game_0015.log",
+    "/tmp/master/simfix/map3/game_0016.log",
+    "/tmp/master/simfix/map3/game_0017.log",
+    "/tmp/master/simfix/map3/game_0018.log",
+    "/tmp/master/simfix/map3/game_0019.log",
+    "/tmp/master/simfix/map3/game_0020.log",
+    "/tmp/master/simfix/map3/game_0021.log",
+    "/tmp/master/simfix/map3/game_0022.log",
+    "/tmp/master/simfix/map3/game_0023.log"
+   ],
+   "games_per_map": {
+    "1": 24,
+    "2": 24,
+    "3": 24
+   },
+   "skipped_transitions": 0,
+   "specs": [
+    "/tmp/master/simfix/map*/game_*.log"
+   ],
+   "strict_dropped_events": 0,
+   "strict_dropped_obs": 978523,
+   "transitions_per_map": {
+    "1": 11976,
+    "2": 11976,
+    "3": 11976
+   },
+   "wall_token_observations": 0
+  },
+  "token_maps": {
+   "maps_checked": [
+    1,
+    2,
+    3
+   ],
+   "note": "/Users/bytedance/GoldRush/sim/real_token_maps.json (3 map(s): 1,2,3) cross-checked against the platform logs' line 1",
+   "source": "/Users/bytedance/GoldRush/sim/real_token_maps.json",
+   "verdict": "match"
+  }
+ },
+ "inputs_before": {
+  "filter_modes": [
+   "loose",
+   "strict"
+  ],
+  "platform": {
+   "files": [
+    "/tmp/master/plogs/gA1_map1_214391.log",
+    "/tmp/master/plogs/gA1_map1_214400.log",
+    "/tmp/master/plogs/gA2_map1_214392.log",
+    "/tmp/master/plogs/gA2_map1_214401.log",
+    "/tmp/master/plogs/gA3_map1_214393.log",
+    "/tmp/master/plogs/gA3_map1_214402.log",
+    "/tmp/master/plogs/gB1_map2_214394.log",
+    "/tmp/master/plogs/gB1_map2_214404.log",
+    "/tmp/master/plogs/gB2_map2_214395.log",
+    "/tmp/master/plogs/gB2_map2_214405.log",
+    "/tmp/master/plogs/gB3_map2_214396.log",
+    "/tmp/master/plogs/gB3_map2_214406.log",
+    "/tmp/master/plogs/gC1_map3_214397.log",
+    "/tmp/master/plogs/gC1_map3_214407.log",
+    "/tmp/master/plogs/gC2_map3_214398.log",
+    "/tmp/master/plogs/gC2_map3_214409.log",
+    "/tmp/master/plogs/gC3_map3_214399.log",
+    "/tmp/master/plogs/gC3_map3_214410.log"
+   ],
+   "games_per_map": {
+    "1": 6,
+    "2": 6,
+    "3": 6
+   },
+   "skipped_transitions": 0,
+   "specs": [
+    "/tmp/master/plogs/*.log"
+   ],
+   "strict_dropped_events": 28,
+   "strict_dropped_obs": 67166,
+   "transitions_per_map": {
+    "1": 2994,
+    "2": 2994,
+    "3": 2994
+   },
+   "wall_token_observations": 0
+  },
+  "sim": {
+   "files": [
+    "/tmp/master/simlogs/map1/game_0000.log",
+    "/tmp/master/simlogs/map1/game_0001.log",
+    "/tmp/master/simlogs/map1/game_0002.log",
+    "/tmp/master/simlogs/map1/game_0003.log",
+    "/tmp/master/simlogs/map1/game_0004.log",
+    "/tmp/master/simlogs/map1/game_0005.log",
+    "/tmp/master/simlogs/map2/game_0000.log",
+    "/tmp/master/simlogs/map2/game_0001.log",
+    "/tmp/master/simlogs/map2/game_0002.log",
+    "/tmp/master/simlogs/map2/game_0003.log",
+    "/tmp/master/simlogs/map2/game_0004.log",
+    "/tmp/master/simlogs/map2/game_0005.log",
+    "/tmp/master/simlogs/map3/game_0000.log",
+    "/tmp/master/simlogs/map3/game_0001.log",
+    "/tmp/master/simlogs/map3/game_0002.log",
+    "/tmp/master/simlogs/map3/game_0003.log",
+    "/tmp/master/simlogs/map3/game_0004.log",
+    "/tmp/master/simlogs/map3/game_0005.log"
+   ],
+   "games_per_map": {
+    "1": 6,
+    "2": 6,
+    "3": 6
+   },
+   "skipped_transitions": 0,
+   "specs": [
+    "/tmp/master/simlogs/map*/game_*.log"
+   ],
+   "strict_dropped_events": 0,
+   "strict_dropped_obs": 246008,
+   "transitions_per_map": {
+    "1": 2994,
+    "2": 2994,
+    "3": 2994
+   },
+   "wall_token_observations": 0
+  },
+  "token_maps": {
+   "maps_checked": [
+    1,
+    2,
+    3
+   ],
+   "note": "/Users/bytedance/GoldRush/sim/real_token_maps.json (3 map(s): 1,2,3) cross-checked against the platform logs' line 1",
+   "source": "/Users/bytedance/GoldRush/sim/real_token_maps.json",
+   "verdict": "match"
+  }
+ },
+ "schema_version": 1,
+ "token2_cells": {
+  "1": {
+   "extra_in_sim": [],
+   "missing_in_sim": [],
+   "platform_cells": [
+    [
+     0,
+     4
+    ],
+    [
+     0,
+     5
+    ],
+    [
+     0,
+     12
+    ],
+    [
+     1,
+     6
+    ],
+    [
+     1,
+     10
+    ],
+    [
+     5,
+     0
+    ],
+    [
+     5,
+     16
+    ],
+    [
+     7,
+     1
+    ],
+    [
+     7,
+     15
+    ],
+    [
+     9,
+     2
+    ],
+    [
+     9,
+     14
+    ],
+    [
+     11,
+     0
+    ],
+    [
+     11,
+     16
+    ],
+    [
+     12,
+     3
+    ],
+    [
+     12,
+     13
+    ],
+    [
+     15,
+     6
+    ],
+    [
+     15,
+     10
+    ],
+    [
+     16,
+     4
+    ],
+    [
+     16,
+     5
+    ],
+    [
+     16,
+     12
+    ]
+   ],
+   "platform_count": 20,
+   "sim_cells": [
+    [
+     0,
+     4
+    ],
+    [
+     0,
+     5
+    ],
+    [
+     0,
+     12
+    ],
+    [
+     1,
+     6
+    ],
+    [
+     1,
+     10
+    ],
+    [
+     5,
+     0
+    ],
+    [
+     5,
+     16
+    ],
+    [
+     7,
+     1
+    ],
+    [
+     7,
+     15
+    ],
+    [
+     9,
+     2
+    ],
+    [
+     9,
+     14
+    ],
+    [
+     11,
+     0
+    ],
+    [
+     11,
+     16
+    ],
+    [
+     12,
+     3
+    ],
+    [
+     12,
+     13
+    ],
+    [
+     15,
+     6
+    ],
+    [
+     15,
+     10
+    ],
+    [
+     16,
+     4
+    ],
+    [
+     16,
+     5
+    ],
+    [
+     16,
+     12
+    ]
+   ],
+   "sim_count": 20,
+   "token_map_identical": true,
+   "verdict": "EQUAL"
+  },
+  "2": {
+   "extra_in_sim": [],
+   "missing_in_sim": [],
+   "platform_cells": [
+    [
+     0,
+     4
+    ],
+    [
+     0,
+     8
+    ],
+    [
+     1,
+     6
+    ],
+    [
+     1,
+     12
+    ],
+    [
+     3,
+     10
+    ],
+    [
+     5,
+     0
+    ],
+    [
+     5,
+     16
+    ],
+    [
+     7,
+     2
+    ],
+    [
+     7,
+     14
+    ],
+    [
+     9,
+     1
+    ],
+    [
+     9,
+     15
+    ],
+    [
+     11,
+     3
+    ],
+    [
+     11,
+     13
+    ],
+    [
+     12,
+     0
+    ],
+    [
+     12,
+     16
+    ],
+    [
+     13,
+     10
+    ],
+    [
+     15,
+     6
+    ],
+    [
+     15,
+     12
+    ],
+    [
+     16,
+     4
+    ],
+    [
+     16,
+     8
+    ]
+   ],
+   "platform_count": 20,
+   "sim_cells": [
+    [
+     0,
+     4
+    ],
+    [
+     0,
+     8
+    ],
+    [
+     1,
+     6
+    ],
+    [
+     1,
+     12
+    ],
+    [
+     3,
+     10
+    ],
+    [
+     5,
+     0
+    ],
+    [
+     5,
+     16
+    ],
+    [
+     7,
+     2
+    ],
+    [
+     7,
+     14
+    ],
+    [
+     9,
+     1
+    ],
+    [
+     9,
+     15
+    ],
+    [
+     11,
+     3
+    ],
+    [
+     11,
+     13
+    ],
+    [
+     12,
+     0
+    ],
+    [
+     12,
+     16
+    ],
+    [
+     13,
+     10
+    ],
+    [
+     15,
+     6
+    ],
+    [
+     15,
+     12
+    ],
+    [
+     16,
+     4
+    ],
+    [
+     16,
+     8
+    ]
+   ],
+   "sim_count": 20,
+   "token_map_identical": true,
+   "verdict": "EQUAL"
+  },
+  "3": {
+   "extra_in_sim": [],
+   "missing_in_sim": [],
+   "platform_cells": [
+    [
+     0,
+     6
+    ],
+    [
+     0,
+     7
+    ],
+    [
+     0,
+     8
+    ],
+    [
+     0,
+     9
+    ],
+    [
+     0,
+     10
+    ],
+    [
+     6,
+     0
+    ],
+    [
+     6,
+     16
+    ],
+    [
+     7,
+     0
+    ],
+    [
+     7,
+     16
+    ],
+    [
+     8,
+     0
+    ],
+    [
+     8,
+     16
+    ],
+    [
+     9,
+     0
+    ],
+    [
+     9,
+     16
+    ],
+    [
+     10,
+     0
+    ],
+    [
+     10,
+     16
+    ],
+    [
+     16,
+     6
+    ],
+    [
+     16,
+     7
+    ],
+    [
+     16,
+     8
+    ],
+    [
+     16,
+     9
+    ],
+    [
+     16,
+     10
+    ]
+   ],
+   "platform_count": 20,
+   "sim_cells": [
+    [
+     0,
+     6
+    ],
+    [
+     0,
+     7
+    ],
+    [
+     0,
+     8
+    ],
+    [
+     0,
+     9
+    ],
+    [
+     0,
+     10
+    ],
+    [
+     6,
+     0
+    ],
+    [
+     6,
+     16
+    ],
+    [
+     7,
+     0
+    ],
+    [
+     7,
+     16
+    ],
+    [
+     8,
+     0
+    ],
+    [
+     8,
+     16
+    ],
+    [
+     9,
+     0
+    ],
+    [
+     9,
+     16
+    ],
+    [
+     10,
+     0
+    ],
+    [
+     10,
+     16
+    ],
+    [
+     16,
+     6
+    ],
+    [
+     16,
+     7
+    ],
+    [
+     16,
+     8
+    ],
+    [
+     16,
+     9
+    ],
+    [
+     16,
+     10
+    ]
+   ],
+   "sim_count": 20,
+   "token_map_identical": true,
+   "verdict": "EQUAL"
+  }
+ },
+ "token_split_after": {
+  "loose": {
+   "1": {
+    "tok0": {
+     "platform": {
+      "amount": 19224,
+      "cells": 229,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 9.610343,
+      "events": 3226,
+      "mean_amount": 5.959082,
+      "obs": 335680,
+      "obs_max": 2974,
+      "obs_min": 2,
+      "per_cell_game_gold": 6431.694217,
+      "pooled_game_gold": 6557.280744,
+      "pooled_rate_per_1000": 57.268827
+     },
+     "ratios": {
+      "event_rate": 0.940189,
+      "mean_amount": 0.992036
+     },
+     "sim": {
+      "amount": 146490,
+      "cells": 229,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 9.035538,
+      "events": 24780,
+      "mean_amount": 5.911622,
+      "obs": 2742504,
+      "obs_max": 11976,
+      "obs_min": 11976,
+      "per_cell_game_gold": 6115.981964,
+      "pooled_game_gold": 6115.981964,
+      "pooled_rate_per_1000": 53.41469
+     }
+    },
+    "tok2": {
+     "platform": {
+      "amount": 11035,
+      "cells": 20,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 20.863093,
+      "events": 555,
+      "mean_amount": 19.882883,
+      "obs": 26602,
+      "obs_max": 2002,
+      "obs_min": 508,
+      "per_cell_game_gold": 4131.32124,
+      "pooled_game_gold": 4148.184347,
+      "pooled_rate_per_1000": 414.818435
+     },
+     "ratios": {
+      "event_rate": 0.909522,
+      "mean_amount": 0.981269
+     },
+     "sim": {
+      "amount": 88675,
+      "cells": 20,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 18.975451,
+      "events": 4545,
+      "mean_amount": 19.510451,
+      "obs": 239520,
+      "obs_max": 11976,
+      "obs_min": 11976,
+      "per_cell_game_gold": 3702.196059,
+      "pooled_game_gold": 3702.196059,
+      "pooled_rate_per_1000": 370.219606
+     }
+    }
+   },
+   "2": {
+    "tok0": {
+     "platform": {
+      "amount": 19127,
+      "cells": 245,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 9.355987,
+      "events": 3217,
+      "mean_amount": 5.945601,
+      "obs": 343844,
+      "obs_max": 2982,
+      "obs_min": 986,
+      "per_cell_game_gold": 6708.618177,
+      "pooled_game_gold": 6814.30387,
+      "pooled_rate_per_1000": 55.62697
+     },
+     "ratios": {
+      "event_rate": 0.989779,
+      "mean_amount": 0.997221
+     },
+     "sim": {
+      "amount": 161099,
+      "cells": 245,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 9.260357,
+      "events": 27171,
+      "mean_amount": 5.929079,
+      "obs": 2934120,
+      "obs_max": 11976,
+      "obs_min": 11976,
+      "per_cell_game_gold": 6725.910154,
+      "pooled_game_gold": 6725.910154,
+      "pooled_rate_per_1000": 54.905389
+     }
+    },
+    "tok2": {
+     "platform": {
+      "amount": 10699,
+      "cells": 20,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 21.232242,
+      "events": 550,
+      "mean_amount": 19.452727,
+      "obs": 25904,
+      "obs_max": 2000,
+      "obs_min": 986,
+      "per_cell_game_gold": 4074.570488,
+      "pooled_game_gold": 4130.250154,
+      "pooled_rate_per_1000": 413.025015
+     },
+     "ratios": {
+      "event_rate": 0.876799,
+      "mean_amount": 1.022012
+     },
+     "sim": {
+      "amount": 88649,
+      "cells": 20,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 18.616399,
+      "events": 4459,
+      "mean_amount": 19.880915,
+      "obs": 239520,
+      "obs_max": 11976,
+      "obs_min": 11976,
+      "per_cell_game_gold": 3701.110554,
+      "pooled_game_gold": 3701.110554,
+      "pooled_rate_per_1000": 370.111055
+     }
+    }
+   },
+   "3": {
+    "tok0": {
+     "platform": {
+      "amount": 8960,
+      "cells": 191,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 6.530525,
+      "events": 1535,
+      "mean_amount": 5.837134,
+      "obs": 235050,
+      "obs_max": 2000,
+      "obs_min": 990,
+      "per_cell_game_gold": 3623.700421,
+      "pooled_game_gold": 3640.416933,
+      "pooled_rate_per_1000": 38.119549
+     },
+     "ratios": {
+      "event_rate": 0.96974,
+      "mean_amount": 1.007454
+     },
+     "sim": {
+      "amount": 85187,
+      "cells": 191,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 6.33291,
+      "events": 14486,
+      "mean_amount": 5.880643,
+      "obs": 2287416,
+      "obs_max": 11976,
+      "obs_min": 11976,
+      "per_cell_game_gold": 3556.571476,
+      "pooled_game_gold": 3556.571476,
+      "pooled_rate_per_1000": 37.241586
+     }
+    },
+    "tok2": {
+     "platform": {
+      "amount": 10083,
+      "cells": 20,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 21.202338,
+      "events": 486,
+      "mean_amount": 20.746914,
+      "obs": 22922,
+      "obs_max": 1992,
+      "obs_min": 994,
+      "per_cell_game_gold": 4400.25176,
+      "pooled_game_gold": 4398.830818,
+      "pooled_rate_per_1000": 439.883082
+     },
+     "ratios": {
+      "event_rate": 0.901862,
+      "mean_amount": 0.939267
+     },
+     "sim": {
+      "amount": 89250,
+      "cells": 20,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 19.121576,
+      "events": 4580,
+      "mean_amount": 19.4869,
+      "obs": 239520,
+      "obs_max": 11976,
+      "obs_min": 11976,
+      "per_cell_game_gold": 3726.202405,
+      "pooled_game_gold": 3726.202405,
+      "pooled_rate_per_1000": 372.62024
+     }
+    }
+   }
+  },
+  "strict": {
+   "1": {
+    "tok0": {
+     "platform": {
+      "amount": 19171,
+      "cells": 229,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 10.232946,
+      "events": 3216,
+      "mean_amount": 5.961132,
+      "obs": 314279,
+      "obs_max": 2830,
+      "obs_min": 1,
+      "per_cell_game_gold": 6769.652081,
+      "pooled_game_gold": 6984.493078,
+      "pooled_rate_per_1000": 60.99994
+     },
+     "ratios": {
+      "event_rate": 0.996359,
+      "mean_amount": 0.991695
+     },
+     "sim": {
+      "amount": 146490,
+      "cells": 229,
+      "cells_unobserved": 4,
+      "event_rate_per_1000": 10.195689,
+      "events": 24780,
+      "mean_amount": 5.911622,
+      "obs": 2430439,
+      "obs_max": 11374,
+      "obs_min": 0,
+      "per_cell_game_gold": 6940.206792,
+      "pooled_game_gold": 6901.265574,
+      "pooled_rate_per_1000": 60.273062
+     }
+    },
+    "tok2": {
+     "platform": {
+      "amount": 10979,
+      "cells": 20,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 22.026607,
+      "events": 553,
+      "mean_amount": 19.853526,
+      "obs": 25106,
+      "obs_max": 1977,
+      "obs_min": 458,
+      "per_cell_game_gold": 4368.185211,
+      "pooled_game_gold": 4373.058233,
+      "pooled_rate_per_1000": 437.305823
+     },
+     "ratios": {
+      "event_rate": 0.940845,
+      "mean_amount": 0.98272
+     },
+     "sim": {
+      "amount": 88675,
+      "cells": 20,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 20.723617,
+      "events": 4545,
+      "mean_amount": 19.510451,
+      "obs": 219315,
+      "obs_max": 11279,
+      "obs_min": 10657,
+      "per_cell_game_gold": 4043.969103,
+      "pooled_game_gold": 4043.271094,
+      "pooled_rate_per_1000": 404.327109
+     }
+    }
+   },
+   "2": {
+    "tok0": {
+     "platform": {
+      "amount": 19049,
+      "cells": 245,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 10.066545,
+      "events": 3207,
+      "mean_amount": 5.939819,
+      "obs": 318580,
+      "obs_max": 2892,
+      "obs_min": 808,
+      "per_cell_game_gold": 7078.453173,
+      "pooled_game_gold": 7324.698663,
+      "pooled_rate_per_1000": 59.793458
+     },
+     "ratios": {
+      "event_rate": 1.036598,
+      "mean_amount": 0.998192
+     },
+     "sim": {
+      "amount": 161099,
+      "cells": 245,
+      "cells_unobserved": 4,
+      "event_rate_per_1000": 10.434957,
+      "events": 27171,
+      "mean_amount": 5.929079,
+      "obs": 2603844,
+      "obs_max": 11273,
+      "obs_min": 0,
+      "per_cell_game_gold": 7601.47537,
+      "pooled_game_gold": 7579.036033,
+      "pooled_rate_per_1000": 61.869682
+     }
+    },
+    "tok2": {
+     "platform": {
+      "amount": 10699,
+      "cells": 20,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 22.300612,
+      "events": 550,
+      "mean_amount": 19.452727,
+      "obs": 24663,
+      "obs_max": 1912,
+      "obs_min": 872,
+      "per_cell_game_gold": 4278.585136,
+      "pooled_game_gold": 4338.077282,
+      "pooled_rate_per_1000": 433.807728
+     },
+     "ratios": {
+      "event_rate": 0.913884,
+      "mean_amount": 1.022012
+     },
+     "sim": {
+      "amount": 88649,
+      "cells": 20,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 20.38018,
+      "events": 4459,
+      "mean_amount": 19.880915,
+      "obs": 218791,
+      "obs_max": 11281,
+      "obs_min": 10681,
+      "per_cell_game_gold": 4052.932298,
+      "pooled_game_gold": 4051.766298,
+      "pooled_rate_per_1000": 405.17663
+     }
+    }
+   },
+   "3": {
+    "tok0": {
+     "platform": {
+      "amount": 8931,
+      "cells": 191,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 6.998189,
+      "events": 1530,
+      "mean_amount": 5.837255,
+      "obs": 218628,
+      "obs_max": 1968,
+      "obs_min": 805,
+      "per_cell_game_gold": 3824.228604,
+      "pooled_game_gold": 3901.195181,
+      "pooled_rate_per_1000": 40.850211
+     },
+     "ratios": {
+      "event_rate": 1.027664,
+      "mean_amount": 1.007433
+     },
+     "sim": {
+      "amount": 85187,
+      "cells": 191,
+      "cells_unobserved": 4,
+      "event_rate_per_1000": 7.191784,
+      "events": 14486,
+      "mean_amount": 5.880643,
+      "obs": 2014243,
+      "obs_max": 11248,
+      "obs_min": 0,
+      "per_cell_game_gold": 4149.949064,
+      "pooled_game_gold": 4038.916109,
+      "pooled_rate_per_1000": 42.292315
+     }
+    },
+    "tok2": {
+     "platform": {
+      "amount": 10063,
+      "cells": 20,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 22.474513,
+      "events": 485,
+      "mean_amount": 20.748454,
+      "obs": 21580,
+      "obs_max": 1889,
+      "obs_min": 869,
+      "per_cell_game_gold": 4658.58818,
+      "pooled_game_gold": 4663.113994,
+      "pooled_rate_per_1000": 466.311399
+     },
+     "ratios": {
+      "event_rate": 0.937186,
+      "mean_amount": 0.939198
+     },
+     "sim": {
+      "amount": 89250,
+      "cells": 20,
+      "cells_unobserved": 0,
+      "event_rate_per_1000": 21.062797,
+      "events": 4580,
+      "mean_amount": 19.4869,
+      "obs": 217445,
+      "obs_max": 11104,
+      "obs_min": 10561,
+      "per_cell_game_gold": 4105.689345,
+      "pooled_game_gold": 4104.486192,
+      "pooled_rate_per_1000": 410.448619
+     }
+    }
+   }
+  }
+ }
+}
