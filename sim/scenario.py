@@ -980,16 +980,23 @@ def hotspot_fit_sanity(
     Before 2026-08-11 this checked a tuned weight against the share it had been
     tuned on, which is circular.  The structural rule has no hotspot weight left,
     so the share is an output: 24 games per official map reproduce 0.5613 against
-    the empirical 618/1142 = 0.5412, a deviation of 0.0201.  The default tolerance
-    is 0.03 to leave room for that residual; tightening it would be asserting a
-    precision the model does not have.
+    the empirical 618/1142 = 0.5412.
 
-    The residual has a named suspect.  The rich stream is now known to conserve
-    its total when a hotspot is blocked (GENERATION.md 4.3), while the ordinary
-    stream still destroys a blocked value because nothing has been measured about
-    it either way.  Conserving the ordinary stream too would move the predicted
-    share to about 0.539; that is a reason to go and measure, not a reason to
-    change the model.
+    The default tolerance is not a judgement call, it is the truth's own error
+    bar.  618/1142 is a proportion from 1142 placements, so its binomial standard
+    error is sqrt(0.5412 * 0.4588 / 1142) = 0.01475, and 0.03 is two of those.
+    Tightening it would assert a precision the *measurement* does not have, not
+    merely one the model does not have.
+
+    The same arithmetic says this statistic cannot settle the open question about
+    the ordinary stream.  The rich stream is now known to conserve its total when
+    a hotspot is blocked (GENERATION.md 4.3.1); the ordinary stream still destroys
+    a blocked value because nothing has been measured about it either way.
+    Destroying predicts 0.5613, which is 1.36 standard errors from the truth;
+    conserving predicts roughly 0.539 (an estimate, not a measurement), which is
+    0.15 standard errors away.  Both sit inside two standard errors, so the
+    apparent tenfold difference in deviation carries no discriminating power.
+    That is why the ordinary stream is left alone: go and measure it.
 
     This helper is opt-in and never runs during scenario construction.
     """

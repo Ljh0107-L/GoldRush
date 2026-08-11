@@ -4,7 +4,9 @@
 Two questions that a bucket total cannot answer, both raised as acceptance gates
 for the centripetal-plus-wall-rejection central law in ``scenario.py``.
 
-Gate A -- is the wall rule "drop" or "displace"?
+Gate A -- is the wall rule "drop" or "displace"?  Read the POOLED contrast only:
+    map3's per-map figure is contaminated by probe anchors sitting inside the
+    measured bucket, which the occupancy control flags.
     Aggregate central yield can be matched by more than one mechanism, so match
     the shape instead.  Regress each open central cell's measured event rate on
     the separable centripetal weight (one free scale per map, which is exactly
@@ -261,6 +263,13 @@ def gate_a_contrast(platform_payload, sim_payload) -> Mapping[str, Any]:
         diffs.append((difference, error))
         payload[key] = {"platform_z": left["z_difference"], "sim_z": right["z_difference"],
                         "difference": difference, "se": error, "sigma": difference / error}
+    print()
+    print("  CITE THE POOLED VALUE, NOT A SINGLE MAP.  map3's per-map reading is known to be")
+    print("  contaminated: its central ring 4 has only six open cells and the probe anchors")
+    print("  camped on them (22.2% unit occupancy, see the occupancy control's warnings), and")
+    print("  gate A is precisely a ring-stratified comparison, so that suppression lands")
+    print("  directly on this statistic.  A negative map3 sigma here is not evidence of")
+    print("  sliding on map3.")
     if diffs:
         weights = [1.0 / (error * error) for _, error in diffs]
         combined = sum(d * w for (d, _), w in zip(diffs, weights)) / sum(weights)
