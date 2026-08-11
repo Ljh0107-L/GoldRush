@@ -116,8 +116,11 @@
 #ifndef PV_GN
 #define PV_GN 3          // 面值贪心轮数(一条路径最多踏 3 格 ⇒ 3 轮饱和; 2 轮省 31 条)
 #endif
+#ifndef PV_RTAB
+#define PV_RTAB 1        // 1=阻挡剔除用 5 张定长行表(+1280B rodata) 0=变长 pop-loop。逐位等价, 只差成本
+#endif
 #ifndef PV_ACTOR
-#define PV_ACTOR 1       // 角色格并入阻挡的范围: 0=不并 1=只队友 3=队友+两个可见敌方单位
+#define PV_ACTOR 3       // 角色格并入阻挡的范围: 0=不并 1=只队友 3=队友+两个可见敌方单位
                          // **当前落库值 = 1, 因为平台那 27 局是用 1 打的**(军规: 行为刀先过平台门再落库)。
                          // 3 已用真 T-1 对局输入零配额定价(tests/pathaudit.cpp, n=3000 步/图):
                          //   被敌格挡掉的步 76/94/145 → 3/0/8; 连带撞墙(偏移级联) 32/21/37 → 28/0/10;
@@ -222,10 +225,12 @@ struct PathT {
     uint64_t reach;          // 可踏入的格集(20 格: 曼1/2/3; 不含自己与曼4 四角)
     uint64_t famL, famS, famO;   // 三族掩码(消融开关用)
     uint64_t rowok[17], colok[17];   // 越界剔除: 全程留在盘内的路径集(**行/列可分**, 见下)
+    uint64_t rclr[5][32];    // 阻挡剔除的常量表: rclr[i][p] = ~⋃{thru[格] : 窗口第 i 行第 j 列被挡}
+                             // 把变长 pop-loop 换成 5 次定长查表 ⇒ 恒定成本 + 压 P90(见 decide)
     int8_t rcl[21];          // 行钳位(仅为 AVX 载入地址合法; 幻影数据由 rowok 兜掉)
     constexpr PathT()
         : thru(), cell(), towR(), towC(), sgi(), reach(0),
-          famL(0), famS(0), famO(0), rowok(), colok(), rcl() {
+          famL(0), famS(0), famO(0), rowok(), colok(), rclr(), rcl() {
         int n = 0;
         int prmn[48] = {}, prmx[48] = {}, pcmn[48] = {}, pcmx[48] = {};
         for (int fam = 0; fam < 4; ++fam) {      // 0=L单调 1=L折回 2=S 3=O
@@ -287,6 +292,13 @@ struct PathT {
             for (int p = 0; p < 48; ++p) {
                 if (s + prmn[p] >= 0 && s + prmx[p] <= 16) rowok[s] |= 1ULL << p;
                 if (s + pcmn[p] >= 0 && s + pcmx[p] <= 16) colok[s] |= 1ULL << p;
+            }
+        for (int i = 0; i < 5; ++i)          // 与 pop-loop 逐位等价: AND 可结合可交换, 只是按行分组
+            for (int p = 0; p < 32; ++p) {
+                uint64_t k = 0;
+                for (int j = 0; j < 5; ++j)
+                    if (p >> j & 1) k |= thru[8 * (i + 1) + j];
+                rclr[i][p] = ~k;
             }
         for (int x = 0; x < 21; ++x) {
             int t = x - 2;
@@ -587,6 +599,13 @@ GameOutput decide(const GameInput* in) {
 
         // ---- 剔除撞墙/踩弹/出盘的路径(结构性正确: 留下的每条都保证逐步按计划执行) ----
         uint64_t cand = ALLP & PT.rowok[sr] & PT.colok[sc];
+#if PV_RTAB
+        // 定长版: 逐行 5 位切片查 rclr。与 pop-loop **逐位等价**(AND 结合律), 但成本恒定 ——
+        // 变长版在 map3 实测跑 ~13 次/单位轮(墙 78 面), 且循环出口每轮误预测一次。
+        cand &= PT.rclr[0][(bd >> 8) & 31] & PT.rclr[1][(bd >> 16) & 31]
+              & PT.rclr[2][(bd >> 24) & 31] & PT.rclr[3][(bd >> 32) & 31]
+              & PT.rclr[4][(bd >> 40) & 31];
+#else
         {
             uint64_t m = bd;
             while (m) {
@@ -594,6 +613,7 @@ GameOutput decide(const GameInput* in) {
                 cand &= ~PT.thru[b];
             }
         }
+#endif
         // cand==0 ⇔ 四邻皆墙/皆出盘(O 族也全灭) ⇒ 任何输出都等价于不动, 无罚金
         if (__builtin_expect(cand == 0, 0)) cand = 1ULL;
 
@@ -664,7 +684,7 @@ GameOutput decide(const GameInput* in) {
 // 布局归一化死垫：入口模 64 必须落在已证最优档 0x10。四档扫描已证 0x20/0x30 各 +11.67ns,
 // 故用永不执行的 nop 把 moveDecision 入口移回 0x10 档, 否则测到的 cycles 差会被布局税污染。
 // **改动 decide 体积后必须重新核对并调整垫长**(核对法: objdump -d | grep moveDecision)。
-asm(".space 128, 0x90");
+asm(".space 176, 0x90");
 
 extern "C" GameOutput moveDecision(const GameInput* input) {
     try {
