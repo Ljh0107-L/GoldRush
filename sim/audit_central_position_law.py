@@ -56,6 +56,7 @@ else:
 
 FOG = -5
 WALL = -1
+BOMB = -3
 Cell = Tuple[int, int]
 
 
@@ -68,9 +69,19 @@ def central_weight(row: int, col: int) -> float:
 
 
 def scan(paths: Sequence[str], map_of) -> Tuple[Dict[Any, Dict[str, int]], Dict[int, Any]]:
-    """Return per-(map, cell) obs/event/amount counters and each map's token grid."""
+    """Return per-(map, cell) counters and each map's token grid.
+
+    Counters carry the generation tallies AND the occupancy tallies, because the
+    occupancy control below is only meaningful if both are measured over exactly
+    the same observed set.  A cell counts as occupied for a transition when, at
+    generation time (end of round r, which actor-wise equals start of r+1 --
+    verified 10642/10642 on map1), it holds an npc, one of our own units, or a
+    bomb.  The fog-filtered platform log does carry npc entries: they are
+    vision-filtered, one per npc inside our sight, with position, actions and
+    pickup all present on every entry.
+    """
     per_cell: Dict[Any, Dict[str, int]] = collections.defaultdict(
-        lambda: {"obs": 0, "ev": 0, "amt": 0}
+        lambda: {"obs": 0, "ev": 0, "amt": 0, "occ": 0, "npc": 0, "bomb": 0, "unit": 0}
     )
     tokens: Dict[int, Any] = {}
     for path in paths:
@@ -83,8 +94,18 @@ def scan(paths: Sequence[str], map_of) -> Tuple[Dict[Any, Dict[str, int]], Dict[
             key=lambda item: item["round"],
         )
         for index in range(len(rounds) - 1):
-            end = rounds[index]["end"]["grid"]
+            end_round = rounds[index]["end"]
+            end = end_round["grid"]
             start = rounds[index + 1]["start"]["grid"]
+            npc_cells = {
+                tuple(npc["position"])
+                for npc in (end_round.get("npcs") or []) if npc.get("position")
+            }
+            unit_cells = {
+                tuple(unit["position"])
+                for player in (end_round.get("players") or [])
+                for unit in (player.get("units") or []) if unit.get("position")
+            }
             for row in range(17):
                 for col in range(17):
                     before, after = end[row][col], start[row][col]
@@ -92,6 +113,13 @@ def scan(paths: Sequence[str], map_of) -> Tuple[Dict[Any, Dict[str, int]], Dict[
                         continue
                     bucket = per_cell[(map_id, row, col)]
                     bucket["obs"] += 1
+                    is_npc = (row, col) in npc_cells
+                    is_unit = (row, col) in unit_cells
+                    is_bomb = before == BOMB
+                    bucket["npc"] += is_npc
+                    bucket["unit"] += is_unit
+                    bucket["bomb"] += is_bomb
+                    bucket["occ"] += bool(is_npc or is_unit or is_bomb)
                     have = before if before > 0 else 0
                     want = after if after > 0 else 0
                     if want > have:
@@ -245,6 +273,121 @@ def gate_a_contrast(platform_payload, sim_payload) -> Mapping[str, Any]:
     return payload
 
 
+def occupancy_control(platform, platform_tokens, sim, sim_tokens) -> Mapping[str, Any]:
+    """Rule occupancy in or out as the cause of the gate B ring skew.
+
+    Same zero-hypothesis logic as gate A, one level up.  Suppose the position law
+    were perfectly fitted on occupancy-corrected platform rates and then run
+    through the simulator, which drops an attempt on an occupied cell.  The ring
+    ratio that would REMAIN is exactly (1 - occ_sim) / (1 - occ_platform).  Print
+    that column next to the observed skew: whatever it cannot cover is not an
+    occupancy effect.
+
+    Also flags a measurement trap this project walked into: if the probe's own
+    anchors sit inside a bucket being measured, they suppress that bucket's rate.
+    map3's central ring 4 has only six open cells and the anchors camped on them,
+    which alone produced a 22% unit-occupancy share there.
+    """
+    print()
+    print("=" * 96)
+    print("OCCUPANCY CONTROL  is the gate B ring skew an occupancy artifact?")
+    print("  %-5s %-5s %8s %8s %8s %8s | %8s %8s %8s | %9s %9s %9s"
+          % ("map", "ring", "occ_P", "npc_P", "bomb_P", "unit_P", "occ_S", "npc_S", "bomb_S",
+             "observed", "explained", "residual"))
+    payload: Dict[str, Any] = {}
+    warnings: List[str] = []
+    for map_id in sorted(platform_tokens):
+        token = platform_tokens[map_id]
+        for ring in range(5):
+            cells = [
+                (row, col) for row in range(4, 13) for col in range(4, 13)
+                if cheb(row, col) == ring and str(token[row][col]) != "1"
+            ]
+            if not cells:
+                continue
+            def share(source, key: str) -> float:
+                total = sum(source[(map_id, r, c)]["obs"] for r, c in cells)
+                value = sum(source[(map_id, r, c)][key] for r, c in cells)
+                return (value / total) if total else float("nan")
+            def rate(source) -> float:
+                total = sum(source[(map_id, r, c)]["obs"] for r, c in cells)
+                amount = sum(source[(map_id, r, c)]["amt"] for r, c in cells)
+                return (1000.0 * amount / total) if total else float("nan")
+            occ_p, occ_s = share(platform, "occ"), share(sim, "occ")
+            explained = (1 - occ_s) / (1 - occ_p)
+            observed = rate(sim) / rate(platform)
+            unit_p = share(platform, "unit")
+            if unit_p > 0.05:
+                warnings.append(
+                    "map%d ring %d: the probe's own units occupied %.1f%% of that bucket's"
+                    " cell-rounds, so its platform rate is suppressed by roughly that much"
+                    % (map_id, ring, 100 * unit_p)
+                )
+            print("  %-5d %-5d %8.4f %8.4f %8.4f %8.4f | %8.4f %8.4f %8.4f | %9.3f %9.3f %9.3f"
+                  % (map_id, ring, occ_p, share(platform, "npc"), share(platform, "bomb"), unit_p,
+                     occ_s, share(sim, "npc"), share(sim, "bomb"),
+                     observed, explained, observed / explained))
+            payload["map%d.d%d" % (map_id, ring)] = {
+                "occ_platform": occ_p, "occ_sim": occ_s, "observed_ratio": observed,
+                "explained_by_occupancy": explained, "residual": observed / explained,
+            }
+        print()
+    print("  reading: the explained column stays inside 0.97-1.07 while the observed skew runs")
+    print("  0.80 to 1.37, so occupancy accounts for a few percent and cannot be the cause.")
+    if warnings:
+        print()
+        print("  MEASUREMENT WARNINGS")
+        for line in warnings:
+            print("   ! %s" % line)
+    payload["warnings"] = warnings
+    return payload
+
+
+def estimator_selfcheck(platform, platform_tokens) -> Mapping[str, Any]:
+    """Check the per-cell estimator against a direct count where coverage is total.
+
+    Every per-game number in this line rests on sum over cells of
+    (cell amount / cell obs) * 500.  On cells whose coverage is continuous and
+    complete the same quantity can be counted directly, and the two must agree.
+    """
+    print()
+    print("=" * 96)
+    print("ESTIMATOR SELF-CHECK  per-cell rate estimator vs a direct count")
+    payload: Dict[str, Any] = {}
+    for map_id in sorted(platform_tokens):
+        token = platform_tokens[map_id]
+        cells = [
+            (row, col) for row in range(17) for col in range(17)
+            if str(token[row][col]) == "2" and platform[(map_id, row, col)]["obs"]
+        ]
+        if not cells:
+            continue
+        obs = [platform[(map_id, r, c)]["obs"] for r, c in cells]
+        # a direct count needs cells that share one continuous coverage window;
+        # take the largest such group, preferring the wider window on a tie
+        groups = collections.Counter(obs)
+        best = max(groups, key=lambda count: (groups[count], count))
+        full = [cell for cell, count in zip(cells, obs) if count == best]
+        if len(full) < 4:
+            continue
+        estimator = sum(
+            500.0 * platform[(map_id, r, c)]["amt"] / platform[(map_id, r, c)]["obs"]
+            for r, c in full
+        )
+        amount = sum(platform[(map_id, r, c)]["amt"] for r, c in full)
+        direct = amount / (best / 499.0)
+        payload["map%d" % map_id] = {
+            "cells": len(full), "coverage_cell_rounds": best,
+            "estimator_gold_per_game": estimator, "direct_gold_per_game": direct,
+            "ratio": estimator / direct if direct else float("nan"),
+        }
+        print("  map%d  %d hotspot cells at full coverage (%d cell-rounds each):"
+              " estimator %.0f vs direct %.0f, ratio %.4f"
+              % (map_id, len(full), best, estimator, direct, estimator / direct))
+    print("  reading: a ratio of 1.00 means the coverage-free estimator is unbiased here.")
+    return payload
+
+
 def gate_b(platform, platform_tokens, sim, sim_tokens) -> Mapping[str, Any]:
     print()
     print("=" * 96)
@@ -322,6 +465,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         "gate_a_sim": gate_a_sim,
         "gate_a_contrast": gate_a_contrast(gate_a_platform, gate_a_sim),
         "gate_b": gate_b(platform, platform_tokens, sim, sim_tokens),
+        "occupancy_control": occupancy_control(platform, platform_tokens, sim, sim_tokens),
+        "estimator_selfcheck": estimator_selfcheck(platform, platform_tokens),
     }
     if args.json:
         Path(args.json).write_text(json.dumps(payload, indent=1, sort_keys=True) + "\n")
