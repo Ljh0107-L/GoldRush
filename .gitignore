@@ -28,3 +28,4 @@ tools/.arena_token
 
 # 场地批逐局摘要 (派生数据, 结论已入 CHANGELOG)
 flogs/
+slogs/
