@@ -88,3 +88,38 @@ Worst-case maps in A batch have collection rates of 0–3% (final_A_map3_d160_r0
 ## Old asymmetric family status
 
 The 24 `final_mimic` maps are **not deleted**. Their **effect-size readings** (trigger rate, gold, P90) are invalid for extrapolation to finals (asymmetry is unrealistic). However, their **invariance / identity validation** remains valid: those maps activated `fixAnchor` (14/24), so the "two versions produce byte-identical games" proof on them is genuine. Identity holds regardless of symmetry; asymmetry is a *harsher* input for that test.
+
+---
+
+## 4. P50 / P90 (hot bench, 6 seeds, 5 reps, r≥100, per-round median)
+
+| map | walls | fr% | side | P50 | P90 | P90_sd | coll% |
+|---|---|---|---|---|---|---|---|
+| map1 | 40 | 10.17 | ABOVE | 63 | 73 | 7.5 | 20.5 |
+| map2 | 24 | 10.56 | ABOVE | 73 | 83 | 9.4 | 23.7 |
+| map3 | 78 | 4.00 | below | 63 | 73 | 7.5 | 13.1 |
+| final_A_map2_d64_r0 | 114 | 13.06 | ABOVE | 73 | 125 | 22.2 | 58.4 |
+| (range, A batch) | 32–142 | 0–13 | — | 57–80 | 67–125 | 0–29 | 0–58 |
+
+**Cliff re-examination:** The previously reported 10% cliff (P90 87→130, +43ns) was measured on the old asymmetric family. On this symmetric/real-lineage family:
+- Official map1 (10.17%) and map2 (10.56%) are *above* 10% but P90 = 73 / 83 ns (low, not 130).
+- Only the map with fr=13.06% hits P90=125.
+- ABOVE group mean P90 = 94 ns vs below = 84 ns (diff 10 ns, not 43).
+
+**Interpretation:** The 10% threshold is not a clean cliff on symmetric maps. The real cliff likely sits higher (~12–13%) or depends on map structure beyond just trigger rate. Official maps sit *just above* 10% with no P90 penalty — so the landed config is not actually cliff-victimized on the official maps. The risk is for maps with fr > ~12%.
+
+---
+
+## 5. Old unknown maps: symmetry status (NOT modified)
+
+| map | h_sym | v_sym | both | walls |
+|---|---|---|---|---|
+| anchorwall | True | False | False | 26 |
+| asym | False | False | False | 27 |
+| corridor | False | False | False | 79 |
+| dense | False | False | False | 81 |
+| mimic1-3 | False | False | False | 29–59 |
+| sealed | True | True | True | 28 |
+| sparse | False | False | False | 8 |
+
+8/9 asymmetric, 1/9 (sealed) both-symmetric. These maps are **not modified**: their effect-size readings are unreliable for finals extrapolation, but their identity/invariance validation ("two versions produce byte-identical games") remains valid — identity holds regardless of symmetry, and asymmetry is a harsher input for that test.
