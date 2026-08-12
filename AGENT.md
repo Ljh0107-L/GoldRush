@@ -996,7 +996,7 @@ map1 单图，29 支对手的对手侧无迷雾实测（`sim/reports/field_plays
   > 判断一个目录能不能被清，不能看它的名字或你对它的用途印象，**要看谁在读它** —— 本例中 `logs/` 听起来纯属产物缓存，实际扣着**唯一的保真度门**。
   > ⭐ **并因此立一条落库要求：任何逐轮/逐局结论在落库时必须同址列出它依赖的原始 `gid`**，
   > 否则后人知道结论、却不知道要重下哪些局才能复核它 ⇒ **结论变成不可重测。**
-  > （已落库的 `sim/reports/*.json` 存的是**结果**，不受影响；受影响的是**未来任何想重算的人**。）
+  > （已落库的结论在 CHANGELOG；战役 JSON 在 git 历史。受影响的是**未来任何想重算的人**。）
 - 开发/编译机（只能 SSH，免密已配好）：`ssh Ubiquant220@8.153.76.120`（密码同 KEY）
 - 开发机 GCC 14.3 / EPYC Zen4（AVX-512 全套）/ 与评测机同构；公测全量日志 `/share/data.tar.gz`
 - 每日配额 500 局（**新加坡时区 UTC+8 午夜重置** = UTC 16:00 日界）。
@@ -1136,20 +1136,25 @@ ssh Ubiquant220@8.153.76.120 'cd ~/goldrush/src && g++ -std=c++17 -O3 -march=nat
 
 ```
 AGENT.md          本手册
+HANDOFF.md        规则事实与工具用法
 README.md         一页地图
 src/player.cpp    现役冠军·全能军队（头注释=算法流程文档）
-src/chv.cpp       现役第二构型·ChV 路径引擎 150/180（头注释=架构+禁改事项; map1 特化）
+src/chv.cpp       现役第二构型·ChV 路径引擎
 src/game_api.h    官方接口头
 src/INFRA.md      平台成本模型
 src/CHANGELOG.md  版本史+军规+策略遗产
-tests/            api.py(ctypes桥) replay.py pair_diff.py dump_inputs.py bench.cpp
-tools/            arena.py(平台客户端, 含 quota) gamelog.py(战报) batch.sh(跑批)
-docs/             官方赛制 + 我方审计/规程（QUOTA.md = 配额探测）
+sim/              本地模拟器核心（cli/engine/validate/maps；战役报告不入库）
+tests/            pair_diff · verify_construct.sh · 延迟台架
+tools/            arena.py(含 quota) gamelog.py batch.sh behav.py
+docs/             官方赛制 + PRELIM_RULES + QUOTA
 logs/             对局日志（gitignored）
 ```
 
 **结构军规**（所有者定的，别破）：
 1. 不设 archive 目录；不设多版本目录——旧物只活在 git 历史 + CHANGELOG 谱系表。
+   **战役报告（`sim/reports/`）、一次性分析脚本、`.so` 二进制不入库**；
+   `.so` 身份 = `INFRA` D.17 的 sha256；回滚判据 = D.19。
+   `validate.py` 仍可把派生 JSON 写到 gitignore 的 `sim/reports/`。
    **唯一例外（8.10 所有者钦定）：src 开双构型 player.cpp + chv.cpp，两个都是现役，
    都受军规 2 约束（改动同步头注释与 CHANGELOG）。**
 2. 改 `player.cpp` 算法 → 同步其头注释与 CHANGELOG；平台物理新证据 → 更新 INFRA.md。

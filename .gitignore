@@ -26,6 +26,9 @@ tools/.gr_token
 logs/
 tools/.arena_token
 
+# 战役报告不入库；结论在 src/CHANGELOG.md。validate.py 仍可写到这里。
+sim/reports/
+
 # 场地批逐局摘要 (派生数据, 结论已入 CHANGELOG)
 flogs/
 slogs/

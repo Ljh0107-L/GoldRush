@@ -16,7 +16,7 @@ cd ~/GoldRush
 
 # 1. 看现役构型能不能跑,并确认模拟器保真
 python3 sim/validate.py                       # 保真度套件,应 hard_pass
-python3 sim/cli.py --p1 player_current.so --p2 stay --map map1 --games 1
+python3 sim/cli.py --p1 stay --p2 scripted --map map1 --games 1
 
 # 2. 看平台状态
 python3 tools/arena.py rank -n 130            # 排行榜(队名/胜率/P90)
@@ -59,17 +59,18 @@ less docs/QUOTA.md                             # 每日配额探测(只读接口
 
 ```
 src/player.cpp        现役策略实现(C++,单文件)
+src/chv.cpp           现役速度构型
 src/INFRA.md          成本模型:指令→ns→金币的换算与测量协议
 src/CHANGELOG.md      版本谱系 + 全部判负记录 + 军规(想读结论时看这里)
 AGENT.md              作战手册:平台操作、配额规程、当前状态
+HANDOFF.md            本文件
 
-sim/                  本地模拟器(纯 Python,标准库)
-sim/probe/            观测探针(买满视野跟随对手,用于采集无偏样本)
+sim/                  本地模拟器核心(纯 Python,标准库)
+sim/probe/            观测探针(买满视野跟随对手)
 tests/                验收工具:pair_diff / verify_construct.sh / 延迟台架
 tools/arena.py        平台客户端(含 quota 只读探测)
-docs/                 官方赛制、FAQ、延迟标定、初赛审计、配额探测(QUOTA.md)
-logs/                 对局日志归档(gitignore,132MB)
-player_current.so     在役产物(赛事机 x86-64 构建)
+docs/                 官方赛制、FAQ、初赛审计、配额探测(QUOTA.md)
+logs/                 对局日志归档(gitignore)
 ```
 
 ---
@@ -130,13 +131,16 @@ python3 sim/cli.py ... --jobs 8
 
 | 文件 | 作用 |
 |---|---|
-| `sim/engine.py` | 引擎本体(1499 行);`_dispatch` 在 `:925` 决定先后手,`k` 切片在 `:1088-1092` |
-| `sim/abi.py` | `GameInput` 字节布局断言(size 1444,十个字段) |
+| `sim/engine.py` | 引擎本体 |
+| `sim/abi.py` | `GameInput` 字节布局断言 |
 | `sim/maps.json` | 三张公测地图 |
+| `sim/maps_unknown.json` | 陌生图注册表（初赛换图） |
 | `sim/GENERATION.md` | 金币生成机制实测(公测期) |
 | `sim/OPPONENTS.md` | 对手画像与逆向方法 |
 | `sim/make_unknown_maps.py` · `audit_unknown_maps.py` | 生成陌生图并审计构型在其上的行为 |
-| `sim/field_sample.py` | 平台分层抽样(冻结名单、配额守卫、按对手聚合) |
+| `sim/analyze_order_sensitivity.py` | 慢方真实棋盘重构器（已验证） |
+| `sim/field_sample.py` | 平台分层抽样 |
+| `sim/ladder_ledger.py` · `passive_monitor.py` | 公开位被动局记账 |
 | `sim/probe/` | 买满视野的观测探针 + 日志归档器 |
 
 ---

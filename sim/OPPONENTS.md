@@ -1,6 +1,7 @@
 # Tiuntled-1 / Tundra-wawa 对手逆向报告
 
-> 本文由 `sim/analyze_opponents.py` 从固定的 88 份历史日志确定性生成，并把 4 份高可见率、低金币目标的 `probeobs` 对局作为独立描述样本；探针绝不混入历史主分布。没有联网、没有提交对局；所有百分位采用与 `tools/gamelog.py` 相同的 `floor(n*p/100)` 经验索引。
+> 战役原始 JSON/MD 已移出工作树（git 历史 + `src/CHANGELOG.md`）。本文保留可迁移的对手事实。
+> 生成器 `sim/analyze_opponents.py` 同样在 git 历史。
 
 ## 0a. ERRATA（2026-08-10，手工附加）
 

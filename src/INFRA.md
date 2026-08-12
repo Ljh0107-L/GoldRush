@@ -57,19 +57,31 @@
 >    上一档 `2026-08-12T01:37:41Z` = `landed.so`（20520B · `.text` 4113B · sha `06477c51` · `PV_ACTOR=1`）。
 >    中间一次 `2026-08-12T15:27:40Z` 换线（构型未入库）。
 >    **main 最强（`landed.so` / `pubcand*.so`）未挂公开位。** 初赛引擎若取公开位，8.17 前必须换回。
-> 17. **⭐ 回滚锚点路径已变更（本日）**：锚点现为**仓库内** `gr_artifacts/base_ref.so`，
->    由 `845e7a8` 纳入 git 跟踪（此前只存在于本机、被 `.gitignore` 的 `*.so` 通用规则挡住）。
->    ⚠️ **旧的绝对路径 `/Users/bytedance/gr_artifacts/` 已不存在** —— 早期会话记录里引用它的地方
->    全部失效。本线已逐一复核仓库内四个产物：
->    `base_ref.so` **f66471636a528d33** / 20768B / `.text` **a24f33d417206634** / 5267B ·
->    `landed.so` **06477c516b7214b4** / 20520B / `.text` **58ac38f86886624c** / 4113B ·
->    `idle.so` 6c3a4293a0b69484 / 15744B · `idle_slow.so` 02d6cd2f55f666c4 / 15752B。
->    构型身份见 `CHANGELOG` §耐久性与回滚路径。
+> 17. **工作树不存 `.so`。** 身份 = 整文件 sha256；赛事机按 `CHANGELOG` 谱系重建
+>    （`.text` 已验证可逐字节复现）。旧目录名 `gr_artifacts/` / 绝对路径
+>    `/Users/bytedance/gr_artifacts/` 均已失效。
+>
+>    | 文件 | 整文件 sha256 | 字节 | 用途 |
+>    |---|---|---:|---|
+>    | `base_ref.so` | `f66471636a528d33c2cfa16e1187a8fc91023ddb7eceed3061df156b0db1c7bd` | 20768 | 回滚锚点 = `fd47ea6`；`.text` `a24f33d4` / 5267B |
+>    | `landed.so` | `06477c516b7214b4d5d2f4ecb05428ef162f185596d4cbe00fc0f1d39380e810` | 20520 | 8.12 01:37Z 公开位；`PV_ACTOR=1`；`.text` `58ac38f8` / 4113B |
+>    | `idle.so` | `6c3a4293a0b69484bf7d104da931643890b14d76fd0d3c5f8fbc4bbf7f41eea8` | 15744 | **8.12 16:31Z 起现挂公开位**；全 STAY；~40ns |
+>    | `idle_slow.so` | `02d6cd2f55f666c47033a29b7b7e97f72e22e7b9f14353a88d07fd41d2ad72dd` | 15752 | 量具：88μs 慢陪练 |
+>    | `pubcand.so` | `c0cc6886d28dbea8dd81b88a6dff55d624a1585c03e7fff4cf190b47feac13d9` | 20520 | 发布候选（`309430b`） |
+>    | `pubcand_skiponly.so` | `026de0a414596423ef7969e95a208e65f14bbf1b834c3d0c53ba3a1c66fcf20b` | 20520 | skip-only 候选（`ca2f575`） |
 > 18. **`add_model_4` 是 upsert ⇒ 回滚零配额、随时可执行；由 Master 执行，子线不碰。**
 >    **回滚 = 暂停并诊断，不是放弃。**
-> 19. **回滚判据已预登记且事后不可改**（`PREREG_smoke20.json` + `280687d`，见 `CHANGELOG`
->    §通则：判据本身也要过双向审计）：分母 18（从无败绩者）· **触发 A = 分母内输 ≥3** ·
->    **触发 C = 任何 crash / 非法输出 / 超时 / 平台报错 ⇒ 立即停**。
+> 19. **回滚判据已预登记且事后不可改**（原 `PREREG_smoke20.json` / `280687d`，现只活在本条；
+>    见 `CHANGELOG` §通则：判据本身也要过双向审计）：
+>    **触发 A = 分母 18 内输 ≥3** · **触发 C = 任何 crash / 非法输出 / 超时 / 平台报错 ⇒ 立即停**。
+>    分母 18（`in_denominator`；按 map 交错）：
+>    `199610` 若叶睦的狗2.0/m1 · `70407` 君の仿瓷/m2 · `49565` 1/m1 · `359358` IKUN/m2 ·
+>    `65228` WjJjPQ==/m3 · `327730` 封单超大/m1 · `15497` Controlvector/m3 · `12216` 唐人街/m1 ·
+>    `42311` 兜兜是大头鸟/m2 · `176268` yx255/m3 · `125810` 你看到人类了吗/m1 ·
+>    `369705` 邱叔叔与赵叔叔vamos队/m2 · `297600` icu小队/m3 · `338303` .gitignore/m1 ·
+>    `489` cununn/m2 · `566` LeapTech/m3 · `41147` 贪婪掘金者/m1 · `82304` 掘金/m2。
+>    抽样但**不进分母**（flagged）：`43116` Tundra-wawa/m1 · `161565` 量衡量化/m3。
+>    预登记时 `ever_lost`：`player163` / `player182` / `player213` / `player57`。
 >    **本日实况**：换线后 **31 局全被动局**，零 error、零解析失败，**map1 13/13 · map2 9/9 ·
 >    map3 8/9**；唯一败局 `226126`（map3，对手 `b008fast`/ZZK，`user_id 204`）⇒ **两条判据均未响。**
 > 20. ⛔ **不得以「打赢 T-1」为换线理由。** 换线理由只有一条：**晋级余量**
@@ -633,8 +645,8 @@ scan/target/route 在保语义下可达节省约90-160条，即13.1-23.3ns、**1
 > 1. **`-cold` 一直在测 hot** ⇒ **任何以「`tests/bench.cpp -cold` 的数据已冷」为前提的归档结论
 >    一律作废、必须重测**。⚠ 复核规则（别把范围放大也别缩小）：**先查那个数出自哪台台架** ——
 >    `tests/latency_bench.cpp:102-110` 与 `tests/tail_path_bench.cpp:146-153` 的 evictor 是
->    **`volatile` + 有读**（源码可核），**不受本 DSE 影响**，所以 `docs/LATENCY_VALIDATION.md:15`
->    的 `310ns` 与 `CHANGELOG` §本线的诚实天花板 的 16 MiB thrash 结论**不在作废范围内**；
+>    **`volatile` + 有读**（源码可核），**不受本 DSE 影响**，所以历史文 `docs/LATENCY_VALIDATION.md`
+>    （已移出工作树，git 历史）的 `310ns` 与 `CHANGELOG` §本线的诚实天花板 的 16 MiB thrash 结论**不在作废范围内**；
 >    作废的是**走 `bench -cold` 这条配对/抗漂移主通道**取的冷态数。
 > 2. **`-cold2` 仍然有效，但只对 I-cache/BTB** —— 因为 `icacheThrash` 是**外部弱符号调用，
 >    编译器无法消除**（`tests/bench.cpp:29,32-35`）；**它的数据那一半与 `-cold` 一样是死的。**
@@ -716,6 +728,6 @@ python3 tests/dump_inputs.py logs/game_X.log   # -> .bin 供 bench
 >    （量具卡 `GOLD-0812`，同块配对，rflogs 9 日志，n=12 块×3 图）。
 > ⚠ **未受影响的量具**：`tests/latency_bench.cpp` 与 `tests/tail_path_bench.cpp` 的 evictor 本来就是
 > `volatile` + 有读，**它们的数据逐出是真的**；**但它们与 `bench` 的绝对值不可互搬**
-> （口径见 `docs/LATENCY_VALIDATION.md` 全文：本机绝对值 ≠ 平台 cost）。
+> （口径见 git 历史中的 `docs/LATENCY_VALIDATION.md`：本机绝对值 ≠ 平台 cost）。
 
 标定新硬件：编译 `-DPK=0/4/6/10` 的纯载荷探针各打一局 → 重画 §1 的表。

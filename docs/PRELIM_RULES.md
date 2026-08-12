@@ -262,7 +262,7 @@ main 最强 `landed.so` **未挂**。初赛引擎若取公开位，8.17 前必�
 
 **结论：把"六个战场（2 对手 × 3 图）"当成排名结构是我方内部口径，不是赛制口径。**
 它作为工程分解合理，作为"我们只拿到 1/6 所以离晋级很远"的推论**不成立**——见
-`sim/reports/field_position.md`。
+`src/CHANGELOG.md` 与 git 历史中的 `sim/reports/field_position.md`。
 
 ### 4.4 初赛用哪些地图 / 是否换图
 
@@ -332,7 +332,7 @@ AGENT.md         : 规则速查（与上面一致；行号会漂，以小节标�
 docs/QUOTA.md    : 每日配额探测（today_initiated / daily_initiate_limit）
 tools/arena.py   : add_model_1 vs add_model_4 两个上传槽语义；`quota` 子命令只读探测
 API              : GET /api/user/get_map_list        → 3 张图（地图1/2/3）
-                    GET /api/user/get_rank_list_1     → 公测榜（top-100，见 field_position.md）
+                    GET /api/user/get_rank_list_1     → 公测榜（top-100）
                     GET /api/user/get_user_info       → 本队身份与配额（权威余额）
                     GET /api/user/get_model_list_4    → 可挑战的公开模型列表
 ```
