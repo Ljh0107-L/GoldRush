@@ -130,7 +130,15 @@ KNOWN_BROKEN_SLOTS = {
     "Tundra-wawa": "2 games, gid 191692/192807, net -1496/-1491, gold 4/9 vs vision 1500",
     "D12":         "1 game, gid 192902, net -721",
     "hhh":         "1 game, gid 192912, net -64",
+    "DeepAlpha":   "2 games, gid 219141/219142 (08-11, map3), net -1500/-1498, full vision spend; "
+                   "found by applying is_contest to a batch, NOT by matching this list",
 }
+#: ⚠️ Malfunctions are INTERMITTENT, so exclude GAMES and never whole TEAMS. Tundra-wawa is the
+#: proof: broken on 08-10 (gid 191692) and 08-12 (gid 192807) but HEALTHY on 08-11, where it beat
+#: us twice for real (gid 219176/219177, its net 1755/1786). Dropping the team would have thrown
+#: away two genuine defeats and flattered us -- the same direction as counting the broken games.
+#: Corollary: this table is a convenience, not the filter. Always run is_contest over the batch;
+#: DeepAlpha was found that way and was absent from every list at the time.
 
 
 def is_contest(their_net: Any) -> bool:
