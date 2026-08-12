@@ -4,14 +4,28 @@
 Purpose
 =======
 
-Two deliverables about **our own** frozen player (``src/player.cpp`` at
-``fd47ea6``; every later commit touching that file is comment-only, verified by
-``git diff fd47ea6 HEAD -- src/player.cpp`` containing zero non-comment lines).
+Two deliverables about **our own** player as frozen at ``src/player.cpp`` at
+``fd47ea6`` (anchors at ``fd47ea6:392``).
 
-**Part A -- real-strategy null.**  Our player provably has no periodic policy:
-it is a greedy 5x5 scanner whose only fallback is a pair of *static* anchors
-``(6,8)`` and ``(11,8)`` (``src/player.cpp:409``:
-``g_s.anch_r[u] = 6 + 5*u; g_s.anch_c[u] = 8``).  Measuring the four metric
+.. warning::
+   **This report is pinned to ``fd47ea6``, and HEAD has since diverged.**  The
+   claim that previously stood here -- that every later commit touching
+   ``src/player.cpp`` was comment-only, so HEAD was behaviourally identical to
+   ``fd47ea6`` -- was true when written but became **false** on 2026-08-11 with
+   merge ``86148d8`` ("Merge branch sweep-planner: 32-sequence path enumeration
+   replaces the nearest-target selector").  That merge replaced the entire hot
+   path: the ``SLut`` / ``blk`` / ``pass01`` nearest-target selector was retired
+   in favour of a compile-time enumerated candidate set scored against the
+   current-round ``in->grid``.  ``fd47ea6`` and HEAD still share ``slowTick`` /
+   ``fixAnchor`` / ``BAKED_W`` nearly verbatim, but **route selection is now a
+   different construct**.  Do **not** read the numbers below as properties of
+   HEAD, and do not use this module to attribute HEAD behaviour.
+
+**Part A -- real-strategy null.**  The ``fd47ea6`` player provably has no
+periodic policy: it is a greedy 5x5 scanner whose only fallback is a pair of
+*static* anchors ``(6,8)`` and ``(11,8)`` (``fd47ea6:392``:
+``g_s.anch_r[u] = 6 + 5*u; g_s.anch_c[u] = 8``; those two anchors do survive
+into HEAD, at ``src/player.cpp:492``).  Measuring the four metric
 families (partition / periodicity / amplitude / phase) on this player therefore
 calibrates how much apparent periodicity the *environment* injects, because the
 world itself is periodic: bombs are completely resampled every 20 rounds
@@ -2001,11 +2015,17 @@ def source_verification() -> dict[str, Any]:
     """
     return {
         "source_commit_note": (
-            "src/player.cpp at HEAD is behaviourally identical to fd47ea6: every "
-            "later commit touching that file (53f22c8, 515df3b, 5ac0ebb, a89bcfb) "
-            "adds only '//' comment lines, and "
-            "`git diff fd47ea6 HEAD -- src/player.cpp` contains zero non-comment "
-            "added or removed lines."
+            "PINNED TO fd47ea6; HEAD HAS DIVERGED. This report measures "
+            "src/player.cpp as of fd47ea6. The claim that previously stood here "
+            "-- that HEAD is behaviourally identical to fd47ea6 because every "
+            "later commit touching that file (53f22c8, 515df3b, 5ac0ebb, "
+            "a89bcfb) added only '//' comment lines -- was true when written and "
+            "became FALSE on 2026-08-11 with merge 86148d8, which replaced the "
+            "whole hot path (SLut/blk/pass01 nearest-target selector -> "
+            "compile-time enumerated candidate set scored against the "
+            "current-round in->grid). slowTick/fixAnchor/BAKED_W are still "
+            "shared nearly verbatim, but route selection is a different "
+            "construct, so these numbers must NOT be attributed to HEAD."
         ),
         "confirmed": [
             {"claim": "bombs are completely resampled every 20 rounds",
