@@ -25,3 +25,13 @@ tools/.gr_token
 # 对局日志 (1.5MB/局)
 logs/
 tools/.arena_token
+
+# 场地批逐局摘要 (派生数据, 结论已入 CHANGELOG)
+flogs/
+slogs/
+ablogs/
+fldlogs/
+p3logs/
+s2logs/
+tlogs/
+abraw/
