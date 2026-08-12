@@ -543,15 +543,43 @@ class ValidationSuite:
             "mismatch_cells": mismatch_cells,
             "by_radius": by_radius,
             "local_filtered_logs": {
-                "files": len(local_paths),
-                "rounds": local_rounds,
-                "phase_grids": local_phase_grids,
-                "mismatch_cells": local_mismatch_cells,
-                "by_radius": local_by_radius,
-                "skipped_incomplete_rows": local_skipped_incomplete,
-                "files_with_incomplete_rows": local_files_with_incomplete,
-                "total_rows_seen": local_total_rows,
-                "skip_reason": "中途判负对局的末条记录合法缺 start/end; 跳过不计入吻合统计",
+                # This section validates our fog implementation against real platform
+                # logs, whose corpus is whatever happens to be cached in `logs/`. That
+                # corpus DRIFTS -- anyone downloading a game log for an unrelated
+                # analysis changes it, which is how a 15 -> 46 file jump appeared with no
+                # change in any finding.
+                #
+                # So corpus-derived counts and the actual finding are separated, and the
+                # corpus carries a digest of its sorted filenames. A dirty diff confined
+                # to `corpus` means "the corpus grew"; a diff touching `finding` means a
+                # real fidelity change. Keeping the coverage (46 logs, not 3) was the
+                # deliberate choice -- moving this out of the committed report would hide
+                # real validation from git, which is the invisibility debt that already
+                # cost us once when `logs/gr_data` was wiped unnoticed.
+                "corpus": {
+                    "digest": hashlib.sha256(
+                        "\n".join(p.name for p in local_paths).encode("utf-8")
+                    ).hexdigest(),
+                    "files": len(local_paths),
+                    "rounds": local_rounds,
+                    "phase_grids": local_phase_grids,
+                    "total_rows_seen": local_total_rows,
+                    "rounds_by_radius": {k: v["rounds"] for k, v in sorted(local_by_radius.items())},
+                    "phase_grids_by_radius": {
+                        k: v["phase_grids"] for k, v in sorted(local_by_radius.items())
+                    },
+                    "skipped_incomplete_rows": local_skipped_incomplete,
+                    "files_with_incomplete_rows": local_files_with_incomplete,
+                    "skip_reason": "中途判负对局的末条记录合法缺 start/end; 跳过不计入吻合统计",
+                    "note": "Corpus drifts with the local log cache. A diff confined to this "
+                            "block means the corpus changed, not the finding.",
+                },
+                "finding": {
+                    "mismatch_cells": local_mismatch_cells,
+                    "mismatch_cells_by_radius": {
+                        k: v["mismatch_cells"] for k, v in sorted(local_by_radius.items())
+                    },
+                },
             },
             "visible_array_and_padding_unit_tests": array_tests,
             "error": None if passed else "official/local fog masks or visibility array unit tests differ",
