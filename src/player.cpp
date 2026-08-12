@@ -404,10 +404,30 @@ void slowTick(const GameInput* in) {
     for (int u = 0; u < 2; ++u) {                // 站格单bit门控, 按单位各自判(站过⇒窗口已学)
         int sr = in->my_units[u].row, sc = in->my_units[u].col;
         if (g_s.visited[sr] >> (sc + 1) & 1u) continue;
+#if !PV_SKIPSEEN
         learned = 1;
+#endif
         int r0 = sr - rad < 0 ? 0 : sr - rad, r1 = sr + rad > 16 ? 16 : sr + rad;
         int c0 = sc - rad < 0 ? 0 : sc - rad, c1 = sc + rad > 16 ? 16 : sc + rad;
+#if PV_SKIPSEEN
+        // 逐行精确跳过: 该行窗口内每格都已观测 => seen/bpw 都不可能改变 => 该行扫描是纯开销。
+        // 零学习损失是**构造性**的(只跳没东西可学的行), 不依赖收敛假设 —— 实测新墙最晚出现在
+        // round 447, 任何"连续 K 轮无新墙则停"都会在晚期探索的图上误停。
+        // 前提: 地形静态。已核 —— 引擎从不改 rows; 炸弹只写 board 且从墙上被过滤掉。
+        // 必带 map_id<0: map_id>=0 时本循环做的是 conflict 比对(不写 seen), 那时 seen 已停更,
+        // 窗口会"看起来全知"而实际正需要比对 => 跳过会掩盖误锁。
+        // learned 降为"是否真扫过任一行": 全行皆跳 => seen/bpw 未变 => 指纹(:435)与
+        // fixAnchor(:456) 结果必与上轮相同 => 不置位是精确的, 且这一支顺带消掉整次触发。
+        const unsigned wm_ = (unsigned)((1u << (c1 + 2)) - (1u << (c0 + 1)));
+        const unsigned skipok_ = (unsigned)(g_s.map_id < 0);
+#endif
         for (int r = r0; r <= r1; ++r)
+#if PV_SKIPSEEN
+        {
+            // 雾格永不进 seen => 含雾行 unk!=0 => 不跳。失效方向是"少跳"而非"错跳"。
+            if (skipok_ && ((~g_s.seen[r]) & wm_) == 0u) continue;
+            learned = 1;
+#endif
             for (int c = c0; c <= c1; ++c) {
                 int v = in->grid[r][c];
                 if (v == -5) continue;           // 雾: 无信息
@@ -421,6 +441,9 @@ void slowTick(const GameInput* in) {
                     if (isw) g_s.bpw[r + 1] |= 1u << (c + 1);
                 }
             }
+#if PV_SKIPSEEN
+        }
+#endif
         g_s.visited[sr] |= 1u << (sc + 1);
     }
     if (__builtin_expect(conflict != 0, 0)) {    // 锁定表被实测否证 → 不可逆退回懒学习
