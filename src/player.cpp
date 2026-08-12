@@ -7,11 +7,11 @@
 // 每个单位每轮从 48 条候选路径中选一条：
 //   * 32 条三步路径、12 条两步加 STAY、4 条一步加双 STAY；
 //   * 所有踏入格都位于当前 5x5 视野内，且不立即掉头、不重复踩格；
-//   * 先剔除越界、墙、炸弹、雾和队友占位，再按金币档位逐格收敛候选；
+//   * 先剔除越界、墙、炸弹、雾和一个玩家占位（可见敌人优先），再按金币档位收敛候选；
 //   * 平手时优先向本单位锚点靠拢，再按表序选择覆盖面更大的路径。
 //
 // 金币只在成功踏入格子时结算，因此 STAY、撞墙和折返重踩都会浪费步数。完整路径在打分前
-// 一次性通过阻挡检查，保证用于打分的踏入格与实际移动一致。
+// 一次性通过阻挡检查；每单位用一个角色阻挡槽，优先规避首个可见敌人，否则规避队友。
 #include <cstdint>
 #include <cstring>
 #if defined(__AVX2__)
@@ -85,8 +85,7 @@ struct PathT {
     int8_t sgi[41];          // sgn(x)+1 查表, 索引 x+20 (x ∈ [-20,20]; 锚点最远 |Δ|=16)
     uint64_t reach;          // 可踏入的格集(20 格: 曼1/2/3; 不含自己与曼4 四角)
     uint64_t rowok[17], colok[17];   // 越界剔除: 全程留在盘内的路径集(**行/列可分**, 见下)
-    uint64_t rclr[5][32];    // 阻挡剔除的常量表: rclr[i][p] = ~⋃{thru[格] : 窗口第 i 行第 j 列被挡}
-                             // 把变长 pop-loop 换成 5 次定长查表 ⇒ 恒定成本 + 压 P90(见 decide)
+    uint64_t rclr[5][32];    // 阻挡剔除表
     int8_t rcl[21];          // 行钳位(仅为 AVX 载入地址合法; 幻影数据由 rowok 兜掉)
     constexpr PathT()
         : thru(), cell(), towR(), towC(), sgi(), reach(0), rowok(), colok(), rclr(), rcl() {
@@ -350,22 +349,27 @@ GameOutput decide(const GameInput* in) {
             g2 &= PT.reach;
             g5 &= PT.reach;
             bd &= PT.reach;                      // 只有可踏入格被挡才会毁掉路径
-            // grid 不标角色；把队友本轮起点并入阻挡，避免选中必然浪费一步的路径。
+            // grid 不标玩家位置。维持一个角色阻挡槽：看见敌人时优先防止敌人格挡导致
+            // 后续动作偏移；没有可见敌人时仍保留队友阻挡。
             const Position& teammate = in->my_units[1 - u];
-            unsigned ti = (unsigned)(teammate.row - sr + 2);
-            unsigned tj = (unsigned)(teammate.col - sc + 2);
+            const Position& enemy = in->visible_enemies[0];
+            const Position& blocker = enemy.row >= 0 ? enemy : teammate;
+            unsigned ti = (unsigned)(blocker.row - sr + 2);
+            unsigned tj = (unsigned)(blocker.col - sc + 2);
             if (__builtin_expect((ti < 5u) & (tj < 5u), 0))
                 bd |= 1ULL << (8u * (ti + 1u) + tj);
         }
 
-        // ---- 剔除撞墙/踩弹/出盘的路径(结构性正确: 留下的每条都保证逐步按计划执行) ----
+        // ---- 剔除会撞上当前阻挡、炸弹或边界的路径 ----
         uint64_t cand = ALLP & PT.rowok[sr] & PT.colok[sc];
         // 每行 5 位阻挡切片查表，定长完成全部路径剔除。
         cand &= PT.rclr[0][(bd >> 8) & 31] & PT.rclr[1][(bd >> 16) & 31]
               & PT.rclr[2][(bd >> 24) & 31] & PT.rclr[3][(bd >> 32) & 31]
               & PT.rclr[4][(bd >> 40) & 31];
-        // cand==0 ⇔ 四邻皆墙/皆出盘(O 族也全灭) ⇒ 任何输出都等价于不动, 无罚金
-        if (__builtin_expect(cand == 0, 0)) cand = 1ULL;
+        if (__builtin_expect(cand == 0, 0)) {
+            acts[0] = acts[1] = acts[2] = STAY;
+            continue;
+        }
 
         // ---- 面值分档贪心: 高档金格优先, 3 轮无分支收敛 ----
         // 分档而非精确面值排序: 档内乱序的代价是「同档两格只能取一格时可能取小的那个」,
@@ -410,7 +414,7 @@ GameOutput decide(const GameInput* in) {
 }  // namespace
 
 // moveDecision 的入口需保持在已验证的 mod64=0x10 档。修改函数体后必须在赛事机构建并重校。
-asm(".space 244, 0x90");
+asm(".space 212, 0x90");
 
 extern "C" GameOutput moveDecision(const GameInput* input) {
     try {
