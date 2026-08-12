@@ -67,8 +67,42 @@ FIELD_SAMPLE = ROOT / "sim" / "reports" / "field_sample.json"
 
 OUR_USER_ID = 220
 OUR_SLOT_NAME = "player220"
-#: our public slot was replaced here; earlier games are a different player (about 18x slower)
-CHANGEOVER = dt.datetime(2026, 8, 10, 8, 20, 18, tzinfo=dt.timezone.utc)
+#: Every time we publish, the passive corpus starts measuring a DIFFERENT player. A single
+#: hard-coded cutoff silently rots the moment the next publish happens, which is exactly what
+#: went wrong: this constant was pinned to the 08-10 publish, never learned about the
+#: 08-12T01:37:41Z relaunch, and so pooled two constructs into one 80.7% figure that
+#: understated the current one by 16pp (77.9% before vs 93.5% after). The fix is structural,
+#: not a reminder to update a date: eras are a LIST, the newest entry defines "current", and
+#: the monitor reports every era separately so a missing entry shows up as a suspiciously long
+#: era rather than as a silently mixed pool.
+#: APPEND a new entry on every publish. Do not edit the old ones.
+CONSTRUCT_ERAS = [
+    ("fd47ea6-reflex", dt.datetime(2026, 8, 10, 8, 20, 18, tzinfo=dt.timezone.utc)),
+    ("relaunch-2026-08-12", dt.datetime(2026, 8, 12, 1, 37, 41, tzinfo=dt.timezone.utc)),
+]
+#: earliest era boundary: games before this are a different player entirely (about 18x slower)
+CHANGEOVER = CONSTRUCT_ERAS[0][1]
+
+
+def era_of(created_at) -> str:
+    """Which construct era a game belongs to. Newest matching era wins.
+
+    A record without a timestamp is attributed to the CURRENT era: synthetic dry-run inputs
+    have no ``created_at``, and defaulting them to "current" keeps the dry run exercising the
+    headline path rather than a legacy branch nobody reads.
+    """
+    if not created_at:
+        return CONSTRUCT_ERAS[-1][0]
+    t = _ts(created_at)
+    label = "pre-" + CONSTRUCT_ERAS[0][0]
+    for name, start in CONSTRUCT_ERAS:
+        if t > start:
+            label = name
+    return label
+
+
+def current_era() -> str:
+    return CONSTRUCT_ERAS[-1][0]
 TEST_USER_IDS = frozenset({2, 3, 4})
 NEAR_TIE = 150
 #: opponents that have ever beaten us in the passive condition
@@ -79,8 +113,24 @@ SEED = 5
 TARGET_TEAMS = 25
 
 
+#: Known broken slots, consolidated so a reader gets the whole picture at once. A negative
+#: final net means the slot spent more on vision than it ever collected. Note the malfunction
+#: makes them SLOWER (P50 4400-5600ns, buying vision every round), so these games inflate an
+#: opponent's apparent latency rather than flattering it.
+KNOWN_BROKEN_SLOTS = {
+    "QuantLK":     "13 games, gid 190039-228126, net -22 to -815; broken for 2+ days running",
+    "Tundra-wawa": "2 games, gid 191692/192807, net -1496/-1491, gold 4/9 vs vision 1500",
+    "D12":         "1 game, gid 192902, net -721",
+    "hhh":         "1 game, gid 192912, net -64",
+}
+
+
 def is_contest(their_net: Any) -> bool:
-    """False when the opponent's slot failed rather than lost (negative final net)."""
+    """False when the opponent's slot failed rather than lost (negative final net).
+
+    See :data:`KNOWN_BROKEN_SLOTS`. This is a rate, not an anomaly: about 7% of contested
+    games are opponent malfunctions, so the filter is required rather than defensive.
+    """
     if their_net is None:
         return True
     return int(their_net) >= 0
@@ -140,6 +190,21 @@ def judge(records: Sequence[Mapping[str, Any]], threshold: float | None) -> dict
     """Per-opponent estimate with a bootstrap CI over TEAMS, plus the decision gate."""
     usable = [r for r in records if is_contest(r["their_net"])]
     dropped = [r for r in records if not is_contest(r["their_net"])]
+    # Pooling across publishes mixes constructs. Headline the CURRENT era; keep the rest visible.
+    by_era: dict[str, list] = defaultdict(list)
+    for r in usable:
+        by_era[era_of(r.get("created_at"))].append(r)
+    cur = current_era()
+    era_summary = {}
+    for name, rows in sorted(by_era.items()):
+        b: dict[str, list[int]] = defaultdict(list)
+        for r in rows:
+            b[str(r["opponent"])].append(int(r["our_net"]) - int(r["their_net"]))
+        rr = [sum(1 for m in v if m > 0) / len(v) for v in b.values()]
+        era_summary[name] = {"games": len(rows), "teams": len(b),
+                             "per_opponent": (sum(rr) / len(rr)) if rr else None,
+                             "losses": {t: sorted(v) for t, v in b.items() if any(m <= 0 for m in v)}}
+    usable = by_era.get(cur, [])
     by: dict[str, list[int]] = defaultdict(list)
     for r in usable:
         by[str(r["opponent"])].append(int(r["our_net"]) - int(r["their_net"]))
@@ -158,6 +223,7 @@ def judge(records: Sequence[Mapping[str, Any]], threshold: float | None) -> dict
     draws.sort()
     ci = [draws[int(0.025 * len(draws))], draws[int(0.975 * len(draws))]]
     out: dict[str, Any] = {
+        "current_era": cur, "by_construct_era": era_summary,
         "n_teams": len(teams), "n_games": n_games,
         "excluded_broken": len(dropped),
         "excluded_broken_detail": [{"opponent": r["opponent"], "their_net": r["their_net"],
@@ -273,7 +339,13 @@ def cmd_poll(args: argparse.Namespace) -> int:
     records = [merged[k] for k in sorted(merged)]
     threshold, _ = read_threshold()
     verdict = judge(records, threshold)
-    payload = {"records": records, "judgement": verdict,
+    hist = []
+    if LEDGER.exists():
+        try: hist = json.loads(LEDGER.read_text(encoding="utf-8")).get("threshold_history", [])
+        except Exception: hist = []
+    if threshold is not None:
+        hist.append({"utc": dt.datetime.now(dt.timezone.utc).isoformat(), "threshold": threshold})
+    payload = {"records": records, "judgement": verdict, "threshold_history": hist,
                "generated_at_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
                "conditions": {
                    "corpus": "passive games only (user_id2 == 220), post-changeover",
@@ -293,6 +365,15 @@ def cmd_poll(args: argparse.Namespace) -> int:
         print("  threshold %.2f%% (read %s)  P(above) = %.1f%%"
               % (100 * threshold, verdict["threshold_read_at_utc"],
                  100 * verdict["p_above_threshold"]))
+    print("  era: %s (headline is the CURRENT construct only)" % verdict.get("current_era"))
+    for nm, es in (verdict.get("by_construct_era") or {}).items():
+        po = es["per_opponent"]
+        print("    %-22s games %3d teams %2d per-opponent %s"
+              % (nm, es["games"], es["teams"], ("%.1f%%" % (100 * po)) if po is not None else "n/a"))
+    if len(hist) > 1:
+        print("  threshold history: %s -> %s (%+.2fpp)"
+              % (", ".join("%.4f" % h["threshold"] for h in hist[-4:]),
+                 hist[-1]["utc"][:16], 100 * (hist[-1]["threshold"] - hist[0]["threshold"])))
     print("  VERDICT: %s" % verdict["verdict"])
     for team, near in (verdict.get("near_tie_watch") or {}).items():
         if near:
