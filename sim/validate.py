@@ -200,7 +200,17 @@ class ValidationSuite:
                 "error_type": type(error).__name__,
                 "error": str(error),
             }
-        result["elapsed_seconds"] = round(perf_counter() - started, 6)
+        # Timing is printed for the human running this, but deliberately kept OUT of the
+        # committed report: a field that changes on every run trains readers to treat a dirty
+        # `validation.json` as normal, and then a real substantive change hides in that noise.
+        # (It did: the generator was fixed and the stale report went unnoticed for three days.)
+        # Invariant this buys us: two consecutive runs produce a byte-identical report, so
+        # "dirty" now means "a finding changed". Rounding cannot buy this -- the value would
+        # still cross whatever bucket boundary it sits near.
+        print(
+            "  %s took %.6fs" % (name, perf_counter() - started),
+            file=sys.stderr,
+        )
         self.hard_checks[name] = result
         if not result["passed"]:
             self.hard_failures.append({"check": name, "error": str(result.get("error", "assertion failed"))})
@@ -687,7 +697,6 @@ class ValidationSuite:
             "same_seed_log_sha256": first.log_digest,
             "different_seed_divergence": diverged,
             "different_seed_log_sha256": different.log_digest,
-            "single_game_wall_clock_seconds": round(elapsed, 6),
             "error": None if passed else "deterministic identity/divergence contract failed",
         }
 
@@ -803,13 +812,22 @@ class ValidationSuite:
     def wall_clock(self) -> Mapping[str, Any]:
         elapsed = float(self._generated["primary_elapsed"])
         passed = elapsed > 0 and self._generated["primary"].summary["rounds"] == 500
+        # The measured seconds and the ratio to the 4.38s reference are printed, not stored --
+        # they are the only remaining per-run-varying values, and this check's *finding* is
+        # binary (did a 500-round game complete at all). See the note in `hard()`.
+        print(
+            "  single-game wall clock %.6fs (%.4fx the 4.38s reference observation)"
+            % (elapsed, elapsed / 4.38),
+            file=sys.stderr,
+        )
         return {
             "passed": passed,
             "rounds": 500,
-            "wall_clock_seconds": round(elapsed, 6),
-            "previous_independent_observation_seconds": 4.38,
-            "ratio_to_previous_observation": round(elapsed / 4.38, 4),
-            "note": "Informational benchmark; speed variation is not a fidelity failure.",
+            "note": (
+                "Informational benchmark; speed variation is not a fidelity failure. "
+                "Measured seconds are printed to stderr, not stored, so that this report is "
+                "byte-identical across runs."
+            ),
             "error": None if passed else "wall-clock game did not complete",
         }
 

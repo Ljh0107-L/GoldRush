@@ -213,7 +213,6 @@
           ]
         },
         "c_int_size": 4,
-        "elapsed_seconds": 1.8e-05,
         "error": null,
         "expected": {
           "AbiPosition": [
@@ -305,7 +304,6 @@
           460,
           480
         ],
-        "elapsed_seconds": 0.120567,
         "error": null,
         "expected_bomb_wave_rounds": [
           0,
@@ -343,7 +341,6 @@
         "wave_bomb_ineligible_cells": 0
       },
       "generation_residuals_hotspot_and_bomb_eligibility": {
-        "elapsed_seconds": 0.170844,
         "error": null,
         "passed": true,
         "report": "/Users/bytedance/GoldRush/sim/reports/generation.json",
@@ -373,7 +370,6 @@
         "runtime_unique_bomb_trial_cells": 219
       },
       "map_definitions_and_loading": {
-        "elapsed_seconds": 0.018424,
         "error": null,
         "maps": {
           "arbitrary_log_line2_loading": {
@@ -449,7 +445,6 @@
         "passed": true
       },
       "mechanical_replay_3x500": {
-        "elapsed_seconds": 1.247902,
         "error": null,
         "mismatch_examples": [],
         "observed_exact_counts": {
@@ -518,7 +513,6 @@
             "rounds": 24
           }
         },
-        "elapsed_seconds": 1.309968,
         "error": null,
         "files": [
           "g3.txt",
@@ -579,7 +573,6 @@
         }
       },
       "paired_legs_digest_and_seat_swap": {
-        "elapsed_seconds": 8.171641,
         "error": null,
         "leg_a_b_names": [
           "A",
@@ -595,7 +588,6 @@
       },
       "region_partition_289": {
         "cross_module_disagreements": [],
-        "elapsed_seconds": 0.00022,
         "error": null,
         "partition_cells": 289,
         "passed": true,
@@ -610,22 +602,16 @@
       "same_seed_identity_and_different_seed_divergence": {
         "different_seed_divergence": true,
         "different_seed_log_sha256": "d5b12640499b19ab055c140835bc4090b008b0b7d0f9fe72b81838821b37cee4",
-        "elapsed_seconds": 12.25391,
         "error": null,
         "passed": true,
         "same_seed_byte_identity": true,
-        "same_seed_log_sha256": "b8e22585b3a41e070244c543c4c784007eda0a88129284a6d3542815111e9116",
-        "single_game_wall_clock_seconds": 4.07206
+        "same_seed_log_sha256": "b8e22585b3a41e070244c543c4c784007eda0a88129284a6d3542815111e9116"
       },
       "single_game_wall_clock": {
-        "elapsed_seconds": 3e-06,
         "error": null,
-        "note": "Informational benchmark; speed variation is not a fidelity failure.",
+        "note": "Informational benchmark; speed variation is not a fidelity failure. Measured seconds are printed to stderr, not stored, so that this report is byte-identical across runs.",
         "passed": true,
-        "previous_independent_observation_seconds": 4.38,
-        "ratio_to_previous_observation": 0.9297,
-        "rounds": 500,
-        "wall_clock_seconds": 4.07206
+        "rounds": 500
       },
       "snapshots_297x5x6": {
         "absolute_error_by_field": {
@@ -637,7 +623,6 @@
           "occupants": 0
         },
         "comparisons": 8910,
-        "elapsed_seconds": 0.267466,
         "error": null,
         "exact_by_field": {
           "enter": 1485,
@@ -661,7 +646,6 @@
           "/Users/bytedance/GoldRush/tools/gamelog.py",
           "<temporary-generated-log>"
         ],
-        "elapsed_seconds": 0.049326,
         "error": null,
         "passed": true,
         "returncode": 0,
