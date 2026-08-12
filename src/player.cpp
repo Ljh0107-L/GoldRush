@@ -468,10 +468,23 @@ void slowTick(const GameInput* in) {
             g_s.map_id = -2;                     // 陌生图: 懒学习伴终局
             fixAnchor(0); fixAnchor(1);
         } else if (!(g_s.cand & (g_s.cand - 1))) {
+#if PV_NOLOCK
+            // 只去掉"锁"这一步, **不动指纹淘汰阶段本身**: 唯一候选时按陌生图处置
+            // (与上面 cand==0 那条分支同形)。
+            // 为什么不是"直接把 map_id 初始化成 -2": 那样会让 fixAnchor 从第 0 轮就开始
+            // 生效, 而现役在指纹未判完前(map_id==-1)**不**走 :478 那条锚点重验分支
+            // ⇒ 陌生图行为会被无意改掉。实测那个版本在 10 张陌生图上 -43.68 +- 21.71 金、
+            // log 120/120 全变 ⇒ 已弃用。
+            // 本形态下, 陌生图上 cand 自然归 0 的局**完全不变**, 唯一被改的是"本会锁图"
+            // 的局 = 官方三图 + 误锁图 ⇒ 正是本改动的目标范围。
+            g_s.map_id = -2;
+            fixAnchor(0); fixAnchor(1);
+#else
             int m = __builtin_ctz(g_s.cand);     // 唯一候选: 锁图直灌
             g_s.map_id = (int8_t)m;
             for (int r = 0; r < N; ++r) g_s.bpw[r + 1] = 0xFFFC0001u | BAKED_W[m][r];
             fixAnchor(0); fixAnchor(1);
+#endif
         }
         if (in->round == 0 && g_s.map_id < 0)
             g_s.vp_buy = 2;                      // 角落区分不了/陌生图 → 买下一轮 9×9
@@ -488,7 +501,14 @@ void slowTick(const GameInput* in) {
 
 __attribute__((noinline, cold))
 void slowMove(const GameInput* in, int u, int sr, int sc, int* acts) {
+#if PV_NOROUTE
+    // 恒假(map_id 取值域 -2..2)⇒ 只关 map1 烘焙开局路线, **墙表保留** ⇒ 与去锁分离,
+    // 用来把 -54.47 金拆成"墙表份额"与"路线份额"。刻意不删 body: 避免 unused 告警,
+    // 且保证与 PV_NOROUTE=0 的文本差只在这一行。
+    if (g_s.map_id == 99) {
+#else
     if (g_s.map_id == 0) {                       // map1: 烘焙路线原样(保逐位等价)
+#endif
         if (in->round < 4) {
             int ri = in->round & 3;
             if (sr == ORT_R[u][ri] && sc == ORT_C[u][ri]) {
