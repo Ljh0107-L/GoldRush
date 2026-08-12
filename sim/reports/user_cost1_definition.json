@@ -1,0 +1,19 @@
+{
+  "conclusion": "user_cost1 = cumulative pooled P90 of per-round cost",
+  "current_construct_serial": {
+    "p50": 140,
+    "p90": 220,
+    "rounds": 7936
+  },
+  "leaderboard_reading": {
+    "note": "this field drifts; it is a time series",
+    "read_at": "2026-08-12T11:47Z",
+    "value": 295
+  },
+  "pooled_all_our_games_p90": 280,
+  "same_construct_concurrent": {
+    "p90": 430,
+    "rounds": 3472
+  },
+  "serial_share_of_rounds": 0.2807017543859649
+}

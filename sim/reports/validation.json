@@ -526,23 +526,23 @@
         ],
         "local_filtered_logs": {
           "corpus": {
-            "digest": "13a1a59ca39f2c7be64d627c487d8c60eeb53d5dea0410852154daa1edf80965",
-            "files": 47,
+            "digest": "cacd5ffd6569af27a1deb006a1c4099a728627cd97669e3dab59c942a5a3be2b",
+            "files": 63,
             "files_with_incomplete_rows": 0,
             "note": "Corpus drifts with the local log cache. A diff confined to this block means the corpus changed, not the finding.",
-            "phase_grids": 47000,
+            "phase_grids": 63000,
             "phase_grids_by_radius": {
-              "2": 46940,
-              "4": 60
+              "2": 62922,
+              "4": 78
             },
-            "rounds": 23500,
+            "rounds": 31500,
             "rounds_by_radius": {
-              "2": 23470,
-              "4": 30
+              "2": 31461,
+              "4": 39
             },
             "skip_reason": "\u4e2d\u9014\u5224\u8d1f\u5bf9\u5c40\u7684\u672b\u6761\u8bb0\u5f55\u5408\u6cd5\u7f3a start/end; \u8df3\u8fc7\u4e0d\u8ba1\u5165\u543b\u5408\u7edf\u8ba1",
             "skipped_incomplete_rows": 0,
-            "total_rows_seen": 23500
+            "total_rows_seen": 31500
           },
           "finding": {
             "mismatch_cells": 0,
