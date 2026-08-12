@@ -79,6 +79,8 @@ OUR_SLOT_NAME = "player220"
 CONSTRUCT_ERAS = [
     ("fd47ea6-reflex", dt.datetime(2026, 8, 10, 8, 20, 18, tzinfo=dt.timezone.utc)),
     ("relaunch-2026-08-12", dt.datetime(2026, 8, 12, 1, 37, 41, tzinfo=dt.timezone.utc)),
+    ("slot-2026-08-12-1527", dt.datetime(2026, 8, 12, 15, 27, 40, tzinfo=dt.timezone.utc)),
+    ("idle-decoy-2026-08-12", dt.datetime(2026, 8, 12, 16, 31, 0, tzinfo=dt.timezone.utc)),
 ]
 #: earliest era boundary: games before this are a different player entirely (about 18x slower)
 CHANGEOVER = CONSTRUCT_ERAS[0][1]
