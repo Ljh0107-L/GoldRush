@@ -114,9 +114,17 @@ TARGET_TEAMS = 25
 
 
 #: Known broken slots, consolidated so a reader gets the whole picture at once. A negative
-#: final net means the slot spent more on vision than it ever collected. Note the malfunction
-#: makes them SLOWER (P50 4400-5600ns, buying vision every round), so these games inflate an
-#: opponent's apparent latency rather than flattering it.
+#: final net means the slot spent more on vision than it ever collected.
+#:
+#: ⚠️ BOTH consequences FLATTER US, which is why the filter is not optional:
+#:   * win rate -- we "beat" an opponent that never competed, so our rate reads TOO HIGH,
+#:     not too low. Excluding these moved one estimate from above the front-16 threshold to
+#:     below it, i.e. the flattery was large enough to change a strategic conclusion.
+#:   * latency -- the malfunction makes them SLOWER (P50 4400-5600ns, buying vision every
+#:     round), so their apparent speed reads TOO SLOW and we look relatively faster than we
+#:     are. A "this opponent is fast" reading can never be contaminated downward by a broken
+#:     slot, but a "we are the fastest" reading can.
+#: So the failure mode is always over-optimism about us, on both axes at once.
 KNOWN_BROKEN_SLOTS = {
     "QuantLK":     "13 games, gid 190039-228126, net -22 to -815; broken for 2+ days running",
     "Tundra-wawa": "2 games, gid 191692/192807, net -1496/-1491, gold 4/9 vs vision 1500",
