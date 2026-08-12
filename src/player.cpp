@@ -190,6 +190,48 @@ constexpr uint32_t BAKED_W[3][N] = {
      0x00003de0u, 0x0000e038u, 0x0000e038u, 0x00000000u, 0x00000000u},
 };
 constexpr uint32_t INTERIOR = 0x0003FFFEu;       // bit 1..17 = c 0..16
+
+// ============ 锚点常量 + 编译期引信 ============
+// 为什么需要引信: 存在一条从烘焙墙表到每轮热路径的通路 ——
+//   误锁/锁图 → :404 灌 bpw ← BAKED_W → fixAnchor(:339) 用 wallbit 读 bpw
+//   → g_s.anch_r/anch_c(:349) → :652 锚点向心平局项(**每轮、per-unit 热循环内**)。
+// 它今天无害**不是因为冷热分层, 而是因为表里的值恰好如此**: 锚点列 8 ⇒ bit 9 = 0x200,
+// 而三张表第 6/11 行六个值(map1 0x4010/0x1040, map2 0x8888/0x0000, map3 0x3de0/0x3de0)
+// & 0x200 全为 0(map3 的 0x3de0 里 bit 9 正好是那唯一的洞)。
+// ⇒ 重烘 BAKED_W / 加第四张图 / 移动锚点, 这条路会**无声打开**。
+// 本引信把"被巧合关住"变成"被设计关住"。
+constexpr int ANCH_R0 = 6;    // unit 0 锚点行
+constexpr int ANCH_DR = 5;    // 两单位锚点行距(切比雪夫距离 5; 原字面量 5*u)
+constexpr int ANCH_C  = 8;    // 锚点列(三图同锚, 刻意为之)
+
+// 语义 = 「BAKED_W[m] 第 r 行第 c 列是否为墙」。**不复用 wallbit()**: 那个读运行期
+// g_s.bpw, 不能编译期求值。⚠ 本谓词与 wallbit()/:404 是**两处独立实现同一位约定**
+// (bit c+1), 是未来的漂移点 —— 改任一处必须同步另一处。
+constexpr bool bakedWallAt(int m, int r, int c) {
+    return ((BAKED_W[m][r] >> (c + 1)) & 1u) != 0u;
+}
+
+constexpr bool anchorsClearOfBakedWalls() {
+    // ① 内部性条 —— 守护主条**自身的有效性**, 不是形式主义:
+    //    :404 灌的是 `0xFFFC0001u | BAKED_W[m][r]`, 哨兵占 bit 0(c=-1)与 bit>=18(c>=17),
+    //    而本谓词只读 BAKED_W、不读哨兵 ⇒ 锚点列一旦挪出 0..N-1,
+    //    主条会**静默地读不到哨兵位而误判为「安全」**。
+    if (ANCH_C < 0 || ANCH_C > N - 1) return false;
+    if (ANCH_R0 < 0 || ANCH_R0 > N - 1) return false;
+    if (ANCH_R0 + ANCH_DR < 0 || ANCH_R0 + ANCH_DR > N - 1) return false;
+    // ② 行不重合条: 两单位锚点必须是不同格(ANCH_DR==0 会让两单位共锚而不触发任何现有检查)
+    if (ANCH_DR == 0) return false;
+    // ③ 主条: 所有图 x 所有单位, 锚点格非墙
+    for (int m = 0; m < 3; ++m)
+        for (int u = 0; u < 2; ++u)
+            if (bakedWallAt(m, ANCH_R0 + ANCH_DR * u, ANCH_C)) return false;
+    return true;
+}
+static_assert(anchorsClearOfBakedWalls(),
+              "anchor sits on a baked wall: the mis-lock -> fixAnchor -> anch_r/anch_c -> "
+              "hot tie-break path is no longer closed. See CHANGELOG: the closure is a "
+              "property of BAKED_W's values, not of the cold/hot layering.");
+
 // 锁图后复核墙表的窗口长度。**24 不是"留了 6 倍余量" —— 那个说法是删失(censoring)产物。**
 // 去窗重测(3650 局, 每张已知图的每个合法单格编辑): 首次矛盾轮 中位 25 / p90 237 / p95 339
 // / max 495, 且 18.9% 永不产生矛盾 ==> **窗口正坐在中位上**, 且 24 之后无悬崖(证据散布 25-499)。
@@ -489,7 +531,7 @@ GameOutput decide(const GameInput* in) {
         for (int r = 0; r < N; ++r) g_s.bpw[r + 1] = 0xFFFC0001u;
         g_s.mode = 1; g_s.map_id = -1; g_s.cand = 7;
         for (int u = 0; u < 2; ++u) {            // 三图同锚: 中央窗口分驻, 切比雪夫距离 5
-            g_s.anch_r[u] = (int8_t)(6 + 5 * u); g_s.anch_c[u] = 8;
+            g_s.anch_r[u] = (int8_t)(ANCH_R0 + ANCH_DR * u); g_s.anch_c[u] = (int8_t)ANCH_C;
             g_s.last_r[u] = (int8_t)in->my_units[u].row;   // 首轮 Δ=0 ⇒ 动量项零效应
             g_s.last_c[u] = (int8_t)in->my_units[u].col;   // (不可填锚点: 那会让首轮动量指向反向)
         }
