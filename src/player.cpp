@@ -193,8 +193,12 @@ constexpr uint32_t INTERIOR = 0x0003FFFEu;       // bit 1..17 = c 0..16
 
 // ============ 锚点常量 + 编译期引信 ============
 // 为什么需要引信: 存在一条从烘焙墙表到每轮热路径的通路 ——
-//   误锁/锁图 → :404 灌 bpw ← BAKED_W → fixAnchor(:339) 用 wallbit 读 bpw
-//   → g_s.anch_r/anch_c(:349) → :652 锚点向心平局项(**每轮、per-unit 热循环内**)。
+//   误锁/锁图 → slowTick 里的「锁定灌表」(`bpw[r+1] = 0xFFFC0001u | BAKED_W[m][r]`)
+//   → fixAnchor() 用 wallbit() 读 bpw → 写 g_s.anch_r/anch_c
+//   → decide() 平局裁决段的 `#if PV_ANCH` 锚点向心项(**每轮、per-unit 热循环内**)。
+// ⚠ 互引一律以**符号/代码形状**为主键, 不用行号: 本段自己就是判例 —— 引信落库时
+//    这四处全写了行号, 而引信自身插入的 42 行当即让四个行号全部过期(:404/:339/:349/:652
+//    各偏 +42), 即「说明地雷在哪」的注释反倒成了死指针。用 grep 找符号永不过期。
 // 它今天无害**不是因为冷热分层, 而是因为表里的值恰好如此**: 锚点列 8 ⇒ bit 9 = 0x200,
 // 而三张表第 6/11 行六个值(map1 0x4010/0x1040, map2 0x8888/0x0000, map3 0x3de0/0x3de0)
 // & 0x200 全为 0(map3 的 0x3de0 里 bit 9 正好是那唯一的洞)。
@@ -205,16 +209,16 @@ constexpr int ANCH_DR = 5;    // 两单位锚点行距(切比雪夫距离 5; 原
 constexpr int ANCH_C  = 8;    // 锚点列(三图同锚, 刻意为之)
 
 // 语义 = 「BAKED_W[m] 第 r 行第 c 列是否为墙」。**不复用 wallbit()**: 那个读运行期
-// g_s.bpw, 不能编译期求值。⚠ 本谓词与 wallbit()/:404 是**两处独立实现同一位约定**
-// (bit c+1), 是未来的漂移点 —— 改任一处必须同步另一处。
+// g_s.bpw, 不能编译期求值。⚠ 本谓词与 wallbit() / slowTick 的锁定灌表是**两处独立实现
+// 同一位约定**(bit c+1), 是未来的漂移点 —— 改任一处必须同步另一处。
 constexpr bool bakedWallAt(int m, int r, int c) {
     return ((BAKED_W[m][r] >> (c + 1)) & 1u) != 0u;
 }
 
 constexpr bool anchorsClearOfBakedWalls() {
     // ① 内部性条 —— 守护主条**自身的有效性**, 不是形式主义:
-    //    :404 灌的是 `0xFFFC0001u | BAKED_W[m][r]`, 哨兵占 bit 0(c=-1)与 bit>=18(c>=17),
-    //    而本谓词只读 BAKED_W、不读哨兵 ⇒ 锚点列一旦挪出 0..N-1,
+    //    slowTick 锁定时灌的是 `0xFFFC0001u | BAKED_W[m][r]`, 哨兵占 bit 0(c=-1)
+    //    与 bit>=18(c>=17), 而本谓词只读 BAKED_W、不读哨兵 ⇒ 锚点列一旦挪出 0..N-1,
     //    主条会**静默地读不到哨兵位而误判为「安全」**。
     if (ANCH_C < 0 || ANCH_C > N - 1) return false;
     if (ANCH_R0 < 0 || ANCH_R0 > N - 1) return false;
