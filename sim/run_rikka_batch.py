@@ -47,7 +47,7 @@ ARTEFACT = ROOT / "player_current.so"
 # contest machine.  It is also the artefact currently occupying our public slot,
 # so it has already completed platform games without an illegal-instruction fault.
 ARTEFACT_SHA256 = "f66471636a528d33c2cfa16e1187a8fc91023ddb7eceed3061df156b0db1c7bd"
-RESERVE = 20                       # quota left unspent after the batch
+RESERVE = 20                       # 本批次本地护栏,不是平台规则,也不是「剩余 20 冻结」
 
 
 def sha256(path: Path) -> str:

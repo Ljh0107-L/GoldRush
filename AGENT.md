@@ -1,6 +1,7 @@
 # AGENT.md — GoldRush 2.0 作战手册（2026-08-09 扁平化版）
 
-> 给接手本赛题的 AI Agent。人类已把赛题全权委托给 Agent（含每日 500 局配额支配权）。
+> 给接手本赛题的 AI Agent。人类已把赛题全权委托给 Agent。
+> **每日 500 局配额：探测自由，动用须所有者批准。** 规程 `docs/QUOTA.md`。
 > 三份核心文档：本手册（怎么干活）· `src/INFRA.md`（平台成本模型，设计算法前必读）·
 > `src/CHANGELOG.md`（版本史与负结果军规）。历史逐日战报在 git 历史。
 
@@ -998,9 +999,11 @@ map1 单图，29 支对手的对手侧无迷雾实测（`sim/reports/field_plays
   > （已落库的 `sim/reports/*.json` 存的是**结果**，不受影响；受影响的是**未来任何想重算的人**。）
 - 开发/编译机（只能 SSH，免密已配好）：`ssh Ubiquant220@8.153.76.120`（密码同 KEY）
 - 开发机 GCC 14.3 / EPYC Zen4（AVX-512 全套）/ 与评测机同构；公测全量日志 `/share/data.tar.gz`
-- 每日配额 500 局（**新加坡时区 UTC+8 午夜重置** = UTC 16:00 日界）。已用数**禁止心算、
-  也禁止数对局列表**——平台自己就给权威值：`GET /api/user/get_user_info` 返回
-  **`today_initiated` / `daily_initiate_limit`**（8.10 实测 `470 / 500`）。
+- 每日配额 500 局（**新加坡时区 UTC+8 午夜重置** = UTC 16:00 日界）。
+  **探测自由，动用须所有者批准。** 不是「剩余 20 局冻结」。规程 `docs/QUOTA.md`。
+  已用数**禁止心算、也禁止数对局列表**——平台自己就给权威值：
+  `GET /api/user/get_user_info` 的 **`today_initiated` / `daily_initiate_limit`**
+  （CLI：`python3 tools/arena.py quota`）。8.10 曾测 `470 / 500`，那是当日快照不是常数。
   数列表会**多算**，因为列表含别人挑战我方防守位的局而那不吃配额（`FAQ:366`）：
   同一时刻列表 498 条 vs `today_initiated` 470，差 28 条正是防守局。
   8.9 曾按"下修 15%"的经验法则估，8.10 已由该字段取代；任何工具都必须读字段，
@@ -1127,7 +1130,7 @@ ssh Ubiquant220@8.153.76.120 'cd ~/goldrush/src && g++ -std=c++17 -O3 -march=nat
    同前提翻转，重开环内金额/驻留课题。
 3. **宽域清扫路径**：替代固定锚点的街区清空-转移循环。
 4. 视野触发器（历史两版全哑，矿堆喂太忙——如今先手吃头道，前提也变了）。
-5. 天梯防守位换代（现挂 cpp27b 已三世代落后）。
+5. ~~天梯防守位换代（现挂 cpp27b 已三世代落后）。~~ **8.12 过时**：公开位现挂 `idle.so`，见 `src/INFRA.md` D.16。
 
 ## 6. 仓库结构与军规
 
@@ -1140,8 +1143,9 @@ src/game_api.h    官方接口头
 src/INFRA.md      平台成本模型
 src/CHANGELOG.md  版本史+军规+策略遗产
 tests/            api.py(ctypes桥) replay.py pair_diff.py dump_inputs.py bench.cpp
-tools/            arena.py(平台客户端) gamelog.py(战报) batch.sh(跑批)
-docs/             官方赛制（只读）    logs/  对局日志（gitignored）
+tools/            arena.py(平台客户端, 含 quota) gamelog.py(战报) batch.sh(跑批)
+docs/             官方赛制 + 我方审计/规程（QUOTA.md = 配额探测）
+logs/             对局日志（gitignored）
 ```
 
 **结构军规**（所有者定的，别破）：

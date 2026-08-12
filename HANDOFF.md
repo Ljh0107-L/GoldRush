@@ -20,12 +20,14 @@ python3 sim/cli.py --p1 player_current.so --p2 stay --map map1 --games 1
 
 # 2. 看平台状态
 python3 tools/arena.py rank -n 130            # 排行榜(队名/胜率/P90)
+python3 tools/arena.py quota                  # 今日配额(已用/上限/剩余,只读)
 python3 tools/arena.py opponents              # 可挑战的公开位
 python3 tools/arena.py games                  # 我方对局记录
 
 # 3. 看规则
 less docs/赛制介绍.md                          # 官方赛制
 less docs/PRELIM_RULES.md                     # 初赛条款审计(带行号回源)
+less docs/QUOTA.md                             # 每日配额探测(只读接口)
 ```
 
 **平台凭据**:官网 `http://47.103.127.219/`,ID `220`,KEY 在 `tools/.arena_token`(已 gitignore)。
@@ -46,7 +48,7 @@ less docs/PRELIM_RULES.md                     # 初赛条款审计(带行号回�
 | 提交物:C++ 交 `.so`(≤16MB) | `赛制介绍.md:103-105` |
 | **公开位(`stage=4`)是当前唯一可提交的代码位**;`add_model_4` 是 **upsert**,每队仅一个 | `PRELIM_RULES.md:201-203`,实测 105 模型/105 distinct user_id |
 | 时间线:报名 8.14 · 模拟赛 8.15-16 · **初赛 8.17-21** · 决赛 9.6 | `赛制介绍.md:13` |
-| 每日配额 **500 局**(仅我方\*发起\*的局计入),北京午夜 = **UTC 16:00** 重置 | 实测 |
+| 每日配额 **500 局**(仅我方\*发起\*的局计入),北京午夜 = **UTC 16:00** 重置；探测见 `docs/QUOTA.md` | `FAQ:366` + `get_user_info` |
 
 **两个仍未知的**(`PRELIM_RULES.md:236-290` 记为待确认):初赛用防守位还是另有专用提交入口;初赛期间(8.17-21)能否继续更新提交。
 ⇒ 在弄清之前,占优做法是**任何时刻让公开位保持你的最佳交付物**。
@@ -64,8 +66,8 @@ AGENT.md              作战手册:平台操作、配额规程、当前状态
 sim/                  本地模拟器(纯 Python,标准库)
 sim/probe/            观测探针(买满视野跟随对手,用于采集无偏样本)
 tests/                验收工具:pair_diff / verify_construct.sh / 延迟台架
-tools/arena.py        平台客户端
-docs/                 规则、FAQ、延迟标定、初赛审计
+tools/arena.py        平台客户端(含 quota 只读探测)
+docs/                 官方赛制、FAQ、延迟标定、初赛审计、配额探测(QUOTA.md)
 logs/                 对局日志归档(gitignore,132MB)
 player_current.so     在役产物(赛事机 x86-64 构建)
 ```
@@ -273,15 +275,14 @@ python3 tools/arena.py publish ...      # 上传公开位(add_model_4,upsert)
 
 ### 7.1 配额
 
+规程全文：`docs/QUOTA.md`。一句话：
+
 ```bash
-python3 -c "
-import sys; sys.path.insert(0,'tools')
-from arena import call
-u = call('GET','/api/user/get_user_info')
-print(u.get('today_initiated'), '/', u.get('daily_initiate_limit'))"
+python3 tools/arena.py quota          # 只读。剩余 = daily_initiate_limit - today_initiated
 ```
 
-⛔ **必须读 `today_initiated`,不要数 `get_game_list_1` 的行数** —— 列表里含别人挑战我方的局,那些**不占配额**(曾因此差 28 局)。
+- **探测自由，动用须所有者批准。** 不是「剩余 20 局冻结」（那是 `run_rikka_batch.py` 的本地 `RESERVE`）。
+- ⛔ **必须读 `today_initiated`，不要数 `get_game_list_1` 的行数** —— 列表含别人挑战我方的局，那些**不占配额**（曾因此差 28 局）。
 
 ### 7.2 `publish` 后必做四项后验
 

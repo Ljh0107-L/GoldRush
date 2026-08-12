@@ -37,13 +37,19 @@
 >    导致军规不可 `grep`）。
 >
 > ## C. 配额机制 `[来源=所有者口述 + 平台实况]`
-> 13. **剩余 20 局配额冻结**：Master 与子线**不得自行动用**，每次使用前须向所有者申请并获批。
->    **至今未动用**（本日整条换图泛化性战役消耗配额 **0**）。
-> 14. **平台计数是配额余额的唯一权威，ledger 只记意图**（曾差 132 局）。反解程序：公开位 model
->    → `user_id`，用 `get_game_info.user_id` 判发起方。窗口在 **北京 0 点 / 16:00Z** 重置。
-> 15. ⚠️ **具名未决项（已上报所有者，待裁定）**：`sim/GENERATION.md` 把 18 局满视野停站探针记作
->    「零配额平台自博弈探针」，但**那是 ledger 声明、不是平台验证**，而 `tools/arena.py`
->    **无任何配额端点** ⇒ **「自博弈是否计配额」目前不可独立验证。** 未裁定前不得据它规划批次。
+> 13. **动用配额须所有者批准。** Master 与子线不得自行 `submit` / `add_model_1`。
+>    探测余额不须批准（只读 GET）。规程 `docs/QUOTA.md`。
+>    ⛔ **不是「剩余 20 局冻结」** —— 那是 `sim/run_rikka_batch.py` 一次批次的本地
+>    `RESERVE=20`，被误写成所有者约束。平台没有「必须留 20」；余额以接口为准。
+>    （8.12 换图泛化性战役消耗配额 **0**，是当日事实，不是留 20 的证据。）
+> 14. **平台计数是配额余额的唯一权威，ledger 只记意图**（曾差 132 局）。
+>    权威字段：`GET /api/user/get_user_info` 的 `today_initiated` / `daily_initiate_limit`；
+>    剩余 = 二者之差。CLI：`python3 tools/arena.py quota`。
+>    ⛔ 禁止数 `get_game_list_1` 行数（含不占配额的防守局）。窗口在 **北京 0 点 / 16:00Z** 重置。
+> 15. **自博弈计入配额。** `FAQ:366`「仅统计主动发起」；自博弈走 `add_model_1` 即主动发起。
+>    提交前后对 `today_initiated` 做差分即可独立验证（探测本身不耗配额）。
+>    `sim/GENERATION.md` 把 18 局满视野停站探针记作「零配额平台自博弈」—— 若那些局确实走了
+>    `add_model_1`，则该「零配额」是 ledger 声明而非平台事实；规划批次前用本接口核对。
 >
 > ## D. 公开位与回滚 `[来源=平台实况 + 所有者口述]`
 > 16. **公开位换线时刻 `2026-08-12T16:31:00Z`**：`id=278135` / `player220` = `idle.so`
@@ -690,7 +696,7 @@ python3 tests/pair_diff.py a.so b.so logs/game_X.log
 python3 tests/dump_inputs.py logs/game_X.log   # -> .bin 供 bench
 ./bench logs/game_X.bin a.so b.so              # 交错回放, 抗漂移
 
-# 平台(每日 500 局配额)
+# 平台(每日 500 局配额; 探测: python3 tools/arena.py quota; 规程 docs/QUOTA.md)
 ./tools/arena.py submit --map 1 --vs <id> player.so:name
 ./tools/arena.py watch <gid> && ./tools/gamelog.py logs/game_<gid>.log
 ```

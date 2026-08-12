@@ -11,6 +11,7 @@
 用法：
   ./arena.py rank                                    排行榜
   ./arena.py maps                                    地图列表
+  ./arena.py quota                                   今日配额（已用/上限/剩余，只读）
   ./arena.py opponents                               可挑战的他人代码
   ./arena.py games [-n 20]                           我的对局记录
   ./arena.py info <game_id>                          单局状态
@@ -143,6 +144,25 @@ def _fmt_ns(ns):
     if ns < 1e6:
         return "%.2fus" % (ns / 1e3)
     return "%.2fms" % (ns / 1e6)
+
+
+def cmd_quota(a):
+    """只读。权威余额 = daily_initiate_limit - today_initiated。规程 docs/QUOTA.md。"""
+    u = call("GET", "/api/user/get_user_info")
+    used = int(u.get("today_initiated") or 0)
+    limit = int(u.get("daily_initiate_limit") or 0)
+    remaining = limit - used
+    if a.json:
+        out = {
+            "today_initiated": used,
+            "daily_initiate_limit": limit,
+            "remaining": remaining,
+        }
+        print(json.dumps(out, ensure_ascii=False, indent=1))
+        return
+    print("today_initiated       %d" % used)
+    print("daily_initiate_limit  %d" % limit)
+    print("remaining             %d" % remaining)
 
 
 def cmd_rank(a):
@@ -279,6 +299,11 @@ def main():
     q.set_defaults(func=cmd_rank)
 
     sub.add_parser("maps", help="地图列表").set_defaults(func=cmd_maps)
+
+    q = sub.add_parser("quota", help="今日配额（已用/上限/剩余，只读不耗配额）")
+    q.add_argument("--json", action="store_true")
+    q.set_defaults(func=cmd_quota)
+
     sub.add_parser("opponents", help="可挑战的他人代码").set_defaults(func=cmd_opponents)
 
     q = sub.add_parser("games", help="我的对局记录")
