@@ -76,12 +76,81 @@ OUR_SLOT_NAME = "player220"
 #: the monitor reports every era separately so a missing entry shows up as a suspiciously long
 #: era rather than as a silently mixed pool.
 #: APPEND a new entry on every publish. Do not edit the old ones.
+#:
+#: 2026-08-13: the above was only HALF structural, and it failed again. Making eras a list
+#: made a missed publish *visible* (as a suspiciously long era) but not *impossible*, because
+#: the list is still hand-maintained -- so it remained a reminder to update a date, which is
+#: precisely what the comment above claims it is not. The 08-13T07:56:21Z publish was never
+#: appended, so 144 decoy games and 45 games of the new construct pooled into one 26.2%
+#: figure and the monitor emitted a confident BELOW verdict. Same bug, same shape, four days
+#: apart. The genuinely structural fix is `live_boundary()`: read the boundary from the
+#: platform instead of from this list, so forgetting to append cannot change the answer.
 CONSTRUCT_ERAS = [
     ("fd47ea6-reflex", dt.datetime(2026, 8, 10, 8, 20, 18, tzinfo=dt.timezone.utc)),
     ("relaunch-2026-08-12", dt.datetime(2026, 8, 12, 1, 37, 41, tzinfo=dt.timezone.utc)),
     ("slot-2026-08-12-1527", dt.datetime(2026, 8, 12, 15, 27, 40, tzinfo=dt.timezone.utc)),
     ("idle-decoy-2026-08-12", dt.datetime(2026, 8, 12, 16, 31, 0, tzinfo=dt.timezone.utc)),
+    ("slot-2026-08-13-0756", dt.datetime(2026, 8, 13, 7, 56, 21, tzinfo=dt.timezone.utc)),
 ]
+
+#: Eras where the public slot deliberately carried something that is NOT our real construct.
+#: The owner published `idle.so` as an anti-leak decoy: "公测没有意义, 我不想把目前最强的放在公开位上".
+#: A decoy's win rate is a true reading of a meaningless quantity, so it must never be
+#: headlined as a strength estimate. The prelim has its own submission channel, so the public
+#: slot has no bearing on it either way.
+DECOY_ERAS = {"idle-decoy-2026-08-12"}
+
+
+def live_boundary():
+    """The newest era boundary, read from the platform rather than from CONSTRUCT_ERAS.
+
+    Returns (label, datetime) or None if unreachable. This exists because the list above is
+    hand-maintained and has now been stale twice; reading it live means a forgotten append
+    cannot silently mix two constructs into one pooled figure.
+    """
+    try:
+        sys.path.insert(0, str(ROOT / "tools"))
+        import arena  # noqa: PLC0415
+        for page in range(1, 14):
+            payload = arena.call("GET", "/api/user/get_model_list_4",
+                                 params={"page": page, "page_size": 50})
+            entries = payload.get("list") or []
+            if not entries:
+                return None
+            for entry in entries:
+                if int(entry.get("user_id") or 0) == 220:
+                    raw = str(entry.get("updated_at") or "")
+                    if not raw:
+                        return None
+                    stamp = _ts(raw)
+                    return (f"live-{stamp:%Y-%m-%d-%H%M}", stamp)
+    except Exception:
+        return None
+    return None
+
+
+def sync_eras() -> str | None:
+    """Append the live boundary if this file does not already know about it.
+
+    Prints loudly when it fires, because a firing means someone published without updating
+    the list and every era-split number computed before this call would have been wrong.
+    """
+    live = live_boundary()
+    if live is None:
+        print("  WARNING: could not read the public slot; era boundary may be stale",
+              file=sys.stderr)
+        return None
+    label, stamp = live
+    newest = CONSTRUCT_ERAS[-1][1]
+    if stamp > newest + dt.timedelta(seconds=60):
+        CONSTRUCT_ERAS.append((label, stamp))
+        print(f"  *** ERA LIST WAS STALE: appended {label} ({stamp:%Y-%m-%dT%H:%M:%SZ}) "
+              f"from the live slot; the hard-coded newest was {newest:%Y-%m-%dT%H:%M:%SZ} ***",
+              file=sys.stderr)
+        return label
+    return None
+
+
 #: earliest era boundary: games before this are a different player entirely (about 18x slower)
 CHANGEOVER = CONSTRUCT_ERAS[0][1]
 
@@ -341,6 +410,10 @@ def read_threshold() -> tuple[float | None, list[dict[str, Any]]]:
 
 
 def cmd_poll(args: argparse.Namespace) -> int:
+    # Read the era boundary from the platform BEFORE splitting anything. A publish that never
+    # got appended to CONSTRUCT_ERAS silently pools two constructs, which produced a confident
+    # and wrong BELOW verdict on 08-13.
+    sync_eras()
     sys.path.insert(0, str(ROOT / "sim"))
     import field_sample as fsmod                          # reuses the paged fetch
     rows = fsmod.all_games()
@@ -393,6 +466,20 @@ def cmd_poll(args: argparse.Namespace) -> int:
               % (", ".join("%.4f" % h["threshold"] for h in hist[-4:]),
                  hist[-1]["utc"][:16], 100 * (hist[-1]["threshold"] - hist[0]["threshold"])))
     print("  VERDICT: %s" % verdict["verdict"])
+    # A decoy era's win rate is a TRUE reading of a MEANINGLESS quantity. The owner published
+    # idle.so to stop leaking the real construct, so of course it loses; headlining that as a
+    # standings verdict would provoke a response to a deliberate configuration.
+    if verdict.get("current_era") in DECOY_ERAS:
+        print("  ⛔ HEADLINE SUPPRESSED: the current era is a DECOY (idle.so, published to")
+        print("     avoid leaking the real construct). Its win rate measures the decoy, not us,")
+        print("     and the prelim has a separate submission channel, so it carries no")
+        print("     standings information. Read the newest NON-decoy era below instead.")
+        real = [(nm, es) for nm, es in (verdict.get("by_construct_era") or {}).items()
+                if nm not in DECOY_ERAS and es.get("per_opponent") is not None]
+        if real:
+            nm, es = real[-1]
+            print("     newest real construct: %s -> per-opponent %.1f%% (%d teams, %d games)"
+                  % (nm, 100 * es["per_opponent"], es["teams"], es["games"]))
     for team, near in (verdict.get("near_tie_watch") or {}).items():
         if near:
             print("  near-tie vs %s: %s" % (team, near))
