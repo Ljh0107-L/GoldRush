@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-08-12",
+  "machine": "i5",
+  "latency_related": false,
+  "player_sha256": "1e4998c5ac306287360b0170695b1ebb8ec9e06ce8b34a8e65dd53bfbe2c5ab5",
+  "protocol": {
+    "opponent": "stay",
+    "paired_seeds_per_map": 30,
+    "games_per_map": 60,
+    "base_seed": 20250812,
+    "dispatch": "fixed",
+    "fixed_costs": [
+      200,
+      201
+    ],
+    "note": "Each seed runs both seat assignments; reported net_gold is the mean candidate score per leg."
+  },
+  "limitation": "The photo maps contain wall geometry only. Missing token-2 hotspot metadata makes rich-arm placement uniform, so absolute income is a geometry comparison rather than a reconstruction of the historical generator.",
+  "results": {
+    "map1": {
+      "net_gold_mean": 1568.7,
+      "net_gold_se": 20.6,
+      "first_seat_mean": 2049.5,
+      "second_seat_mean": 1087.8,
+      "stay_or_blocked_step_pct": 4.1,
+      "unique_cells_mean": 100.8,
+      "self_loss_mean": 273.8
+    },
+    "map2": {
+      "net_gold_mean": 1861.7,
+      "net_gold_se": 19.9,
+      "first_seat_mean": 2526.1,
+      "second_seat_mean": 1197.3,
+      "stay_or_blocked_step_pct": 2.2,
+      "unique_cells_mean": 104.5,
+      "self_loss_mean": 209.2
+    },
+    "map3": {
+      "net_gold_mean": 670.9,
+      "net_gold_se": 16.3,
+      "first_seat_mean": 977.5,
+      "second_seat_mean": 364.3,
+      "stay_or_blocked_step_pct": 11.9,
+      "unique_cells_mean": 52.3,
+      "self_loss_mean": 338.5
+    },
+    "final_photo_1": {
+      "net_gold_mean": 1557.2,
+      "net_gold_se": 31.6,
+      "net_gold_min": 1245.0,
+      "net_gold_p10": 1347.5,
+      "net_gold_median": 1559.75,
+      "net_gold_p90": 1830.0,
+      "net_gold_max": 1905.0,
+      "first_seat_mean": 1967.7,
+      "second_seat_mean": 1146.7,
+      "stay_or_blocked_step_pct": 5.1,
+      "unique_cells_mean": 74.9,
+      "self_loss_mean": 148.1
+    },
+    "final_photo_2": {
+      "net_gold_mean": 1545.2,
+      "net_gold_se": 27.9,
+      "net_gold_min": 1229.5,
+      "net_gold_p10": 1356.0,
+      "net_gold_median": 1535.5,
+      "net_gold_p90": 1736.5,
+      "net_gold_max": 1796.5,
+      "first_seat_mean": 2066.0,
+      "second_seat_mean": 1024.3,
+      "stay_or_blocked_step_pct": 3.0,
+      "unique_cells_mean": 83.6,
+      "self_loss_mean": 295.2
+    },
+    "final_photo_3": {
+      "net_gold_mean": 1419.9,
+      "net_gold_se": 27.6,
+      "net_gold_min": 1073.0,
+      "net_gold_p10": 1255.5,
+      "net_gold_median": 1440.75,
+      "net_gold_p90": 1604.0,
+      "net_gold_max": 1651.0,
+      "first_seat_mean": 1795.9,
+      "second_seat_mean": 1043.9,
+      "stay_or_blocked_step_pct": 4.2,
+      "unique_cells_mean": 87.7,
+      "self_loss_mean": 262.6
+    }
+  }
+}

@@ -156,7 +156,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--map",
         default="map1",
         dest="map_source",
-        help="map1/map2/map3, map JSON, line-2 JSON, or official log",
+        help="registered map name, map JSON, line-2 JSON, or official log",
     )
     parser.add_argument("--seed", default="0", help="base integer or string seed")
     parser.add_argument("--games", type=int, default=1, help="games or paired samples")

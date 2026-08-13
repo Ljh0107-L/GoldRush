@@ -56,8 +56,7 @@ def load_maps(names: list[str] | None) -> list[tuple[str, object]]:
         out.append((name, MapDefinition.by_name(name)))
     payload = json.loads(UNKNOWN_REGISTRY.read_text(encoding="utf-8"))
     for name in sorted(payload["maps"]):
-        out.append((name, MapDefinition.from_log_line2(
-            payload["maps"][name]["rows"], name=name)))
+        out.append((name, MapDefinition.from_json_file(UNKNOWN_REGISTRY, map_name=name)))
     if names:
         keep = set(names)
         out = [item for item in out if item[0] in keep]

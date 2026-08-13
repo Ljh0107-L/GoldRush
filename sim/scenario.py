@@ -108,6 +108,11 @@ OUTER_HOTSPOT_RAW_CELL_RATE_RATIO = (618.0 / 20.0) / (524.0 / 164.0)
 # reports quote it; no sampler reads it any more.
 OUTER_HOTSPOT_WEIGHT = 11.33648734667453
 DEFAULT_MAPS_PATH = Path(__file__).with_name("maps.json")
+NAMED_MAP_PATHS = (
+    DEFAULT_MAPS_PATH,
+    Path(__file__).with_name("maps_unknown.json"),
+    Path(__file__).with_name("maps_final_photos.json"),
+)
 
 Cell = Tuple[int, int]
 Seed = Union[int, str, bytes, bytearray]
@@ -259,8 +264,23 @@ class MapDefinition:
     def by_name(
         cls, name: str, maps_path: Union[str, os.PathLike[str]] = DEFAULT_MAPS_PATH
     ) -> "MapDefinition":
-        """Load ``map1``, ``map2``, or ``map3`` from a maps registry."""
-        return cls.from_json_file(maps_path, map_name=name)
+        """Load a map by name from the primary or auxiliary registries."""
+        primary = Path(maps_path)
+        registries = (primary,)
+        if primary == DEFAULT_MAPS_PATH:
+            registries = NAMED_MAP_PATHS
+        for registry_path in registries:
+            if not registry_path.exists():
+                continue
+            try:
+                with registry_path.open("r", encoding="utf-8") as handle:
+                    payload = json.load(handle)
+            except (OSError, ValueError, TypeError, json.JSONDecodeError):
+                continue
+            maps = payload.get("maps") if isinstance(payload, Mapping) else None
+            if isinstance(maps, Mapping) and name in maps:
+                return cls.from_json_file(registry_path, map_name=name)
+        raise KeyError("unknown registered map %r" % name)
 
     @classmethod
     def from_json_file(
@@ -335,16 +355,21 @@ class MapDefinition:
         rows = _normalise_rows(decoded)
 
         inferred_name = name
-        if inferred_name is None and DEFAULT_MAPS_PATH.exists():
-            try:
-                with DEFAULT_MAPS_PATH.open("r", encoding="utf-8") as handle:
-                    registry = json.load(handle)
-                for candidate, entry in registry.get("maps", {}).items():
-                    if "rows" in entry and _normalise_rows(entry["rows"]) == rows:
-                        inferred_name = str(candidate)
-                        break
-            except (OSError, ValueError, TypeError, json.JSONDecodeError):
-                pass
+        if inferred_name is None:
+            for registry_path in NAMED_MAP_PATHS:
+                if not registry_path.exists():
+                    continue
+                try:
+                    with registry_path.open("r", encoding="utf-8") as handle:
+                        registry = json.load(handle)
+                    for candidate, entry in registry.get("maps", {}).items():
+                        if "rows" in entry and _normalise_rows(entry["rows"]) == rows:
+                            inferred_name = str(candidate)
+                            break
+                except (OSError, ValueError, TypeError, json.JSONDecodeError):
+                    continue
+                if inferred_name is not None:
+                    break
 
         return cls(
             name=inferred_name or "official-log-line-2",
@@ -372,13 +397,16 @@ class MapDefinition:
             return cls.from_json_file(source, map_name=map_name)
         if isinstance(source, str):
             stripped = source.strip()
-            if stripped in {"map1", "map2", "map3"} and map_name is None:
-                return cls.by_name(stripped, maps_path=maps_path)
             if stripped.startswith("["):
                 return cls.from_log_line2(stripped, name=map_name)
-            path = Path(source)
+            path = Path(source).expanduser()
             if path.is_file():
                 return cls.from_json_file(path, map_name=map_name)
+            if map_name is None:
+                try:
+                    return cls.by_name(stripped, maps_path=maps_path)
+                except KeyError:
+                    pass
             raise ValueError("map source is neither a known name, JSON file, nor line 2")
         return cls.from_log_line2(source, name=map_name)
 
@@ -1054,7 +1082,7 @@ __all__ = [
     "BOMB_PERIOD", "BOMB_PROBABILITY", "CENTRAL_ATTEMPT_MEAN",
     "CENTRAL_COL_WEIGHTS", "CENTRAL_POISSON_MEAN", "CENTRAL_ROW_WEIGHTS",
     "CENTRAL_VALUE_MAX",
-    "DEFAULT_MAPS_PATH", "GRID_SIZE", "OUTER_HOTSPOT_EMPIRICAL_SHARE",
+    "DEFAULT_MAPS_PATH", "NAMED_MAP_PATHS", "GRID_SIZE", "OUTER_HOTSPOT_EMPIRICAL_SHARE",
     "OUTER_HOTSPOT_RAW_CELL_RATE_RATIO", "OUTER_HOTSPOT_WEIGHT",
     "ROUND_COUNT", "GoldAddition", "GoldIntent", "GoldPlacementIntent",
     "GoldPoolIntent", "MapDefinition", "ORDINARY_CELL_COUNT_HISTOGRAM",

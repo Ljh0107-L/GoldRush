@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""Generate structurally novel 17x17 maps for the unfamiliar-map robustness audit.
+"""Generate axis-symmetric 17x17 maps for the unfamiliar-map robustness audit.
 
-The delivered construct carries baked wall tables for map1/map2/map3 plus a
-fingerprint elimination round.  The organisers have explicitly declined to
-guarantee that the preliminary reuses the current two maps, so the construct's
-behaviour on terrain it has never seen is an untested delivery risk.
+Preliminary terrain is expected to be symmetric across the horizontal axis,
+the vertical axis, or both.  Every generated wall mask therefore satisfies at
+least one of those symmetries while still exercising a distinct geometry.
 
 Each generated map targets one specific assumption in the construct:
 
@@ -14,16 +13,12 @@ Each generated map targets one specific assumption in the construct:
                 attacking the central-generation-peak income model directly.
 ``anchorwall``  walls placed exactly on the two hard-coded anchors (6,8)/(11,8)
                 to force ``fixAnchor`` to relocate both of them.
-``asym``        no symmetry at all; the three known maps are windmill-symmetric,
-                so any accidental reliance on symmetry shows up here.
+``lr_only``     left-right symmetry without top-bottom symmetry.
 ``sparse``      almost no walls -- the opposite extreme from ``dense``.
 ``corridor``    long horizontal bands forming narrow corridors, maximising the
                 blocked-move rate that map1's wall pockets already cause.
-``mimic1/2/3``  **the adversarial cases**: identical to map1 across the corners
-                and edges the construct sees first, but different in the centre.
-                Fingerprint elimination only consults cells actually observed,
-                so this probes whether the construct can lock onto the WRONG
-                baked table and then route against a wall map that is not real.
+``mimic1/2/3``  identical to map1/2/3 across the outer band but with a different,
+                doubly symmetric centre.
 
 Invariants every generated map must satisfy, or generation fails loudly:
   * both player spawns (0,0) and (16,16) are traversable
@@ -34,6 +29,7 @@ Invariants every generated map must satisfy, or generation fails loudly:
     already in ``sim/maps_unknown.json``, none of which walls either cell.)
   * the NPC spawn (8,8) is traversable
   * all traversable cells form a single connected component (4-neighbour)
+  * the wall mask is top-bottom symmetric, left-right symmetric, or both
   * the terrain differs from map1/map2/map3
 """
 from __future__ import annotations
@@ -66,6 +62,35 @@ def wall_count(rows: list[str]) -> int:
     return sum(row.count("1") for row in rows)
 
 
+def wall_rows(rows: list[str]) -> list[str]:
+    """Project terrain tokens to a binary wall mask."""
+    return ["".join("1" if cell == "1" else "0" for cell in row) for row in rows]
+
+
+def symmetry_axes(rows: list[str]) -> list[str]:
+    walls = wall_rows(rows)
+    axes = []
+    if walls == walls[::-1]:
+        axes.append("up_down")
+    if all(row == row[::-1] for row in walls):
+        axes.append("left_right")
+    return axes
+
+
+def mirror_left_right(grid: list[list[str]]) -> None:
+    for r in range(N):
+        for c in range(N // 2):
+            if grid[r][c] == "1" or grid[r][N - 1 - c] == "1":
+                grid[r][c] = grid[r][N - 1 - c] = "1"
+
+
+def mirror_up_down(grid: list[list[str]]) -> None:
+    for r in range(N // 2):
+        for c in range(N):
+            if grid[r][c] == "1" or grid[N - 1 - r][c] == "1":
+                grid[r][c] = grid[N - 1 - r][c] = "1"
+
+
 def connected(rows: list[str]) -> bool:
     floor = {(r, c) for r in range(N) for c in range(N) if rows[r][c] != "1"}
     if not floor:
@@ -95,15 +120,12 @@ def protect(grid: list[list[str]]) -> None:
 
 def make_dense() -> list[str]:
     grid = blank()
-    for r in range(N):
+    # Six mirrored wall bands, each with three aligned gates: 84 walls while
+    # every horizontal chamber remains connected through columns 4/8/12.
+    for r in (2, 4, 6, 10, 12, 14):
         for c in range(N):
-            # A quasi-lattice: denser than map3 but leaves both axes open.
-            if (r % 2 == 1 and c % 2 == 1) or ((r + c) % 7 == 0 and r % 3 != 0):
+            if c not in (4, 8, 12):
                 grid[r][c] = "1"
-    for r in range(N):          # carve two open lanes to guarantee connectivity
-        grid[r][8] = "0"
-    for c in range(N):
-        grid[8][c] = "0"
     protect(grid)
     return as_rows(grid)
 
@@ -136,22 +158,25 @@ def make_anchorwall() -> list[str]:
     return as_rows(grid)
 
 
-def make_asym() -> list[str]:
+def make_lr_only() -> list[str]:
     grid = blank()
-    for r in range(1, 15):      # a staircase, deliberately not symmetric
-        grid[r][(r * 3) % 15 + 1] = "1"
-        if r % 2 == 0:
-            grid[r][(r * 5) % 13 + 2] = "1"
-    for c in range(2, 10):
+    for r in range(1, 16):      # irregular half-map, reflected left-right
+        grid[r][(r * 3) % 7 + 1] = "1"
+        if r % 3 == 0:
+            grid[r][(r * 5) % 6 + 1] = "1"
+    for c in range(2, 7):
         grid[12][c] = "1"
-    grid[12][6] = "0"
+    mirror_left_right(grid)
     protect(grid)
     return as_rows(grid)
 
 
 def make_sparse() -> list[str]:
     grid = blank()
-    for r, c in ((2, 2), (2, 14), (14, 2), (14, 14), (7, 7), (9, 9), (5, 11), (11, 5)):
+    for r, c in (
+        (2, 2), (2, 14), (14, 2), (14, 14),
+        (5, 7), (5, 9), (11, 7), (11, 9),
+    ):
         grid[r][c] = "1"
     protect(grid)
     return as_rows(grid)
@@ -159,30 +184,28 @@ def make_sparse() -> list[str]:
 
 def make_corridor() -> list[str]:
     grid = blank()
-    for r in range(2, 15, 3):
+    for band, r in enumerate(range(2, 15, 3)):
         for c in range(N):
             grid[r][c] = "1"
-        grid[r][2 + (r % 5) * 3] = "0"      # one staggered doorway per band
+        if band % 2 == 0:
+            grid[r][8] = "0"
+        else:
+            grid[r][3] = grid[r][13] = "0"
     protect(grid)
     return as_rows(grid)
 
 
 def make_mimic(known_rows: list[str]) -> list[str]:
-    """Match a known map on the outer band, differ in the interior.
-
-    Fingerprint elimination only compares cells the construct has actually
-    seen.  Both units start in corners, so the outer band is what gets observed
-    first.  If the outer band agrees with map1 the construct may lock map_id=0
-    and overwrite its wall bitmap with map1's table -- which is wrong here.
-    """
+    """Match a known map on the outer band and replace its centre symmetrically."""
     grid = [list(row) for row in known_rows]
     for r in range(5, 12):                  # rewrite only the interior
         for c in range(5, 12):
             grid[r][c] = "0"
-    for r in range(5, 12, 2):               # a different interior structure
-        for c in range(5, 12):
-            if (r + c) % 3 == 0:
-                grid[r][c] = "1"
+    for r, c in (
+        (6, 6), (6, 10), (10, 6), (10, 10),
+        (7, 7), (7, 9), (9, 7), (9, 9),
+    ):
+        grid[r][c] = "1"
     protect(grid)
     return as_rows(grid)
 
@@ -197,7 +220,7 @@ def main() -> int:
         "dense": make_dense(),
         "sealed": make_sealed(),
         "anchorwall": make_anchorwall(),
-        "asym": make_asym(),
+        "lr_only": make_lr_only(),
         "sparse": make_sparse(),
         "corridor": make_corridor(),
         "mimic1": make_mimic(known_rows["map1"]),
@@ -222,14 +245,18 @@ def main() -> int:
                 failures.append("%s: required cell (%d,%d) is a wall" % (name, r, c))
         if not connected(rows):
             failures.append("%s: traversable cells are not connected" % name)
+        axes = symmetry_axes(rows)
+        if not axes:
+            failures.append("%s: wall mask has no axis symmetry" % name)
         for kname, krows in known_rows.items():
-            if rows == krows:
+            if wall_rows(rows) == wall_rows(krows):
                 failures.append("%s: identical to %s" % (name, kname))
         payload["maps"][name] = {
             "limited": False,
             "source": {"kind": "synthetic", "generator": "sim/make_unknown_maps.py"},
             "rows": rows,
             "counts": {"wall": wall_count(rows)},
+            "wall_symmetry": axes,
         }
 
     if failures:
@@ -240,13 +267,15 @@ def main() -> int:
     out = ROOT / "sim" / "maps_unknown.json"
     out.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print("wrote %s" % out.relative_to(ROOT))
-    print("%-12s %5s  %s" % ("map", "walls", "note"))
+    print("%-12s %5s  %-24s  %s" % ("map", "walls", "wall symmetry", "note"))
     for name in ("map1", "map2", "map3"):
-        print("%-12s %5d  (known reference)" % (name, wall_count(known_rows[name])))
+        print("%-12s %5d  %-24s  (known reference)" % (
+            name, wall_count(known_rows[name]), ",".join(symmetry_axes(known_rows[name]))))
     for name, rows in built.items():
         same_outer = ("outer band == " + name.replace("mimic", "map")
                       if name.startswith("mimic") else "")
-        print("%-12s %5d  %s" % (name, wall_count(rows), same_outer))
+        print("%-12s %5d  %-24s  %s" % (
+            name, wall_count(rows), ",".join(symmetry_axes(rows)), same_outer))
     return 0
 
 

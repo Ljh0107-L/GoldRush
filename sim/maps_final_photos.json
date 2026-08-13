@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "grid_size": 17,
+  "cell_codes": {
+    "0": "open",
+    "1": "wall"
+  },
+  "purpose": "wall-only reconstructions of three historical final-round maps from screenshots",
+  "limitations": [
+    "bombs, coins, players and NPCs visible in the screenshots are dynamic and are not terrain",
+    "outer-hotspot/token-2 metadata cannot be recovered from screenshots",
+    "photo 3 has a large occlusion; hidden cells are inferred from exact 180-degree wall symmetry"
+  ],
+  "maps": {
+    "final_photo_1": {
+      "wall_rows": [
+        "00000000000000000",
+        "00000000000000000",
+        "00100000000000100",
+        "00010111111101000",
+        "00000001000001000",
+        "00010111011101000",
+        "00010100000101000",
+        "00010100000101000",
+        "00010000000001000",
+        "00010100000101000",
+        "00010100000101000",
+        "00010111011101000",
+        "00010000010000000",
+        "00010111111101000",
+        "00100000000000100",
+        "00000000000000000",
+        "00000000000000000"
+      ],
+      "counts": {
+        "wall": 60
+      },
+      "wall_symmetry": [
+        "rotate_180"
+      ],
+      "source": {
+        "kind": "photo_reconstruction",
+        "asset": "image-20f5abef-4b43-42e0-96d7-de1f91f8f39c.png",
+        "confidence": "high"
+      }
+    },
+    "final_photo_2": {
+      "wall_rows": [
+        "00000000000000000",
+        "00000000000000000",
+        "00111110001111100",
+        "00100000000000100",
+        "00101100000010100",
+        "00100111011110100",
+        "00100100000100100",
+        "00000100000100000",
+        "00000000000000000",
+        "00000100000100000",
+        "00100100000100100",
+        "00101111011100100",
+        "00101000000110100",
+        "00100000000000100",
+        "00111110001111100",
+        "00000000000000000",
+        "00000000000000000"
+      ],
+      "counts": {
+        "wall": 64
+      },
+      "wall_symmetry": [
+        "rotate_180"
+      ],
+      "source": {
+        "kind": "photo_reconstruction",
+        "asset": "image-dd8d61c7-e40e-4e8b-bd16-b30394c0f028.png",
+        "confidence": "high"
+      }
+    },
+    "final_photo_3": {
+      "wall_rows": [
+        "00000000000000000",
+        "00000000000000000",
+        "00100111111100100",
+        "00010000000001000",
+        "00001001010010000",
+        "00100100000100100",
+        "00100011011000100",
+        "00101010001010100",
+        "00100000000000100",
+        "00101010001010100",
+        "00100011011000100",
+        "00100100000100100",
+        "00001001010010000",
+        "00010000000001000",
+        "00100111111100100",
+        "00000000000000000",
+        "00000000000000000"
+      ],
+      "counts": {
+        "wall": 64
+      },
+      "wall_symmetry": [
+        "rotate_180"
+      ],
+      "source": {
+        "kind": "photo_reconstruction",
+        "asset": "image-411fb811-3404-4a4b-accb-82793354ea8c.png",
+        "confidence": "medium_high",
+        "inference": "cells hidden by the mascot overlay were completed from their 180-degree counterparts"
+      }
+    }
+  }
+}

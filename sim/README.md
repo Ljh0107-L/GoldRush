@@ -66,7 +66,7 @@ python3 sim/calibrate_views.py --repo . --maps sim/maps.json \
 | 参数 | 含义 |
 |---|---|
 | `--p1`, `--p2` | 两个 `.so` 路径，或内置 `stay` / `scripted` |
-| `--map` | `map1` / `map2` / `map3`、`maps.json`、日志第二行 JSON，或任意完整官方日志 |
+| `--map` | 已注册地图名（含 `final_photo_1/2/3`）、地图 JSON、日志第二行 JSON，或任意完整官方日志 |
 | `--seed` | 整数或字符串基种子；相同输入与非 measured 模式产生逐字节相同日志 |
 | `--games` | 单局数；`--paired` 时表示配对样本数，每个样本两腿 |
 | `--dispatch` | `fixed`（默认）、`p1`、`p2`、`measured` |
@@ -93,6 +93,8 @@ python3 sim/calibrate_views.py --repo . --maps sim/maps.json \
 | `cli.py` | 多进程跑批入口 |
 | `maps.json` | 三张公测地图 |
 | `maps_unknown.json` | 陌生图注册表 |
+| `maps_final_photos.json` | 三张历史决赛截图的墙体复刻（无热点元数据） |
+| `final_photo_benchmark.json` | 现役构型在复刻图上的 i5 座位配对结果 |
 | `validate.py` | 一键权威验收 |
 | `calibrate_*.py` | 从官方日志重建标定报告 |
 | `probe/` | 满视野观测探针 |
