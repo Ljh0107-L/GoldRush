@@ -211,3 +211,14 @@ python3 tools/arena.py publish gr_artifacts/base_ref.so:player220
 2. **回滚生效的\*验证\*** —— **没有定义任何事后核验步骤**，而 API 无 sha ⇒ 只能靠行为指纹（等被动局到达、看 P50 是否回到约 190）⇒ **该验证带延迟，且从未跑过**
 3. **制品在工作树中的存在**（本次之前是断的，刚恢复）
 ⇒ **赛前唯一剩下的未验证环节不止「所有者按下 publish」那一下，还有第 2 项：按下之后我们如何知道它生效了。**
+
+> 📌 **状态更新（2026-08-13，晚于上述检查）**：所有者裁定不保留工作树副本，`gr_artifacts/` 已删
+> （「gr_artifacts我不需要了」）。**回滚制品的权威来源改为 git 对象** —— 本检查发现 1 已核实
+> `845e7a8` 显式跟踪了全部四个制品，删除后实测复核：`git show 845e7a8:gr_artifacts/base_ref.so`
+> 的 sha256 与 INFRA §D 逐位一致（`f66471636a528d33…`）。可粘贴回滚命令相应改为两步：
+> ```
+> git show 845e7a8:gr_artifacts/base_ref.so > /tmp/base_ref.so   # sha256 须复核 f66471636a528d33…
+> python3 tools/arena.py publish /tmp/base_ref.so:player220      # 仍须所有者亲口批（INFRA:72）
+> ```
+> ⇒ 「下一次清理会再删一次」以「删除但可从 git 定点恢复」收口：路径从**会被清理的目录**
+> 换成 **git 对象 + sha 复核**，第三次消失不再可能。
