@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
-"""Generate axis-symmetric 17x17 maps for the unfamiliar-map robustness audit.
+"""Generate symmetric 17x17 maps for the unfamiliar-map robustness audit.
 
-Preliminary terrain is expected to be symmetric across the horizontal axis,
-the vertical axis, or both.  Every generated wall mask therefore satisfies at
-least one of those symmetries while still exercising a distinct geometry.
+Official terrain is guaranteed symmetric under at least one of: up-down mirror,
+left-right mirror, or 180-degree central rotation (owner-confirmed 2026-08-13).
+Central-only and 90-degree-rotation-only maps carry NO axis mirror yet are
+legal -- and the two reconstructed finals photos (``sim/maps_final_photos.json``:
+photo_1 = central-only, photo_2 = rot90+central) prove the organisers ship them.
+An earlier revision of this generator rejected exactly those classes.
 
 Each generated map targets one specific assumption in the construct:
 
@@ -19,6 +22,14 @@ Each generated map targets one specific assumption in the construct:
                 blocked-move rate that map1's wall pockets already cause.
 ``mimic1/2/3``  identical to map1/2/3 across the outer band but with a different,
                 doubly symmetric centre.
+``ud_gate``     up-down mirror ONLY: a full row-8 wall with off-centre gates --
+                the mirror axis passes BETWEEN the construct's two anchors.
+``cen_zigzag``  central 180-degree rotation ONLY (chiral Z/S blocks, no mirror);
+                the class finals photo_1 belongs to.  Carries a token-2 set.
+``pinwheel``    90-degree rotation ONLY (chiral arms, no mirror); the class
+                finals photo_2 belongs to.  Token-2 set is rot90-symmetric.
+``diag_stair``  both diagonal mirrors (+ central, no axis mirror): staircase
+                walls -- legal via central symmetry, previously zero coverage.
 
 Invariants every generated map must satisfy, or generation fails loudly:
   * both player spawns (0,0) and (16,16) are traversable
@@ -29,7 +40,10 @@ Invariants every generated map must satisfy, or generation fails loudly:
     already in ``sim/maps_unknown.json``, none of which walls either cell.)
   * the NPC spawn (8,8) is traversable
   * all traversable cells form a single connected component (4-neighbour)
-  * the wall mask is top-bottom symmetric, left-right symmetric, or both
+  * the wall mask satisfies >=1 of: up-down mirror, left-right mirror,
+    central 180-degree rotation (the official guarantee)
+  * each family lands in exactly the symmetry class it claims (fail loudly)
+  * token-2 cells, when present, sit on open cells only
   * the terrain differs from map1/map2/map3
 """
 from __future__ import annotations
@@ -68,13 +82,26 @@ def wall_rows(rows: list[str]) -> list[str]:
 
 
 def symmetry_axes(rows: list[str]) -> list[str]:
+    """Full symmetry classification of the wall mask (not just axis mirrors)."""
     walls = wall_rows(rows)
+    S = {(r, c) for r in range(N) for c in range(N) if walls[r][c] == "1"}
     axes = []
-    if walls == walls[::-1]:
+    if all((N - 1 - r, c) in S for r, c in S):
         axes.append("up_down")
-    if all(row == row[::-1] for row in walls):
+    if all((r, N - 1 - c) in S for r, c in S):
         axes.append("left_right")
+    if all((N - 1 - r, N - 1 - c) in S for r, c in S):
+        axes.append("central")
+    if all((c, N - 1 - r) in S for r, c in S):
+        axes.append("rot90")
+    if all((c, r) in S for r, c in S):
+        axes.append("diag")
+    if all((N - 1 - c, N - 1 - r) in S for r, c in S):
+        axes.append("antidiag")
     return axes
+
+
+GUARANTEE = ("up_down", "left_right", "central")
 
 
 def mirror_left_right(grid: list[list[str]]) -> None:
@@ -210,6 +237,110 @@ def make_mimic(known_rows: list[str]) -> list[str]:
     return as_rows(grid)
 
 
+def _closure(grid: list[list[str]], seeds: set[tuple[int, int]],
+             transforms) -> None:
+    """Union the seed set with its images under the given transforms."""
+    cells = set(seeds)
+    frontier = set(seeds)
+    while frontier:
+        nxt = set()
+        for r, c in frontier:
+            for t in transforms:
+                cell = t(r, c)
+                if cell not in cells:
+                    cells.add(cell)
+                    nxt.add(cell)
+        frontier = nxt
+    for r, c in cells:
+        grid[r][c] = "1"
+
+
+def _place_tokens(rows: list[str], cells: list[tuple[int, int]]) -> list[str]:
+    grid = [list(r) for r in rows]
+    for r, c in cells:
+        if grid[r][c] == "1":
+            raise SystemExit("token-2 cell (%d,%d) collides with a wall" % (r, c))
+        if (r, c) in (*SPAWNS, *OPP_SPAWNS, NPC_SPAWN):
+            raise SystemExit("token-2 cell (%d,%d) is a protected spawn" % (r, c))
+        grid[r][c] = "2"
+    return as_rows(grid)
+
+
+def make_ud_gate() -> list[str]:
+    """Up-down mirror ONLY. Mirror axis = row 8, between the two anchors.
+
+    Row 8 is a full wall with gates at columns 3 and 10 (an off-centre pair so
+    left-right symmetry is broken; ``protect`` re-opens (8,8) for the NPC spawn,
+    adding a centre gate).  Mirrored band clutter above/below keeps the halves
+    structured without sealing them.
+    """
+    grid = blank()
+    for c in range(N):
+        grid[8][c] = "1"
+    grid[8][3] = grid[8][10] = "0"
+    for c in (1, 2, 5, 6, 11, 14):        # LR-asymmetric clutter, mirrored UD
+        grid[4][c] = grid[12][c] = "1"
+    for r in (2, 3):
+        grid[r][7] = grid[N - 1 - r][7] = "1"
+        grid[r][12] = grid[N - 1 - r][12] = "1"
+    protect(grid)
+    return as_rows(grid)
+
+
+def make_cen_zigzag() -> list[str]:
+    """Central 180-degree rotation ONLY (chiral, no mirror) -- photo_1's class."""
+    grid = blank()
+    seeds = {(3, 3), (3, 4), (4, 4), (4, 5),          # Z block
+             (2, 10), (3, 10), (4, 10), (4, 11),      # L block
+             (7, 2), (7, 3), (6, 3), (6, 4),          # S block
+             (5, 7), (6, 7), (7, 7), (7, 8),          # bar with foot
+             (11, 1), (11, 2), (12, 2)}               # lower hook
+    _closure(grid, seeds, [lambda r, c: (N - 1 - r, N - 1 - c)])
+    protect(grid)
+    rows = as_rows(grid)
+    tokens = [(1, 4), (2, 7), (4, 13), (5, 11), (6, 1), (8, 5), (9, 12),
+              (10, 3), (12, 8), (13, 10), (14, 2), (15, 9), (1, 12), (3, 15),
+              (6, 15), (10, 11), (12, 4), (14, 15), (15, 1), (8, 2)]
+    return _place_tokens(rows, tokens)                 # 弹位不对称(官方 map1/2 同款)
+
+
+def make_pinwheel() -> list[str]:
+    """90-degree rotation ONLY (chiral arms, no mirror) -- photo_2's class."""
+    grid = blank()
+    arm = {(2, 6), (3, 6), (4, 6), (5, 6), (5, 7), (2, 7)}   # hooked arm, chiral
+    rot = lambda r, c: (c, N - 1 - r)
+    _closure(grid, arm, [rot])
+    protect(grid)
+    rows = as_rows(grid)
+    seed_tokens = [(1, 3), (4, 4), (6, 9), (3, 11), (7, 6)]
+    tokens = []
+    for r, c in seed_tokens:                           # 弹位跟随 rot90(官方 map3 同款)
+        for _ in range(4):
+            tokens.append((r, c))
+            r, c = c, N - 1 - r
+    return _place_tokens(rows, sorted(set(tokens)))
+
+
+def make_diag_stair() -> list[str]:
+    """Both diagonal mirrors (+ central); NO axis mirror. Staircase walls.
+
+    Legal via the central-rotation clause of the guarantee; the class had zero
+    coverage anywhere in the suite.
+    """
+    grid = blank()
+    seeds = {(2, 5), (3, 6), (4, 7), (1, 9), (1, 12), (6, 11), (7, 12)}
+    d1 = lambda r, c: (c, r)
+    d2 = lambda r, c: (N - 1 - c, N - 1 - r)
+    _closure(grid, seeds, [d1, d2])
+    protect(grid)
+    rows = as_rows(grid)
+    tokens = [(1, 1), (2, 8), (5, 13), (6, 2), (8, 6), (9, 15), (11, 4),
+              (13, 9), (14, 14), (15, 6), (1, 14), (4, 12), (7, 1), (10, 8),
+              (12, 12), (13, 3), (15, 11), (3, 13), (5, 5), (10, 1)]
+    return _place_tokens(rows, tokens)                 # 弹位不对称
+
+
+
 def main() -> int:
     from sim.scenario import MapDefinition
 
@@ -226,6 +357,17 @@ def main() -> int:
         "mimic1": make_mimic(known_rows["map1"]),
         "mimic2": make_mimic(known_rows["map2"]),
         "mimic3": make_mimic(known_rows["map3"]),
+        "ud_gate": make_ud_gate(),
+        "cen_zigzag": make_cen_zigzag(),
+        "pinwheel": make_pinwheel(),
+        "diag_stair": make_diag_stair(),
+    }
+    # 每个新家族必须精确落在它声称的对称类(多一个少一个都算生成失败)
+    expected_class = {
+        "ud_gate": ["up_down"],
+        "cen_zigzag": ["central"],
+        "pinwheel": ["central", "rot90"],
+        "diag_stair": ["antidiag", "central", "diag"],
     }
 
     payload = {
@@ -246,8 +388,10 @@ def main() -> int:
         if not connected(rows):
             failures.append("%s: traversable cells are not connected" % name)
         axes = symmetry_axes(rows)
-        if not axes:
-            failures.append("%s: wall mask has no axis symmetry" % name)
+        if not any(a in axes for a in GUARANTEE):
+            failures.append("%s: violates the symmetry guarantee (has %s)" % (name, axes))
+        if name in expected_class and sorted(axes) != expected_class[name]:
+            failures.append("%s: class %s != declared %s" % (name, sorted(axes), expected_class[name]))
         for kname, krows in known_rows.items():
             if wall_rows(rows) == wall_rows(krows):
                 failures.append("%s: identical to %s" % (name, kname))
@@ -255,7 +399,8 @@ def main() -> int:
             "limited": False,
             "source": {"kind": "synthetic", "generator": "sim/make_unknown_maps.py"},
             "rows": rows,
-            "counts": {"wall": wall_count(rows)},
+            "counts": {"wall": wall_count(rows),
+                       "bomb_candidate": sum(r.count("2") for r in rows)},
             "wall_symmetry": axes,
         }
 

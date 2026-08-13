@@ -8,6 +8,7 @@
   "maps": {
     "anchorwall": {
       "counts": {
+        "bomb_candidate": 0,
         "wall": 26
       },
       "limited": false,
@@ -38,8 +39,42 @@
         "left_right"
       ]
     },
+    "cen_zigzag": {
+      "counts": {
+        "bomb_candidate": 20,
+        "wall": 38
+      },
+      "limited": false,
+      "rows": [
+        "00000000000000000",
+        "00002000000020000",
+        "00000002001000000",
+        "00011000001000020",
+        "00001100001102100",
+        "00000001000200110",
+        "02011001000000020",
+        "00110001100000000",
+        "00200200000000000",
+        "00000000110021100",
+        "00020000010211000",
+        "01100000010000000",
+        "00102110200110000",
+        "00000010002011000",
+        "00200010000000020",
+        "02000000020000000",
+        "00000000000000000"
+      ],
+      "source": {
+        "generator": "sim/make_unknown_maps.py",
+        "kind": "synthetic"
+      },
+      "wall_symmetry": [
+        "central"
+      ]
+    },
     "corridor": {
       "counts": {
+        "bomb_candidate": 0,
         "wall": 78
       },
       "limited": false,
@@ -68,11 +103,13 @@
       },
       "wall_symmetry": [
         "up_down",
-        "left_right"
+        "left_right",
+        "central"
       ]
     },
     "dense": {
       "counts": {
+        "bomb_candidate": 0,
         "wall": 84
       },
       "limited": false,
@@ -101,11 +138,48 @@
       },
       "wall_symmetry": [
         "up_down",
-        "left_right"
+        "left_right",
+        "central"
+      ]
+    },
+    "diag_stair": {
+      "counts": {
+        "bomb_candidate": 20,
+        "wall": 28
+      },
+      "limited": false,
+      "rows": [
+        "00000000000000000",
+        "02000000010010200",
+        "00000100200000000",
+        "00000010000002000",
+        "00000001010020010",
+        "00100200001002000",
+        "00210000000100000",
+        "02001000000010010",
+        "00000020000000000",
+        "01001000000010020",
+        "02000100200001000",
+        "00002010000000100",
+        "01000001010020000",
+        "00020000021000000",
+        "00000000000100200",
+        "00001021000200000",
+        "00000000000000000"
+      ],
+      "source": {
+        "generator": "sim/make_unknown_maps.py",
+        "kind": "synthetic"
+      },
+      "wall_symmetry": [
+        "central",
+        "diag",
+        "antidiag"
       ]
     },
     "lr_only": {
       "counts": {
+        "bomb_candidate": 0,
         "wall": 46
       },
       "limited": false,
@@ -138,6 +212,7 @@
     },
     "mimic1": {
       "counts": {
+        "bomb_candidate": 20,
         "wall": 38
       },
       "limited": false,
@@ -166,11 +241,13 @@
       },
       "wall_symmetry": [
         "up_down",
-        "left_right"
+        "left_right",
+        "central"
       ]
     },
     "mimic2": {
       "counts": {
+        "bomb_candidate": 20,
         "wall": 28
       },
       "limited": false,
@@ -199,11 +276,16 @@
       },
       "wall_symmetry": [
         "up_down",
-        "left_right"
+        "left_right",
+        "central",
+        "rot90",
+        "diag",
+        "antidiag"
       ]
     },
     "mimic3": {
       "counts": {
+        "bomb_candidate": 20,
         "wall": 58
       },
       "limited": false,
@@ -232,11 +314,47 @@
       },
       "wall_symmetry": [
         "up_down",
-        "left_right"
+        "left_right",
+        "central"
+      ]
+    },
+    "pinwheel": {
+      "counts": {
+        "bomb_candidate": 16,
+        "wall": 24
+      },
+      "limited": false,
+      "rows": [
+        "00000000000000000",
+        "00020000000000000",
+        "00000011000000000",
+        "00000010000200020",
+        "00002010000020000",
+        "00020011000000000",
+        "00000000020111100",
+        "00000020000100100",
+        "00000000000000000",
+        "00100100002000000",
+        "00111102000000000",
+        "00000000011002000",
+        "00002000001020000",
+        "02000200001000000",
+        "00000000011000000",
+        "00000000000002000",
+        "00000000000000000"
+      ],
+      "source": {
+        "generator": "sim/make_unknown_maps.py",
+        "kind": "synthetic"
+      },
+      "wall_symmetry": [
+        "central",
+        "rot90"
       ]
     },
     "sealed": {
       "counts": {
+        "bomb_candidate": 0,
         "wall": 28
       },
       "limited": false,
@@ -265,11 +383,16 @@
       },
       "wall_symmetry": [
         "up_down",
-        "left_right"
+        "left_right",
+        "central",
+        "rot90",
+        "diag",
+        "antidiag"
       ]
     },
     "sparse": {
       "counts": {
+        "bomb_candidate": 0,
         "wall": 8
       },
       "limited": false,
@@ -298,7 +421,41 @@
       },
       "wall_symmetry": [
         "up_down",
-        "left_right"
+        "left_right",
+        "central"
+      ]
+    },
+    "ud_gate": {
+      "counts": {
+        "bomb_candidate": 0,
+        "wall": 34
+      },
+      "limited": false,
+      "rows": [
+        "00000000000000000",
+        "00000000000000000",
+        "00000001000010000",
+        "00000001000010000",
+        "01100110000100100",
+        "00000000000000000",
+        "00000000000000000",
+        "00000000000000000",
+        "11101111010111111",
+        "00000000000000000",
+        "00000000000000000",
+        "00000000000000000",
+        "01100110000100100",
+        "00000001000010000",
+        "00000001000010000",
+        "00000000000000000",
+        "00000000000000000"
+      ],
+      "source": {
+        "generator": "sim/make_unknown_maps.py",
+        "kind": "synthetic"
+      },
+      "wall_symmetry": [
+        "up_down"
       ]
     }
   },
