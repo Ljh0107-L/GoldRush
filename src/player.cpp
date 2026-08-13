@@ -90,7 +90,10 @@ struct PathT {
     uint64_t reach;          // 可踏入的格集(20 格: 曼1/2/3; 不含自己与曼4 四角)
     uint64_t rowok[17], colok[17];   // 越界剔除: 全程留在盘内的路径集(**行/列可分**, 见下)
     uint64_t rclr[5][32];    // 阻挡剔除表
-    int8_t rcl[21];          // 行钳位(仅为 AVX 载入地址合法; 幻影数据由 rowok 兜掉)
+    int16_t rcl[21];         // 行钳位, **预乘 17**(= 行首在 grid 里的 int 偏移)
+                             // 仅为 AVX 载入地址合法; 幻影数据由 rowok 兜掉。
+                             // 存 clamp*17 而非 clamp: 读汇编发现每行都在用 mov+shl+add 现算
+                             // ×17, 5 行 × 2 单位全是纯乘法。表宽 21→42 B 换掉它们(-20.6 条/轮)。
     constexpr PathT()
         : thru(), cell(), towR(), towC(), sgi(), reach(0), rowok(), colok(), rclr(), rcl() {
         int n = 0;
@@ -158,7 +161,7 @@ struct PathT {
             }
         for (int x = 0; x < 21; ++x) {
             int t = x - 2;
-            rcl[x] = (int8_t)(t < 0 ? 0 : (t > 16 ? 16 : t));
+            rcl[x] = (int16_t)((t < 0 ? 0 : (t > 16 ? 16 : t)) * N);
         }
         for (int x = 0; x < 41; ++x) {
             int t = x - 20;
@@ -276,11 +279,9 @@ GameOutput decide(const GameInput* in) {
         _mm_prefetch((const char*)&PT.cell + 128, _MM_HINT_T0);
         _mm_prefetch((const char*)&PT.towR, _MM_HINT_T0);
         _mm_prefetch((const char*)&SCT, _MM_HINT_T0);
-        int r0 = in->my_units[0].row, r1 = in->my_units[1].row;
-        _mm_prefetch((const char*)&in->grid[r0 < 2 ? 0 : r0 - 2][0], _MM_HINT_T0);
-        _mm_prefetch((const char*)&in->grid[r0][0], _MM_HINT_T0);
-        _mm_prefetch((const char*)&in->grid[r1 < 2 ? 0 : r1 - 2][0], _MM_HINT_T0);
-        _mm_prefetch((const char*)&in->grid[r1][0], _MM_HINT_T0);
+        // ⛔ 不预取 in->grid: GameInput 由平台在**调用我们之前**刚写入 ⇒ 它本来就在 L1/L2,
+        // 预取热数据是净开销(连同地址计算实测 -19.6 条/轮)。同一机制的独立判例:
+        // 「给 visible_npcs 补预取」在平台内窗交错里毫无效果(12 局, 与不补者同为 +35ns)。
     }
     if (in->round <= g_s.last_round) {
         memset(&g_s, 0, sizeof(g_s));
@@ -328,9 +329,8 @@ GameOutput decide(const GameInput* in) {
             const __m256i v8 = _mm256_set1_epi32(8);
 #pragma GCC unroll 5
             for (int i = 0; i < 5; ++i) {
-                int cr = PT.rcl[sr + i];                         // = clamp(sr-2+i, 0, 16)
-                __m256i vr = _mm256_loadu_si256((const __m256i*)&in->grid[cr][cb]);
-                unsigned s = (unsigned)(sh + 8 * i);
+                int cro = PT.rcl[sr + i];                        // = clamp(sr-2+i,0,16) * 17
+                __m256i vr = _mm256_loadu_si256((const __m256i*)(&in->grid[0][0] + cro + cb));
 #if defined(__AVX512VL__)
                 uint64_t m1 = (uint64_t)_mm256_cmpgt_epi32_mask(vr, z);   // v >= 1
                 uint64_t m2 = (uint64_t)_mm256_cmpgt_epi32_mask(vr, v3);  // v >= 4
@@ -346,10 +346,12 @@ GameOutput decide(const GameInput* in) {
                 uint64_t mb = (uint64_t)(uint32_t)_mm256_movemask_ps(
                     _mm256_castsi256_ps(_mm256_cmpgt_epi32(z, vr)));
 #endif
-                g1 |= m1 << s;
-                g2 |= m2 << s;
-                g5 |= m5 << s;
-                bd |= mb << s;
+                // 行内用**常量**移位, 变量 sh 挪到收尾统一做: 原写法每行每谓词各一次
+                // shlx(移位量 sh+8i), 20 次变量移位还占住 5 个寄存器存移位量。
+                g1 |= m1 << (8u * (unsigned)i);
+                g2 |= m2 << (8u * (unsigned)i);
+                g5 |= m5 << (8u * (unsigned)i);
+                bd |= mb << (8u * (unsigned)i);
             }
 #else
             for (int i = 0; i < 5; ++i) {                         // 标量参考(仅本机测试)
@@ -367,6 +369,8 @@ GameOutput decide(const GameInput* in) {
                 }
             }
 #endif
+            g1 <<= (unsigned)sh; g2 <<= (unsigned)sh;   // 4 次变量移位, 取代原来的 20 次
+            g5 <<= (unsigned)sh; bd <<= (unsigned)sh;
             g1 &= PT.reach;                      // 靶只能是可踏入格(顺带清掉越界列的幻影位)
             g2 &= PT.reach;
             g5 &= PT.reach;
@@ -490,7 +494,7 @@ GameOutput decide(const GameInput* in) {
 }  // namespace
 
 // moveDecision 的入口需保持在已验证的 mod64=0x10 档。修改函数体后必须在赛事机构建并重校。
-asm(".space 196, 0x90");
+asm(".space 244, 0x90");
 
 extern "C" GameOutput moveDecision(const GameInput* input) {
     try {
