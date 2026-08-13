@@ -168,6 +168,50 @@ def sync_eras() -> dict[str, Any]:
     return {"ok": True, "appended": None, "reason": None, "model_id": model_id}
 
 
+def classify_zero_score_era(rows: Sequence[Mapping[str, Any]],
+                            errored_games: int | None) -> tuple[str, str]:
+    """A near-zero median own score has TWO causes that require OPPOSITE responses.
+
+    Returns (kind, why) where kind is DECOY, CATASTROPHE or AMBIGUOUS.
+
+    The owner deliberately publishing idle.so and our real construct collapsing both produce a
+    median of about zero. Treating them as one category is how a disaster detector silences
+    itself at the moment of disaster -- and the sentence it prints stays literally true ("does
+    not look like our real construct"): it does not, because it is broken.
+
+    ⛔ `alert=False` is the wrong default for an ambiguous state whose two causes demand
+    opposite reactions. Pick the failure direction by cost: a false CATASTROPHE costs one manual
+    check, a false "decoy, nothing to see" costs the entire rollback window.
+
+    Discriminator, zero extra quota: a decoy scores zero CLEANLY (empty error_msg, parse and
+    upload flags set, no trigger-E hit), while a collapse scores zero WITH INJURY.
+    ⚠️ Trigger D (log ends before round 499) needs a log download and is deliberately NOT
+    consulted here; its absence is part of why AMBIGUOUS exists rather than a default.
+    """
+    e_hits = sum(int(r.get("harm_e") or 0) for r in rows)
+    bad_parse = sum(1 for r in rows if r.get("is_parse_log") not in (1, None))
+    bad_upload = sum(1 for r in rows if r.get("is_upload_log") not in (1, None))
+    have_flags = any(r.get("is_parse_log") is not None for r in rows)
+    injuries = []
+    if e_hits:
+        injuries.append("%d trigger-E hits (recorded a loss while ahead on coins)" % e_hits)
+    if bad_parse:
+        injuries.append("%d games with is_parse_log != 1" % bad_parse)
+    if bad_upload:
+        injuries.append("%d games with is_upload_log != 1" % bad_upload)
+    if errored_games:
+        injuries.append("%d games carried a non-empty error_msg and were filtered out upstream"
+                        % errored_games)
+    if injuries:
+        return ("CATASTROPHE", "; ".join(injuries))
+    if not have_flags and errored_games is None:
+        return ("AMBIGUOUS",
+                "harm signals unavailable in this corpus, so a decoy and a catastrophic "
+                "regression cannot be separated -- they require opposite responses")
+    return ("DECOY", "scores zero cleanly: no trigger-E hit, parse/upload flags healthy, "
+                     "no errored games")
+
+
 def era_looks_like_decoy(rows: Sequence[Mapping[str, Any]]) -> bool:
     """Does this era's own scoring look like something that is NOT our real construct?
 
@@ -310,6 +354,16 @@ def to_record(row: Mapping[str, Any]) -> dict[str, Any]:
         "our_net": int(mine.get("coin_num") or 0),
         "their_net": int(theirs.get("coin_num") or 0),
         "is_win": int(mine.get("is_win") or 0),
+        # Harm signals, all already on the game-list row so they cost no downloads. They exist
+        # to separate "the owner published a decoy" from "our real construct is broken", which
+        # look identical in the score alone and demand opposite responses.
+        "error_msg": row.get("error_msg") or "",
+        "is_parse_log": row.get("is_parse_log"),
+        "is_upload_log": row.get("is_upload_log"),
+        # Trigger E: the platform recorded a loss while our own coin count was higher. This is
+        # the signature that caught 235745 (ahead by 875 at round 330, recorded as a loss).
+        "harm_e": int(int(mine.get("is_win") or 0) == 0
+                      and int(mine.get("coin_num") or 0) > int(theirs.get("coin_num") or 0)),
     }
 
 
@@ -323,7 +377,8 @@ def wilson(k: int, n: int, z: float = 1.96) -> list[float]:
     return [max(0.0, c - h), min(1.0, c + h)]
 
 
-def judge(records: Sequence[Mapping[str, Any]], threshold: float | None) -> dict[str, Any]:
+def judge(records: Sequence[Mapping[str, Any]], threshold: float | None,
+          errored_games: int | None = None) -> dict[str, Any]:
     """Per-opponent estimate with a bootstrap CI over TEAMS, plus the decision gate."""
     usable = [r for r in records if is_contest(r["their_net"])]
     dropped = [r for r in records if not is_contest(r["their_net"])]
@@ -394,15 +449,33 @@ def judge(records: Sequence[Mapping[str, Any]], threshold: float | None) -> dict
         return out
     out["p_above_threshold"] = sum(1 for d in draws if d > threshold) / len(draws)
     if out["current_era_looks_like_decoy"]:
-        # A decoy's win rate is a TRUE reading of a MEANINGLESS quantity. Emitting ABOVE/BELOW
-        # here would invite a response to a deliberate configuration.
-        out["verdict"] = ("SUPPRESSED: the current era does not look like our real construct "
-                          "(median own score %s < %d). Its win rate measures whatever is on the "
-                          "public slot, not us, and the prelim has a separate submission channel, "
-                          "so it carries no standings information. Read the newest non-decoy era."
-                          % ((era_summary.get(cur) or {}).get("median_own_score"),
-                             DECOY_MEDIAN_SCORE_BELOW))
-        out["alert"] = False
+        med = (era_summary.get(cur) or {}).get("median_own_score")
+        kind, why = classify_zero_score_era(usable, errored_games)
+        out["zero_score_kind"] = kind
+        out["zero_score_why"] = why
+        if kind == "DECOY":
+            # A decoy's win rate is a TRUE reading of a MEANINGLESS quantity. Emitting
+            # ABOVE/BELOW would invite a response to a deliberate configuration.
+            out["verdict"] = ("SUPPRESSED (DECOY): median own score %s < %d and it scores zero "
+                              "cleanly -- %s. Measures whatever is on the public slot, not us, "
+                              "and the prelim has a separate submission channel, so it carries "
+                              "no standings information. Read the newest non-decoy era."
+                              % (med, DECOY_MEDIAN_SCORE_BELOW, why))
+            out["alert"] = False
+        elif kind == "CATASTROPHE":
+            out["verdict"] = ("⛔ CATASTROPHE: median own score %s < %d AND harm signals are "
+                              "present -- %s. This is NOT a decoy; the live construct appears "
+                              "broken. RECOMMEND ROLLBACK and run C/D/E before anything else."
+                              % (med, DECOY_MEDIAN_SCORE_BELOW, why))
+            out["alert"] = True
+        else:
+            out["verdict"] = ("AMBIGUOUS: median own score %s < %d. This is either a deliberate "
+                              "decoy or a catastrophic regression, and the two demand OPPOSITE "
+                              "responses -- %s. Run C/D/E before concluding. Alerting because "
+                              "a false catastrophe costs one manual check while a false 'decoy, "
+                              "nothing to see' costs the whole rollback window."
+                              % (med, DECOY_MEDIAN_SCORE_BELOW, why))
+            out["alert"] = True
         return out
     if ci[0] > threshold:
         out["verdict"] = "ABOVE the front-16 threshold (CI lower bound clears it)"
@@ -585,6 +658,13 @@ def cmd_poll(args: argparse.Namespace) -> int:
     sys.path.insert(0, str(ROOT / "sim"))
     import field_sample as fsmod                          # reuses the paged fetch
     rows = fsmod.all_games()
+    # keep_game DROPS games with a non-empty error_msg -- correct for a win-rate estimator, but
+    # it also makes that harm signal invisible, and dropping errored games biases the surviving
+    # sample HEALTHY. So count them separately for the catastrophe discriminator.
+    errored = sum(1 for r in rows
+                  if int(r.get("user_id2") or 0) == OUR_USER_ID
+                  and int(r.get("user_id") or 0) != OUR_USER_ID
+                  and r.get("error_msg"))
     fresh = [to_record(r) for r in rows if keep_game(r)]
     prior = {}
     if LEDGER.exists():
@@ -597,7 +677,7 @@ def cmd_poll(args: argparse.Namespace) -> int:
             added += 1
     records = [merged[k] for k in sorted(merged)]
     threshold, _ = read_threshold()
-    verdict = judge(records, threshold)
+    verdict = judge(records, threshold, errored_games=errored)
     hist = []
     if LEDGER.exists():
         try: hist = json.loads(LEDGER.read_text(encoding="utf-8")).get("threshold_history", [])
