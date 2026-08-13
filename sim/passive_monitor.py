@@ -380,10 +380,10 @@ def judge(records: Sequence[Mapping[str, Any]], threshold: float | None) -> dict
                                     "wins": sum(1 for m in by[t] if m > 0),
                                     "margins": sorted(by[t])} for t in teams},
         "loss_margins": sorted(m for v in by.values() for m in v if m <= 0),
-        "losses_within_1sd": sum(1 for v in by.values() for m in v if m <= 0
-                                 and abs(m) <= CHAOS_FLOOR_SD),
-        "losses_within_2sd": sum(1 for v in by.values() for m in v if m <= 0
-                                 and abs(m) <= 2 * CHAOS_FLOOR_SD),
+        "loss_extremity": [
+            {"margin": m, "sd_multiple": round(abs(m) / CHAOS_FLOOR_SD, 2),
+             "noise_frac_at_least_this_extreme": round(noise_tail(abs(m)), 3)}
+            for v in by.values() for m in v if m <= 0],
         "losses_total": sum(1 for v in by.values() for m in v if m <= 0),
         "near_tie_watch": {t: sorted(m for m in by.get(t, []) if abs(m) <= NEAR_TIE)
                            for t in WATCH if t in by},
@@ -411,20 +411,47 @@ def judge(records: Sequence[Mapping[str, Any]], threshold: float | None) -> dict
         out["verdict"] = "BELOW the front-16 threshold (CI upper bound is under it)"
         out["alert"] = True
     else:
-        need = teams_needed(rates, threshold)
+        proj = teams_needed(rates, threshold)
         step = 100.0 / max(1, len(rates))
-        out["teams_needed"] = need
+        out["teams_needed"] = proj[0] if proj else None
+        out["teams_needed_threshold_ceiling"] = proj[1] if proj else None
         out["grid_step_pp"] = step
+        if proj:
+            need, ceiling = proj
+            # ⚠️ CONDITIONAL, not a forecast: assumes the observed win/loss ratio continues AND
+            # that the threshold holds still. It does not -- it moved 75.08 -> 75.52 in 23
+            # minutes -- so the headroom to the point where this projection dies is printed
+            # alongside it. Without that, "clears at about 13 teams" reads as a promise.
+            proj_txt = ("Continuing at the observed rate, the lower bound clears at about %d "
+                        "teams -- but ONLY while the threshold stays at or below %.2f%%, and it "
+                        "is %.2f%% now, so the headroom is %.2fpp. This assumes a stationary "
+                        "threshold, which it is not, so it is a condition and not a forecast."
+                        % (need, 100 * ceiling, 100 * threshold,
+                           100 * (ceiling - threshold)))
+        else:
+            proj_txt = "No attainable team count clears it at the observed rate."
         out["verdict"] = (
             "UNDECIDED: threshold inside the CI. %s "
             "Grid step is %.2fpp (one team = 1/%d), and the CI lower bound is %.2fpp from the "
             "threshold -- so this can be a RESOLUTION statement rather than a standings one. "
-            "Passive games cannot be initiated, so it is a time constraint, not a quota one."
-            % (("Continuing at the observed win rate, the lower bound clears at about %d teams."
-                % need) if need else "No attainable team count clears it at the observed rate.",
-               step, len(rates), 100.0 * (threshold - ci[0])))
+            "Passive games arrive in per-opponent batches and cannot be initiated, so the "
+            "binding quantity is the NEW-TEAM arrival rate, for which we have no bound."
+            % (proj_txt, step, len(rates), 100.0 * (threshold - ci[0])))
         out["alert"] = False
     return out
+
+
+def noise_tail(abs_margin: float) -> float:
+    """Fraction of pure-noise games whose |margin| is at least this large.
+
+    Normal approximation on the measured chaos floor (sd ~245, sign-symmetric,
+    `src/CHANGELOG.md:5166`). ⚠️ The approximation is a MODEL: the floor's measured range is
+    +-700-1000, which is wider than a normal would put at these sd multiples, so this figure is
+    the conservative (smaller) tail. It exists to stop a 1.22 sd margin being reported as a
+    binary "outside the band".
+    """
+    z = abs_margin / CHAOS_FLOOR_SD
+    return math.erfc(z / math.sqrt(2))
 
 
 def teams_needed(rates: Sequence[float], threshold: float, cap: int = 60) -> int | None:
@@ -447,8 +474,10 @@ def teams_needed(rates: Sequence[float], threshold: float, cap: int = 60) -> int
         k = round(share * n)
         synth = [1.0] * k + [0.0] * (n - k)
         draws = sorted(sum(rng.choice(synth) for _ in synth) / n for _ in range(BOOTSTRAP))
-        if draws[int(0.025 * len(draws))] > threshold:
-            return n
+        lo = draws[int(0.025 * len(draws))]
+        if lo > threshold:
+            # `lo` is also the CEILING: any threshold above it means this n no longer clears.
+            return (n, lo)
     return None
 
 
@@ -610,12 +639,19 @@ def cmd_poll(args: argparse.Namespace) -> int:
     # move the verdict a whole notch.
     lt, lw = verdict.get("losses_total"), verdict.get("losses_within_1sd")
     if lt:
-        l2 = verdict.get("losses_within_2sd")
-        print("  losses %d: %d inside 1 sd (+-%d), %d inside 2 sd (+-%d) of the chaos floor: %s"
-              % (lt, lw, CHAOS_FLOOR_SD, l2, 2 * CHAOS_FLOOR_SD, verdict.get("loss_margins")))
-        if l2 == lt:
-            print("     ⇒ EVERY loss in this era is indistinguishable from a coin flip, so the")
-            print("       verdict is being held by noise, not by evidence of weakness.")
+        # Report HOW EXTREME each loss is, never a binary in-band/out-of-band call. A -299
+        # margin is 1.22 sd: calling it "outside the +-245 band" misleads exactly as much as
+        # calling it "inside", because what matters is that ~22% of pure-noise games are at
+        # least that extreme. Two scales are printed because the floor has two: sd 245 and a
+        # measured range of +-700-1000.
+        print("  losses %d, extremity against the chaos floor (sd %d, measured range +-700-1000):"
+              % (lt, CHAOS_FLOOR_SD))
+        for e in verdict.get("loss_extremity") or []:
+            print("     margin %+6d = %.2f sd  ->  about %.0f%% of pure-noise games are at least "
+                  "this extreme" % (e["margin"], e["sd_multiple"],
+                                    100 * e["noise_frac_at_least_this_extreme"]))
+        print("     ⇒ read as extremity, not as a verdict: a margin this ordinary cannot be")
+        print("       separated from a coin flip, so the standings verdict is held by noise.")
     append_series(verdict, threshold, verdict.get("threshold_read_at_utc") or "")
     print("  VERDICT: %s" % verdict["verdict"])
     # FAIL-CLOSED, printed to stdout next to the verdict: under cron, stderr is where alerts go
