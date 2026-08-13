@@ -93,20 +93,32 @@ CONSTRUCT_ERAS = [
     ("slot-2026-08-13-0756", dt.datetime(2026, 8, 13, 7, 56, 21, tzinfo=dt.timezone.utc)),
 ]
 
-#: Eras where the public slot deliberately carried something that is NOT our real construct.
-#: The owner published `idle.so` as an anti-leak decoy: "公测没有意义, 我不想把目前最强的放在公开位上".
-#: A decoy's win rate is a true reading of a meaningless quantity, so it must never be
-#: headlined as a strength estimate. The prelim has its own submission channel, so the public
-#: slot has no bearing on it either way.
+#: An era whose MEDIAN own-score falls below this is treated as not-our-real-construct.
+#: Measured separation is total at era granularity: the idle.so decoy era has median 0 while
+#: every real-construct era sits at 1951-2015, and at game granularity 92% of decoy games score
+#: under 100 against 0-1% of real ones. 300 sits in an empty gap, not on a boundary.
+DECOY_MEDIAN_SCORE_BELOW = 300
+
+#: Retained ONLY as an audit trail of decoy windows already observed. It is NOT the decoy test;
+#: `era_looks_like_decoy` is. The owner published idle.so as an anti-leak decoy: "公测没有意义,
+#: 我不想把目前最强的放在公开位上". A decoy's win rate is a true reading of a meaningless quantity,
+#: and the prelim has its own submission channel, so the public slot carries no standings
+#: information either way.
 DECOY_ERAS = {"idle-decoy-2026-08-12"}
 
 
 def live_boundary():
-    """The newest era boundary, read from the platform rather than from CONSTRUCT_ERAS.
+    """The newest era boundary AND the slot's artifact identity, read from the platform.
 
-    Returns (label, datetime) or None if unreachable. This exists because the list above is
-    hand-maintained and has now been stale twice; reading it live means a forgotten append
-    cannot silently mix two constructs into one pooled figure.
+    Returns (label, datetime, model_id) or None if unreachable. This exists because the era
+    list is hand-maintained and has now been stale twice; reading it live means a forgotten
+    append cannot silently mix two constructs into one pooled figure.
+
+    ⚠️ RESIDUAL, deliberately not fixed here: this returns only the NEWEST boundary. If TWO
+    publishes are missed, the middle one is still absent and the two constructs either side of
+    it still pool. The only backstop for that is the 08-12 visibility property -- a missing
+    entry shows up as an implausibly long era -- which is why CONSTRUCT_ERAS must be kept as an
+    append log even though the boundary is now read live. Do not delete old entries.
     """
     try:
         sys.path.insert(0, str(ROOT / "tools"))
@@ -123,32 +135,57 @@ def live_boundary():
                     if not raw:
                         return None
                     stamp = _ts(raw)
-                    return (f"live-{stamp:%Y-%m-%d-%H%M}", stamp)
+                    return (f"live-{stamp:%Y-%m-%d-%H%M}", stamp, entry.get("id"))
     except Exception:
         return None
     return None
 
 
-def sync_eras() -> str | None:
+def sync_eras() -> dict[str, Any]:
     """Append the live boundary if this file does not already know about it.
 
-    Prints loudly when it fires, because a firing means someone published without updating
-    the list and every era-split number computed before this call would have been wrong.
+    FAIL-CLOSED. Returns a status dict the caller MUST consult:
+      {"ok": bool, "appended": str|None, "reason": str|None}
+
+    If the platform cannot be read we do NOT proceed on the hard-coded list as though nothing
+    happened -- that reproduces exactly the exposure this function exists to close (stale list
+    -> confident verdict). The caller degrades the verdict to UNDECIDED and suppresses the
+    headline instead. A stderr warning is not enough: under cron, stderr is where alerts go to
+    die, which is why the caller prints the reason to stdout next to the VERDICT line.
     """
     live = live_boundary()
     if live is None:
-        print("  WARNING: could not read the public slot; era boundary may be stale",
-              file=sys.stderr)
-        return None
-    label, stamp = live
+        return {"ok": False, "appended": None,
+                "reason": "could not read the public slot; era boundary may be stale, so any "
+                          "era-split figure below could be pooling two constructs"}
+    label, stamp, model_id = live
     newest = CONSTRUCT_ERAS[-1][1]
     if stamp > newest + dt.timedelta(seconds=60):
         CONSTRUCT_ERAS.append((label, stamp))
         print(f"  *** ERA LIST WAS STALE: appended {label} ({stamp:%Y-%m-%dT%H:%M:%SZ}) "
-              f"from the live slot; the hard-coded newest was {newest:%Y-%m-%dT%H:%M:%SZ} ***",
-              file=sys.stderr)
-        return label
-    return None
+              f"from the live slot; the hard-coded newest was {newest:%Y-%m-%dT%H:%M:%SZ} ***")
+        return {"ok": True, "appended": label, "reason": None, "model_id": model_id}
+    return {"ok": True, "appended": None, "reason": None, "model_id": model_id}
+
+
+def era_looks_like_decoy(rows: Sequence[Mapping[str, Any]]) -> bool:
+    """Does this era's own scoring look like something that is NOT our real construct?
+
+    A PREDICATE on observed behaviour, not a lookup in a name list. The first version of this
+    guard kept a hand-maintained set of era LABELS, which was wrong twice over: it repeated the
+    "list as truth" mistake this module warns about elsewhere, and it was inversely coupled to
+    the live boundary read -- `sync_eras()` mints labels like `live-YYYY-MM-DD-HHMM`, which can
+    never match a hand-written label, so the more reliable the live read got, the more certainly
+    a NEW decoy publish would escape classification and be reported as a standings verdict.
+
+    Artifact identity would be the ideal discriminator, but `get_model_list_4` exposes only the
+    upsert slot id (278135, constant across publishes) and `updated_at`, so it cannot separate a
+    decoy from a real construct. Behaviour can: idle.so does nothing and scores 0.
+    """
+    scores = [int(r.get("our_net") or 0) for r in rows if r.get("our_net") is not None]
+    if len(scores) < 5:
+        return False
+    return st.median(scores) < DECOY_MEDIAN_SCORE_BELOW
 
 
 #: earliest era boundary: games before this are a different player entirely (about 18x slower)
@@ -175,7 +212,20 @@ def era_of(created_at) -> str:
 def current_era() -> str:
     return CONSTRUCT_ERAS[-1][0]
 TEST_USER_IDS = frozenset({2, 3, 4})
-NEAR_TIE = 150
+#: A margin this small means the game could plausibly have gone the other way.
+#: ⚠️ MUST track the chaos floor, not a round number. `src/CHANGELOG.md:5166` measures the
+#: value-neutral per-game sd at ~245 gold with a symmetric sign, so the old 150 was NARROWER
+#: THAN THE COIN: a watcher built for "this could have been the other result" had a bandwidth
+#: below one sd, so a -299 game -- indistinguishable from noise -- was booked as a clean defeat
+#: and never surfaced. That is exactly what hid the only loss in the current era.
+#: If anyone re-measures the floor, this constant must move with it; the two are a pair.
+CHAOS_FLOOR_SD = 245          # src/CHANGELOG.md:5166
+#: ⭐ Set to 2 sd, not 1, because 1 sd DOES NOT CATCH THE CASE THAT MOTIVATED THE WIDENING:
+#: the only loss in the current era is -299, which is 1.22 sd, so a 245 bandwidth still books it
+#: as a clean defeat. Two-sided p for 1.22 sd is about 0.22 -- comfortably consistent with a coin
+#: flip -- so the envelope that makes this watcher do its job is 2 sd. Checking that a proposed
+#: fix catches the case that prompted it is the cheap step that would otherwise be skipped.
+NEAR_TIE = 2 * CHAOS_FLOOR_SD
 #: opponents that have ever beaten us in the passive condition
 WATCH = ("1", "rikka", "君の仿瓷")
 BOOTSTRAP = 20000
@@ -290,6 +340,9 @@ def judge(records: Sequence[Mapping[str, Any]], threshold: float | None) -> dict
         rr = [sum(1 for m in v if m > 0) / len(v) for v in b.values()]
         era_summary[name] = {"games": len(rows), "teams": len(b),
                              "per_opponent": (sum(rr) / len(rr)) if rr else None,
+                             "looks_like_decoy": era_looks_like_decoy(rows),
+                             "median_own_score": (st.median([int(r.get("our_net") or 0) for r in rows])
+                                                  if rows else None),
                              "losses": {t: sorted(v) for t, v in b.items() if any(m <= 0 for m in v)}}
     usable = by_era.get(cur, [])
     by: dict[str, list[int]] = defaultdict(list)
@@ -311,6 +364,8 @@ def judge(records: Sequence[Mapping[str, Any]], threshold: float | None) -> dict
     ci = [draws[int(0.025 * len(draws))], draws[int(0.975 * len(draws))]]
     out: dict[str, Any] = {
         "current_era": cur, "by_construct_era": era_summary,
+        "current_era_looks_like_decoy": bool(
+            (era_summary.get(cur) or {}).get("looks_like_decoy")),
         "n_teams": len(teams), "n_games": n_games,
         "excluded_broken": len(dropped),
         "excluded_broken_detail": [{"opponent": r["opponent"], "their_net": r["their_net"],
@@ -324,6 +379,12 @@ def judge(records: Sequence[Mapping[str, Any]], threshold: float | None) -> dict
         "per_opponent_detail": {t: {"n": len(by[t]),
                                     "wins": sum(1 for m in by[t] if m > 0),
                                     "margins": sorted(by[t])} for t in teams},
+        "loss_margins": sorted(m for v in by.values() for m in v if m <= 0),
+        "losses_within_1sd": sum(1 for v in by.values() for m in v if m <= 0
+                                 and abs(m) <= CHAOS_FLOOR_SD),
+        "losses_within_2sd": sum(1 for v in by.values() for m in v if m <= 0
+                                 and abs(m) <= 2 * CHAOS_FLOOR_SD),
+        "losses_total": sum(1 for v in by.values() for m in v if m <= 0),
         "near_tie_watch": {t: sorted(m for m in by.get(t, []) if abs(m) <= NEAR_TIE)
                            for t in WATCH if t in by},
     }
@@ -332,6 +393,17 @@ def judge(records: Sequence[Mapping[str, Any]], threshold: float | None) -> dict
         out["alert"] = False
         return out
     out["p_above_threshold"] = sum(1 for d in draws if d > threshold) / len(draws)
+    if out["current_era_looks_like_decoy"]:
+        # A decoy's win rate is a TRUE reading of a MEANINGLESS quantity. Emitting ABOVE/BELOW
+        # here would invite a response to a deliberate configuration.
+        out["verdict"] = ("SUPPRESSED: the current era does not look like our real construct "
+                          "(median own score %s < %d). Its win rate measures whatever is on the "
+                          "public slot, not us, and the prelim has a separate submission channel, "
+                          "so it carries no standings information. Read the newest non-decoy era."
+                          % ((era_summary.get(cur) or {}).get("median_own_score"),
+                             DECOY_MEDIAN_SCORE_BELOW))
+        out["alert"] = False
+        return out
     if ci[0] > threshold:
         out["verdict"] = "ABOVE the front-16 threshold (CI lower bound clears it)"
         out["alert"] = True
@@ -339,11 +411,45 @@ def judge(records: Sequence[Mapping[str, Any]], threshold: float | None) -> dict
         out["verdict"] = "BELOW the front-16 threshold (CI upper bound is under it)"
         out["alert"] = True
     else:
-        out["verdict"] = ("UNDECIDED: threshold inside the CI. Needs roughly %d teams; "
-                          "passive games cannot be initiated, so this is a time constraint."
-                          % TARGET_TEAMS)
+        need = teams_needed(rates, threshold)
+        step = 100.0 / max(1, len(rates))
+        out["teams_needed"] = need
+        out["grid_step_pp"] = step
+        out["verdict"] = (
+            "UNDECIDED: threshold inside the CI. %s "
+            "Grid step is %.2fpp (one team = 1/%d), and the CI lower bound is %.2fpp from the "
+            "threshold -- so this can be a RESOLUTION statement rather than a standings one. "
+            "Passive games cannot be initiated, so it is a time constraint, not a quota one."
+            % (("Continuing at the observed win rate, the lower bound clears at about %d teams."
+                % need) if need else "No attainable team count clears it at the observed rate.",
+               step, len(rates), 100.0 * (threshold - ci[0])))
         out["alert"] = False
     return out
+
+
+def teams_needed(rates: Sequence[float], threshold: float, cap: int = 60) -> int | None:
+    """Smallest team count whose bootstrap lower bound clears the threshold, at the OBSERVED rate.
+
+    Replaces a hard-coded TARGET_TEAMS = 25, which was a guess and overstated the wait by about
+    2x: at the observed 11-of-12 the lower bound clears at 13 teams, not 25. Twenty-five is only
+    required if the losing share doubles.
+
+    ⚠️ This is a CONDITIONAL projection, not a forecast. It assumes the observed win/loss ratio
+    continues AND that the threshold holds still -- and the threshold moved 75.21 -> 75.08 within
+    eight minutes, so any threshold above the returned point's lower bound invalidates it.
+    """
+    if not rates:
+        return None
+    won = sum(1 for r in rates if r > 0.5)
+    share = won / len(rates)
+    rng = random.Random(SEED)
+    for n in range(len(rates) + 1, cap + 1):
+        k = round(share * n)
+        synth = [1.0] * k + [0.0] * (n - k)
+        draws = sorted(sum(rng.choice(synth) for _ in synth) / n for _ in range(BOOTSTRAP))
+        if draws[int(0.025 * len(draws))] > threshold:
+            return n
+    return None
 
 
 def paired_bias() -> dict[str, Any]:
@@ -409,11 +515,44 @@ def read_threshold() -> tuple[float | None, list[dict[str, Any]]]:
         return None, []
 
 
+#: Append-only, de-timed, TRACKED summary. `sim/reports/` is gitignored, so the threshold
+#: series -- which we have already ruled must always carry its read timestamp because it is a
+#: moving target -- otherwise lives only in an uncommitted file, and `logs/` has been purged
+#: twice already. Timing fields are excluded so that a dirty diff means a finding changed.
+SERIES = ROOT / "sim" / "passive_series.jsonl"
+
+
+def append_series(verdict: dict[str, Any], threshold: float | None, read_at: str) -> None:
+    row = {
+        "utc": read_at,
+        "threshold": threshold,
+        "era": verdict.get("current_era"),
+        "n_teams": verdict.get("n_teams"),
+        "n_games": verdict.get("n_games"),
+        "per_opponent": verdict.get("per_opponent_rate"),
+        "ci95": verdict.get("bootstrap_ci95_over_teams"),
+        "verdict": (verdict.get("verdict") or "").split(":")[0],
+        "looks_like_decoy": verdict.get("current_era_looks_like_decoy"),
+    }
+    prior = []
+    if SERIES.exists():
+        prior = [ln for ln in SERIES.read_text(encoding="utf-8").splitlines() if ln.strip()]
+    # append only when a FINDING changed; identical consecutive rows would train the reader
+    # to ignore the file, which is the noise-fatigue failure filed on 08-12.
+    key = {k: v for k, v in row.items() if k != "utc"}
+    if prior:
+        last = json.loads(prior[-1])
+        if {k: v for k, v in last.items() if k != "utc"} == key:
+            return
+    with open(SERIES, "a", encoding="utf-8") as fh:
+        fh.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
+
+
 def cmd_poll(args: argparse.Namespace) -> int:
     # Read the era boundary from the platform BEFORE splitting anything. A publish that never
     # got appended to CONSTRUCT_ERAS silently pools two constructs, which produced a confident
     # and wrong BELOW verdict on 08-13.
-    sync_eras()
+    era_status = sync_eras()
     sys.path.insert(0, str(ROOT / "sim"))
     import field_sample as fsmod                          # reuses the paged fetch
     rows = fsmod.all_games()
@@ -465,20 +604,32 @@ def cmd_poll(args: argparse.Namespace) -> int:
         print("  threshold history: %s -> %s (%+.2fpp)"
               % (", ".join("%.4f" % h["threshold"] for h in hist[-4:]),
                  hist[-1]["utc"][:16], 100 * (hist[-1]["threshold"] - hist[0]["threshold"])))
+    # Losses inside the chaos floor: a per-opponent rate is binary, so it books a -299 and a
+    # -1400 as the same event and throws away the difference between "lost inside the noise"
+    # and "was actually beaten". At n=12 the grid step is 8.33pp, so one coin-flip game can
+    # move the verdict a whole notch.
+    lt, lw = verdict.get("losses_total"), verdict.get("losses_within_1sd")
+    if lt:
+        l2 = verdict.get("losses_within_2sd")
+        print("  losses %d: %d inside 1 sd (+-%d), %d inside 2 sd (+-%d) of the chaos floor: %s"
+              % (lt, lw, CHAOS_FLOOR_SD, l2, 2 * CHAOS_FLOOR_SD, verdict.get("loss_margins")))
+        if l2 == lt:
+            print("     ⇒ EVERY loss in this era is indistinguishable from a coin flip, so the")
+            print("       verdict is being held by noise, not by evidence of weakness.")
+    append_series(verdict, threshold, verdict.get("threshold_read_at_utc") or "")
     print("  VERDICT: %s" % verdict["verdict"])
-    # A decoy era's win rate is a TRUE reading of a MEANINGLESS quantity. The owner published
-    # idle.so to stop leaking the real construct, so of course it loses; headlining that as a
-    # standings verdict would provoke a response to a deliberate configuration.
-    if verdict.get("current_era") in DECOY_ERAS:
-        print("  ⛔ HEADLINE SUPPRESSED: the current era is a DECOY (idle.so, published to")
-        print("     avoid leaking the real construct). Its win rate measures the decoy, not us,")
-        print("     and the prelim has a separate submission channel, so it carries no")
-        print("     standings information. Read the newest NON-decoy era below instead.")
+    # FAIL-CLOSED, printed to stdout next to the verdict: under cron, stderr is where alerts go
+    # to die, and proceeding on a stale era list is the exposure this whole change exists to close.
+    if not era_status.get("ok"):
+        print("  ⛔ BOUNDARY UNVERIFIED -- treat the verdict as UNDECIDED regardless of the text")
+        print("     above: %s" % era_status.get("reason"))
+    if verdict.get("current_era_looks_like_decoy"):
         real = [(nm, es) for nm, es in (verdict.get("by_construct_era") or {}).items()
-                if nm not in DECOY_ERAS and es.get("per_opponent") is not None]
+                if not es.get("looks_like_decoy") and es.get("per_opponent") is not None]
         if real:
             nm, es = real[-1]
-            print("     newest real construct: %s -> per-opponent %.1f%% (%d teams, %d games)"
+            print("     newest era that DOES look like our real construct: %s -> per-opponent "
+                  "%.1f%% (%d teams, %d games)"
                   % (nm, 100 * es["per_opponent"], es["teams"], es["games"]))
     for team, near in (verdict.get("near_tie_watch") or {}).items():
         if near:
