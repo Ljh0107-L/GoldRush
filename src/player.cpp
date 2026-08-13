@@ -302,7 +302,7 @@ GameOutput decide(const GameInput* in) {
 
     GameOutput out;                              // 全字段必写, 免 SAFE_OUT 拷贝
 
-#if defined(__AVX512F__)
+#if defined(__AVX512CD__) && defined(__AVX512VPOPCNTDQ__)
     // 载入与 permute 与单位无关 ⇒ 每轮一次(只提 4 条指令, 不改循环结构)
     const int* rawp_ = (const int*)in->visible_npcs;
     const __m512i r0_ = _mm512_loadu_si512((const void*)rawp_);
@@ -311,6 +311,17 @@ GameOutput decide(const GameInput* in) {
         r0_, _mm512_setr_epi32(1,4,7,10,13,16,19, 31,31,31,31,31,31,31,31,31), r1_);
     const __m512i cl_ = _mm512_permutex2var_epi32(
         r0_, _mm512_setr_epi32(2,5,8,11,14,17,20, 31,31,31,31,31,31,31,31,31), r1_);
+    // 同格计数与单位无关 ⇒ 每轮一次。VPCONFLICTD: conflict[i] = {j<i: key_j==key_i} 位集,
+    // popcount >= 2 ⇔ 该槽是其格的第 3 次及以后出现 —— 与逐单位 valignq 前缀 OR 链逐位同义
+    // (同格 ⇒ 同窗口状态, 故「先计数后开窗」与「先开窗后计数」等价)。
+    // key = (row<<5)|col; 无效槽 (-1,-1) → 0xFFFFFFFF 与任何真实格不同; permute 填充槽 7
+    // (恒 0 = 格(0,0)的 key)只处在最后一位, conflict 只看更早通道 ⇒ 不污染任何真实槽,
+    // 且 0x7F 掩码使它自身永不入选。
+    const __m256i key_ = _mm256_or_si256(
+        _mm256_slli_epi32(_mm512_castsi512_si256(rw_), 5), _mm512_castsi512_si256(cl_));
+    const __mmask8 is3_ = _mm256_mask_cmpge_epu32_mask(
+        (__mmask8)0x7F, _mm256_popcnt_epi32(_mm256_conflict_epi32(key_)),
+        _mm256_set1_epi32(2));
 #endif
 
     for (int u = 0; u < 2; ++u) {
@@ -380,10 +391,12 @@ GameOutput decide(const GameInput* in) {
             const Position& teammate = in->my_units[1 - u];
             const Position& enemy = in->visible_enemies[0];
             const Position& blocker = enemy.row >= 0 ? enemy : teammate;
+#if !(defined(__AVX512CD__) && defined(__AVX512VPOPCNTDQ__))
             unsigned ti = (unsigned)(blocker.row - sr + 2);
             unsigned tj = (unsigned)(blocker.col - sc + 2);
             if (__builtin_expect((ti < 5u) & (tj < 5u), 0))
                 bd |= 1ULL << (8u * (ti + 1u) + tj);
+#endif
 
             // 踩踏规避: 3 个 NPC 与我方单位同格即触发 trample_events(实测 npc_count 恒为 3)。
             // 2026-08-13 的 15 局 vs T-1: 我方被踩 94 次 / T-1 18 次, 而 68% 的事件发生在
@@ -393,40 +406,30 @@ GameOutput decide(const GameInput* in) {
             // ---- AVX-512: 一次吃掉全部 7 个 NPC 槽, **零新增分支** ----
             // 为什么必须无分支: 平台两轮间隔 350ms, 分支预测器每轮清空 ⇒ 逐槽的
             // `if (在窗内)` 每轮都从零猜。前一版(标量带分支)实测 +45ns, 拆开是
-            // 指令 13.4ns + **分支 31.6ns**; 本版把后者整个消掉(条件跳转数 = base 的 13)。
+            // 指令 13.4ns + **分支 31.6ns**; 本版把后者整个消掉(条件跳转数 11, 比 base 的 13 还少 2 —— 玩家阻挡分支也并了进来)。
             // NpcInfo = {int id; int row; int col} ⇒ 7 槽 = 21 个 int, row 在 1,4,7,10,13,16,19。
             //   * permutex2var 跨两个源寄存器一次抽出全部 row/col —— stride-3 字段的唯一便宜解法;
             //     ⚠ 它的索引是**两源拼接的 0..31**(0-15 取 a, 16-31 取 b), 写成 "16+16" 会越界
             //     折回成 0 ⇒ 第 6/7 槽会取到 id 字段当行号。该 bug 只在这两槽可见且落窗内时显影,
             //     三图里只有一图报 2/500 —— 只跑一图会静默过关。
             //   * maskz_sllv_epi64 一条指令完成「8 通道变量移位 + 无效槽清零」= one-hot 生成。
-#if defined(__AVX512F__)
+#if defined(__AVX512CD__) && defined(__AVX512VPOPCNTDQ__)
             {
-                __m512i ni = _mm512_sub_epi32(rw_, _mm512_set1_epi32(sr - 2));
-                __m512i nj = _mm512_sub_epi32(cl_, _mm512_set1_epi32(sc - 2));
+                // 玩家阻挡者(敌优先/否则队友)注入 lane 7 —— 该槽本是 permute 填充位。
+                // lane 7 的种子掩码位恒 1(阈值 1 语义), 与 NPC 槽的 is3_ 语义并行不悖;
+                // 这替掉了旧标量路径的 ti/tj + unlikely 分支(每单位 1 个数据相关分支)。
+                __m512i rwu = _mm512_mask_set1_epi32(rw_, (__mmask16)0x80, blocker.row);
+                __m512i clu = _mm512_mask_set1_epi32(cl_, (__mmask16)0x80, blocker.col);
+                __m512i ni = _mm512_sub_epi32(rwu, _mm512_set1_epi32(sr - 2));
+                __m512i nj = _mm512_sub_epi32(clu, _mm512_set1_epi32(sc - 2));
                 const __m512i V5 = _mm512_set1_epi32(5);
-                __mmask16 kv = (__mmask16)(_mm512_cmplt_epu32_mask(ni, V5)
-                                         & _mm512_cmplt_epu32_mask(nj, V5) & 0x7F);
+                __mmask16 k1_ = _mm512_mask_cmplt_epu32_mask((__mmask16)((unsigned)is3_ | 0x80u), ni, V5);
+                __mmask16 kv = _mm512_mask_cmplt_epu32_mask(k1_, nj, V5);
                 __m512i idx = _mm512_add_epi32(
                     _mm512_slli_epi32(_mm512_add_epi32(ni, _mm512_set1_epi32(1)), 3), nj);
                 __m512i i64 = _mm512_cvtepu32_epi64(_mm512_castsi512_si256(idx));
                 __m512i oh = _mm512_maskz_sllv_epi64((__mmask8)kv, _mm512_set1_epi64(1), i64);
-                // 阈值 3 的计数看似是顺序扫描、不可向量化 —— 其实可以: 用 valignq 做
-                // **通道前缀 OR**, excl_i = OR_{j<i} oh_j ⇒ `oh & excl` 就是「该位第 2 次
-                // 出现」; 对它再做一次即得第 3 次出现。valignq 取立即数移位量, 故这一步
-                // **不吃 .rodata**(索引常量才吃)。
-                const __m512i Z = _mm512_setzero_si512();
-                __m512i y = oh;
-                y = _mm512_or_si512(y, _mm512_alignr_epi64(y, Z, 7));
-                y = _mm512_or_si512(y, _mm512_alignr_epi64(y, Z, 6));
-                y = _mm512_or_si512(y, _mm512_alignr_epi64(y, Z, 4));
-                __m512i d2 = _mm512_and_si512(oh, _mm512_alignr_epi64(y, Z, 7));
-                __m512i y2 = d2;
-                y2 = _mm512_or_si512(y2, _mm512_alignr_epi64(y2, Z, 7));
-                y2 = _mm512_or_si512(y2, _mm512_alignr_epi64(y2, Z, 6));
-                y2 = _mm512_or_si512(y2, _mm512_alignr_epi64(y2, Z, 4));
-                __m512i d3 = _mm512_and_si512(oh, _mm512_alignr_epi64(y2, Z, 7));
-                bd |= (uint64_t)_mm512_reduce_or_epi64(d3);
+                bd |= (uint64_t)_mm512_reduce_or_epi64(oh);
             }
 #else
             uint64_t n1_ = 0, n2_ = 0;
