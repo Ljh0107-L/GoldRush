@@ -7,7 +7,8 @@
 // 每个单位每轮从 48 条候选路径中选一条：
 //   * 32 条三步路径、12 条两步加 STAY、4 条一步加双 STAY；
 //   * 所有踏入格都位于当前 5x5 视野内，且不立即掉头、不重复踩格；
-//   * 先剔除越界、墙、炸弹、雾和一个玩家占位（可见敌人优先），再按金币档位收敛候选；
+//   * 先剔除越界、墙、炸弹、雾、一个玩家占位（可见敌人优先）和已聚集 3 个 NPC 的格
+//     （3 个 NPC 同格即触发踩踏罚金），再按金币档位收敛候选；
 //   * 平手时优先向本单位锚点靠拢，再按表序选择覆盖面更大的路径。
 //
 // 金币只在成功踏入格子时结算，因此 STAY、撞墙和折返重踩都会浪费步数。完整路径在打分前
@@ -367,6 +368,24 @@ GameOutput decide(const GameInput* in) {
             unsigned tj = (unsigned)(blocker.col - sc + 2);
             if (__builtin_expect((ti < 5u) & (tj < 5u), 0))
                 bd |= 1ULL << (8u * (ti + 1u) + tj);
+
+            // 踩踏规避: 3 个 NPC 与我方单位同格即触发 trample_events(实测 npc_count 恒为 3)。
+            // 2026-08-13 的 15 局 vs T-1: 我方被踩 94 次 / T-1 18 次, 而 68% 的事件发生在
+            // 决策时该格「已经」蹲着 >=3 个 NPC ⇒ 当轮输入就够, 无需预测 NPC 走位。
+            // n1/n2 是「已见过 1 次 / 2 次」的格集合; 第三个 NPC 落到同格时直接进阻挡图,
+            // 复用既有 rclr 定长剪枝 —— 整条经过该格的路径被免费剔掉。
+            uint64_t n1 = 0, n2 = 0;
+            for (int i = 0, nn = in->num_visible_npcs; i < nn; ++i) {
+                const Position& np = in->visible_npcs[i].pos;
+                unsigned ni = (unsigned)(np.row - sr + 2);   // 不可见 NPC 为 (-1,-1),
+                unsigned nj = (unsigned)(np.col - sc + 2);   // 无符号回绕后必然越界, 无需另判
+                if ((ni < 5u) & (nj < 5u)) {
+                    uint64_t b = 1ULL << (8u * (ni + 1u) + nj);
+                    bd |= n2 & b;                            // 第 3 个及以后 ⇒ 达阈值
+                    n2 |= n1 & b;
+                    n1 |= b;
+                }
+            }
         }
 
         // ---- 剔除会撞上当前阻挡、炸弹或边界的路径 ----
@@ -423,7 +442,7 @@ GameOutput decide(const GameInput* in) {
 }  // namespace
 
 // moveDecision 的入口需保持在已验证的 mod64=0x10 档。修改函数体后必须在赛事机构建并重校。
-asm(".space 180, 0x90");
+asm(".space 196, 0x90");
 
 extern "C" GameOutput moveDecision(const GameInput* input) {
     try {
