@@ -288,12 +288,20 @@ python3 tools/arena.py quota          # 只读。剩余 = daily_initiate_limit -
 - **探测自由，动用须所有者批准。** 不是「剩余 20 局冻结」（那是 `run_rikka_batch.py` 的本地 `RESERVE`）。
 - ⛔ **必须读 `today_initiated`，不要数 `get_game_list_1` 的行数** —— 列表含别人挑战我方的局，那些**不占配额**（曾因此差 28 局）。
 
-### 7.2 `publish` 后必做四项后验
+### 7.2 `publish` 后必做的后验
 
-1. `model_id` 仍是 **278135**(upsert,不应新建)
+1. `model_id` 仍是 **278135**(upsert,不应新建)—— 查 `get_model_list_4` 里 `user_id=220` 的条目**只有一条**
 2. `updated_at` 已更新到 publish 时刻
-3. 平台侧 SHA256 与落库产物一致
-4. 记录 `user_cost1` 与读取时刻
+3. 记录 `user_cost1` 与读取时刻(**publish 前也要记一次**,否则没有对照)
+4. 记录**被发布产物的 sha256** 与**它对应的源码 commit** —— 这是本地台账,不是平台对账,见下
+
+> 🔴 **原第 3 项「平台侧 SHA256 与落库产物一致」已删除:它\*不可执行\***(2026-08-13 实测)。
+> `tools/arena.py` **没有取回已发布产物的接口**,平台的 `get_model_list_4` 只返回
+> `id / stage / user_id / lang / name / created_at / updated_at / user_name_cn`,**不含任何摘要字段**。
+> ⇒ **`publish` 是单向通道:发上去之后无法读回比对。**
+> ⭐ 按本仓军规「凡『知道规则就能避免』的防线一律视为无效防线」,一条**无法执行**的检查比没有更坏 ——
+> 它会让人以为对过账了。**唯一可得的替代是本地台账**:把「发布时刻 · 产物 sha256 · 源码 commit」
+> 三者同址记进 CHANGELOG,使「平台上跑的是哪一版」可由时间线反推。
 
 ### 7.3 ⚠️ `user_cost1`(榜显那个延迟数)的用法禁令
 
