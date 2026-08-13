@@ -644,7 +644,7 @@ scan/target/route 在保语义下可达节省约90-160条，即13.1-23.3ns、**1
 > **后果（三条，逐条照实）**：
 > 1. **`-cold` 一直在测 hot** ⇒ **任何以「`tests/bench.cpp -cold` 的数据已冷」为前提的归档结论
 >    一律作废、必须重测**。⚠ 复核规则（别把范围放大也别缩小）：**先查那个数出自哪台台架** ——
->    `tests/latency_bench.cpp:102-110` 与 `tests/tail_path_bench.cpp:146-153` 的 evictor 是
+>    `tests/latency_bench.cpp:102-110` 与 `tail_path_bench.cpp:146-153`(已移出工作树,git 历史可取)的 evictor 是
 >    **`volatile` + 有读**（源码可核），**不受本 DSE 影响**，所以历史文 `docs/LATENCY_VALIDATION.md`
 >    （已移出工作树，git 历史）的 `310ns` 与 `CHANGELOG` §本线的诚实天花板 的 16 MiB thrash 结论**不在作废范围内**；
 >    作废的是**走 `bench -cold` 这条配对/抗漂移主通道**取的冷态数。
@@ -718,7 +718,7 @@ python3 tests/dump_inputs.py logs/game_X.log   # -> .bin 供 bench
 > 等所有者决定再提交；**本批注只登记配方，不动 `tests/bench.cpp` 一个字符。**
 > 1. **把逐出缓冲标 `volatile`**（`volatile char g_junk[...]`），使那些存储成为**可观察副作用**
 >    ⇒ `-O2` 的死存储消除不再能删它。（加 `asm volatile("" ::: "memory")` 或改成读-改-写也可 ——
->    `tests/latency_bench.cpp:102-110` / `tests/tail_path_bench.cpp:146-153` 走的就是后一条路 ——
+>    `tests/latency_bench.cpp:102-110` / `tail_path_bench.cpp`(已移出工作树)走的就是后一条路 ——
 >    但 `volatile` 最短，且可被 `size -A` 直接验收。）
 > 2. **足迹改成 env 可选：`THRASH_KB`**。理由是实测代价：**逐出整个 32 MiB L3 要约 5×10⁹ 次存储/批**
 >    （量具卡 `GOLD-0812`），而 Zen4 上**只清 L1+L2 仅需约 2 MiB** ⇒ **默认不要用 L3 档**，
@@ -726,7 +726,7 @@ python3 tests/dump_inputs.py logs/game_X.log   # -> .bin 供 bench
 > 3. **验收（缺一不可）**：修复后 `size -A` 的 **`.bss` = 33,554,464 字节**（缓冲活了，对照病态时的 **16**），
 >    且**效应立刻出现** —— 落库构型的数据冷惩罚 **map1 +30ns / map2 +50ns / map3 +30ns**
 >    （量具卡 `GOLD-0812`，同块配对，rflogs 9 日志，n=12 块×3 图）。
-> ⚠ **未受影响的量具**：`tests/latency_bench.cpp` 与 `tests/tail_path_bench.cpp` 的 evictor 本来就是
+> ⚠ **未受影响的量具**：`tests/latency_bench.cpp` 与已移出的 `tail_path_bench.cpp` 的 evictor 本来就是
 > `volatile` + 有读，**它们的数据逐出是真的**；**但它们与 `bench` 的绝对值不可互搬**
 > （口径见 git 历史中的 `docs/LATENCY_VALIDATION.md`：本机绝对值 ≠ 平台 cost）。
 

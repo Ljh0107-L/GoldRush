@@ -94,7 +94,6 @@ python3 sim/calibrate_views.py --repo . --maps sim/maps.json \
 | `maps.json` | 三张公测地图 |
 | `maps_unknown.json` | 陌生图注册表 |
 | `maps_final_photos.json` | 三张历史决赛截图的墙体复刻（无热点元数据） |
-| `final_photo_benchmark.json` | 现役构型在复刻图上的 i5 座位配对结果 |
 | `validate.py` | 一键权威验收 |
 | `calibrate_*.py` | 从官方日志重建标定报告 |
 | `probe/` | 满视野观测探针 |

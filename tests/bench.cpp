@@ -32,7 +32,7 @@ struct GameOutput { int actions[6]; int k; int order; int vp; };
 // 且 `-cold` 与 hot 墙钟同为 0.00s、P50 读数完全相同。`-cold2` 的数据那一半同样是死的
 // (它只逐出 I-cache/BTB, 因为 icacheThrash 是外部调用、删不掉)。
 // ⇒ 凡靠本文件 `-cold` 得出的"冷态"结论一律作废需重测; `tests/latency_bench.cpp` 与
-//   `tests/tail_path_bench.cpp` 的逐出器是 `volatile` 且有读, **不在作废范围内**。
+//   `tail_path_bench.cpp`(已移出工作树, git 历史可取)的逐出器是 `volatile` 且有读, **不在作废范围内**。
 // 修法两点: ① `volatile` 使写成为可观察副作用, 消除不掉;
 //          ② 足迹用环境变量 `THRASH_KB` 可选 —— 逐出整个 32MiB L3 一次战役需 ~5e9 次
 //             存储(不可行), 而 Zen4 逐出 L1d(32KiB)+L2(1MiB) 只需约 2MiB。

@@ -134,7 +134,7 @@ python3 sim/cli.py ... --jobs 8
 | `sim/abi.py` | `GameInput` 字节布局断言 |
 | `sim/maps.json` | 三张公测地图 |
 | `sim/maps_unknown.json` | 陌生图注册表（初赛换图） |
-| `sim/maps_final_photos.json` · `final_photo_benchmark.json` | 历史照片重建的终局图（**仅墙体几何,无 token-2 热点元数据** ⇒ 只能做几何比较）+ 其 i5 基准 |
+| `sim/maps_final_photos.json` | 历史照片重建的终局图（**仅墙体几何,无 token-2 热点元数据** ⇒ 只能做几何比较）|
 | `sim/GENERATION.md` | 金币生成机制实测(公测期) |
 | `sim/OPPONENTS.md` | 对手画像与逆向方法 |
 | `sim/make_unknown_maps.py` · `audit_unknown_maps.py` | 生成陌生图并审计构型在其上的行为 |
@@ -218,11 +218,10 @@ ssh Ubiquant220@8.153.76.120 'ls -la /share/data.tar.gz'   # 13.4MB
 ### 5.3 相关工具
 
 ```bash
-tests/latency_bench.cpp        # TSC 台架
+tests/latency_bench.cpp        # TSC 台架(hot/cold/cold2 三档; ⚠ cold 对「冷读 vs 冷代码」无分辨力)
 tests/tsc_calibrate.cpp        # TSC 频率标定(实测 2.699993 GHz)
-tests/icount.cpp               # 同流动态指令计数(perf_event_open,需赛事机)
-tests/tail_path_bench.cpp      # 按路径分层的延迟
-tests/analyze_latency.py       # 分析
+tests/icount.cpp               # 同流动态指令数与 cycles(perf_event_open,需赛事机; 验收量是 cycles)
+# 战役期一次性台架(tail_path_bench/analyze_latency 等)已移出工作树, 取用: git log --diff-filter=D
 ```
 
 ---
@@ -377,10 +376,10 @@ python3 tools/arena.py quota          # 只读。剩余 = daily_initiate_limit -
 
 ### 9.3 逆向方法(可复用)
 
-**方法一:零配额,从归档重建**
+**方法一:零配额,从归档重建**(脚本已随战役移出工作树,方法与产物保留)
 ```bash
-python3 sim/analyze_opponents.py            # 生成 sim/OPPONENTS.md
-python3 sim/analyze_gold_delta.py           # 用 100% 完整的 gold 通道做归因
+git show 0fe9264^:sim/analyze_opponents.py > /tmp/ao.py    # 生成 sim/OPPONENTS.md 的原脚本
+git show 0fe9264^:sim/analyze_gold_delta.py > /tmp/ag.py   # gold 通道归因
 ```
 用 per-unit `gold` 逐轮差分 + 逐轮 `cost`,可以在**不花一局**的情况下重建对手的收入率、进账轮频率、延迟分布。
 
@@ -424,55 +423,24 @@ python3 sim/probe/archive_logs.py --help
 
 ## 11. 现役构型的事实(不含评价)
 
-`src/player.cpp`,**构型 `0ac0a5b`(2026-08-12,单构型;`chv.cpp` 已于 `762bb3c` 退役)**。
-本节只列**可从源码直接回源**的行为参数;所有延迟/收入读数见下方「无当期读数」。
+`src/player.cpp`,**构型 R14(commit `862ee58`,2026-08-13;单构型)**。
+算法流程 = 其头注释;各器官的实测价值与交付台账 = `src/CHANGELOG.md` 对应节。
 
 | 行为参数 | 值 | 回源 |
 |---|---|---|
-| 地图知识 | **无指纹、无烘焙墙表、无专用路线** —— 所有图按陌生图处理 | 头注释 + `grep -c BAKED src/player.cpp` = 0 |
-| 视野 | **仅第 0 轮买一次 9×9(`vp = 2`)**,其余轮 `vp = 0` | `player.cpp:220` `if (in->round == 0) g_s.vp_buy = 2;` |
-| 墙体学习 | 在线学可见墙;`round >= 8` 且两锚点均已观测 ⇒ **`SETTLED` 永久退场** | `player.cpp:221-226` |
-| 锚点 | 与地图无关的中央分驻点 `(6,8)` / `(11,8)`;若为墙则 `fixAnchor` 改到最近已知可通行格 | `player.cpp:54-58,182-192` |
-| 开局行军 | `round < 8` 且本单位视野内无金 ⇒ 用**已学墙** BFS 走向本单位锚点 | `player.cpp:229-264,413-414` |
-| 选路 | 每单位每轮从 **48 条候选**(L32 三步 / S12 两步+STAY / O4 一步+双STAY)选一条 | 头注释 + `PathT` |
-| 打分 | 面值**分档**(1-3 / 4-8 / 9+)三轮无分支收敛;平手先「不背离锚点」,再按表序(覆盖面降序) | `player.cpp:383-406` |
-| 阻挡 | 单角色阻挡槽,**优先可见敌人**,否则队友;整条路径预筛,`cand == 0` ⇒ STAY | `player.cpp:361-381` |
-| 步数分配 / order | 固定 3+3(`k = 3`);`order` = 持金多者先动 | `player.cpp:417-418` |
-| 入口对齐 | `asm(".space 180, 0x90")`,目标档 `mod64 = 0x10` | `player.cpp:425-426` |
+| 地图知识 | **无指纹、无烘焙墙表** —— 所有图按陌生图处理,在线学墙,`round>=8` 且两锚点确认后**永久退场** | 头注释 + `grep -c BAKED` = 0 |
+| 视野 | 仅第 0 轮买一次 9×9,其余 `vp=0` | `learnVisibleWalls` 尾部 |
+| 选路 | 每单位每轮 48 条候选(L32/S12/O4),面值分档三轮 cmov 收敛,平手先「不背离锚点」 | `PathT` + `decide` |
+| 阻挡 | 墙/弹/雾/越界 + 单玩家槽(敌优先) + **已聚 3 个 NPC 的格**(踩踏罚金) | `bd` 构建段 |
+| NPC 判定 | `vpconflictd` 同格计数(每轮一次,阈值 3),玩家阻挡者注入 permute 填充槽 lane 7 —— **零新增分支** | AVX-512 块注释 |
+| 步数/order | 固定 3+3;order = 持金多者先动 | `decide` 尾部 |
+| 入口对齐 | 死垫锁 `mod64 = 0x10`(垫长与体积耦合,改后必查 `nm`) | 文件尾 `asm(".space …")` |
 
-它读 `GameInput` **十个字段中的五个**:`round` · `grid` · `my_units` · `my_units_gold` · `visible_enemies`。
-`gold_opp` · `num_visible_npcs` · `visible_npcs` · `snapshot_valid` · `snapshot`(每若干轮免费给出五个区域的余量等六字段)**均未读取**
-(`grep -c snapshot src/player.cpp` = 0,`grep -c visible_npcs` = 0,`grep -c gold_opp` = 0)。
+它读 `GameInput` 十字段中的**七个**:`round`·`grid`·`my_units`·`my_units_gold`·`visible_enemies`·`num_visible_npcs`·`visible_npcs`。
+`gold_opp`·`snapshot_valid`·`snapshot` 未读取。
 
-> ✅ **当期读数(2026-08-13,15 局 vs T-1,逐局串行,gid `257198`–`257287`)**:
-> **P50 150 / P90 260**(逐图 P90 290/220/220)· 对 T-1 **ΔP50 −10ns 三图一致** · 先手率 **56.7%** ·
-> margin **+31.7 ± 82.5(7胜8负)**,其中 **map3 −145.4 ± 53.1 = 2.74σ 是唯一显著项** ·
-> **`.text` 3536 B / `.rodata` 2560 B** · `mod64 = 0x10` ✅ · FP16 = 0 ✅。
-> 全文见 `src/CHANGELOG.md`「现役 `0ac0a5b` 首次平台实测」节。**同流指令仍未测。**
-> ⛔ **口径陷阱(本批判例)**:剔 r0-r3 均值我方 183.3 **快过** T-1 188.5,而全轮均值我方 211.4
-> **慢过** 193.6 —— 符号由「含不含预热轮」决定,而榜显 `user_cost1` = 历史平均 ⇒ **吃的是全轮**。
->
-> ⛔ **以下仍未测**:
-> - 最近的谱系读数在 `src/CHANGELOG.md`「选路器换代(2026-08-12,`sweep-planner` 线)」:
->   平台 27-30 局,cost 中位 **165/160/180ns**、P90 **257.5/210/225**(ledger `2026-08-11T19:03:05Z`)。
->   ⚠️ **它测的是换代提交 `7839b32` 当时的构型**;其后 `player.cpp` 又有 **11 次提交
->   (10 次触及代码 + 1 次纯注释)、全部晚于该 ledger**(清单见 CHANGELOG 现役档案谱系表)。
->   其中 `PV_RTAB` / `PV_ACTOR` 有各自的读数,**但 HEAD 这个组合从未被整体实测**
->   ⇒ **任何单节读数都不得当作 `0ac0a5b` 的读数**。
-> - **同流动态指令数**(`tests/icount.cpp`,需 Gold)—— 本批只做平台侧,未测。
-> - **开局那 14.5μs 的\*分解\***:已定位到 r0-r8 的 `learnVisibleWalls` / `planOpeningMove`,
->   但「冷调用 vs 指令数」未做单变量干预 ⇒ 只知在哪,不知贵在什么。
->
-> ✅ **已闭合(2026-08-13)**:`sim/final_photo_benchmark.json` 的源码↔产物对应关系原记为存疑
-> (它只 pin 了 `.so` sha)。本次在 Gold 重建 HEAD 的 `player.cpp`,得到**逐字节相同**的
-> `1e4998c5…` ⇒ **该基准确系 HEAD 源码所出**。但它仍是**几何比较**——照片图无热点元数据(其自带 `limitation`)。
-
-**器官清单**(在 `src/CHANGELOG.md` 有各自的实测价值):锚点定位 · 48 条候选路径枚举 · 面值分档打分 ·
-整条路径通行预筛 · 单槽阻挡(敌优先) · 开局 BFS 行军 · 在线墙学习 + 锚点定型后退场 · 入口预取 · 死垫对齐。
-> ⚠️ 已随 `dbdcbdb` / `sweep-planner` 换代**退场**的旧器官(勿再按现役引用):三图指纹锁墙表 ·
-> LUT 三步导向 · 受阻自愈 `pass01`/`steerStep`/`escapeStep` · 跨轮炸弹表与每 20 轮重采样 · 富度门避弹。
-
----
+**当期平台读数(2026-08-13 多窗交错,gid 见 CHANGELOG 各节)**:P50 **130-140** · 对 T-1 配对 ΔP50 **−10~−30** ·
+先手 54-71% · 踩踏 −43%(6.3→3.4-4.2/局)。⚠️ 绝对值不可跨窗引用;T-1 已于 08-13T08:47Z 换代(变慢),对它的定价按被动局通道持续更新。
 
 ## 12. 交接中的制品
 
@@ -493,11 +461,9 @@ git show 0fe9264^:sim/reports/narrow_table_equivalent.diff
 | `tail_width_wave.diff` | 已验证、未落库;`pair_diff` 0/500,ΔP50 = 0 |
 | `r1_table_reentry.diff` | 已判负,含一个真实缺陷的说明(尾段检查读了错单位的位图) |
 
-**当前状态**(2026-08-12):`src/player.cpp` 行为 = **`0ac0a5b`**(陌生图策略,单构型)。
-⚠️ **公开位状态本地不可验证** —— 上一次记录是 `model_id 278135` / `updated_at 2026-08-10T08:20:18Z`,
-但那早于本轮全部落库。**读之前先重查**:`python3 tools/arena.py opponents`(看我方位的 `updated_at`)。
-⇒ 按 §7.2,若 HEAD 尚未 publish,则**平台上跑的不是这份代码**;而 `CHANGELOG` 的
-「落库 ≠ 交付」一条写明:不 publish,增益对名次的贡献严格为 0。
+**当前状态**(2026-08-13):`src/player.cpp` = **R14**(`862ee58`),公开位与之同源
+(publish `2026-08-13T07:56:21Z`,`.text` sha 对账见 CHANGELOG 交付台账)。
+读「平台上跑的是哪版」永远以**交付台账时间线**为准 —— publish 是单向通道,发上去读不回来(§7.2)。
 
 ---
 
