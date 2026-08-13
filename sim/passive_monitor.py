@@ -650,6 +650,36 @@ def append_series(verdict: dict[str, Any], threshold: float | None, read_at: str
         fh.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
 
 
+#: The rebuild path is the ONLY route to a rollback artifact, because D.17 forbids keeping .so
+#: in the working tree. Measured 2026-08-13: base_ref.so rebuilds from fd47ea6 in 0.617s and the
+#: end-to-end path takes 3.8s, reproducing sha256 f66471636a528d33 byte for byte. That makes
+#: "rollback is executable at any time" true -- but ONLY while the build host is reachable with
+#: the right compiler.
+#: ⇒ An unmonitored single point is discovered unusable at the moment of the disaster. A
+#: detector's failure mode is silence and silence reads as good news, so this probe alerts on
+#: failure rather than staying quiet. It does NOT build: liveness plus compiler version only.
+BUILD_HOST = "Ubiquant220@8.153.76.120"
+BUILD_GXX = "14.3.1"
+
+
+def rebuild_path_alive(timeout: int = 12) -> dict[str, Any]:
+    """Very light liveness probe of the rollback rebuild path. No compile, no quota."""
+    import subprocess  # noqa: PLC0415
+    try:
+        r = subprocess.run(
+            ["ssh", "-o", "BatchMode=yes", f"-o=ConnectTimeout={timeout}",
+             BUILD_HOST, "g++ --version | head -1"],
+            capture_output=True, text=True, timeout=timeout + 8)
+    except Exception as exc:
+        return {"ok": False, "reason": f"ssh failed: {type(exc).__name__}"}
+    if r.returncode != 0:
+        return {"ok": False, "reason": f"ssh exit {r.returncode}: {(r.stderr or '').strip()[:80]}"}
+    ver = (r.stdout or "").strip()
+    if BUILD_GXX not in ver:
+        return {"ok": False, "reason": f"compiler drifted: expected {BUILD_GXX}, got {ver[:60]}"}
+    return {"ok": True, "version": ver}
+
+
 def cmd_poll(args: argparse.Namespace) -> int:
     # Read the era boundary from the platform BEFORE splitting anything. A publish that never
     # got appended to CONSTRUCT_ERAS silently pools two constructs, which produced a confident
@@ -732,6 +762,13 @@ def cmd_poll(args: argparse.Namespace) -> int:
                                     100 * e["noise_frac_at_least_this_extreme"]))
         print("     ⇒ read as extremity, not as a verdict: a margin this ordinary cannot be")
         print("       separated from a coin flip, so the standings verdict is held by noise.")
+    # Rollback-path liveness. Printed next to the verdict, and it ALERTS on failure: the
+    # rebuild path is the only route to a rollback artifact under D.17.
+    rb = rebuild_path_alive()
+    if not rb.get("ok"):
+        print("  ⛔ ROLLBACK PATH UNREACHABLE -- the rebuild host is the only route to a")
+        print("     rollback artifact (D.17 keeps no .so in the tree). %s" % rb.get("reason"))
+        print("     ⇒ we currently have NO rollback capability. Fix before relying on triggers.")
     append_series(verdict, threshold, verdict.get("threshold_read_at_utc") or "")
     print("  VERDICT: %s" % verdict["verdict"])
     # FAIL-CLOSED, printed to stdout next to the verdict: under cron, stderr is where alerts go
