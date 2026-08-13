@@ -2,7 +2,7 @@
 //
 // 所有地图都按未知地图处理：源码不保存地图指纹、墙表或专用路线。策略只使用当前视野在线学习
 // 静态墙体，并在第 0 轮购买一次 9x9 视野。开局前 8 轮若局部无金，则根据已知墙体在线 BFS
-// 前往两个中央锚点；之后继续懒学习墙体，但不再运行开局行军。
+// 前往两个中央锚点；开局结束且两个锚点均已确认可通行后，墙体学习永久退场。
 //
 // 每个单位每轮从 48 条候选路径中选一条：
 //   * 32 条三步路径、12 条两步加 STAY、4 条一步加双 STAY；
@@ -37,10 +37,12 @@ constexpr uint64_t WM = 0x1F1F1F1F1F00ULL;  // 有效位(字节 1..5 的低 5 �
 constexpr int WSELF = 26;
 constexpr int WSENT = 45;                   // 哨兵格位(WM 恒不含它 ⇒ thru[45]=0 恒无收敛)
 
+enum LearnMode : uint8_t { SETTLED = 0, ANCHOR_PENDING = 1, OPENING = 2 };
+
 struct alignas(64) State {
     uint32_t bpw[N + 2];     // 在线学到的墙体与边界哨兵(bit c+1)
     int16_t last_round;
-    uint8_t opening;         // 前 8 轮允许在无金时执行 BFS 行军
+    uint8_t learn_mode;
     uint8_t vp_buy;          // 本轮 vp 输出，也标记上一轮是否购买了 9x9
     int8_t anch_r[2], anch_c[2];
     uint32_t seen[N];        // 已观测静态地形的格子(bit c+1)
@@ -216,7 +218,12 @@ void learnVisibleWalls(const GameInput* in) {
         fixAnchor(0); fixAnchor(1);
     }
     if (in->round == 0) g_s.vp_buy = 2;
-    if (in->round >= 8) g_s.opening = 0;
+    if (in->round >= 8) {
+        g_s.learn_mode = SETTLED;
+        for (int u = 0; u < 2; ++u)
+            if (!(g_s.seen[g_s.anch_r[u]] >> (g_s.anch_c[u] + 1) & 1u))
+                g_s.learn_mode = ANCHOR_PENDING;
+    }
 }
 
 __attribute__((noinline, cold))
@@ -277,16 +284,18 @@ GameOutput decide(const GameInput* in) {
         memset(&g_s, 0, sizeof(g_s));
         g_s.bpw[0] = g_s.bpw[N + 1] = ~0u;
         for (int r = 0; r < N; ++r) g_s.bpw[r + 1] = 0xFFFC0001u;
-        g_s.opening = 1;
+        g_s.learn_mode = OPENING;
         for (int u = 0; u < 2; ++u) {
             g_s.anch_r[u] = (int8_t)(ANCH_R0 + ANCH_DR * u); g_s.anch_c[u] = (int8_t)ANCH_C;
         }
     }
     g_s.last_round = (int16_t)in->round;
 
-    bool new_view = !(g_s.visited[in->my_units[0].row] >> (in->my_units[0].col + 1) & 1u)
-                 || !(g_s.visited[in->my_units[1].row] >> (in->my_units[1].col + 1) & 1u);
-    if (__builtin_expect(g_s.opening || new_view, 0)) learnVisibleWalls(in);
+    if (__builtin_expect(g_s.learn_mode == OPENING
+            || (g_s.learn_mode == ANCHOR_PENDING
+                && (!(g_s.visited[in->my_units[0].row] >> (in->my_units[0].col + 1) & 1u)
+                 || !(g_s.visited[in->my_units[1].row] >> (in->my_units[1].col + 1) & 1u))), 0))
+        learnVisibleWalls(in);
 
     GameOutput out;                              // 全字段必写, 免 SAFE_OUT 拷贝
 
@@ -401,7 +410,7 @@ GameOutput decide(const GameInput* in) {
         acts[1] = (int)((a6 >> 3) & 7u);
         acts[2] = (int)((a6 >> 6) & 7u);
 
-        if (__builtin_expect(g_s.opening && !g1, 0))
+        if (__builtin_expect(g_s.learn_mode == OPENING && !g1, 0))
             planOpeningMove(u, sr, sc, acts);
     }
 
@@ -414,7 +423,7 @@ GameOutput decide(const GameInput* in) {
 }  // namespace
 
 // moveDecision 的入口需保持在已验证的 mod64=0x10 档。修改函数体后必须在赛事机构建并重校。
-asm(".space 212, 0x90");
+asm(".space 180, 0x90");
 
 extern "C" GameOutput moveDecision(const GameInput* input) {
     try {
