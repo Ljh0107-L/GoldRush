@@ -58,8 +58,7 @@ less docs/QUOTA.md                             # 每日配额探测(只读接口
 ## 2. 仓库地图
 
 ```
-src/player.cpp        现役策略实现(C++,单文件)
-src/chv.cpp           现役速度构型
+src/player.cpp        现役策略实现(C++,单文件,唯一构型)
 src/INFRA.md          成本模型:指令→ns→金币的换算与测量协议
 src/CHANGELOG.md      版本谱系 + 全部判负记录 + 军规(想读结论时看这里)
 AGENT.md              作战手册:平台操作、配额规程、当前状态
@@ -135,6 +134,7 @@ python3 sim/cli.py ... --jobs 8
 | `sim/abi.py` | `GameInput` 字节布局断言 |
 | `sim/maps.json` | 三张公测地图 |
 | `sim/maps_unknown.json` | 陌生图注册表（初赛换图） |
+| `sim/maps_final_photos.json` · `final_photo_benchmark.json` | 历史照片重建的终局图（**仅墙体几何,无 token-2 热点元数据** ⇒ 只能做几何比较）+ 其 i5 基准 |
 | `sim/GENERATION.md` | 金币生成机制实测(公测期) |
 | `sim/OPPONENTS.md` | 对手画像与逆向方法 |
 | `sim/make_unknown_maps.py` · `audit_unknown_maps.py` | 生成陌生图并审计构型在其上的行为 |
@@ -416,35 +416,72 @@ python3 sim/probe/archive_logs.py --help
 
 ## 11. 现役构型的事实(不含评价)
 
-`src/player.cpp`,构型 `fd47ea6`,产物 `.text` sha256 `a24f33d417206634…`。
+`src/player.cpp`,**构型 `0ac0a5b`(2026-08-12,单构型;`chv.cpp` 已于 `762bb3c` 退役)**。
+本节只列**可从源码直接回源**的行为参数;所有延迟/收入读数见下方「无当期读数」。
 
-| 量 | 值 |
-|---|---|
-| 平台干净延迟(42 局 / 20,336 轮 / 逐局串行) | **P50 190ns / P90 290ns** |
-| 榜显 `user_cost1` | 290-295 |
-| 无争抢采集(probeobs,map1) | **2182.4** |
-| 同流动态指令 | 约 800 |
-| `.text` / `.rodata` | 5267 B / 1360 B |
-| 视野 | **不买**(`vp = 0`,5×5) |
-| 步数分配 | 固定 3+3 |
+| 行为参数 | 值 | 回源 |
+|---|---|---|
+| 地图知识 | **无指纹、无烘焙墙表、无专用路线** —— 所有图按陌生图处理 | 头注释 + `grep -c BAKED src/player.cpp` = 0 |
+| 视野 | **仅第 0 轮买一次 9×9(`vp = 2`)**,其余轮 `vp = 0` | `player.cpp:220` `if (in->round == 0) g_s.vp_buy = 2;` |
+| 墙体学习 | 在线学可见墙;`round >= 8` 且两锚点均已观测 ⇒ **`SETTLED` 永久退场** | `player.cpp:221-226` |
+| 锚点 | 与地图无关的中央分驻点 `(6,8)` / `(11,8)`;若为墙则 `fixAnchor` 改到最近已知可通行格 | `player.cpp:54-58,182-192` |
+| 开局行军 | `round < 8` 且本单位视野内无金 ⇒ 用**已学墙** BFS 走向本单位锚点 | `player.cpp:229-264,413-414` |
+| 选路 | 每单位每轮从 **48 条候选**(L32 三步 / S12 两步+STAY / O4 一步+双STAY)选一条 | 头注释 + `PathT` |
+| 打分 | 面值**分档**(1-3 / 4-8 / 9+)三轮无分支收敛;平手先「不背离锚点」,再按表序(覆盖面降序) | `player.cpp:383-406` |
+| 阻挡 | 单角色阻挡槽,**优先可见敌人**,否则队友;整条路径预筛,`cand == 0` ⇒ STAY | `player.cpp:361-381` |
+| 步数分配 / order | 固定 3+3(`k = 3`);`order` = 持金多者先动 | `player.cpp:417-418` |
+| 入口对齐 | `asm(".space 180, 0x90")`,目标档 `mod64 = 0x10` | `player.cpp:425-426` |
 
-它读 `GameInput` 九个字段中的四个;`snapshot`(每若干轮免费给出五个区域的余量等六字段)、`visible_enemies`、`visible_npcs`、`gold_opp` **均未读取**(`grep -ci snapshot src/player.cpp` = 0)。
+它读 `GameInput` **十个字段中的五个**:`round` · `grid` · `my_units` · `my_units_gold` · `visible_enemies`。
+`gold_opp` · `num_visible_npcs` · `visible_npcs` · `snapshot_valid` · `snapshot`(每若干轮免费给出五个区域的余量等六字段)**均未读取**
+(`grep -c snapshot src/player.cpp` = 0,`grep -c visible_npcs` = 0,`grep -c gold_opp` = 0)。
 
-**器官清单**(在 `src/CHANGELOG.md` 有各自的实测价值):锚点定位 · LUT 三步导向 · 位图通行验证 · 受阻自愈 · 富度门避弹 · 三图指纹锁墙表 + 陌生图懒学习兜底 · 每 20 轮炸弹表重采样 · 死垫对齐。
+> ⛔ **无当期读数(按本仓军规,缺构型 hash 或日期的数不得用于定价)**:
+> `0ac0a5b` 的 **P50 / P90 / `.text` / `.rodata` / 同流指令 / 平台 margin 全部尚未测**。
+> - 最近的谱系读数在 `src/CHANGELOG.md`「选路器换代(2026-08-12,`sweep-planner` 线)」:
+>   平台 27-30 局,cost 中位 **165/160/180ns**、P90 **257.5/210/225**(ledger `2026-08-11T19:03:05Z`)。
+>   ⚠️ **它测的是换代提交 `7839b32` 当时的构型**;其后 `player.cpp` 又有 **11 次提交
+>   (10 次触及代码 + 1 次纯注释)、全部晚于该 ledger**(清单见 CHANGELOG 现役档案谱系表)。
+>   其中 `PV_RTAB` / `PV_ACTOR` 有各自的读数,**但 HEAD 这个组合从未被整体实测**
+>   ⇒ **任何单节读数都不得当作 `0ac0a5b` 的读数**。
+> - 唯一与 HEAD 同期的在库定量制品:`sim/final_photo_benchmark.json`(i5、`latency_related: false`、
+>   对手 `stay`、30 配对种子/图)。⚠️ 它 pin 的是**产物 `.so` 的 sha256**(`1e4998c5…`,与本地
+>   `src/player.so` 一致),**未记录源码↔产物的对应关系** ⇒ 按 §4.3,不能据此断言它测的就是 HEAD 的
+>   `player.cpp`;且其自带 `limitation` 声明照片图**只有墙体几何、无热点元数据** ⇒ **是几何比较,不是收入重建**。
+> ⇒ **交付前必须在 Gold 上补**:`.text`/`.rodata` 尺寸 · `nm` 入口 `mod64` 重校(垫长与代码体积耦合) ·
+> FP16 计数 · 同流指令 · 平台内窗交错 P50/P90。
+
+**器官清单**(在 `src/CHANGELOG.md` 有各自的实测价值):锚点定位 · 48 条候选路径枚举 · 面值分档打分 ·
+整条路径通行预筛 · 单槽阻挡(敌优先) · 开局 BFS 行军 · 在线墙学习 + 锚点定型后退场 · 入口预取 · 死垫对齐。
+> ⚠️ 已随 `dbdcbdb` / `sweep-planner` 换代**退场**的旧器官(勿再按现役引用):三图指纹锁墙表 ·
+> LUT 三步导向 · 受阻自愈 `pass01`/`steerStep`/`escapeStep` · 跨轮炸弹表与每 20 轮重采样 · 富度门避弹。
 
 ---
 
 ## 12. 交接中的制品
 
-`sim/reports/` 下,每份带「已测 / 未测 / 缺陷」头部:
+> ⛔ **本节三份制品均已\*不再适用于现役构型\***(2026-08-12 更正)。
+> 它们全部是 `fd47ea6` 时代 **LUT 三步导向**底盘上的补丁,而该底盘已在 `sweep-planner` 换代
+> (48 条候选路径枚举)中整块退场 —— HEAD 里 `grep -c SLut src/player.cpp` = **0**。
+> ⇒ **不得直接施用**;若要复活其中的*机制*,须在新底盘上重新实现并重新过门。
 
-| 文件 | 状态 |
+`sim/reports/` **已不在工作树**(`.gitignore` + `0fe9264` 精简),取用走 git 历史:
+
+```bash
+git show 0fe9264^:sim/reports/narrow_table_equivalent.diff
+```
+
+| 文件 | 当时状态(条件域 = `fd47ea6` 底盘) |
 |---|---|
 | `narrow_table_equivalent.diff` | 已过三门(`pair_diff` 0/500×三图 + 49/49 LUT 格 · `.rodata` 不变 · 指令低于基线);**符号取决于优化哪个统计量**,详见文件头 |
 | `tail_width_wave.diff` | 已验证、未落库;`pair_diff` 0/500,ΔP50 = 0 |
 | `r1_table_reentry.diff` | 已判负,含一个真实缺陷的说明(尾段检查读了错单位的位图) |
 
-**当前状态**:`src/player.cpp` 行为 = `fd47ea6`,公开位未变更(`model_id 278135`,`updated_at 2026-08-10T08:20:18Z`)。
+**当前状态**(2026-08-12):`src/player.cpp` 行为 = **`0ac0a5b`**(陌生图策略,单构型)。
+⚠️ **公开位状态本地不可验证** —— 上一次记录是 `model_id 278135` / `updated_at 2026-08-10T08:20:18Z`,
+但那早于本轮全部落库。**读之前先重查**:`python3 tools/arena.py opponents`(看我方位的 `updated_at`)。
+⇒ 按 §7.2,若 HEAD 尚未 publish,则**平台上跑的不是这份代码**;而 `CHANGELOG` 的
+「落库 ≠ 交付」一条写明:不 publish,增益对名次的贡献严格为 0。
 
 ---
 

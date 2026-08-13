@@ -10,8 +10,7 @@ HANDOFF.md            规则事实 · 工具用法 · 数据在哪
 README.md             本页
 
 src/
-  player.cpp          现役全能军队（头注释 = 算法流程）
-  chv.cpp             现役速度构型
+  player.cpp          现役唯一构型 · 陌生图策略（头注释 = 算法流程）
   game_api.h          官方接口头
   INFRA.md            平台成本模型（含 .so 身份表与回滚判据）
   CHANGELOG.md        版本史 · 负结果 · 军规
@@ -20,6 +19,8 @@ sim/                  本地模拟器（不建模延迟）
   cli.py / engine.py  跑局
   validate.py         保真度套件
   maps.json           三张公测图
+  maps_unknown.json   陌生图注册表（初赛换图）
+  maps_final_photos.json  历史照片重建的终局图（仅墙体几何，无热点元数据）
   probe/              满视野观测探针
 tests/                pair_diff · verify_construct · 延迟台架
 tools/                arena.py（含 quota）· gamelog.py
