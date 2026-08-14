@@ -84,7 +84,11 @@ constexpr SctT SCT;
 //     ⇒ ctz 天然偏好扫得更开的那条, 平局裁决不必再比长度
 struct PathT {
     uint64_t thru[46];       // 格位 → 踏入该格的路径集合(bit p); 45 = 哨兵, 恒 0
-    uint64_t cell[48];       // 路径 → 各格位掩码 | (动作 a0|a1<<3|a2<<6) << 52
+    uint16_t act[48];        // 路径 → 动作码 a0|a1<<3|a2<<6。运行期只用得到这 9 位:
+                             // 旧表 cell[48] 每条存 64 位(格位掩码 | 动作<<52) = 384B/6 行,
+                             // 而格位掩码只在 constexpr 构造期用于生成 thru/reach。压成
+                             // uint16 后 96B/2 行, 冷失效行数 -4.5, 且仍是一条独立 load
+                             // (并行度不变 —— candC 判例: 数据侧不能拿并行度换行数)。
     uint64_t towR[3], towC[3];  // **可分**方位项: 行/列各按 sgn(想去 − 现在)+1 索引, 语义 = 「不后退」
     int8_t sgi[41];          // sgn(x)+1 查表, 索引 x+20 (x ∈ [-20,20]; 锚点最远 |Δ|=16)
     uint64_t reach;          // 可踏入的格集(20 格: 曼1/2/3; 不含自己与曼4 四角)
@@ -95,7 +99,7 @@ struct PathT {
                              // 存 clamp*17 而非 clamp: 读汇编发现每行都在用 mov+shl+add 现算
                              // ×17, 5 行 × 2 单位全是纯乘法。表宽 21→42 B 换掉它们(-20.6 条/轮)。
     constexpr PathT()
-        : thru(), cell(), towR(), towC(), sgi(), reach(0), rowok(), colok(), rclr(), rcl() {
+        : thru(), act(), towR(), towC(), sgi(), reach(0), rowok(), colok(), rclr(), rcl() {
         int n = 0;
         int prmn[48] = {}, prmx[48] = {}, pcmn[48] = {}, pcmx[48] = {};
         for (int fam = 0; fam < 4; ++fam) {      // 0=L单调 1=L折回 2=S 3=O
@@ -132,7 +136,7 @@ struct PathT {
                         unsigned a6 = 0;                           // 尾部补 STAY
                         for (int s = 0; s < 3; ++s)
                             a6 |= (unsigned)(s < len ? aa[s] : STAY) << (3 * s);
-                        cell[n] = cm | ((uint64_t)a6 << 52);
+                        act[n] = (uint16_t)a6;
                         reach |= cm;
                         prmn[n] = rmn; prmx[n] = rmx; pcmn[n] = cmn; pcmx[n] = cmx;
                         // 可分方位项: 「不朝反方向退」。比 tow[] 宽松(允许该轴零进展),
@@ -171,7 +175,7 @@ struct PathT {
 };
 constexpr PathT PT;
 constexpr uint64_t ALLP = (1ULL << 48) - 1;
-static_assert(PT.cell[47] != 0, "48 条候选未生成满");
+static_assert(PT.act[47] != 0, "48 条候选未生成满");
 static_assert((PT.reach & ~WM) == 0, "可踏入格必须落在窗口有效位内");
 static_assert(PT.thru[WSENT] == 0, "哨兵格位必须无路径");
 static_assert(PT.thru[WSELF] == 0, "自己所在格不可被踏入(零重踏由构造保证)");
@@ -234,10 +238,14 @@ void learnVisibleWalls(const GameInput* in) {
 __attribute__((noinline, cold))
 void planOpeningMove(int u, int sr, int sc, int* acts) {
     // 只把在线学到的墙视为阻挡；尚未看见的格子按可通行处理。
-    int start = sr * N + sc;
-    int goal = g_s.anch_r[u] * N + g_s.anch_c[u];
+    // 格编码用 (r<<5)|c 而非 r*17+c。两者在 r,c ∈ [0,16] 上一一对应, 出队顺序、par 内容、
+    // 回溯路径逐位不变；差别只在还原 r/c 的指令: 原写法是**真 idiv**(Zen4 14-20cy, 不流水)。
+    // 成因是 `cold` 属性让 GCC 对本函数按尺寸优化, 2 字节的 idiv 胜过魔数乘法序列 ——
+    // 出队循环每弹一格付 1 条, 回溯循环另有 5 条(见 objdump: base.so 全部 6 条 idiv 都在这里)。
+    int start = (sr << 5) | sc;
+    int goal = (g_s.anch_r[u] << 5) | g_s.anch_c[u];
     if (start == goal) return;
-    uint8_t par[N * N];
+    uint8_t par[N << 5];
     uint16_t q[N * N];
     uint32_t vis[N] = {};
     int head = 0, tail = 0;
@@ -245,38 +253,39 @@ void planOpeningMove(int u, int sr, int sc, int* acts) {
     vis[sr] |= 1u << sc;
     while (head < tail && q[head] != goal) {
         int cur = q[head++];
-        int r = cur / N, c = cur % N;
+        int r = cur >> 5, c = cur & 31;
         for (int a = 0; a < 4; ++a) {
             int nr = r + DR[a], nc = c + DC[a];
             if ((unsigned)nr >= (unsigned)N || (unsigned)nc >= (unsigned)N) continue;
             if (wallbit(nr, nc) || (vis[nr] >> nc & 1)) continue;
             vis[nr] |= 1u << nc;
-            par[nr * N + nc] = (uint8_t)a;
-            q[tail++] = (uint16_t)(nr * N + nc);
+            par[(nr << 5) | nc] = (uint8_t)a;
+            q[tail++] = (uint16_t)((nr << 5) | nc);
         }
     }
     if (head >= tail) return;                    // 当前知识下不可达时保留主管线动作
-    int seq[3 * 3];                              // 全程回溯，环形保存起点侧前 3 步
-    int n = 0;
+    int seq[16];                                 // 全程回溯，环形保存起点侧前 3 步
+    int n = 0;                                   // 环长 9→16: `% 9` 也是 idiv, `& 15` 是一条 and
     for (int cur = goal; cur != start; ++n) {
         int a = par[cur];
-        seq[n % 9] = a;
-        cur = (cur / N - DR[a]) * N + (cur % N - DC[a]);
+        seq[n & 15] = a;
+        cur = (((cur >> 5) - DR[a]) << 5) | ((cur & 31) - DC[a]);
     }
-    acts[0] = seq[(n - 1) % 9];
-    acts[1] = n > 1 ? seq[(n - 2) % 9] : STAY;
-    acts[2] = n > 2 ? seq[(n - 3) % 9] : STAY;
+    acts[0] = seq[(n - 1) & 15];
+    acts[1] = n > 1 ? seq[(n - 2) & 15] : STAY;
+    acts[2] = n > 2 ? seq[(n - 3) & 15] : STAY;
 }
 
 GameOutput decide(const GameInput* in) {
     {   // 冷启动税对冲: 入口并行预取热工作集(轮间350ms全被逐出, 串行回填≈+200ns)
-        _mm_prefetch((const char*)&g_s, _MM_HINT_T0);
+        // ⛔ 删掉两条**拉从不被读的行**的预取(各省 1 条指令 + 1 次冷行填充/轮):
+        //   `&g_s`  = bpw[0..15]: 稳态 learn_mode==SETTLED 短路掉全部 bpw/seen/visited 读取,
+        //             475/500 轮不碰; 热头部(last_round/learn_mode/vp_buy/anch)在 +64 那条行里。
+        //   `&PT`   = thru[0..7]: `b = ctz(m | 1<<45)` 恒有 b ∈ [8,45](reach 只覆盖位 8..44),
+        //             thru[0..7] 永不被索引 —— 静态可证, 非概率论证。
         _mm_prefetch((const char*)&g_s + 64, _MM_HINT_T0);
-        _mm_prefetch((const char*)&PT, _MM_HINT_T0);
         _mm_prefetch((const char*)&PT + 64, _MM_HINT_T0);
-        _mm_prefetch((const char*)&PT.cell, _MM_HINT_T0);
-        _mm_prefetch((const char*)&PT.cell + 64, _MM_HINT_T0);
-        _mm_prefetch((const char*)&PT.cell + 128, _MM_HINT_T0);
+        _mm_prefetch((const char*)&PT.act, _MM_HINT_T0);
         _mm_prefetch((const char*)&PT.towR, _MM_HINT_T0);
         _mm_prefetch((const char*)&SCT, _MM_HINT_T0);
         // ⛔ 不预取 in->grid: GameInput 由平台在**调用我们之前**刚写入 ⇒ 它本来就在 L1/L2,
@@ -479,7 +488,7 @@ GameOutput decide(const GameInput* in) {
             if (t) cand = t;
         }
         int p = __builtin_ctzll(cand);
-        unsigned a6 = (unsigned)(PT.cell[p] >> 52);
+        unsigned a6 = PT.act[p];
         acts[0] = (int)(a6 & 7u);
         acts[1] = (int)((a6 >> 3) & 7u);
         acts[2] = (int)((a6 >> 6) & 7u);
@@ -497,7 +506,7 @@ GameOutput decide(const GameInput* in) {
 }  // namespace
 
 // moveDecision 的入口需保持在已验证的 mod64=0x10 档。修改函数体后必须在赛事机构建并重校。
-asm(".space 244, 0x90");
+asm(".space 292, 0x90");
 
 extern "C" GameOutput moveDecision(const GameInput* input) {
     try {
