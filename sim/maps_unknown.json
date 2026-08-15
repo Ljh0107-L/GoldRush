@@ -390,6 +390,47 @@
         "antidiag"
       ]
     },
+    "sim_contest_maze": {
+      "counts": {
+        "bomb_candidate": 6,
+        "wall": 119
+      },
+      "limited": false,
+      "rows": [
+        "00100010201000100",
+        "01101011011010110",
+        "00021000000012000",
+        "01111111011111110",
+        "00000001010000000",
+        "11111101010111111",
+        "00000100000100000",
+        "01110111011101110",
+        "00010000000001000",
+        "01010111011101010",
+        "01010100000101010",
+        "01010101010101010",
+        "01000101010100010",
+        "01110101110101110",
+        "00000000000000000",
+        "01110111011101110",
+        "00120010201002100"
+      ],
+      "source": {
+        "kind": "official_log_line_2",
+        "map_created_at": "2026-08-15T03:55:18Z",
+        "map_name": "模拟赛地图",
+        "note": "官方模拟赛用图, 非合成; 全信息真图取自日志第二行",
+        "observed_game_ids": [
+          373883,
+          373897,
+          373975
+        ],
+        "platform_map_id": 4
+      },
+      "wall_symmetry": [
+        "left_right"
+      ]
+    },
     "sparse": {
       "counts": {
         "bomb_candidate": 0,
@@ -459,6 +500,6 @@
       ]
     }
   },
-  "purpose": "unfamiliar-map robustness audit; NOT official terrain",
+  "purpose": "unfamiliar-map robustness audit. MOSTLY synthetic, but since 2026-08-15 this registry ALSO carries observed OFFICIAL terrain -- see each map source.kind. sim_contest_maze is the real simulation-contest map (platform map_id 4) and at 119 walls (41.2%) it is 42% denser than the densest synthetic entry. The old wording \"NOT official terrain\" no longer holds.",
   "schema_version": 1
 }
