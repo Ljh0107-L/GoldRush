@@ -342,7 +342,28 @@ GameOutput decide(const GameInput* in) {
         // 越界行/列的幻影数据**不必清**: 它们只能落在 rowok/colok 已剔除的路径上(见下), 无害。
         uint64_t g1 = 0, g2 = 0, g5 = 0, bd = 0;
         {
-#if defined(__AVX2__)
+#if defined(__AVX512BW__) && defined(__AVX512VL__)
+            // ---- 字节化扫描: int32 -> 饱和 int8, 四个谓词各一次 vpcmpb ----
+            // 四个阈值 (>=1 / >=4 / >=9 / <0) 全在 int8 域内, 而 VPMOVSDB 是**饱和**转换:
+            // >127 饱和到 127(仍 >=9), <-128 饱和到 -128(仍 <0) ⇒ 对任意 int32 输入逐位等价,
+            // 不依赖"金额不超过 127"这类观测性前提。
+            // 5 行各 8 字节落在 qword lane 0..4 ⇒ 字节布局 == 原 stride-8 窗口位图,
+            // 于是每行的 shlx+or 全部消失, 收尾的 `<<= sh` 原样保留。
+            int sh = 10 - SCT.lsh[sc], cb = SCT.cb[sc];
+            const int* gp_ = &in->grid[0][0] + cb;
+            __m512i pk_ = _mm512_setzero_si512();
+#pragma GCC unroll 5
+            for (int i = 0; i < 5; ++i) {
+                __m128i b8_ = _mm256_cvtsepi32_epi8(
+                    _mm256_loadu_si256((const __m256i*)(gp_ + PT.rcl[sr + i])));
+                pk_ = _mm512_mask_broadcastq_epi64(pk_, (__mmask8)(1u << i), b8_);
+            }
+            const __m512i zb_ = _mm512_setzero_si512();
+            g1 = (uint64_t)_mm512_cmpgt_epi8_mask(pk_, zb_);
+            g2 = (uint64_t)_mm512_cmpgt_epi8_mask(pk_, _mm512_set1_epi8(3));
+            g5 = (uint64_t)_mm512_cmpgt_epi8_mask(pk_, _mm512_set1_epi8(8));
+            bd = (uint64_t)_mm512_cmplt_epi8_mask(pk_, zb_);
+#elif defined(__AVX2__)
             int sh = 10 - SCT.lsh[sc], cb = SCT.cb[sc];
             const __m256i z = _mm256_setzero_si256();
             const __m256i v3 = _mm256_set1_epi32(3);
